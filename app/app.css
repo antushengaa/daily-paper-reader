@@ -3628,6 +3628,26 @@ article.markdown-section {
   margin-top: 0;
   border-color: rgba(46, 125, 50, 0.32);
   background: #2e7d32;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(46, 125, 50, 0.18);
+}
+
+.dpr-task-start-btn:hover:not(:disabled):not(.chat-quick-run-item--disabled) {
+  border-color: rgba(46, 125, 50, 0.42);
+  background: #276b2b;
+  color: #fff;
+}
+
+.dpr-task-start-btn:disabled,
+.dpr-task-start-btn.chat-quick-run-item--disabled {
+  border-color: #d8dee9;
+  background: #eef2f7;
+  color: #8a94a6;
+  box-shadow: none;
+  opacity: 1;
+  cursor: not-allowed;
 }
 
 .dpr-title-inline {

@@ -1289,7 +1289,7 @@ window.SubscriptionsManager = (function () {
               </div>
               <button
                 id="arxiv-admin-quick-run-conference-run-btn"
-                class="chat-quick-run-run-btn"
+                class="chat-quick-run-run-btn dpr-task-start-btn"
                 type="button"
               >
                 开始检索
