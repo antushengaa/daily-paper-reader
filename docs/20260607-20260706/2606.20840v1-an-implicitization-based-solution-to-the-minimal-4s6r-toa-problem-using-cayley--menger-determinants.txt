@@ -1,0 +1,426 @@
+Title: An implicitization-based solution to the minimal 4s/6r ToA problem using Cayley–Menger determinants
+
+URL Source: https://arxiv.org/pdf/2606.20840v1
+
+Published Time: Tue, 23 Jun 2026 00:16:39 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# An implicitization-based solution to the minimal 4s/6r ToA problem using Cayley–Menger determinants 
+
+## Evgeniy Martyushev South Ural State University 76 Lenin Avenue, Chelyabinsk 454080, Russia 
+
+## martiushevev@susu.ru 
+
+Abstract 
+
+The paper introduces an efficient algebraic solver for the 4-sender/6-receiver (4s/6r) Time-of-Arrival (ToA) self-localization problem, which involves determining the relative positions of all receivers and senders given their pairwise distance measurements. The problem is addressed through a new parametrization com-bining Cayley–Menger determinants with an implicitization technique. The proposed algorithm proceeds in three steps. First, a 148 × 211 Macaulay matrix is constructed from the coefficients of the original poly-nomial system. Second, PLU decomposition of this matrix yields a 63 × 63 matrix pair. Finally, up to 38 real solutions are obtained via generalized eigendecomposition followed by a validation step. Experiments on synthetic noise-free data demonstrate that the proposed solver outperforms existing methods by approx-imately three orders of magnitude in numerical accuracy while achieving an average runtime of 1 .3× faster than the fastest alternative. Experiments on a real-world acoustic dataset confirm that, when integrated within a RANSAC framework, the solver provides a reliable initial guess for bundle adjustment refinement. 
+
+Keywords: Time-of-Arrival; Self-localization; Cayley–Menger determinant; Implicitization; Polynomial equations Elimination template 
+
+# 1 Introduction 
+
+The m-senders/ n-receivers ( ms/ nr) Time-of-Arrival (ToA) self-localization problem involves determining the relative positions of m senders si and n receivers rk in 3-space, given pairwise distance measurements dik derived from signal propagation times, see Figure 1. This problem arises naturally in applications where absolute positions are unavailable, requiring the system to infer its own geometry solely from inter-element distances. ToA based localization systems have found widespread adoption in various engineering domains including RF/ultrasound indoor localization [16, 24, 17, 28, 32], anchor-free autonomous calibration of acoustic sensor networks [6, 8, 12, 33], underwater navigation [10, 4, 9, 14, 31], and swarm robotics coordination [15, 29, 5]. In all these applications, solving the self-localization problem efficiently and accurately is a fundamental task. The problem becomes minimal in the sense of admitting a finite but non-zero number of solutions for generic values dik when m = 4 and n = 6 (or vice versa, by symmetry) [30]. Another minimal case m = n = 5, not addressed in this paper, requires a single constraint on the distances dik [18]. The minimal 4s/6r configuration is of practical importance: it represents the smallest problem instance that yields isolated solutions, making it suitable as a hypothesis generator within robust estimation frameworks such as RANSAC [11] for overdetermined ToA problems with many senders and receivers. The minimal 4s/6r problem has been studied in prior works [30, 18, 22, 20, 26]. The state-of-the-art parametrization, introduced in [18], formulates the minimal 4s/6r problem as a system of four cubic and one quartic polynomial equations in five variables. Its solution space decomposes into two components: a1-dimensional family of spurious roots without a feasible interpretation and a 0-dimensional component con-sisting of 38 points in complex space. Although this parametrization successfully reduced the problem to a compact polynomial system and enabled solver generation using automatic generators from [21, 22, 26], existing implementations have faced challenges in simultaneously achieving high numerical accuracy and computational efficiency. An alternative parametrization for the 4s/6r ToA problem is based on the implicitization technique. The idea of using implicitization for this problem was first suggested by Stew´ enius [30], who introduced the notion of an 11-dimensional “quadri-sonal vector” and stated the existence of non-linear constraints on this vector. However, that work did not provide an explicit form of these constraints nor a practical solver based on this parametrization. In this paper, we develop the implicitization approach for the 4s/6r ToA problem into an efficient practical solver. First, we construct an 11-dimensional vector from Cayley–Menger determinants and apply implicitization to derive the complete set of polynomial constraints on its components. This yields a system of eight cubic and 1
+
+> arXiv:2606.20840v1 [cs.SD] 18 Jun 2026 k
+
+r
+
+> i
+
+s
+
+> ik
+
+dFigure 1: 4s/6r ToA self-localization problem two quartic polynomial equations in five variables, whose solution space is 0-dimensional and consists of exactly 38 complex roots. For a given set of distance measurements, the system is solved efficiently using the method of elimination templates, an approach widely adopted in geometric computer vision and robotics [19, 21, 23, 2, 27, 26, 25]. The resulting solver is faster compared to state-of-the-art alternatives while also demonstrating significantly improved numerical accuracy. The rest of the paper is organized as follows. Section 2 introduces the new parametrization for the 4s/6r ToA problem, reducing it to a system of ten polynomial equations in five variables. Section 3 details the proposed elimination template based algorithm for solving the ToA problem. In Section 4, we evaluate the solver’s performance, first on synthetic noise-free data to compare its robustness and speed against existing approaches, second on synthetic noisy data in the presence of outliers, utilizing the proposed solver as a hypothesis generator for RANSAC, and third on a real acoustic dataset. Section 5 discusses the results of the paper. 
+
+# 2 Problem statement and new parametrization 
+
+Consider the minimal 4s/6r ToA self-localization problem illustrated in Figure 1. Let si ∈ R3 for i = 1 , . . . , 4denote the positions of the senders, and rk ∈ R3 for k = 1 , . . . , 6 the positions of the receivers. The Euclidean distance between sender si and receiver rk is ∥si − rk∥. The measured distance dik = ct ik is obtained from the time-of-arrival tik and the known signal propagation speed c (e.g., speed of light for RF signals or speed of sound for acoustic signals). This yields the system of quadratic equations: 
+
+∥si − rk∥2 = d2
+
+> ik
+
+, i = 1 , . . . , 4, k = 1 , . . . , 6. (1) Due to the 6 degree-of-freedom Euclidean ambiguity, the number of unknowns in system (1) reduces to 24. Thus, (1) is a square system of 24 equations in 24 unknowns. Despite the simplicity of formulation (1), developing computationally efficient and numerically accurate solvers for arbitrary distance measurements dik 
+
+remains a challenging problem. 
+
+Remark 1. Throughout this paper, we assume that all senders and receivers are in general position. In particular, no two senders or two receivers coincide and both sender and receiver configurations span the full 3-space. 
+
+## 2.1 Number of solutions and symmetry 
+
+It was conjectured in [30] that the 4s/6r ToA problem has 38 complex solutions up to Euclidean symmetries. This can be verified computationally as follows. Fix the Euclidean ambiguity by setting 
+
+s1 = 0, (s2)2 = ( s2)3 = ( s3)3 = 0 , (2) where ( si)j denotes the jth coordinate of si. For randomly chosen rational distances dik (not necessarily corresponding to a realizable configuration), consider the polynomial ideal 
+
+I = ⟨∥ si − rk∥2 − d2 
+
+> ik
+
+: ∀i, k ⟩. (3) Computing a Gr¨ obner basis for I over a sufficiently large finite field yields 304 standard monomials (those not divisible by leading terms of I). This implies [7] that system (1) has 304 complex roots counting multiplicities. However, the set of roots exhibits the following 8-fold symmetry. If ( s1, . . . , s4, r1, . . . , r6) is a root, then so is 
+
+±1 0 00 ±1 00 0 ±1
+
+ s1 . . . s4 r1 . . . r6
+
+
+
+for any combination of +’s and −’s. Consequently, the number of geometrically distinct solutions is 304 /8 = 38. 22.2 New parametrization 
+
+Consider the 4-dimensional simplex embedded in 3-space with vertices s1, . . . , s4 and rk for a certain k. Let 
+
+Dik = d2 
+
+> ik
+
+denote the squared distances between senders and receivers, and Lij = ∥si − sj ∥2 the squared inter-sender distances. Given 10 squared edge lengths L12 , . . . , L 34 , D 1k, . . . , D 4k of the 4-simplex, the Cayley–Menger determinant is defined as [1]: Γk =
+
+0 1 1 1 1 11 0 L12 L13 L14 D1k
+
+1 L12 0 L23 L24 D2k
+
+1 L13 L23 0 L34 D3k
+
+1 L14 L24 L34 0 D4k
+
+1 D1k D2k D3k D4k 0
+
+. (4) Since the hypervolume of the 4-simplex is up to a scale the squared Cayley–Menger determinant, it follows that Γk = 0. Through multivariate Taylor expansion, the equation Γ k = 0 can be rewritten in the form 
+
+B⊤ 
+
+> k
+
+T = 0 , (5) where the superscript ⊤ indicates matrix transpose and the coefficient vector Bk is given by 
+
+Bk = ∆22k ∆23k ∆24k 2∆ 2k∆3k 2∆ 2k∆4k 2∆ 3k∆4k 2∆ 2k 2∆ 3k 2∆ 4k 4D1k 1⊤ (6) with ∆ ik = Dik − D1k. The vector T ∈ R11 has the components: 
+
+T =
+
+
+
+−L213 − L214 − L234 + 2 L13 L14 + 2 L13 L34 + 2 L14 L34 
+
+−L212 − L214 − L224 + 2 L12 L14 + 2 L12 L24 + 2 L14 L24 
+
+−L212 − L213 − L223 + 2 L12 L13 + 2 L12 L23 + 2 L13 L23 
+
+L214 + L12 L13 + L24 L34 − L12 L14 − L12 L34 − L13 L14 − L13 L24 − L14 L24 − L14 L34 + 2 L14 L23 
+
+L213 + L12 L14 + L23 L34 − L12 L13 − L12 L34 − L13 L14 − L14 L23 − L13 L23 − L13 L34 + 2 L13 L24 
+
+L212 + L13 L14 + L23 L24 − L12 L13 − L13 L24 − L12 L14 − L14 L23 − L12 L23 − L12 L24 + 2 L12 L34 
+
+L213 L24 + L214 L23 + L234 L12 − L12 L13 L34 − L12 L14 L34 − L13 L14 L23 − L13 L14 L24 − L13 L24 L34 − L14 L23 L34 + 2 L13 L14 L34 
+
+L214 L23 + L212 L34 + L224 L13 − L12 L13 L24 − L13 L14 L24 − L12 L14 L23 − L12 L14 L34 − L12 L24 L34 − L14 L23 L24 + 2 L12 L14 L24 
+
+L212 L34 + L213 L24 + L223 L14 − L12 L14 L23 − L13 L14 L23 − L12 L13 L24 − L12 L13 L34 − L12 L23 L34 − L13 L23 L24 + 2 L12 L13 L23 
+
+T10 
+
+−L212 L234 − L213 L224 − L214 L223 + 2 L12 L13 L24 L34 + 2 L12 L14 L23 L34 + 2 L13 L14 L23 L24 
+
+
+
+,
+
+(7) where 
+
+T10 = − 12
+
+0 1 1 1 11 0 L12 L13 L14 
+
+1 L12 0 L23 L24 
+
+1 L13 L23 0 L34 
+
+1 L14 L24 L34 0
+
+. (8) Thus, T consists of polynomial functions of the inter-sender squared distances Lij and T10 is up to a scale the squared volume of the 3-simplex with the vertices s1, . . . , s4. According to Remark 1, we must have T10 ̸ = 0. 
+
+Remark 2. Stew´ enius in [30] introduced an analogous 11-dimensional “quadri-sonal vector” and stated the existence of non-linear constraints that can be found using implicitization. However, neither an explicit form of these constraints nor a corresponding solver was provided in [30]. The implicitization of T involves computing generators of the elimination ideal 
+
+J = ⟨Ti − ti : i = 1 , . . . , 11 ⟩ ∩ Q[t1, . . . , t 11 ], (9) where Ti are components of T and ti are formal variables. 
+
+Proposition 1. The ideal J is generated by 8 cubic, 12 quartic, and 12 quintic polynomials in t1, . . . , t 11 .Proof. Let S = {Ti − ti : i = 1 , . . . , 11 }. The elimination can be performed with the following Macaulay2 [13] code: 
+
+R = QQ[L12,L13,L14,L23,L24,L34,t_1..t_11]; I = ideal(S); J = eliminate({L12,L13,L14,L23,L24,L34}, I); mingens J 
+
+3The result is the claimed set of generators. The eight cubic and two of the quartic generators are listed explicitly below in Eqs. (11)–(20). Let t = t1 . . . t11 
+
+⊤. Each receiver rk provides a linear constraint on t of type (5). Thus, with 6 receivers, t can be parametrized in the form 
+
+t = vz t(1) + wz t(2) + xz t(3) + yz t(4) + 1
+
+z t(5) , (10) where v, w, x, y, z are unknowns and {t(1) , . . . , t(5) } forms a basis for the null-space of the stacked coefficient matrix B1 . . . B6
+
+⊤. The parametrization (10) is preferred over the more direct form t = v t(1) + w t(2) +
+
+x t(3) + y t(4) + z t(5) for two reasons: (i) the latter introduces a spurious multiple zero solution, and (ii) it leads to a less computationally efficient solver. Proposition 1 specifies 32 polynomial constraints on the vector t. While using all of these constraints would minimize both the elimination template size and the number of false roots, the computational cost of deriving the coefficients after substituting (10) becomes prohibitive. As a practical compromise, we use only the following 10 constraints for our solver: 
+
+• all 8 cubic constraints: (t4t6 − t2t5)t7 + ( t4t5 − t1t6)t8 + ( t1t2 − t24)( t9 − t10 ) = 0 , (11) (t5t6 − t3t4)t7 + ( t1t3 − t25)( t8 − t10 ) + ( t4t5 − t1t6)t9 = 0 , (12) (t2t3 − t26)( t7 − t10 ) + ( t5t6 − t3t4)t8 + ( t4t6 − t2t5)t9 = 0 , (13) (t2t3 − t26)t1 + ( t1t3 − t25)t4 + ( t1t2 − t24)t5 − 4t7t10 = 0 , (14) (t1t3 − t25)t2 + ( t2t3 − t26)t4 + ( t1t2 − t24)t6 − 4t8t10 = 0 , (15) (t1t2 − t24)t3 + ( t2t3 − t26)t5 + ( t1t3 − t25)t6 − 4t9t10 = 0 , (16) (t2t3 − t26)t1 + ( t5t6 − t3t4)t4 + ( t4t6 − t2t5)t5 − 4t210 = 0 , (17) (t2t3 − t26)t7 + ( t1t3 − t25)t8 + ( t1t2 − t24)t9 − 4t10 t11 = 0; (18) 
+
+• 2 of 12 quartic constraints: 
+
+t210 (t1t2 − t24) − t210 (t2t3 − t26) + t9t10 (t4t6 − t2t5) − t9t10 (t1t2 − t24) + t8t10 (t5t6 − t3t4)+t8t10 (t1t3 − t25) + t2t11 (t4t5 − t1t6) − t1t11 (t4t6 − t2t5) + t2t25t11 − t1t26t11 + t2t3t27
+
++t2t6t27 − t1t3t28 − t1t5t28 + t1t2t8t9 − t1t2t7t9 + t1t4t8t9 − t2t4t7t9 + t1t6t7t8 − t2t5t7t8
+
++2 t1t6t8t9 − 2t2t5t7t9 + 2 t2t5t7t10 − 2t4t5t8t10 = 0 , (19) 
+
+t210 (t1t3 − t25) − t210 (t2t3 − t26) + t8t10 (t5t6 − t3t4) − t8t10 (t1t3 − t25) + t9t10 (t4t6 − t2t5)+t9t10 (t1t2 − t24) + t3t11 (t4t5 − t1t6) − t1t11 (t5t6 − t3t4) + t3t24t11 − t1t26t11 + t2t3t27
+
++t3t6t27 − t1t2t29 − t1t4t29 + t1t3t8t9 − t1t3t7t8 + t1t5t8t9 − t3t4t7t9 + t1t6t7t9 − t3t5t7t8
+
++2 t1t6t8t9 − 2t3t4t7t8 + 2 t3t4t7t10 − 2t4t5t9t10 = 0 . (20) Substituting the parametrization (10) into constraints (11)–(20) and applying appropriate scaling factors (z3 for equations (11)–(18) and z4 for equations (19)–(20)) yields a system of 10 polynomial equations 
+
+fi = 0 , i = 1 , . . . , 10 (21) in the 5 variables v, w, x, y, z . The system is generically 0-dimensional and possesses exactly 38 complex roots. 
+
+# 3 Description of the algorithm 
+
+To solve system (21) efficiently for a given set of distance measurements, we employ the state-of-the-art auto-matic solver generator described in [26]. This generator takes as input an instance of a polynomial system with rational coefficients and returns the following data: (i) an action Laurent monomial (typically a variable or its reciprocal); (ii) an ordered s-tuple of monomial sets A = ( A1, . . . , A s), where s is the number of equations; (iii) a set of basic monomials B. These data are used to expand the original polynomial system with monomial multiples. The Macaulay (coefficient) matrix of the expanded system is known as the elimination template. Standard linear algebra decompositions applied to this template recover the roots of the original polynomial system, see [19, 3, 21, 23, 27, 26, 25] for details. 4Applying the generator [26] to system (21) yields the following data. The action monomial (variable) is v.The ordered 10-tuple of monomial sets A = ( A1, . . . , A 10 ) is defined by 
+
+A1 = A2 = A3 = A4 = A5 = {1, z, y, x, w, v, yz, xz, wz, vz, y 2, xy, wy, vy, x 2, wx, vx, w 2, vw, v 2},A6 = A7 = {1, z, x, w, v, xz, wz, vz, x 2, wx, vx, w 2, vw, v 2},A8 = {1, z, x, w, v, xz, wz, vz },A9 = A10 = {1, z, y, x, w, v }.
+
+(22) The set of basic monomials is 
+
+B = {vy 3, wy 3, y3x, y4, w3z, v2zx, vzwx, w 2zx, vzx 2, wzx 2, x3z, v2zy, vzwy, w2zy, vzxy, wzxy, x 2zy, vzy 2, wzy 2, zy 2x, zy 3, x2w, x3, yv 2, ywv, yw 2, yxv, yxw, yx 2, y2v, y2w, xy 2, y3,zv 2, zvw, zw 2, zvx, zwx, zx 2, zvy, zwy, zxy, zy 2, v2,vw, w2, vx, wx, x2, vy, wy, xy, y2, zv, zw, zx, zy, v, w, x, y, z, 1}.
+
+(23) Its cardinality is # B = 63, meaning that the solver outputs 63 candidate roots, of which 25 roots are spurious. The expanded set of polynomials is defined as 
+
+F = {m · fi : ∀m ∈ Ai, i = 1 , . . . , 10 }. (24) Let U denote the support of F , i.e., the set of all monomials appearing in at least one polynomial from F . Its cardinality is # U = 211. We partition U into three pairwise disjoint subsets U = E ∪ R ∪ B , where 
+
+R = {vm : m ∈ B} \ B , E = U \ (R ∪ B ). (25) The sets R and E are called the sets of reducible and excessive monomials, respectively [3]. Their cardinalities are # R = 41 and # E = 107. For a finite set of monomials A ⊆ U , we denote by v(A) the vector of monomials in A arranged according to a fixed total ordering on U.The 148 × 211 Macaulay matrix M is defined so that its ( i, j )th entry is the coefficient of the ith polynomial in F at the jth monomial in v(U). Consequently, M v(U) = 0 represents the polynomial system F = 0 in vector form. The matrix M inherits a block structure M = ME MR MB
+
+ , where ME is a 148 × 107 sparse submatrix. Applying LU decomposition with partial pivoting on ME gives ME = P LU , where P is a permutation matrix. Then (P L 1)−1M =
+
+U ∗ ∗
+
+0 CR CB
+
+
+
+, (26) where CR is a full-rank 41 × 41 matrix, CB is a 41 × 63 matrix, L1 =
+
+
+
+L 0
+
+I
+
+
+
+is a 148 × 148 lower-triangular matrix, and I is the 41 × 41 identity matrix. The matrix P L 1 is invertible since the main diagonal of L1 consists of 1’s. From (26) we obtain CRv(R) = −CBv(B), which leads to a generalized eigenproblem: 
+
+vT 1v(B) = T0v(B), (27) where the 63 × 63 matrices T0 and T1 contain only 0, 1, and the entries of −CB and CR, see [25] for details of their construction. Let up be the pth generalized eigenvector of the matrix pair ( T0, T 1), with ( up)i representing its ith compo-nent. Then the pth candidate root of (21) is given by ˆvp = (up)58 
+
+(up)63 
+
+, ˆwp = (up)59 
+
+(up)63 
+
+, ˆxp = (up)60 
+
+(up)63 
+
+, ˆyp = (up)61 
+
+(up)63 
+
+, ˆzp = (up)62 
+
+(up)63 
+
+. (28) The corresponding vector ˆ tp is obtained from the 5-tuple (ˆ vp, ˆwp, ˆxp, ˆyp, ˆzp) by Eq. (10). Thus we compute 63 candidate roots, and 25 false roots are eliminated from them through the following validation procedure. Let ˆ ti be the ith component of ˆ tp and Ti the ith component of the vector T defined in 5Eq. (7). The squared distances Lij are recovered in closed form using the first six components of ˆ tp and ˆ t10 :
+
+L12 = α ˆt2ˆt3 − ˆt26
+
+, (29) 
+
+L13 = α ˆt1ˆt3 − ˆt25
+
+, (30) 
+
+L14 = α ˆt1ˆt2 − ˆt24
+
+, (31) 
+
+L23 = L12 + L13 − 2α ˆt5ˆt6 − ˆt3ˆt4
+
+, (32) 
+
+L24 = L12 + L14 − 2α ˆt4ˆt6 − ˆt2ˆt5
+
+, (33) 
+
+L34 = L13 + L14 − 2α ˆt4ˆt5 − ˆt1ˆt6
+
+, (34) where α = −1/(4ˆ t10 ). Since the four senders must span 3-space, ˆ t10 ̸ = 0 for true solutions. For each candidate root, we compute the relative error ξ = ∥ˆtp − T∥/∥ˆtp∥ and identify the 38 true roots as those with the smallest 
+
+ξ values. Finally, the sender and receiver positions ˆ si and ˆ rp are recovered by solving a trilateration problem using the computed Lij and the given distances Dik . Complex solutions are discarded, and the Euclidean ambiguity is resolved by fixing ˆs1 = 0, (ˆ s2)2 = (ˆ s2)3 = (ˆ s3)3 = 0 , (ˆ s2)1 > 0, (ˆ s3)2 > 0, (ˆ s4)3 > 0. (35) 
+
+# 4 Experiments 
+
+In this section, we validate the MATLAB implementation of the proposed algorithm on both synthetic and real-world data. All experiments were performed on a system with Intel Core i5-1155G7 processor. We modelled m senders and n receivers, each uniformly distributed within a unit cube. The ground truth positions of the senders and receivers are represented by the 3-vectors si and rk, respectively. 
+
+## 4.1 Noise-free data 
+
+First, we compared the proposed solver with state-of-the-art algorithms from [18, 20, 26] on noise-free data with 
+
+m = 4 senders and n = 6 receivers. From the ground truth vectors si and rk, we computed the 24 distances 
+
+dik = ∥si − rk∥, which serve as the input to all solvers. To evaluate numerical accuracy, we defined two error metrics: 
+
+ϵ1 = max 
+
+ 1
+
+mn 
+
+X
+
+> i,k
+
+ ∥ˆsi − ˆrk∥ − dik 
+
+2
+
+1/2
+
+, (36) 
+
+ϵ2 = min 
+
+X
+
+> j>i
+
+ ∥si − sj ∥ − ∥ ˆsi − ˆsj ∥2 + X
+
+> l>k
+
+ ∥rk − rl∥ − ∥ ˆrk − ˆrl∥2
+
+1/2
+
+, (37) where ˆ si and ˆ rk are the estimated positions. The maximum in (36) and the minimum in (37) are taken over all real solutions. The metric ϵ1 is sensitive to the presence of false solutions (high values indicate their presence), while ϵ2 detects the absence of a ground truth solution among the computed ones.                       
+
+> −14 −12 −10 −8−6−4−20205·10 −2
+> 0.10.15 0.20.25 log 10 ϵ1
+> frequency New Martyushev et al. [26] Larsson et al. [20] Kuang et al. [18]
+> −14 −12 −10 −8−6−4−20205·10 −2
+> 0.10.15 0.20.25 log 10 ϵ2
+> frequency New Martyushev et al. [26] Larsson et al. [20] Kuang et al. [18]
+
+(a) (b) Figure 2: Distributions over 10 4 trials for error metrics from (36) and (37) Figure 2 shows the error distribution histograms for both metrics, while Table 1 provides detailed statistics, including median and mean values over 10 4 trials, and average runtime. The proposed solver significantly 6Solver Med. ϵ1 Ave. ϵ1 ϵ1 > 0.1 Med. ϵ2 Ave. ϵ2 ϵ2 > 0.1 Speed New 7.4 × 10 −8 4.0 × 10 −7 9.85% 1.2 × 10 −7 2.4 × 10 −7 7.82% 4.5 ms Martyushev et al. [26] 1.8 × 10 −4 3.2 × 10 −4 33 .52% 7.1 × 10 −4 3.8 × 10 −4 30 .64% 6.0 ms Larsson et al. [20] 3.4 × 10 −3 2.3 × 10 −3 43 .26% 1.7 × 10 −2 2.5 × 10 −3 40 .12% 10 .6 ms Kuang et al. [18] 3.3 × 10 −5 1.1 × 10 −4 30 .47% 8.8 × 10 −5 5.8 × 10 −5 20 .74% 41 .3 ms Table 1: Error distribution statistics and average runtime outperforms existing methods in numerical robustness. Its median ϵ1 of 7 .4 × 10 −8 is about three orders of magnitude lower than that of the next best solver from [18]. In terms of speed, the new solver is about 1 .3 times faster than the fastest alternative. Most of its runtime (53 .2%) is spent on template construction, primarily due to computing the initial 10 × 85 coefficient matrix. While the total number of geometrically distinct complex roots for the 4s/6r ToA problem is 38, it is currently unknown whether there exists an instance of the problem with exactly 38 real solutions. In our experiments, the observed maximum number of reliably identified and well separated real solutions was 20. 
+
+## 4.2 Noisy data with outliers 
+
+In real-world applications, ToA measurements are often corrupted by noise and may contain outliers, such as invalid or missing measurements. To address this, a hypothesize-and-test framework like RANSAC [11] can be used. The RANSAC procedure consists of the following main steps. First, multiple minimal subsets of 4 senders and 6 receivers are randomly sampled from the full set of m ≥ 4 senders and n ≥ 6 receivers. Next, the proposed minimal solver generates hypotheses for each subset. Each hypothesis is scored by classifying distance measurements as inliers or outliers. Finally, the winning hypothesis, selected based on the highest inlier count, is further refined through several iterations of the Levenberg–Marquardt algorithm. We evaluated the performance of the proposed solver within the RANSAC framework for the two types of overdetermined scenarios: 
+
+• m = 4, n ≥ 7; 
+
+• m ≥ 5, n = 6. To simulate measurement noise, each true distance dik was perturbed as dik (1 + sik ), where sik follows a normal distribution with zero mean and standard deviation σ. Outliers were introduced by replacing randomly selected distances dik with uniformly distributed random values in the interval [0 , 3]. Four experimental configurations were evaluated. In the first two tests, the number of senders and receivers was fixed at m = 4, n = 13 (Figure 3(a)) and at m = 9, n = 6 (Figure 3(b)), while the noise level σ was varied from 10 −6 to 10 −2. The third test maintained a constant number of senders m = 4 and noise level σ = 10 −4,while varying the number of receivers n from 11 to 15 (Figure 3(c)). Finally, the fourth test maintained a constant number of receivers n = 6 and noise level σ = 10 −4, while varying the number of senders m from 9 to 13 (Figure 3(d)). In all tests, the number of outliers was set to 0, 2, and 4. The results demonstrate that our RANSAC implementation with the new solver remains robust even with up to 4 outliers and high noise levels. 
+
+## 4.3 Real data 
+
+We validated the proposed solver on the real-world bassh2 dataset [34], which contains eight channel audio recordings of a moving sound source in a reverberant room together with ground truth microphone positions and source trajectories. The dataset is provided together with the multi-module pipeline for automatic acoustic geometry calibration. We integrated our solver into this system, replacing only its geometric estimation module described in [34, Section 6]. All other components, including signal processing, range-difference extraction, offset estimation, and matching, remained unchanged. For each time instant, the original pipeline first extracts range-difference measurements and performs off-set estimation to obtain absolute distance estimates. These distances are then fed into our solver within a RANSAC framework to generate initial hypotheses for microphone and source positions. The best hypothesis is subsequently refined by the original system’s bundle adjustment step. With this hybrid approach, the initial reconstruction achieved a root mean square error (RMSE) of 0 .1291 m relative to ground truth (Figure 4(a)). After bundle adjustment, the RMSE dropped to 0 .019 m (Figure 4(b)). 7−6 −5 −4 −3 −2      
+
+> −6
+> −4
+> −2
+> 0
+> 2
+> 4
+> log 10 σ
+> log 10  ϵ2
+> 4 outliers
+> 2 outliers
+> 0 outliers
+> −6−5−4−3−2
+> −6
+> −4
+> −2
+> 0
+> 2
+> 4
+> log 10 σ
+> log 10  ϵ2
+> 4 outliers
+> 2 outliers
+> 0 outliers
+
+(a) (b) 11 12 13 14 15     
+
+> −4
+> −202
+> n
+> log 10  ϵ2
+> 4 outliers 2 outliers 0 outliers 910 11 12 13
+> −4
+> −202
+> m
+> log 10  ϵ2
+> 4 outliers 2 outliers 0 outliers
+
+(c) (d) Figure 3: Performance on noisy data with outliers: error ϵ2 defined in (37) versus (a) noise level σ (m = 4, 
+
+n = 13); (b) noise level σ (m = 9, n = 6); (c) number of receivers n (m = 4, σ = 10 −4); (d) number of senders m (n = 6, σ = 10 −4). Each boxplot summarizes the results from 10 3 independent trials, displaying the interquartile range (25% to 75%) as a box, the median as an internal line, whiskers extending to 1 .5× the interquartile range, and dots indicating outliers 
+
+# 5 Conclusion 
+
+The paper introduces a new parametrization for the minimal 4s/6r ToA problem, combining Cayley–Menger determinants with an implicitization technique. The resulting algebraic solver reduces the problem to ten polynomial equations in five variables and solves them via standard linear algebra decompositions (PLU+QZ). Experiments on synthetic data demonstrate a substantial improvement in numerical accuracy, by orders of magnitude, over existing state-of-the-art methods. The solver achieves an average runtime of 4 .5 ms on standard hardware, enabling its effective use as a hypothesis generator within a RANSAC framework. Moreover, tests on a real dataset confirm that the RANSAC-based pipeline provides a reliable initial guess for bundle adjustment refinement. The proposed approach may generalize to other minimal ToA problems (e.g., 5s/5r) and to broader sensor network calibration tasks. Future work should address degenerate configurations (e.g., coplanar senders/receivers) and extend the approach to Time-Difference-of-Arrival and hybrid calibration problems. 
+
+## Data availability 
+
+The MATLAB implementation of the proposed algorithm is available at https://github.com/martyushev/t-d-oa. 
+
+# References 
+
+[1] M. Berger, M. Cole, and S. Levy. Geometry I . Universitext. Springer Berlin Heidelberg, 2009. [2] Snehal Bhayani, Zuzana Kukelova, and Janne Heikkila. A sparse resultant based method for efficient minimal solvers. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,pages 1770–1779, 2020. 80    
+
+> 0.5
+> 1
+> 1.5
+> 2
+> 2.5
+> −3
+> −2
+> −1
+> 0
+> 1
+> 2
+> −4
+> −2
+> 0
+> microphones (gt) sound source path (gt)
+> microphones (est) sound source path (est)
+> 0
+> 0.5
+> 1
+> 1.5
+> 2
+> 2.5
+> −3
+> −2
+> −1
+> 0
+> 1
+> 2
+> −4
+> −2
+> 0
+> microphones (gt) sound source path (gt)
+> microphones (est) sound source path (est)
+
+(a) (b) Figure 4: Reconstructed sound source trajectory and microphone positions for the bassh2 dataset [34]: (a) initial reconstruction (RMSE = 0 .1291 m); (b) final result after bundle adjustment (RMSE = 0 .019 m) [3] Martin Byr¨ od, Klas Josephson, and Kalle ˚ Astr¨ om. Fast and stable polynomial equation solving and its application to computer vision. International Journal of Computer Vision , 84(3):237–256, 2009. [4] Thomas Casey, Brian Guimond, and James Hu. Underwater vehicle positioning based on time of arrival measurements from a single beacon. In OCEANS 2007 , pages 1–8. IEEE, 2007. [5] Siyuan Chen, Dong Yin, and Yifeng Niu. A survey of robot swarms’ relative localization method. Sensors ,22(12):4424, 2022. [6] Alessio Contini, Antonio Canclini, Fabio Antonacci, Marco Compagnoni, Augusto Sarti, and Stefano Tubaro. Self-calibration of microphone arrays from measurement of times of arrival of acoustic signals. In 
+
+2012 5th International Symposium on Communications, Control and Signal Processing , pages 1–6. IEEE, 2012. [7] David A. Cox, John Little, and Donald O’Shea. Ideals, varieties, and algorithms: An introduction to computational algebraic geometry and commutative algebra . Springer, 2015. [8] Marco Crocco, Alessio Del Bue, Matteo Bustreo, and Vittorio Murino. A closed form solution to the microphone position self-calibration problem. In 2012 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 2597–2600. IEEE, 2012. [9] Ryan M Eustice, Hanumant Singh, and Louis L Whitcomb. Synchronous-clock, one-way-travel-time acous-tic navigation for underwater vehicles. Journal of Field Robotics , 28(1):121–136, 2011. [10] Ryan M Eustice, Louis L Whitcomb, Hanumant Singh, and Matthew Grund. Experimental results in synchronous-clock one-way-travel-time acoustic navigation for autonomous underwater vehicles. In Pro-ceedings 2007 IEEE International Conference on Robotics and Automation , pages 4257–4264. IEEE, 2007. [11] Martin A Fischler and Robert C Bolles. Random sample consensus: a paradigm for model fitting with applications to image analysis and automated cartography. Communications of the ACM , 24(6):381–395, 1981. [12] Nikolay D. Gaubitch, W. Bastiaan Kleijn, and Richard Heusdens. Auto-localization in ad-hoc microphone arrays. In IEEE International Conference on Acoustics, Speech and Signal Processing, ICASSP 2013, Vancouver, BC, Canada, May 26-31, 2013 , pages 106–110. IEEE, 2013. [13] D. Grayson and M. Stillman. Macaulay2, a software system for research in algebraic geometry, 2002. available at http://www.math.uiuc.edu/Macaulay2/ .[14] Guangjie Han, Jinfang Jiang, Lei Shu, Yongjun Xu, and Feng Wang. Localization algorithms of underwater wireless sensor networks: A survey. Sensors , 12(2):2026–2061, 2012. [15] Zhishuai Han, Jie He, Yishuang Geng, Cheng Xu, Liyuan Xu, and Shihong Duan. CRLB for TOA based near-ground swarm robotic localization. In 2015 IEEE 12th Intl Conf on Ubiquitous Intelligence and Computing and 2015 IEEE 12th Intl Conf on Autonomic and Trusted Computing and 2015 IEEE 15th Intl Conf on Scalable Computing and Communications and Its Associated Workshops (UIC-ATC-ScalCom) ,pages 1853–1858. IEEE, 2015. 9[16] Sverre Holm. Hybrid ultrasound-RFID indoor positioning: Combining the best of both worlds. In 2009 IEEE International Conference on RFID , pages 155–162. IEEE, 2009. [17] Zixi Jia, Chengdong Wu, Zhao Li, Yunzhou Zhang, and Bo Guan. The indoor localization and tracking estimation method of mobile targets in three-dimensional wireless sensor networks. Sensors , 15(11):29661– 29684, 2015. [18] Yubin Kuang, Simon Burgess, Anna Torstensson, and Kalle ˚ Astr¨ om. A complete characterization and solution to the microphone position self-calibration problem. In 2013 IEEE International Conference on Acoustics, Speech and Signal Processing , pages 3875–3879. IEEE, 2013. [19] Zuzana Kukelova, Martin Bujnak, and Tomas Pajdla. Automatic generator of minimal problem solvers. In 
+
+European Conference on Computer Vision , pages 302–315. Springer, 2008. [20] Martin Larsson, Gabrielle Flood, Magnus Oskarsson, and Kalle ˚ Astr¨ om. Upgrade methods for stratified sensor network self-calibration. In ICASSP 2020-2020 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 4851–4855. IEEE, 2020. [21] Viktor Larsson, Kalle ˚ Astr¨ om, and Magnus Oskarsson. Efficient solvers for minimal problems by syzygy-based reduction. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition ,pages 820–829, 2017. [22] Viktor Larsson, Kalle ˚ Astr¨ om, and Magnus Oskarsson. Polynomial solvers for saturated ideals. In Proceed-ings of the IEEE International Conference on Computer Vision , pages 2288–2297, 2017. [23] Viktor Larsson, Magnus Oskarsson, Kalle ˚ Astr¨ om, Alge Wallis, Zuzana Kukelova, and Tomas Pajdla. Beyond Gr¨ obner bases: Basis selection for minimal solvers. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition , pages 3945–3954, 2018. [24] Luca Mainetti, Luigi Patrono, and Ilaria Sergi. A survey on indoor positioning systems. In 2014 22nd international conference on software, telecommunications and computer networks (SoftCOM) , pages 111– 120. IEEE, 2014. [25] Evgeniy Martyushev. Forward kinematics of a general Stewart–Gough platform by elimination templates. 
+
+Mechanism and Machine Theory , 215:106170, 2025. [26] Evgeniy Martyushev, Snehal Bhayani, and Tomas Pajdla. Automatic solver generator for systems of Laurent polynomial equations. International Journal of Computer Vision , 134:59, 2026. [27] Evgeniy Martyushev, Jana Vrablikova, and Tomas Pajdla. Optimizing elimination templates by greedy pa-rameter search. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,pages 15754–15764, 2022. [28] Wilson Sakpere, Michael Adeyeye-Oshin, and Nhlanhla BW Mlitwa. A state-of-the-art survey of indoor positioning and navigation systems and technologies. South African Computer Journal , 29(3):145–197, 2017. [29] Emanuel Staudinger, Siwei Zhang, Robert P¨ ohlmann, and Armin Dammann. The role of time in a robotic swarm: A joint view on communications, localization, and sensing. IEEE Communications Magazine ,59(2):98–104, 2021. [30] Henrik Stew´ enius. Gr¨ obner basis methods for minimal problems in computer vision . PhD thesis, Lund University, Sweden, 2005. [31] Jinwang Yi, Diba Mirza, Ryan Kastner, Curt Schurgers, Paul Roberts, and Jules Jaffe. ToA-TS: Time of arrival based joint time synchronization and tracking for mobile underwater systems. Ad hoc networks ,34:211–223, 2015. [32] Faheem Zafari, Athanasios Gkelias, and Kin K Leung. A survey of indoor localization systems and tech-nologies. IEEE Communications Surveys & Tutorials , 21(3):2568–2599, 2019. [33] Simayijiang Zhayida, Simon Burgess, Yubin Kuang, and Kalle ˚ Astr¨ om. TOA-based self-calibration of dual-microphone array. IEEE Journal of Selected Topics in Signal Processing , 9(5):791–801, 2015. [34] Simayijiang Zhayida, Simon Segerblom Rex, Yubin Kuang, Fredrik Andersson, and Kalle ˚ Astr¨ om. An automatic system for acoustic microphone geometry calibration based on minimal solvers. arXiv preprint arXiv:1610.02392 , 2016. 10

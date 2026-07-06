@@ -1,0 +1,479 @@
+Title: Statistical validation and full-sphere extension of a Bayesian model for human static sound localisation
+
+URL Source: https://arxiv.org/pdf/2606.24367v1
+
+Published Time: Wed, 24 Jun 2026 00:48:46 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+Submitted to Acta Acustica 
+
+Template provided by EDP Sciences 
+
+Technical and Applied Paper 
+
+# Statistical validation and full-sphere extension of a Bayesian model for human static sound localisation 
+
+Roberto Barumerli 1⋆, Fabian Brinkmann 2, Emanuele Zanoni 3, Anton Hoyer 2, Lorenzo Picinali 1, and Michele Geronazzo 3,1  
+
+> 1
+
+Dyson School of Design Engineering, Imperial College London, London, United Kingdom  
+
+> 2
+
+Audio Communication Group, Technische Universit¨ at Berlin, Germany  
+
+> 3
+
+Department of Industrial Systems Technology and Management, University of Padova, Vicenza, Italy 
+
+Abstract – Auditory models provide a computational framework for understanding the mechanisms en-abling human spatial hearing. However, their validation typically relies on performance metrics rather than likelihood-based fitting and formal model comparison. Here, we present two contributions building on the Bayesian sound localisation model (Barumerli et al., 2023), which jointly infers horizontal and ver-tical sound directions by comparing noisy perceptual features against templates derived from individual head-related transfer functions (HRTFs). First, we formulate an explicit likelihood function for directional responses in static conditions and validate it through a complete Bayesian workflow. Parameter recovery on simulated responses confirms that free parameters are identifiable, though recovery degrades for the spectral and prior parameters at extreme values, and fits to behavioural data from 33 participants (collated across three sound localisation experiments sharing a common condition with individual HRTFs) yield con-vergent, interpretable parameter estimates. Second, we apply this framework to resolve an open question in the model’s formulation: whether the interpolation method used to interpolate templates onto a quasi-uniform spherical grid affects localisation predictions. Comparing the original interpolation against three alternatives, spatial coverage across the full sphere and preservation of spectral content at high frequencies are the primary determinants of template quality, while the specific interpolation algorithm is secondary once these conditions are met. Together, these contributions demonstrate how established model-based statistical methods can strengthen both fundamental spatial hearing research and applied problems such as HRTF evaluation. To facilitate reproducible research and integration with modern machine learning workflows, this work releases an open-source Python implementation. 
+
+Keywords. Sound localisation; Bayesian inference; Model-based statistical analysis; Auditory modeling; Maximum likelihood estimation 
+
+1. Introduction 
+
+Auditory computational models are essential tools for understanding the perceptual mechanisms underly-ing spatial hearing, formalising hypotheses about how the auditory system extracts and employs spatial informa-tion [ 1, 2]. Yet, the statistical methods used to calibrate and evaluate models vary widely across studies, often re-lying on heuristic metric matching that provides no prin-cipled basis for goodness-of-fit assessment or model com-parison [ 3]. In computational neuroscience, this problem has been addressed through a shared framework com-bining probabilistic model implementation with formal statistical analysis, where Bayesian inference provides a common language for building models and testing hy-potheses against experimental data [ 4]. Psychoacoustics  
+
+> ⋆
+
+Corresponding author: 
+
+has yet to broadly adopt this methodology, and in this work, we demonstrate that such a formal statistical work-flow can be successfully applied to an auditory model for sound localisation. To address this methodological gap, we recently introduced FrAMBI , a software framework for auditory modelling based on Bayesian inference [ 3]. 
+
+FrAMBI provides a standardised structure for imple-menting auditory models as probabilistic processes, en-abling likelihood computation for parameter estimation and Bayesian model comparison. This approach offers a fundamental advantage over behavioural metrics tradi-tionally used for model evaluation [ 5, 6]: such metrics aggregate responses into scalar averages, providing de-scriptive summaries rather than a direct statistical mea-sure of model fit [ 7]. A probabilistic formulation, in con-trast, enables likelihood-based parameter estimation: the likelihood measures how probable the observed responses are under the model, given a specific parameter config-
+
+1
+
+> arXiv:2606.24367v1 [cs.SD] 23 Jun 2026 Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model
+
+uration [ 8]. This is, to our knowledge, the only frame-work that simultaneously allows parameter recovery vali-dation and hypothesis testing through model comparison. Parameter recovery is crucial: if parameters cannot be re-covered from simulated data, the model is misspecified, and its predictions carry no inferential validity, regard-less of how plausible they appear [ 9]. Moreover, model comparison quantifies which of two competing model vari-ants better accounts for the observed data [ 10 ]. FrAMBI 
+
+demonstrated these capabilities on proof-of-concept local-isation models, and its application to models with com-plex, non-linear processing stages has so far been limited (e.g., [ 11 ]). Sound source localisation is a central paradigm in the study of human spatial hearing, and computational models are the primary tools for formalising and test-ing hypotheses about its underlying mechanisms [ 12 ]. These models range from binaural processing of in-teraural cues for horizontal localisation [ 6] to spectral cue evaluation against learned templates for the verti-cal dimension [ 13 ], and full probabilistic integration of both [ 14 ]. Beyond fundamental research, the Barumerli et al.[ 14 ] model enabled perception-based evaluation of non-individual head-related transfer function (HRTF) se-lection [ 15 , 16 ], HRTF measurement consistency across laboratories [ 17 , 18 ], HRTF upsampling [ 19 , 20 ], evalua-tion of numerically generated HRTFs [ 21 ], and prediction of localisation impairment due to head-worn devices [ 22 ]. Yet the absence of a unified statistical methodology lim-its reproducibility and cross-study comparisons, and the Barumerli et al. model is an ideal candidate to address this gap: despite its fully probabilistic formulation, its original parameter estimation relied on an ad hoc metric-matching procedure rather than the likelihood implied by the model itself [ 8]. In this technical paper, we present two contributions building on the Barumerli et al. model [ 14 ]. The first is methodological: we formulate an explicit likelihood func-tion, validate it through parameter recovery on simulated data, and fit it to behavioural localisation responses from 33 participants, applying the statistical framework intro-duced in FrAMBI . The second is applied: we use this framework to resolve an open question in the model’s original formulation concerning how measured HRTFs are interpolated onto a spherical grid to form the inter-nal templates used for direction inference. By compar-ing the original interpolation method against three full-sphere alternatives, we illustrate how principled statis-tical inference enables hypothesis testing that aggregate performance metrics cannot support. Together, these two contributions demonstrate that the same statistical ma-chinery serves both ends of the research spectrum: on the fundamental side, it exposes structural model prop-erties and identifiability limits that are invisible to metric-matching parameter estimation; on the applied side, the validated likelihood offers a behaviourally grounded met-ric for HRTFs in machine learning pipelines [ 20 ]. Finally, an open-source Python implementation is released along-side this work to facilitate reproducible research and in-tegration with modern signal processing workflows. 
+
+2. Materials and Methods 
+
+This section is organised as follows. We first describe the model and how its likelihood function is derived. We then present the likelihood-fitting procedure, validated on simulated data, before applying it to behavioural localisa-tion responses from 33 participants. Finally, we perform hypothesis testing by comparing four model variants, each using a different template interpolation method, to iden-tify which best accounts for the observed localisation be-haviour. 2.1. Model formulation in brief Following [ 14 ], the model simulates static sound local-isation as a Bayesian inference process [ 23 ]: the listener extracts noisy spatial features, infers the most probable source direction, and maps it to a pointing response. The following details how the listener response for a single localisation trial is modelled. The model starts by extracting a set of noisy spatial features t from a binaural stimulus generated by a single sound source with unknown direction ϕ and flat spec-trum. The flat-spectrum assumption ensures that spa-tial features are determined solely by the listener’s HRTF rather than by source spectral content: 
+
+t = [ xitd , x ild , xL,mon , xR,mon ] + δ. (1) The spatial cues are: interaural time difference xitd 
+
+(ITD), interaural level difference xild (ILD), and monau-ral spectral features for the left and right ears. The ITD is estimated via interaural cross-correlation on the low-pass filtered binaural signal ( < 3 kHz) and transformed following [ 24 ] to obtain a dimensionless quantity with ap-proximately constant variance across the lateral range, effectively compensating for the direction-dependent in-crease in ITD discrimination thresholds [ 25 ]. The ILD is approximated as the time-averaged broadband level dif-ference between the two channels [ 26 ]. Further, monaural cues were specified either as spectral amplitudes (with di-mension 28 × 1) [ 27 ] or positive spectral gradients (with dimension 27 × 1) [ 13 ], both derived from a gammatone filterbank with NB = 28 non-overlapping equivalent rect-angular bandwidth bands spanning [0.7, 18] kHz; gradi-ents are differences between adjacent bands, yielding one fewer dimension than amplitudes. Further details on cue computation are available in [ 14 ]. Further, δ in Eq. 1 ac-counts for the uncertainties introduced by the hearing system by adding Gaussian noise N (0 , Σ) with zero mean and diagonal covariance matrix Σ defined as: 
+
+Σ =
+
+ σ2itd 0 00 σ2ild 00 0 σ2mon I
+
+ , (2) with σ2itd and σ2ild being the variances associated with the ITDs and ILDs and σ2mon I being the covariance matrix for the monaural features where the scalar σmon represents a constant and identical uncertainty for all frequency bands and I is the identity matrix of size (2 · 28 × 2 · 28) if using 
+
+> 2Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model
+
+spectral amplitudes and (2 · 27 × 2 · 27) if using spectral gradients. The auditory pathway decodes spatial information from such cues to extract the direction of the incoming sound, assuming a fixed listening distance, ϕ = ( α, β )with α being the lateral or horizontal angle and β being the rising or vertical angle within the horizontal-polar reference system [ 28 , 29 ]. This reference system will be used to compute lateral and vertical errors. Bayes’ law describes the inference of sound direction at the compu-tational level [ 23 ], and assumes that the listener com-putes the posterior probability distribution over all pos-sible sound directions ϕ from the spatial features in t by combining the sensory likelihood p(t|ϕ) with prior beliefs about the sound direction p(ϕ): 
+
+p(ϕ|t) ∝ p(t|ϕ)p(ϕ). (3) The sensory likelihood function relies on the compar-ison of observed features t with templates s(ϕ) that con-tain reference features (i.e. noiseless) of Eq. 1 for every sound direction ϕ and δ = 0 [ 27 , 14 ]. Our implemen-tation estimates such templates as noiseless spatial cues computed from the listener-specific HRTFs sampled on a quasi-uniform spherical grid (see Sec. 2.5 ). Therefore, the sensory likelihood function is: 
+
+p(t|ϕ) = p(t|s(ϕ)) = N (t|s(ϕ), Σ), (4) where Σ corresponds to the uncertainties introduced in the observed features following the assumption that the auditory system has learned them through experi-ence [ 23 ]. The a-priori probability p(ϕ) reflects long-term expec-tations of listeners and is modelled as uniform along the horizontal dimension, consistent with evidence that az-imuth responses are accurate and unbiased across listen-ers [ 30 ]. Further, the prior is centred towards the horizon in the vertical dimension, consistent with behavioural ev-idence that listeners bias responses towards eye level [ 30 ]: 
+
+p(ϕ) ∝ exp 
+
+(
+
+− ǫ2
+
+2σ2
+
+> prior
+
+)
+
+, (5) with ǫ denoting the vertical angle of ϕ in spherical coordi-nates and σ2prior the variance of the prior distribution [ 14 ]. Importantly, ǫ is the elevation in standard spherical coor-dinates, equal to β only in the median plane, so that the prior favours near-horizontal directions independently of the horizontal angle. From the posterior distribution (Eq. 3), the model es-timates the listener-internal sound direction by selecting the most probable direction of the source ϕ by employing the maximum a-posteriori (MAP) estimate (i.e., direction with highest posterior probability): ˆϕ′ = arg max  
+
+> ϕ
+
+p(t|s(ϕ)) p(ϕ). (6) Finally, the listener’s response ϕ accounts for the post-decision process of transforming the internal es-timation to a pointing response by adding direction-independent noise, modelled as isotropic following prior 
+
+Figure 1. Illustration of a single modelled localisation trial for a sound presented at ϕ (red dot). Bluescale map: log-posterior distribution computed by evaluating Eq. 3
+
+for all directions of the template grid. Red dot: actual source direction ϕ. Green triangle: listener-internal model estimate (Eq. 6). Orange triangle: final listener response (Eq. 7). Front direction is indicated with a black square for reference. work [ 14 , 13 ]: 
+
+ˆϕ = ˆϕ′ + m, (7) where m is drawn from a von Mises-Fisher distri-bution (i.e., the spherical analogue of a multivariate Gaussian) with zero mean and concentration parame-ter κm (i.e., vMF(0 , κ m)) [ 31 ]. While isotropy is a sim-plification [ 32 ], we discuss the consequences of this as-sumption in Sec. 3.4.1 . For reporting clarity, we report the motor noise as a standard deviation σm in degrees, converted to the von Mises-Fisher concentration κm via the relation ¯R = exp( −σ2m/2), where ¯R = I1(κm)/I 0(κm)is the mean resultant length (i.e. the expected length of the average unit response vector, with 0 indicating uni-form dispersion and 1 perfect concentration) with modi-fied Bessel functions of the first kind of order 0 and 1 ( I0
+
+and I1, respectively) [ 31 ]. Figure 1 reports a visual example of this process for a single estimation. By repeating this process across many repetitions and source positions, the model accounts for variability across trials and generates response distribu-tions [ 3] from which localisation metrics such as lateral error, polar error, and quadrant error rate can be com-puted, following the same analytical approach as in local-isation experiments [ 5, 29 , 33 ]. 2.2. Parameter estimation and model validation We derive an explicit likelihood function from the model’s responses to enable principled parameter estima-tion and statistical validation [ 9, 3]. 
+
+> 3Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model
+
+2.2.1. Model-Likelihood Function In a localisation experiment with N trials, where a sound is presented at direction ϕn and the listener re-sponds with ˆ ϕ∗
+
+> n
+
+, the likelihood measures the model’s abil-ity to generate the observed responses given its parame-ters θ = {σitd , σ ild , σ mon , σ prior , κ m} [23 ]: 
+
+L(θ | [ ˆ ϕ∗
+
+> 1
+
+, . . . , ˆϕ∗ 
+
+> N
+
+] , [ϕ1, . . . , ϕN ]) = 
+
+> N
+
+∏
+
+> n=1
+
+p( ˆ ϕ∗ 
+
+> n
+
+| ϕn, θ) . (8) Computing the likelihood requires marginalising over the model’s uncertainties: perceptual uncertainty, captur-ing variability in the listener’s internal direction estimate due to sensory noise and prior beliefs; and motor uncer-tainty, capturing variability in translating that estimate into a pointing response. For a sound presented at direc-tion ϕn, the likelihood marginalises over model-generated responses ˆ ϕ:
+
+p( ˆ ϕ∗ 
+
+> n
+
+| ϕn, θ) = 
+
+∫
+
+p( ˆ ϕ′ | ϕn, σ prior , Σ) p( ˆ ϕ∗ 
+
+> n
+
+| ˆϕ′, κ m) d ˆϕ′, (9) where the two terms within the integral correspond to the perceptual stage (Eq. 6) and the motor stage (Eq. 7), respectively. Since the integral in Eq. 9 does not have an analyti-cal solution, we resort to Monte Carlo integration, which provides an approximated solution [ 34 ]. For each target direction ϕn, we generate M internal estimates { ˆϕ′}Mm=1 
+
+using ancestral sampling [ 3]: each sample is drawn from the perceptual stage (Eq. 6) by perturbing the spatial features with sensory noise and decoding the MAP esti-mate. Then, the motor stage (Eq. 7) is applied analyti-cally through the von Mises–Fisher kernel: 
+
+p( ˆ ϕ∗ 
+
+> n
+
+| ϕn, θ ) ≈ 1
+
+M
+
+> M
+
+∑
+
+> m=1
+
+vMF( ˆ ϕ∗ 
+
+> n
+
+| ˆϕ′
+
+> m
+
+, κ m). (10) where Monte Carlo samples M is selected based on the likelihood stability analysis in Sec. 2.3 .Parameter estimates are then obtained by maximising the likelihood function: 
+
+ˆθ = argmax 
+
+> θ
+
+L(θ | [ ˆ ϕ∗
+
+> 1
+
+, . . . , ˆϕ∗ 
+
+> N
+
+] , [ϕ1, . . . , ϕN ]) . (11) 2.2.2. Likelihood estimation The parameter vector θ contains five parameters that jointly determine the model’s predictions across both hor-izontal and vertical directions. However, not all param-eters are identifiable from behavioural data: parameters that contribute additively to the response variance along the same spatial dimension cannot be separated, as any combination yielding the same total variance produces identical response distributions. Within our settings, κm
+
+contributes to response variance in both horizontal and vertical dimensions, and it is confounded with σitd and 
+
+σild in the horizontal dimension and with σmon in the vertical dimension. Fixing nuisance parameters (i.e., those that are not of primary interest and vary little across individuals) to theoretically motivated values is preferable to estimat-ing them freely, and preserves the interpretability of the remaining parameters [ 7]. To do so, we exploit the struc-ture of the horizontal-polar coordinate system [ 28 ]: for broadband stimuli near the median plane ( |α| ≤ 30 ◦), lateral responses are dominated by interaural cues, and show limited inter-individual variability [ 27 ]. We there-fore attribute individual lateral variability to motor un-certainty and fix the interaural noise parameters to liter-ature values: σitd = 0 .569 (dimensionless, corresponding to approximately one just-noticeable difference in ITD following the transformation of [ 24 ]) and σild = 1 .0 dB, consistent with ILD discrimination thresholds for broad-band noise [ 35 ]. Although individual variability in these parameters cannot be excluded, its impact is assessed em-pirically in Sec. 3.3 .Having fixed σitd and σild , the free parameter vector reduces to θ = {κm, σ mon , σ prior }, which capture the pri-mary sources of individual variability in static listening conditions. This reduction, combined with the assump-tion of isotropic motor noise (see Eq. 7), enables a sequen-tial two-stage fitting procedure: a first stage restricted to lateral responses to estimate κm, and a second stage over all directional responses to estimate σmon and σprior . The lateral likelihood is therefore defined over the horizontal angle α only: 
+
+Llat (κm) = 
+
+> N
+
+∏
+
+> n=1
+
+p(ˆ α∗ 
+
+> n
+
+| αn, κ m), (12) where the observed responses ˆ ϕ∗ and target directions 
+
+ϕ are omitted for readability. Because the interaural pa-rameters are fixed, κm is the sole free parameter and cap-tures the residual lateral response variance not explained by the sensory model. In the first stage, ˆ κm is estimated by maximising Llat through optimisation. In the second stage, ˆ κm is held fixed, and the remain-ing parameters σmon and σprior are jointly estimated by maximising the full-sphere likelihood over the complete set of directional responses: 
+
+Lfull (σmon , σ prior | ˆκm) = 
+
+> N
+
+∏
+
+> n=1
+
+p( ˆ ϕ∗ 
+
+> n
+
+| ϕn, σ mon , σ prior , ˆκm). (13) Note that ˆ κm is estimated under a von Mises model on the circular lateral angle in the first stage, and subsequently used as the concentration parameter of the von Mises– Fisher distribution on the unit sphere in the second stage: this is consistent since the von Mises distribution is the restriction of the von Mises–Fisher distribution to the cir-cle. 
+
+> 4Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model
+
+2.2.3. Likelihood optimisation and model comparison For likelihood optimisation (Eq. 13 ), we employ Bayesian Adaptive Direct Search [pyBADS, 36 ], aderivative-free method suited to objectives whose evalua-tions are noisy due to Monte Carlo approximation (see [ 3]for implementation details). The resulting fitted likeli-hoods enable hypothesis testing by quantifying how well model variants explain the observed data: variants en-coding different mechanistic assumptions can be directly compared on this common scale [ 9]. However, more com-plex models will always explain the data better, and par-ticipants may contribute different numbers of trials, so a raw likelihood comparison would favour complexity and be sensitive to dataset size. To correct for both, we used the Bayesian Information Criterion [BIC; 37 ], which pe-nalises each additional free parameter by the log of the number of trials: BIC = k ln( N ) − 2 ln L(ˆθ), (14) where k is the number of free parameters, N is the number of trials, and Lfull (ˆθ) is the likelihood at the estimated pa-rameters. BIC differences across variants are interpretable on an absolute scale [ 10 ], providing a principled criterion for model selection that accounts for both fit quality and model complexity. Note that, if N and k are fixed across all participants and model variants, the likelihood yields equivalent model rankings to BIC. 2.3. Likelihood stability and parameter identification We first validate the statistical fitting procedure de-scribed above using simulated localisation responses. To this end, we simulate localisation responses as described in Sec. 2.1 for 28 sets of uncorrelated ground-truth pa-rameters spanning the expected range of individual vari-ability, and investigate how well the parameters can be recovered by the fitting procedure. Parameter values are sampled to return comparable localisation performance (see Sec. 3.3 ). Localisation responses are simulated using the KEMAR HRTF set from the SONICOM dataset [ 38 ], presenting 33 target directions with 3 repetitions each (99 trials), matching the minimum trial count in the ex-perimental data (see Sec. 2.4 ). These configurations are reused across both the likelihood stability analysis and the parameter recovery analysis described below. First, we determine the number of Monte Carlo sam-ples required for stable parameter estimation. We conduct a stability analysis by computing negative log-likelihood (NLL) variability across the 28 parameter configurations. We systematically vary the number of repetitions (3, 6, 9) for the 33 target directions (i.e. 99, 198 or 297 single trials) and the number of Monte Carlo samples for likeli-hood approximation (50–500). Then, we validate the fit-ting procedure by conducting a parameter recovery anal-ysis using the simulated localisation responses. Recovery quality is quantified using the Pearson correlation coeffi-cient r and mean bias (defined as the average signed dif-ference between recovered and ground-truth values; pos-itive values indicate systematic overestimation). 2.4. Behavioural Data and localisation metrics We evaluate the model on 33 participants (aged 18-43, median 26) who provided written informed consent under ethics approval (Imperial College London SETREC reference: 7046527, Declaration of Helsinki). All had their HRTFs measured as part of the SONICOM dataset [ 38 ]prior to testing. The data were collated from three experiments con-ducted in the same sound-insulated room, using broad-band flat-spectrum sounds presented in static conditions, with an identical protocol (stimuli, apparatus, and famil-iarisation procedure as described in [ 16 ]). Each experi-ment included a common baseline condition: static lo-calisation of broadband sounds rendered binaurally with individual, acoustically measured HRTFs. Selecting only these trials yielded a variable number per participant: 9 participants contributed 297 trials (33 directions × 9repetitions), 6 contributed 198 trials (6 repetitions), and the remainder contributed 99 trials (3 repetitions), all az-imuths, with elevations down to −30 ◦ elevation. Localisation performance is assessed using three stan-dard metrics in the horizontal-polar coordinate sys-tem [ 29 ]. Lateral root mean squared (RMS) error (LE) quantifies left-right accuracy across all source directions. Local polar RMS error (PE) quantifies up-down and front-back accuracy for near-median-plane sources (lat-eral angles within ±30 ◦), restricted to responses within the correct front-back hemisphere (polar errors below 90 ◦) to exclude gross confusions. Quadrant error rate (QE) measures the rate of such gross front-back confu-sions, defined as the proportion of responses falling in the wrong hemisphere (polar errors above 90 ◦) for the same near-median-plane subset as in PE. 2.5. Full-sphere template interpolation Because the template represents the listener’s learned internal representation of the auditory space, it is rea-sonable to assume that it is spatially continuous and full-spherical. The HRTFs from which the template is com-puted are spatially discrete in almost all cases, and often lack data around the South Pole (i.e. bottom directions) due to mechanical restrictions common to measurement systems (see Fig. 2 for an example based on an HRTF dataset from the SONICOM database [ 38 ]). The template computation, hence, requires interpolation and extrapola-tion, we first compute the template features for the source positions for which HRTFs are available and then inter-polate to a quasi-uniform spherical grid with T = 2 ,112 points and an average angular spacing of 4 ◦ (a spherical 
+
+n-design of degree 64 [ 39 , 40 ]). An initial validation of the fitting procedure revealed systematic convergence failures attributable to the tem-plate interpolation of the original model (see Suppl. S1 ). Specifically, the original interpolation method, termed here barumerli2023 , retains template features only above the minimum elevation ǫmin available in the measurement grid, so the model assigns no probability mass to a substantial portion of the sphere. Moreover, 
+
+> 5Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model
+
+# − −      
+
+# − 
+
+# − 
+
+# 
+
+#  
+
+#      
+
+Figure 2. HRTF measurement and interpolated grid vi-sualised over spherical coordinates. Blue points show the original measured directions of the G.R.A.S. KEMAR HRTF dataset [ 38 ]; red circles indicate complemented directions in the bottom hemisphere where cues are ex-trapolated in the first step of the two-step interpolation method by mirroring measured directions across the hor-izontal plane (see Sec. 2.5 ). Grey points show the full template grid onto which all features are subsequently interpolated. it introduces large interpolation errors close to the min-imum elevation angle (see Fig. 3), biasing the posterior distribution even in the supported region. We exploit this structural limitation as an opportunity to illustrate how model-based statistical analysis enables hypothesis testing: by comparing the original approach against three alternative interpolation methods providing full-sphere coverage, the BIC measure (see Eq. 14 ) determines which best accounts for the observed localisation be-haviour. Importantly, the comparison is conducted on the same dense SONICOM measurement grid for all four methods, so that observed differences in localisation behaviour are attributable solely to the mathematical representation of the templates rather than to mea-surement density. Using a subset would introduce an additional variable that would confound this comparison. 
+
+Regularised Spherical Harmonic Interpolation 
+
+This method applies a regularised spherical har-monic (SH) transform of order NSH = 15 [41 ,Section 3.6] to compute the (NSH + 1) 2 SH coeffi-cients xnm = [x0,0, x 1,−1, x 1,0, x 1,1, . . . , x NSH ,N SH ] of degree n and order m
+
+xnm = Y † 
+
+> S
+
+xS (15) where xS = [ xϕ1 , x ϕ1 , . . . , x ϕS , ]T denotes any of the fea-tures introduced in Eq. ( 1) at the S source positions for which the HRTF is available. Y S ∈ RS×(NSH +1) 2
+
+is the matrix containing the real-valued SH basis func-tions [ 42 ] for all source positions, orders and degrees. ( ·)†
+
+denotes the regulated pseudo-inverse using diag( λn) ∈
+
+R(NSH +1) 2 ×(NSH +1) 2
+
+for regularisation, with λn being 0 (no regularisation) for orders n ≤ 2 and 4 (regularisation) 
+
+Figure 3. Patterns of spectral amplitudes cues on the median plane (left ear) originating from unprocessed G.R.A.S KEMAR HRTFs [ 38 ] (top) and four interpola-tion methods. Each subplot is independently normalised to the maximum value to highlight spatial structure. otherwise. The interpolation to the template grid is then realised by 
+
+xT = Y T xnm (16) with Y T ∈ RT ×(NSH +1) 2
+
+holding the basis functions for the positions of the template grid. The original implementation barumerli2023 kept only feature values for elevation angles ǫ > ǫ min . This is required because xT exhibits large extrapolation errors outside this region (cf. [ 43 ] - see Supplementary materials S1 ). It is the default method used in the original MATLAB version of the model and was kept for backwards compatibility. 
+
+Two-step interpolation 
+
+To extrapolate missing data at low elevation, we use the low-order SH interpolation suggested by Ahrens et al. [ 43 ] based on Eqn. ( 15 -16 ) with the following two differences. First, the order of the SH transform in ( 15 )is determined by finding the maximum order for which cond( Y †) < 12 .25 is satisfied using λn = n · 10 −2 for reg-ularisation. The condition number cond( ·) is given by the ratio of the largest and smallest eigenvalues and provides a quantity on the stability of the transformation: given a 
+
+> 6Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model
+
+fixed input, the higher the condition number, the higher will be the output variability. The selected limits for the condition number and regularisation are appropriate for irregular sampling grids tested in Bau et al. [ 44 ]. Second, the interpolation described in ( 16 ) is evalu-ated for the source positions S′ to complement missing data in the sampling grid. These source positions are de-fined as suggested by Ahrens et al. [ 43 ]: the minimum elevation ǫmin contained in S is found, which is often be-tween −30 ◦ and −60 ◦, and all source positions with an elevation larger than −ǫmin are mirrored at the horizontal plane to complement the sampling grid. In the last step, the features that are now available on the complemented sampling grid S ∪ S′ are interpo-lated to the template grid using either SH interpolation or Barycentric interpolation, which uses data from up to three surrounding sampling points selected based on a triangulation of the sampling grid [ 45 ]. In this case, we refer to this method as barycentric . If using SH inter-polation, the maximum order can be determined as in the first step (termed SH ) or be freely specified while still using the regularisation described above (termed SHMAX ). For the SONICOM grid used here, this yields a maximum order of 11 for SH; SHMAX uses a fixed order of 44. Compared to the default, the two-step approach offers a full-spherical template. However, the spatial resolution of the interpolated data below ǫmin might be limited and depend on the SH order used for extrapolation in the first step. 2.6. Python implementation The model is distributed as bayesian listener , an open-source Python package released under the EUPL 1.2 license installable via pip install bayesian listener .The documentation is linked from the source code avail-able at https://github.com/robaru/bayesian listener .Core dependencies include numpy and scipy for nu-merical operations, pyfar and spharpy for spherical harmonics interpolation and coordinate handling, sofar 
+
+for reading SOFA-formatted HRTF datasets, and 
+
+pybads [36 ] for derivative-free parameter optimisation. The package exposes a single high-level class that en-capsulates the three model stages (feature extraction, Bayesian inference, and response noise), accepting ei-ther a SOFA file or a precomputed template array. All free parameters can be set independently, or maximum likelihood estimation is available directly through the class interface via the two-stage procedure described in Sec. 2.2.2 . Application Programming Interface (API) doc-umentation is generated with Sphinx, and unit tests are implemented via pytest under Python 3.10+ on Linux, macOS, and MS Windows. 
+
+3. Results 
+
+Results are organised following the Bayesian work-flow of [ 9]: we first validated the Python implementation against the original MATLAB model, then assessed tem-
+
+Figure 4. Replication of Figure 5 from [ 14 ], validating the Python implementation (red) against the original MATLAB model (black), comparing sound-localisation performance against behavioural data (grey) from [ 33 ]. Model parameters are taken directly from the original study; error bars denote standard errors across the five lis-teners therein. Squares and triangles denote the two alter-natives for characterising monaural features proposed in the original study: spectral amplitude and positive spec-tral gradient monaural cues, respectively [ 14 ]. plate reconstruction quality, characterised the fitting pro-cedure through likelihood stability and parameter recov-ery on simulated localisation responses, and finally ap-plied it to behavioural data from 33 participants, evalu-ating fit quality through posterior predictive checks and interpolation comparison based on BICs. 3.1. Evaluation of model implementation We first verified that the Python implementation reproduces the behaviour of the original MATLAB model before proceeding to the likelihood-based analysis. Figure 4 replicates Figure 5 of [ 14 ] using the five subjects from [ 33 ] and individual HRTFs, with model parameters obtained via the initial iterative procedure of the original study. The agreement between the two implementations is close across all three performance metrics and across listeners. A discrepancy was observed at 90 ◦ polar angle, where the Python implementation predicted a slightly smaller polar error than MATLAB for both the ampli-tude (40 .2 ± 2.6◦ vs. 43 .5 ± 3.0◦) and gradient (38 .5 ± 2.7◦
+
+vs. 43 .2 ± 2.3◦) variants (mean ± standard error over five 
+
+> 7Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model
+
+participants). This is attributable to the denser template grid in the Python implementation, arising from a dif-ferent quasi-uniform grid generation algorithm produc-ing a slightly finer spatial sampling at the same target angular spacing of 4 ◦. Given the overlapping standard errors across five listeners and the consistency across all metrics and directions, this difference does not indicate a systematic implementation discrepancy, though we note that a formal equivalence test is underpowered at this sample size. This informal equivalence check establishes the Python package as a valid basis for the likelihood-based analyses that follow. Since the two spectral feature variants yield closely comparable predictions across all metrics for flat and broadband sounds [ 14 ], the remainder of this study fo-cuses on spectral amplitude features; the gradient variant remains available in the Python implementation. 3.2. Template reconstruction quality Prior to fitting and model analysis, we examined how the choice of template interpolation method affects the spectral features on which localisation predictions de-pend. Figure 3 illustrates the spectral magnitude pat-terns on the median plane for the G.R.A.S. KEMAR manikin HRTF across the four interpolation methods, with barumerli2023 showing visible distortions relative to the unprocessed HRTF. Such a result is consistent with its large root mean squared error (RMSE) com-puted across source positions, frequencies and 33 partic-ipants (Sec. 2.4 ), which averaged 2 .03 ± 0.04 dB (mean 
+
+± standard error): up to roughly an order of magnitude larger than the best full-sphere methods. Among the lat-ter, barycentric and SHMAX achieved the lowest errors (0 .24 ± 0.00 and 0 .23 ± 0.01 dB), while SH interpola-tion yielded a moderately higher RMSE of 0 .49 ± 0.02 dB, reflecting frequency-dependent smoothing from the condition-number constraint on SH order [ 46 ]. Overall, full-sphere spatial coverage emerges as a more important determinant of reconstruction fidelity than the choice of interpolation algorithm, at least for the dense SONICOM measurement grid used here. 3.3. Likelihood stability and parameters identification We first determined the number of Monte Carlo sam-ples required for stable likelihood approximation, then assessed whether the free parameters can be reliably re-covered from simulated localisation responses. For such simulations, ground-truth parameters spanned the expected range of individual variability (σm ∈ [5 , 16] ◦, σmon ∈ [2 , 15] dB, σprior ∈ [5 , 90] ◦), producing simulated localisation performance covering the range observed in static localisation scenarios (LE: 10 .9◦, [5 .4, 16 .8] ◦; PE: 31 .1◦, [10 .8, 43 .0] ◦; QE: 12 .4%, [0 .0, 27 .2]%; mean and [min , max] across 28 configura-tions) [ 5, 29 , 33 ]. Likelihood stability was primarily governed by the number of Monte Carlo samples rather than the num-ber of trial repetitions, indicating that each trial con-tributes information with equal efficiency regardless of how many times each direction is presented. Increasing from 50 to 200 samples reduced per-trial likelihood stan-dard deviation by approximately 53% (from 4 .31 ± 3.86 to 2 .01 ± 0.85, mean ± standard error across the 28 con-figurations), with diminishing returns beyond this point (see Supplementary Material S2 ). We therefore selected 200 Monte Carlo samples as a sufficient approximation for all subsequent analyses. Parameter identification was assessed by comparing ground-truth and recovered values through likelihood op-timisation using Pearson correlation coefficients ( r) and mean bias (see Supplementary Material S3 for visualisa-tion of single estimates). The motor noise parameter σm
+
+showed agreement between ground-truth and recovered values ( r = 0 .97, p < 0.001, mean bias = −0.1◦), confirm-ing that the two-stage profile likelihood decomposition effectively isolates the sensorimotor component from the spectral processing parameters. The spectral noise σmon 
+
+and prior width σprior exhibited strong recovery ( r = 0 .85, 
+
+p < 0.001 and r = 0 .84, p < 0.001, respectively), with positive biases (mean bias: +3 .0 and +19 .9◦). For σprior ,the positive bias occurs at large values where the prior approaches a uniform distribution over elevation, making large parameter values behaviourally indistinguishable. For σmon , recovery degrades at large values corresponding to highly imprecise localisers, whose near-chance polar responses carry insufficient information to constrain the estimate. Crucially, recovered parameters were uncorre-lated ( r = −0.01, p = .95 for σm vs. σmon ; r = −0.16, 
+
+p = .42 for σmon vs. σprior ), confirming that the optimisa-tion procedure introduces no spurious trade-offs between parameter estimates. To assess whether parameter recovery preserved be-haviourally relevant information, we compared standard localisation metrics computed from the ground-truth and recovered parameter sets. Lateral errors showed a strong positive correlation between ground-truth and recovered predictions ( r = 0 .96, p < 0.001, mean difference ± stan-dard deviation −0.04 ◦ ± 0.79 ◦), while polar errors and quadrant error rates showed a smaller, albeit still strong, correlation ( r = 0 .72, p < 0.001 and r = 0 .80, p < 0.001 respectively), with small mean differences ( −0.34 ◦ ±6.92 ◦
+
+and 2 .08% ± 6.75%). These results indicate that although individual parameter estimates carry uncertainty, partic-ularly for σprior and σmon at large values, this uncertainty does not propagate into behaviourally meaningful errors: localisation metrics computed from recovered parameters closely match those from ground-truth parameters, con-firming that the fitted models capture the relevant struc-ture of localisation performance. 3.4. Parameter estimates from behavioural data Table 1 reports group-level parameter estimates and fit statistics for all participants and interpolation meth-ods. The motor noise parameter σm, estimated indepen-dently on the lateral localisation data, ranged from 2 .2◦
+
+to 35 .7◦ across participants (median = 9 .7◦). Within-participant estimates were near-identical across methods 
+
+> 8Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model
+
+Figure 5. Model predictions of localisation metrics across the range of observed behaviour, serving as posterior pre-dictive checks for the four interpolation methods. Each panel shows a different localisation metric (lateral error, polar error, and quadrant error rate), with actual be-havioural responses on the x-axis and simulated locali-sation responses generated from fitted model parameters on the y-axis. The dashed identity line indicates perfect prediction; points above it indicate model overestimation. Linear regressions with standard-error ribbons summarise the trend for each interpolation method. The key result is in the quadrant error rate panel: barumerli2023 fails to track individual differences ( r = 0 .19, p = .30), whereas full-sphere methods succeed ( r = 0 .51–0 .60, p < . 05), consistent with the template artefacts at low elevations introduced by the original interpolation method. (Table 1 - top panel), confirming that this parameter cap-tures a listener-specific sensorimotor component indepen-dent of the template representation. The range of fitted values is consistent with the sensorimotor scatter reported previously [ 14 , 15 ], with the wider spread here reflecting the larger participant pool ( N = 33 vs. N = 5). To verify that fixing σitd and σild did not absorb in-dividual differences in binaural sensitivity into ˆ σm, we repeated the Stage 1 estimation for all 33 participants across the full 3 ×3 grid. Across the eight non-default con-ditions, the correlation between perturbed and default ˆ σm
+
+estimates exceeds r = 0 .998 in every case, with a mean absolute deviation of 0 .30 ◦ and a maximum of 2 .05 ◦, both small relative to the inter-individual range of 2 .2◦–35 .7◦.To further quantify the contribution of σitd /σ ild varia-tion to lateral accuracy, we evaluated the ITD+ILD-only model ( σm = ∞) across the same grid. The resulting 
+
+LE values have a mean of 2 .7◦ ± 1.4◦, and the spread attributable to the full grid does not exceed 1 .94 ◦ per participant (mean 0 .51 ◦), compared to an observed inter-individual LE range of 3 .0◦–34 .7◦. These results con-firmed that individual differences in σitd and σild within physiologically plausible ranges cannot account for the observed spread in lateral pointing accuracy, and that the estimation procedure correctly attributes this variance to 
+
+κm.The jointly optimised σmon and σprior exhibited sub-stantial individual variability (Table 1), consistent with known listener-specific differences in spectral process-ing and spatial expectations. To compare fitted pa-rameter values across interpolation methods, we used Spearman rank correlations ( ρ) to avoid assumptions on the marginal distributions. Importantly, the two param-eters responded differently to the choice of interpolation method. Spectral noise did not differ significantly across methods (Friedman χ2(3) = 5.33, p = .149), though participant-level estimates were more strongly correlated between high-resolution methods ( SHMAX –barycentric :
+
+ρ = 0.81, p < .001) and weakest against the origi-nal approach ( SHMAX –barumerli2023 : ρ = 0.45, p =
+
+.008), suggesting that higher-fidelity templates yield more consistent sensory parameter estimates. Prior width, by contrast, showed a significant method effect (Friedman 
+
+χ2(3) = 10 .91, p = .012), with considerable within-participant variability across methods (median range = 22 .9◦). This pattern reveals a confound between template quality and prior estimation: when template quality is dis-torted, as in barumerli2023 , the optimiser tightens σprior 
+
+to compensate for the degraded sensory evidence, mean-ing that σprior cannot be interpreted as a pure listener property in the presence of template artefacts. This fur-ther motivates the use of full-sphere interpolation meth-ods, which avoid this confound by providing undistorted templates. Our σmon and σprior estimates are substantially larger than those reported in the original studies [ 14 , 15 ]. First, we fitted σprior , resulting in a broader mean, whereas in the original study it was fixed at 11 .5◦. Our result is con-sistent with [ 47 ], where they showed that listeners adapt the width of their spatial prior to the statistical distri-bution of source positions: our stimulus set spanned a larger elevation range, which would be expected to yield a wider prior estimate. Second, the discrepancy on σmon 
+
+is expected: original studies employed an ad hoc estima-tion method on a small set of perceptually trained partici-pants [ 33 ], whereas the present work uses maximum likeli-hood estimation over a larger cohort whose members com-pleted only a familiarisation session [ 16 ]. Despite these parameter differences, the likelihood optimisation yields statistically interpretable estimates for parameters previ-ously fixed in the ad hoc procedure (e.g. σprior ), and their consistency with observed localisation metrics (Sec. 3.4.1 )demonstrates the greater inferential power of the maxi-mum likelihood framework over heuristic alternatives. 3.4.1. Posterior predictive checks Posterior predictive checks assess model fit by gen-erating localisation responses from the fitted model and comparing them to the observed experimental data; sys-                                                                                                      
+
+> 9Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model Estimated parameters from behavioural data
+> Method σmσmon σprior
+> barumerli2023 12 .5±1.49.5±0.755 .0±6.2
+> SHMAX 12 .5±1.510 .4±0.969 .0±9.0
+> barycentric 12 .5±1.59.5±0.673 .5±10 .0
+> SH 12 .5±1.510 .1±0.878 .1±9.6
+> Estimated behavioural metrics
+> Method LE ( ◦)PE ( ◦)QE (%)
+> Actual 12.7 ±0.9 33.8 ±1.1 15.1 ±1.8
+> barumerli2023 13.6 ±1.2 34.3 ±0.7 17.4 ±1.1
+> SHMAX 13.3 ±1.2 33.7 ±0.8 16.4 ±1.3
+> barycentric 13.3 ±1.2 33.4 ±0.8 15.5 ±1.1
+> SH 13.5 ±1.2 33.9 ±0.8 16.4 ±1.1
+> Correlations between model and participant metrics
+> Method LE ( ◦)PE ( ◦)QE (%)
+> barumerli2023 0.89*** 0.65*** 0.19
+> SHMAX 0.89*** 0.63*** 0.52**
+> barycentric 0.89*** 0.65*** 0.60***
+> SH 0.89*** 0.57*** 0.51**
+
+Table 1. Comparison of template interpolation methods across estimated parameters (top panel), and behavioural estimation accuracy (values reported as mean ± standard error over participants). The behavioural metrics (middle panel) compare actual localisation performance against simulated localisation responses from fitted models, in-cluding lateral RMS error (LE), polar RMS error (PE), and quadrant error (QE). Correlations (Pearson coeffi-cient r, bottom panel) indicate each method’s ability to predict individual differences in localisation performance across dimensions. Significance levels: *** p < 0.001, ** 
+
+p < 0.01. tematic discrepancies indicate where the model fails to capture the structure of localisation behaviour [ 9]. To this end, for each participant and interpolation method, the model generated responses to the same target directions presented in the experiment, averaged over 200 Monte Carlo repetitions. The obtained localisation metrics were compared against those obtained from the actual experi-mental data (Table 1, Fig. 5). We evaluated lateral RMS error (LE), local polar error (PE), and quadrant error rate (QE), following the definitions of [ 29 ]. Across all methods, the model reproduced group-level behavioural metrics with no significant bias (Wilcoxon 
+
+p > . 27 for LE, PE, and QE; Table 1). Individual differ-ences in lateral error were captured with uniformly high fidelity ( r = 0 .89, all methods), confirming that the two-stage fitting procedure preserves listener-specific sensori-motor variability. Polar error correlations were moderate-to-strong across methods ( r = 0 .57–0 .65), while quad-rant error rates revealed the clearest differentiation: 
+
+barycentric and SHMAX interpolation tracked individual QE differences ( r = 0 .60 and r = 0 .52, respectively), whereas barumerli2023 did not ( r = 0 .19, p = .30). This failure is consistent with the template artefacts at low elevations introduced by the original method, which 
+
+Figure 6. Model fit quality across template interpolation methods. Points and error bars show mean ∆BIC ( ± stan-dard error over 33 participants) relative to the best-fitting method for each participant. Lower values indicate better fits.                   
+
+> Method ∆BIC Wins Very strong
+> SHMAX -19.4 ±10.1 19/33 17 barycentric -12.5 ±16.7 18/33 15 SH -2.8 ±15.3 15/33 13
+
+Table 2. Pairwise model comparison against the 
+
+barumerli2023 interpolation method. ∆BIC: mean ±
+
+standard error over all participants of the BIC difference relative to barumerli2023 (negative values favour the al-ternative method). Wins: number of participants (out of 33) for whom the method achieved a lower BIC. Very strong indicates the number of participants with a large preference for the alternative method ( |∆BIC | > 10). distort the posterior distribution in regions where front– back confusions are resolved. We also examined two accuracy metrics that fell out-side the model’s scope. The lateral accuracy bias showed a systematic offset of approximately 3 ◦ (Wilcoxon p =
+
+.002), which the model cannot reproduce by construc-tion since the response noise is assumed zero-mean and isotropic (Eq. 7); this is consistent with a minor vio-lation of the isotropy assumption not captured by the current model formulation. The polar accuracy showed no significant differences between model predictions and data ( p > . 26), but the model did not capture across-participant variability in this metric ( r < 0.22, p > . 21), indicating a structural limitation of the current formula-tion in accounting for individual vertical biases. 3.5. Model comparison We compared the four interpolation methods by com-puting ∆BIC for each participant, defined as the dif-ference between each method’s BIC and the best-fitting method, with likelihoods evaluated using 500 Monte Carlo samples per trial to reduce estimation uncertainty (see Fig. 6). Because raw BIC values vary widely across participants due to differences in overall localisation abil-
+
+> 10 Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model
+
+ity, ∆BIC isolates the relative advantage of each method within each listener. Lower ∆BIC values indicate better relative fit, with differences exceeding 10 conventionally regarded as strong evidence in favour of the better-fitting model [ 10 ]. A Friedman test on ∆BIC across methods did not reach significance ( χ2(3) = 5 .04, p = .169), indicating that no single method uniformly dominated across par-ticipants. Descriptively, SHMAX and barycentric achieved the lowest mean ∆BIC (25 .8 and 32 .6, respectively), while 
+
+SH and barumerli2023 showed larger deviations from the best-fitting method (42 .4 and 45 .2) (see Fig. 6). At the individual level, categorising ∆BIC between 
+
+SHMAX and barumerli2023 according to [ 10 ] yielded 17 participants with very strong evidence (∆BIC > 10) and 2 with positive evidence (2 < ∆BIC ≤ 10) favouring 
+
+SHMAX , 4 with negligible differences ( |∆BIC | ≤ 2), and 10 favouring barumerli2023 (see Tab. 2). A similar pat-tern held for barycentric versus barumerli2023 , sug-gesting that once full-sphere coverage and adequate spec-tral bandwidth are ensured, the choice of interpolation algorithm yields no additional benefit for grids as dense as the SONICOM measurement set [ 38 ]. 
+
+4. Discussion 
+
+This work presents two contributions, a methodolog-ical framework and an applied finding, with the aim of demonstrating the value of principled statistical meth-ods in computational auditory modelling [ 7, 3]. Both rest on a Python re-implementation of the Barumerli et al.[ 14 ] model, whose close agreement with the original MATLAB version across all localisation metrics and lis-teners (Fig. 4) ensures that the differences reported reflect genuine perceptual model behaviour rather than imple-mentation artefacts. The discussion examines each con-tribution in turn before illustrating how they converge. A central requirement for any likelihood-based fitting procedure is that the free parameters can be reliably re-covered from generated data [ 9]. Non-identifiability man-ifests in two distinct ways: a single parameter is poorly constrained by the data (low correlation between ground-truth and recovered values); multiple parameters trade off against each other, such that a change in one is compen-sated by another (high correlation between recovered pa-rameters), yielding identical behavioural predictions de-spite different parameter combinations. Once detected, these limits can be managed by fixing non-identifiable parameters to independent literature values, or by incor-porating additional behavioural data that selectively iso-lates their contributions. In the lateral dimension, σitd ,
+
+σild , and κm are jointly non-identifiable from directional responses alone. Fixing σitd and σild to literature values resolved this, yielding strong recovery of κm (r = 0 .97). In the vertical dimension, σmon and σprior did not exhibit spurious correlation in the recovery analysis (Sec . 3.3 ), excluding potential trade-offs. However, their moderate recovery ( r = 0 .85 and 0 .84) reflects a fundamental model property: both parameters govern the vertical response distribution and become behaviourally indistinguishable when vertical localisation performance is poor (see sup-plementary material S3 for a visualisation), as observed in listeners without prior familiarisation with the exper-imental procedure [ 33 ]. In such cases, the likelihood sur-face becomes flat with respect to these parameters, and the optimiser tends to overestimate both. Practitioners should therefore anticipate reduced reliability when fit-ting to listeners with degraded vertical localisation per-formance. Model comparison via information criteria is a stan-dard tool for adjudicating between competing hypothe-ses, yet it identifies the best-fitting model within the comparison set without guaranteeing absolute model ad-equacy, requiring multiple sources of evidence to eval-uate where and why a model fails [ 9]. This limitation manifested concretely in our data: for 10 of 33 partici-pants, barumerli2023 achieved the best BIC (i.e. low-est value) despite its known template artefacts, because the optimiser exploited a narrower prior width (mean 
+
+σprior = 55 .0◦ vs. 69 .0–78 .1◦ for full-sphere methods) to compensate for degraded sensory evidence rather than ex-posing it as a model failure. Evaluating template quality solely on BIC would therefore have been insufficient, and the conclusion required converging evidence from param-eter recovery, posterior predictive checks, and acoustic reconstruction quality. The original model formulation relied on a truncated template that discarded directions below the lowest mea-sured HRTF elevation, avoiding the spurious spectral dis-tortions that arise when spherical harmonic interpolation is evaluated at directions far outside the measured region. Such an assumption was never formally tested against al-ternatives [ 14 ]. Applying the likelihood-based fitting to this interpolation scheme revealed systematic distortion in the bottom hemisphere attributable to the absence of acoustic measurement coverage in that area, a limi-tation invisible to the previous metric-matching proce-dure because the missing elevation range contributed lit-tle to aggregated scalar summaries. The likelihood func-tion, by contrast, evaluates each individual trial, expos-ing regions where the posterior distribution becomes ill-defined [ 48 ]. This finding motivated the full-sphere in-terpolation comparison, which showed that spatial cov-erage and preservation of high-frequency spectral con-tent are the primary determinants of template quality. Among full-sphere methods, SH interpolation at order 11 underperformed because the condition-number constraint acts as a spatial low-pass filter [ 49 ], attenuating spectral detail relevant to polar localisation, whereas the SHMAX 
+
+approach avoided this by selecting the maximum order consistent with numerical stability for each grid sepa-rately. We therefore recommend treating the condition number and SH order as grid-specific diagnostics rather than applying a fixed order across datasets, as already noted by [ 44 ]. Once full-sphere coverage and adequate spectral bandwidth are ensured, the specific interpolation algorithm yields no additional benefit for grids as dense as the SONICOM measurement set. Beyond evaluating interpolation methods, the pos-terior predictive checks (Sec. 3.4.1 ) revealed where the 
+
+> 11 Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model
+
+model succeeds and where it reaches its structural lim-its. The high fidelity of lateral error predictions across all methods was consistent with the dominance of interaural cues, a well-constrained dimension largely independent of template quality. The moderate agreement for polar errors and quadrant error rates reflected the identifiabil-ity limits of σmon and σprior discussed above. Two be-havioural patterns fell outside the model’s scope: the sys-tematic lateral accuracy bias, which the model cannot re-produce since response noise is zero-mean by construction and likely reflects pointing apparatus calibration or motor asymmetries [ 16 ]; and individual polar accuracy variabil-ity, suggesting that polar biases arise from factors such as asymmetric prior beliefs or idiosyncratic head posture not represented in the current formulation. This evidence delineates phenomena that future extensions could tar-get. Several additional limitations should be noted. First, the assumption of isotropic motor noise models response variance but not bias. Direction-dependent pointing bi-ases are well documented for egocentric pointing meth-ods comparable to the controller-based paradigm used here [ 32 , 50 ], and the small lateral bias observed in our data (Sec. 3.4.1 ) is consistent with these effects. However, parametrising a direction-dependent motor model would require a dedicated protocol isolating motor from per-ceptual error, which we leave for future work. Second, the prior width σprior showed limited identifiability and absorbed differences in template quality across interpola-tion methods, indicating that it did not purely reflect a stable listener trait; separating prior from likelihood con-tributions would require experimental designs with ma-nipulated prior expectations or adaptive stimulus place-ment, which are beyond the current scope [ 47 ]. Third, the behavioural data were collated across three experiments with variable trial counts per participant (99–297 trials), potentially introducing heterogeneous measurement pre-cision; while the minimum of 99 trials proved sufficient for parameter recovery, listeners with fewer repetitions carry larger estimation uncertainty. Finally, the large in-dividual variability observed across all parameters and fit statistics underscores that sound localisation is shaped by idiosyncratic combinations of sensory precision, learned expectations, and sensorimotor factors [ 5, 29 , 51 ], and no single model formulation can be expected to capture all sources of variability. While the newly proposed spatial cue interpolation improved the model fit, two aspects warrant further at-tention in future work. First, we did not formally evaluate the quality of the extrapolated spatial cues below ǫmin . It has been shown that broadband onset times can be rep-resented by very low SH orders [ 52 , Fig. 4], suggesting that this is also true for broadband ITDs xitd and ILDs 
+
+xild . It is reasonable to assume that interpolating spectral cues xmon requires higher SH orders and that resulting interpolation errors might bias model predictions. Almost identically computed spectral cues were previously used to derive magnitude correction filters that improved the perceived source position and colouration in HRTFs in-terpolated with SH orders between 1 and 3 [ 53 ]. This indicates that spectral cues might be interpolatable with relatively low SH orders. Second, the interpolation ap-proaches have so far been tested only for the SONICOM sampling grid, and the influence of the latter on inter-polation error and model estimates could be the focus of future investigations on grids used in common HRTF databases. A natural extension of the current analysis is full Bayesian posterior inference over model parameters via Markov chain Monte Carlo (MCMC) sampling rather than likelihood optimisation [ 34 ]. Rather than returning point estimates, this approach yields a full posterior dis-tribution over parameters, enabling probabilistic queries about latent variables and direct assessment of identifi-ability limits through the shape of the posterior. In ad-dition, MCMC enables the possibility of hierarchical ex-tensions for simultaneous inference over individual and group-level parameters [ 54 ], and joint fitting of heteroge-neous data sources combining localisation responses with neurophysiological recordings [ 55 ] to constrain shared la-tent parameters where behavioural data alone are insuf-ficient. However, the primary barrier is computational: the likelihood must be evaluated thousands of times dur-ing sampling, making MCMC currently prohibitive for datasets of this size, though recent advances in amortised inference may reduce this cost by training neural networks to approximate the posterior directly [ 56 ]. The validated likelihood framework naturally extends in both fundamental and applied directions. On the fun-damental side, the likelihood framework opens avenues for implementing model variants on spatial cues specifica-tions (e.g. frequency-dependent spectral weighting [ 11 ]), or dynamic scenarios [ 22 , 3]. On the applied side, the likelihood warrants consideration as a perceptual evalua-tion metric for HRTFs in machine learning pipelines. The present results demonstrate that it successfully differen-tiates interpolation methods by their perceptual impact on localisation behaviour (Sec. 3.5 ), capturing individual differences that standard acoustic measures cannot re-solve. Log-spectral distortion, for instance, treats all spa-tial directions equally and has been shown not to reliably predict perceptual localisation quality [ 57 ] nor coloura-tion [ 58 ]. Because the likelihood integrates over the full response distribution, weighting spatial regions by their actual contribution to directional estimates, it offers a behaviourally grounded alternative that does not require an explicit mapping from acoustic to perceptual features: a general formulation of which remains an open prob-lem [ 59 , 60 ]. 
+
+5. Conclusions 
+
+This work presents two contributions to computa-tional auditory modelling for human sound localisation. On the methodological side, we formulated an explicit likelihood for the Barumerli et al. (2023) [ 14 ] model and validated it through a complete Bayesian workflow [ 3]. The two-stage fitting procedure reliably identifies senso-rimotor variability from as few as 99 trials, while the mod-erate recovery of spectral and prior parameters exposes 
+
+> 12
+
+Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model 
+
+structural identifiability limits. On the applied side, the interpolation comparison showed that full-sphere cover-age and spectral fidelity determine template quality, while the specific algorithm is secondary once these conditions are met. More broadly, the validated likelihood extends in both fundamental and applied directions: as a founda-tion for statistical auditory modelling and as a percep-tually grounded evaluation metric for HRTFs in machine learning pipelines. The open-source Python implementa-tion and reproducible validation workflow are released to facilitate the adoption of these methods across the spatial hearing community. 
+
+Acknowledgments 
+
+We thank Rapolas Daugintis, Katarina C. Poole, and Ludovic Pirard for providing behavioural data that en-abled this analysis. Claude (Anthropic) was used as a writing assistant for language editing and clarity; all content was reviewed and approved by the authors, who bear full responsibility for the final text. 
+
+Funding 
+
+This work was supported by the European Union’s Horizon Europe research and innovation programme un-der the Marie Sklodowska-Curie grant agreement No. 101201118 (project MIA, awarded to R.B.), and the Horizon 2020 research and innovation funding pro-gramme under grant agreement No. 101017743 (project SONICOM). 
+
+Conflicts of interest 
+
+The authors declare no competing financial interests. 
+
+Data availability statement 
+
+The Python implementation of the model will be made publicly available upon publica-tion at github.com/robaru/bayesian listener .Analysis notebooks will be available at 
+
+github.com/robaru/bayesian listener notebooks .Behavioural data from participants are avail-able at the SONICOM data ecosystem . The measured HRTF dataset is available at the 
+
+Imperial College data transfer service .
+
+Author contribution statement 
+
+R.B. conceived and designed the study, developed the initial Python implementation, conducted analyses, and drafted the manuscript. F.B. contributed to interpolation methodology, Python implementation, and manuscript writing. E.Z. and A.H. contributed to porting the model from MATLAB to Python and Python package develop-ment. M.G. and L.P. provided critical manuscript revi-sion. 
+
+References 
+
+1. T. Dau, “Auditory processing models,” in Handbook of signal processing in acoustics , pp. 175–196, Springer, 2008. 2. R. Meddis, ed., Computational models of the auditory system . No. 35 in Springer handbook of auditory re-search, New York ; London: Springer, 2010. OCLC: ocn495596580. 3. R. Barumerli and P. Majdak, “FrAMBI: A Software Framework for Auditory Modeling Based on Bayesian Inference,” Neuroinformatics , vol. 23, p. 20, February 2025. 4. N. Kriegeskorte and P. K. Douglas, “Cognitive com-putational neuroscience,” Nature Neuroscience , vol. 21, pp. 1148–1160, September 2018. 5. S. Carlile, P. Leong, and S. Hyams, “The nature and dis-tribution of errors in sound localization by human listen-ers,” Hearing Research , vol. 114, pp. 179–196, December 1997. 6. M. Dietz, J.-H. Lestang, P. Majdak, R. M. Stern, T. Marquardt, S. D. Ewert, W. M. Hartmann, and D. F. M. Goodman, “A framework for testing and compar-ing binaural models,” Hearing Research , vol. 360, pp. 92– 106, March 2018. 7. M. A. Pitt and I. J. Myung, “When a good fit can be bad,” Trends in Cognitive Sciences , vol. 6, pp. 421–425, October 2002. 8. I. J. Myung, “Tutorial on maximum likelihood esti-mation,” Journal of Mathematical Psychology , vol. 47, pp. 90–100, February 2003. 9. R. C. Wilson and A. G. Collins, “Ten simple rules for the computational modeling of behavioral data,” eLife , vol. 8, p. e49547, November 2019. 10. R. E. Kass and A. E. Raftery, “Bayes Factors,” 
+
+Journal of the American Statistical Association ,vol. 90, pp. 773–795, June 1995. eprint: https://doi.org/10.1080/01621459.1995.10476572. 11. P. Llad´ o, P. Majdak, R. Barumerli, and R. Baumgartner, “Spectral weighting of monaural cues for auditory local-ization in sagittal planes,” Trends in Hearing , 2025. 12. P. Majdak, C. Hollomey, and R. Baumgartner, “AMT 1.x: A toolbox for reproducible research in auditory model-ing,” Acta Acustica , vol. 6, p. 19, 2022. 13. R. Baumgartner, P. Majdak, and B. Laback, “Modeling sound-source localization in sagittal planes for human lis-teners,” The Journal of the Acoustical Society of America ,vol. 136, no. 2, pp. 791–802, 2014. 14. R. Barumerli, P. Majdak, M. Geronazzo, D. Meijer, F. Avanzini, and R. Baumgartner, “A Bayesian model for human directional localization of broadband static sound sources,” Acta Acustica , vol. 7, p. 12, 2023. 15. R. Daugintis, R. Barumerli, L. Picinali, and M. Geronazzo, “Classifying Non-Individual Head-Related Transfer Functions with A Computational Auditory Model: Calibration And Metrics,” in ICASSP 2023 - 2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , (Rhodes Island, Greece), pp. 1–5, IEEE, June 2023. 16. R. Daugintis, M. Geronazzo, K. C. Poole, and L. Picinali, “Perceptual evaluation of an auditory model–based sim-ilarity metric for head-related transfer functions,” The Journal of the Acoustical Society of America , vol. 159, pp. 2822–2843, Mar. 2026. 17. R. Daugintis, R. Barumerli, M. Geronazzo, J. Pauwels, L. Picinali, and K. C. Poole, “Listener Acoustic Personalization Challenge—LAP24: Head-Related Transfer Function Dataset Harmonization,” IEEE Open Journal of Signal Processing , vol. 6, pp. 950–964, 2025. 18. H. Bahu, J.-M. Jot, T. Carpentier, M. Noisternig, M. Mihocic, P. Majdak, and O. Warusfel, “Toward 13 Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model Improved Consistency Between Databases of Head-Related Transfer Functions,” Journal of the Audio Engineering Society , vol. 74, pp. 35–49, February 2026. 19. A. O. T. Hogg, M. Jenkins, H. Liu, I. Squires, S. J. Cooper, and L. Picinali, “HRTF Upsampling With a Generative Adversarial Network Using a Gnomonic Equiangular Projection,” IEEE/ACM Transactions on Audio, Speech, and Language Processing , vol. 32, pp. 2085–2099, 2024. 20. A. O. T. Hogg, R. Barumerli, R. Daugintis, K. C. Poole, F. Brinkmann, L. Picinali, and M. Geronazzo, “Listener Acoustic Personalization Challenge - LAP24: Head-Related Transfer Function Upsampling,” IEEE Open Journal of Signal Processing , vol. 6, pp. 926–941, 2025. 21. J. Meyer, S. Prepelit ¸˘ a, and L. Picinali, “On the accu-racy of finite-difference time-domain simulations of head-related transfer functions as a function of model complex-ity,” Applied Acoustics , vol. 228, p. 110353, January 2025. 22. P. Llad´ o, R. Barumerli, R. Baumgartner, and P. Majdak, “Predicting the effect of headphones on the time to lo-calize a target in an auditory-guided visual search task,” 
+
+Frontiers in Virtual Reality , vol. 5, June 2024. 23. W. J. Ma, K. P. Kording, and D. Goldreich, Bayesian Models of Perception and Action: An Introduction . MIT press, 2023. 24. J. Reijniers, D. Vanderelst, C. Jin, S. Carlile, and H. Peremans, “An ideal-observer model of human sound localization,” Biological Cybernetics , vol. 108, pp. 169– 181, April 2014. 25. J. E. Mossop and J. F. Culling, “Lateralization of large interaural delays,” The Journal of the Acoustical Society of America , vol. 104, pp. 1574–1579, Sept. 1998. 26. A. Andreopoulou and B. F. G. Katz, “Identification of perceptually relevant methods of inter-aural time differ-ence estimation,” The Journal of the Acoustical Society of America , vol. 142, pp. 588–598, Aug. 2017. 27. J. C. Middlebrooks, “Sound localization,” in Handbook of Clinical Neurology , vol. 129, pp. 99–116, Elsevier, 2015. 28. M. Morimoto and H. Aokata, “Localization cues of sound sources in the upper hemisphere,” Journal of the Acoustical Society of Japan (E) , vol. 5, no. 3, pp. 165– 173, 1984. 29. J. C. Middlebrooks, “Virtual localization improved by scaling nonindividualized external-ear transfer functions in frequency,” The Journal of the Acoustical Society of America , vol. 106, pp. 1493–1510, August 1999. 30. R. Ege, A. J. V. Opstal, and M. M. Van Wanrooij, “Accuracy-Precision Trade-off in Human Sound Localisation,” Scientific Reports , vol. 8, p. 16399, Dec. 2018. 31. K. V. Mardia and P. E. Jupp, Directional statistics . John Wiley & Sons, 2009. 32. H. Bahu, T. Carpentier, M. Noisternig, and O. Warusfel, “Comparison of Different Egocentric Pointing Methods for 3D Sound Localization Experiments,” Acta Acustica united with Acustica , vol. 102, pp. 107–118, Jan. 2016. 33. P. Majdak, M. J. Goupell, and B. Laback, “3-D local-ization of virtual sound sources: Effects of visual en-vironment, pointing method, and training,” Attention, Perception, & Psychophysics , vol. 72, pp. 454–469, February 2010. 34. C. M. Bishop, Pattern recognition and machine learning ,vol. 4. Springer, 2006. 35. W. A. Yost and R. H. Dye, “Discrimination of interau-ral differences of level as a function of frequency,” The Journal of the Acoustical Society of America , vol. 83, pp. 1846–1851, May 1988. 36. L. Acerbi and W. J. Ma, “Practical Bayesian Optimization for Model Fitting with Bayesian Adaptive Direct Search,” in Advances in Neural Information Processing Systems , vol. 30, Curran Associates, Inc., 2017. 37. S. I. Vrieze, “Model selection and psychological the-ory: A discussion of the differences between the Akaike Information Criterion (AIC) and the Bayesian Information Criterion (BIC),” Psychological Methods ,vol. 17, pp. 228–243, June 2012. 38. I. Engel, R. Daugintis, T. Vicente, A. O. T. Hogg, J. Pauwels, A. J. Tournier, and L. Picinali, “The SONICOM HRTF Dataset,” Journal of the Audio Engineering Society , vol. 71, pp. 241–253, May 2023. 39. M. Gr¨ af, Efficient Algorithms for the Computation of Optimal Quadrature Points on Riemannian Manifolds .Doctoral Thesis, Technische Universit¨ at Chemnitz, Germany, Feb. 2013. 40. M. Gr¨ af, “Quadrature Rules on Manifolds.” 
+
+https://www-user.tu-chemnitz.de/ ∼potts/workgroup/graef/quadrat 
+
+Feb. 2026. (accessed 2026-02-10). 41. B. Rafaely, Fundamentals of Spherical Array Processing .Berlin, Heidelberg, Germany: Springer, 2 ed., 2019. 42. F. Zotter and M. Frank, Ambisonics. A Practical 3D Audio Theory for Recording, Studio Production, Sound Reinforcement, and Virtual Reality , vol. 19 of Springer Topics in Signal Processing . Cham, Switzerland: Springer Open, 2019. 43. J. Ahrens, M. R. P. Thomas, and I. J. Tashev, “HRTF magnitude modeling using a non-regularized least-squares fit of spherical harmonics coefficients on incomplete data,” in APSIPA Annual Summit and Conference , (Hollywood, USA), Dec. 2012. 44. D. Bau, J. M. Arend, and C. P¨ orschmann, “Estimation of the Optimal Spherical Harmonics Order for the Interpolation of Head-Related Transfer Functions Sampled on Sparse Irregular Grids,” Frontiers in Signal Processing , vol. 2, p. 884541, September 2022. 45. H. Gamper, “Head-related transfer function interpolation in azimuth, elevation, and distance,” J. Acoust. Soc. Am. ,vol. 134, pp. EL547–EL554, Dec. 2013. 46. Z. Ben-Hur, D. Alon, O. Berebi, R. Mehra, and Rafaely, “Binaural Reproduction Based on Bilateral Ambisonics,” in Advances in Fundamental and Applied Research on Spatial Audio , IntechOpen, October 2021. 47. R. Ege, A. J. Van Opstal, and M. M. Van Wanrooij, “Perceived Target Range Shapes Human Sound-Localization Behavior,” eneuro , vol. 6, pp. ENEURO.0111–18.2019, March 2019. 48. D. Peel, W. J. Whiten, and G. J. McLachlan, “Fitting Mixtures of Kent Distributions to Aid in Joint Set Identification,” Journal of the American Statistical Association , vol. 96, pp. 56–63, March 2001. 49. Z. Ben-Hur, F. Brinkmann, J. Sheaffer, S. Weinzierl, and B. Rafaely, “Spectral equalization in binaural signals rep-resented by order-truncated spherical harmonics,” The Journal of the Acoustical Society of America , vol. 141, pp. 4087–4096, June 2017. 50. E. O. Boyer, B. M. Babayan, F. Bevilacqua, M. Noisternig, O. Warusfel, A. Roby-Brami, S. Hanneton, and I. Viaud-Delmon, “From ear to hand: the role of the auditory-motor loop in pointing to an auditory source,” 
+
+Frontiers in Computational Neuroscience , vol. 7, Apr. 2013. 14 Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model 51. P. Majdak, R. Baumgartner, and B. Laback, “Acoustic and non-acoustic factors in modeling listener-specific per-formance of sagittal-plane sound localization,” Frontiers in Psychology , vol. 5, April 2014. 52. F. Brinkmann and S. Weinzierl, “Comparison of head-related transfer functions pre-processing techniques for spherical harmonics decomposition,” in AES Int. Conf. on Audio for Virtual and Augmented Reality (AVAR) ,(Redmond, USA), Aug. 2018. 53. J. M. Arend, C. P¨ orschmann, S. Weinzierl, and F. Brinkmann, “Magnitude-Corrected and Time-Aligned Interpolation of Head-Related Transfer Functions,” 
+
+IEEE/ACM Transactions on Audio, Speech, and Language Processing , vol. 31, pp. 3783–3799, Nov. 2023. 54. B. M. Turner, B. U. Forstmann, E.-J. Wagenmakers, S. D. Brown, P. B. Sederberg, and M. Steyvers, “A Bayesian framework for simultaneously modeling neural and be-havioral data,” NeuroImage , vol. 72, pp. 193–206, May 2013. 55. T. Greif, R. Barumerli, K. Ignatiadis, B. T´ oth, and R. Baumgartner, “The role of spatial perception in au-ditory looming bias: neurobehavioral evidence from im-possible ears,” Frontiers in Neuroscience , vol. 19, August 2025. 56. K. Cranmer, J. Brehmer, and G. Louppe, “The frontier of simulation-based inference,” Proceedings of the National Academy of Sciences , vol. 117, pp. 30055–30062, Dec. 2020. 57. D. Yao, J. Zhao, Y. Liang, Y. Wang, J. Gu, M. Jia, H. Lee, and J. Li, “Perceptually enhanced spectral distance metric for head-related transfer function quality prediction,” The Journal of the Acoustical Society of America , vol. 156, pp. 4133–4152, December 2024. 58. T. McKenzie and F. Brinkmann, “Toward an Improved Auditory Model for Predicting Binaural Coloration,” 
+
+Journal of the Audio Engineering Society , vol. 73, pp. 115– 126, April 2025. 59. D. Fantini, M. Geronazzo, F. Avanzini, and S. Ntalampiras, “A Survey on Machine Learning Techniques for Head-Related Transfer Function Individualization,” IEEE Open Journal of Signal Processing , vol. 6, pp. 30–56, 2025. Conference Name: IEEE Open Journal of Signal Processing. 60. M. Geronazzo, “Strong and weak head-related trans-fer functions: The eHRTF analytical framework,” JASA Express Letters , vol. 5, p. 087202, Aug. 2025. 
+
+Supplementary material S1. Template interpolation distortion 
+
+The three panels illustrate the spectral distortion in-troduced by different template construction approaches for the G.R.A.S. KEMAR dummy head from the SONICOM database [ 38 ]. The unprocessed HRTF tem-plates show the expected frequency-dependent amplitude structure across elevation, with clear spectral cues in the 4–16 kHz range known to support elevation perception. The barumerli2023 method returns spectral amplitudes only at measured HRTF directions, preserving this struc-ture above the horizon but leaving elevations below −45 ◦
+
+unrepresented, as these are absent from the measurement grid (green line). Extending the method to a full spherical grid ( barumerli2023 - Full grid ) recovers coverage at all elevations but introduces severe spectral distortions below the measurement boundary, where extrapolation becomes unreliable. 
+
+Figure S1. Template spectral amplitudes as a function of elevation and frequency for the G.R.A.S. KEMAR dummy head for the median plane. Top: unprocessed HRTF spectral amplitude profiles. Middle: templates re-constructed using the barumerli2023 method on a quasi-uniform spherical grid, limited to elevations above the minimum available in the HRTF measurement grid as im-plemented in the original model (green line) [ 14 ]. Bottom: the same method extended to a full spherical grid, reveal-ing severe amplitude distortions below the measurement boundary. 
+
+15 Barumerli et al.: Likelihood-based validation of a Bayesian sound localisation model 
+
+S2. Likelihood stability 
+
+The number of Monte Carlo samples required for sta-ble likelihood approximation was determined by com-puting the per-trial negative log-likelihood (NLL) stan-dard deviation across the 28 ground-truth parameter con-figurations (Section 4) as a function of sample count. Figure S2 shows that variability decreases rapidly up to 200 samples, with diminishing returns beyond this point, which was therefore selected for all subsequent analyses. 
+
+# 1        
+
+# 
+
+# 
+
+#      
+
+     
+
+  1   
+
+     
+
+Figure S2. Per-trial negative log-likelihood (NLL) stan-dard deviation as a function of Monte Carlo samples, av-eraged over 28 parameter configurations (mean ± stan-dard deviation). The dashed vertical line marks the se-lected value of 200 samples. 
+
+S3. Parameter recovery 
+
+We defined 28 parameter combinations spanning the expected range of listener variability ( σmon : 2–15, log-spaced; σprior : 5 ◦–90 ◦, log-spaced; σm: 5 ◦–16 ◦, linearly spaced), with pairwise correlations between ground-truth parameters kept below |r| < 0.1 to ensure that recov-ery performance could be assessed independently for each parameter. For each combination, we simulated locali-sation responses using a KEMAR HRTF set processed with SHMAX interpolation, presenting 33 target direc-tions with 3 repetitions each (99 trials), matching the minimum trial count in the experimental data. Figure S3 shows ground-truth against recovered pa-rameter values for each of the three free parameters. 
+
+Figure S3. Parameter recovery results for the free model parameters. Each panel compares ground-truth (x-axis) and recovered (y-axis) values across the 28 synthetic parameter configurations. The dashed grey line indi-cates perfect recovery (identity); the solid red line is the Pearson regression fit. Recovery quality is quantified by Pearson r and mean bias (recovered minus ground-truth), reported in the main text.

@@ -1,0 +1,203 @@
+Title: LV-Calib: LiDAR-Camera Extrinsic Calibration with Boundary-Response Modeling
+
+URL Source: https://arxiv.org/pdf/2606.15010v1
+
+Published Time: Tue, 16 Jun 2026 00:24:26 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# LV-Calib: LiDAR-Camera Extrinsic Calibration with Boundary-Response Modeling 
+
+Sheng Hong 
+
+Abstract— In this work, we present LV-Calib, a calibration framework for LiDAR-camera extrinsic estimation and Li-DAR boundary-response calibration using a printable planar target. The target serves as a shared observation carrier: visual fiducials provide indexed image measurements, while circular reflectivity boundaries provide LiDAR-observable structural feature points. Instead of directly fitting boundary points as ideal geo-metric contours, LV-Calib automatically crops background points, estimates the target plane, and iteratively refines accurate LiDAR-side 3-D feature points from intensity and geometric constraints. The refinement explicitly handles the broadened and distorted transition band induced by finite beam footprint and mixed-intensity returns, which is com-monly observed around black-white reflectivity discontinu-ities. Given these refined LiDAR features, we formulate a weighted reprojection-consistent extrinsic optimization with LiDAR feature alignment. Image observations are kept in the reprojection domain to account for pixel-level measurement uncertainty, while LiDAR feature alignment is weighted by refinement confidence. This avoids over-confident 3-D alignment and reduces the propagation of image-resolution noise into the extrinsic estimate. Finally, using the estimated extrinsic and the extracted beam-footprint-induced transition band, LV-Calib calibrates the LiDAR boundary response by estimating pitch-yaw-range residual statistics of boundary-overlap samples, yielding a practical uncertainty model for LiDAR returns near reflectivity discontinuities. Experiments on printed-board calibration data demon-strate sub-pixel reprojection accuracy, millimeter-level Li-DAR feature consistency, and improved odometry per-formance. The calibrated extrinsic and boundary-response statistics can further support uncertainty-aware LiDAR-visual SLAM and mapping. Code and calibration data are available at https://github.com/sheng00125/LV-Calib. 
+
+I. Introduction Recent years have witnessed a rapid growth of multi-sensor fusion in robotic perception, localization, map-ping, and 3D reconstruction. LiDAR provides metric geometric measurements and remains reliable under illu-mination changes, while cameras provide dense visual ap-pearance, texture, and semantic cues. IMUs further com-plement both sensors with high-rate motion constraints. Owing to these complementary properties, LiDAR-inertial and LiDAR-visual-inertial systems have become increasingly popular for robust state estimation and mapping, ranging from LiDAR-inertial odometry [1]–[3] to tightly coupled LiDAR-visual-inertial pipelines such as LIC-Fusion, R2LIVE, LVI-SAM, R3LIVE, FAST-LIVO, FAST-LIVO2, and R 3LIVE++ [4]–[10]. Recent          
+
+> Sheng Hong is with the Pen-Tung Sah Institute of Micro-Nano Science and Technology, Xiamen University, Xiamen 361102, China. E-mail: shenghong@xmu.edu.cn.
+
+(a).Calibration Board (b)LiDAR Spot Distribution (a)LiDAR Observation 
+
+Extrinsic Calibration 
+
+(c)Visual Observation Beam-Response Modeling 
+
+Fig. 1: LV-Calib: joint LiDAR-camera extrinsic and boundary-response calibration with a printable target. systems further combine LiDAR-camera-inertial fusion with radiance-field or Gaussian-based mapping, enabling accurate colored point clouds, dense scene reconstruc-tion, and real-time photorealistic map rendering [11], [12]. However, the effectiveness of these systems relies criti-cally on accurate geometric relationships among sensors. In particular, the LiDAR-camera extrinsic calibration determines how 3D LiDAR measurements are projected into images and how visual observations are associated with metric geometry. Even small extrinsic errors may lead to biased colorization, inconsistent cross-modal residuals, degraded data association, and accumulated map distortion in tightly coupled odometry and recon-struction pipelines. This issue becomes more pronounced in practical self-assembled platforms, where LiDARs and cameras are frequently re-mounted, replaced, or roughly aligned from CAD models. Therefore, repeatable and easy-to-deploy LiDAR-camera extrinsic calibration re-mains an essential engineering and algorithmic problem. Existing LiDAR-camera calibration methods are com-monly divided into target-based and targetless cate-gories. Targetless methods are attractive because they avoid dedicated calibration targets, but they usually rely on sufficient scene structure, texture, or semantics, and their robustness can drop in low-texture, repetitive, or weakly informative environments. Target-based meth-ods are often more repeatable and easier to validate, but many recent high-accuracy methods for solid-state 
+
+> arXiv:2606.15010v1 [cs.RO] 12 Jun 2026
+
+LiDARs depend on custom-made 3D objects, hollow structures, or CNC machining. In practice, this shifts part of the calibration burden from algorithm design to target fabrication and deployment. A second issue is usually overlooked. When a LiDAR beam scans across a high-contrast black-white boundary, the returned points do not form an ideal infinitely sharp contour. Instead, the finite illuminated footprint, mixed returns near the boundary, detector integra-tion, and view-dependent sampling geometry create a finite transition band. In practice, this may appear as boundary bleeding, streaking, or unstable edge points. Most calibration pipelines either suppress such points by robust fitting or absorb them into an empirical threshold. However, for high-precision LiDAR SLAM and map building, these effects matter: they perturb boundary localization during calibration, and they also reveal device-specific uncertainty that should not be ignored when boundary points are reused downstream. These two issues motivate the central question of this paper: can a single, fully printable target support both robust LiDAR-camera extrinsic calibration and a prac-tical calibration of LiDAR boundary-response behavior? We answer this question positively. We design a standard AprilGrid board with circular black nodes inserted in the inter-tag gaps. The AprilTags provide robust camera-side localization and indexing, while the circular black-white boundaries create structured reflectivity transi-tions that are useful to the LiDAR. The board is planar, printable, and easy to reproduce, without requiring perforation, hollow machining, or special 3D fabrication. Based on this shared observation target, we propose LV-Calib. The AprilTag observations are used to guide the target localization and suppress background points in the LiDAR scan, rather than being treated as direct LiDAR-side geometric measurements. After the target plane is estimated, the LiDAR front-end iteratively re-fines the 3-D structural feature points from intensity and geometric constraints, explicitly considering the broad-ened transition band induced by finite beam footprint and mixed-intensity returns. For extrinsic estimation, we formulate a weighted reprojection-consistent extrin-sic optimization with LiDAR feature alignment, where image observations remain in the reprojection domain and LiDAR feature residuals are weighted by refinement confidence. Finally, using the calibrated extrinsic and the extracted transition band, LV-Calib calibrates the LiDAR boundary response by estimating pitch-yaw-range residual statistics of boundary-overlap samples. The main contributions are summarized as follows:  
+
+> •
+
+An automatic LiDAR-side structural feature ex-traction front-end is proposed for printable pla-nar targets. Using AprilTag-guided target local-ization, the method suppresses background points and iteratively refines accurate 3-D feature points from black-white reflectivity transitions under aCAD-constrained boundary model. The refinement explicitly handles the broadened transition band caused by finite beam footprint and mixed-intensity returns.  
+
+> •
+
+A weighted reprojection-consistent LiDAR-camera extrinsic optimization is formulated with LiDAR feature alignment. The optimization accounts for pixel-level visual measurement uncertainty in the reprojection domain and weights LiDAR feature residuals according to refinement confidence, reduc-ing over-confident 3-D alignment in the extrinsic estimate.  
+
+> •
+
+A LiDAR boundary-response calibration procedure is introduced by using the calibrated extrinsic and boundary-overlap samples to estimate pitch-yaw-range residual statistics, providing a practical un-certainty model for LiDAR returns near reflectivity discontinuities.  
+
+> •
+
+Extensive experiments on printed-board calibration data demonstrate sub-pixel reprojection accuracy and millimeter-level LiDAR feature consistency. The code and calibration dataset will be released to support reproducible evaluation. II. Related Work A. Target-based LiDAR-camera calibration Target-based calibration remains a reliable choice when high robustness and accuracy are required. Clas-sical methods usually use checkerboards, polygonal pla-nar boards, or point-line-plane correspondences to es-timate the rigid transformation between LiDAR and camera [13]–[15]. These methods can achieve good per-formance when the target is clearly observed by both modalities. However, their accuracy strongly depends on the target design and on whether reliable LiDAR-side correspondences can be extracted from sparse, anisotropic, and noisy LiDAR scans. Recent target-based methods have further improved the calibration efficiency for modern LiDAR sensors. For example, FAST-Calib extracts geometric features from a designed target and efficiently estimates the extrinsic parameters [16]. However, many target-based pipelines still treat the extracted LiDAR features as ideal geometric measurements. In practice, LiDAR points near reflectivity boundaries are affected by finite beam footprint, mixed-intensity returns, and range-angular measurement uncertainty, which can bias the recovered 3-D correspondences. In addition, pure 3-D registration or SVD-based alignment usually hides image measure-ment uncertainty inside camera-side 3-D points, so pixel-level localization noise and image-resolution effects are not explicitly reflected in the final extrinsic optimization. In contrast, this work focuses on refining LiDAR-side structural feature points from boundary transition re-gions and estimates the final extrinsic through a weighted optimization with reprojection consistency. B. Targetless and scene-based calibration Targetless calibration methods avoid dedicated cal-ibration targets by relying on scene geometry, image edges, semantic cues, or information-theoretic alignment. Representative methods include mutual-information-based calibration [17], unified spatiotemporal calibra-tion across multiple sensors [18], and direct targetless LiDAR-camera registration toolboxes [19]. Pixel-level calibration further estimates the extrinsic by aligning natural edges observed by LiDAR and camera, and studies LiDAR measurement characteristics for more accurate edge extraction [20]. MFCalib extends this line of work by using multiple types of edge features, including depth-continuous edges, depth-discontinuous edges, and intensity-discontinuous edges on planes [21]. These methods are attractive for in-situ deployment, but their robustness is often strongly coupled with the observed environment and the quality of initial-ization. Low-texture scenes, repetitive structures, weak geometric constraints, or poor initial poses may lead to unstable convergence. In contrast, this paper focuses on controlled calibration with a low-cost printable board, where repeatability, LiDAR-side feature quality, and measurement uncertainty modeling are prioritized. C. Visual fiducial targets in practical calibration AprilTag-based boards are widely used because they provide robust indexing under viewpoint changes, scale variation, and partial occlusion [22]. In our framework, the AprilGrid provides reliable camera-side indexing and guides the localization of the target region in the LiDAR scan for background suppression. The final LiDAR-side feature points are not directly obtained from the vision-estimated board pose. Instead, they are iteratively refined from LiDAR intensity and geometric constraints under a shared CAD layout. This design allows visual fiducials to provide an effective search prior, while ensuring that the final LiDAR correspondences are still determined by LiDAR measurements themselves. D. LiDAR boundary response and downstream uncer-tainty LiDAR points near reflectivity discontinuities are of-ten regarded as unstable measurements in calibration and registration. However, these points also contain information about the sensor response near boundaries. In tightly-coupled LiDAR, LiDAR-visual, and LiDAR-visual-inertial systems, extrinsic calibration errors and unreliable boundary measurements can propagate to odometry, mapping, point-cloud colorization, and 3-D reconstruction [4], [6]–[12]. Therefore, when boundary measurements affect calibration accuracy and down-stream map quality, they should not be simply ignored. Our method uses circular reflectivity boundaries not only for extrinsic calibration, but also for LiDAR boundary-response calibration. After the LiDAR-side cir-cular features and the extrinsic are estimated, boundary-overlap samples around the recovered circular transitions are associated with their nearest ideal boundaries. Their residuals are then evaluated in pitch-yaw-range space, yielding a practical uncertainty model for LiDAR re-turns near reflectivity discontinuities. Compared with existing target-based methods, this work emphasizes both LiDAR-side feature refinement and finite-beam-footprint-induced uncertainty modeling. The circular structural feature points are recovered through CAD-constrained iterative boundary refinement, while the broadened transition band is explicitly modeled and calibrated, rather than being ignored and allowed to degrade the extrinsic estimation accuracy. III. Methodology A. System overview and observations Fig. 2 shows the overall pipeline of LV-Calib. The method uses a printable planar target that serves as a shared observation carrier for the camera and LiDAR. The AprilGrid provides indexed image measurements, while the circular black nodes inserted in the inter-tag gaps provide LiDAR-observable black-white reflectivity transitions. The visual observations are mainly used to guide target localization and background suppression in the LiDAR scan, which avoids blind search in 3-D space and improves the efficiency of target-plane extraction. The final LiDAR-side feature points are not directly taken from the vision-estimated board pose; instead, they are refined from LiDAR intensity and geometry. Extrinsic Calibration Boundary-response Modeling Sensory Input Extrinsic and Beaming Calibration 
+
+> Camera
+> LiDAR Points
+> Visual-Feature Extraction AprilTag Detection
+> LiDAR-Feature Extraction Target-Board Extraction Feature Point Refinement Background Crop With Vision-guided LiDAR-Camera Extrinsic Beaming Parameter
+
+Fig. 2: System overview of LV-Calib. Let pBi be the designed circular-node center in the board frame {B}, and let C TL denote the LiDAR-to-camera extrinsic to be estimated. For scene s, the camera observes AprilTag corners zs,m ∈ R2, and the LiDAR front-end extracts circular feature centers pLs,i ∈ R3
+
+together with boundary samples around each circle. The calibration problem is to recover a single C TL that explains all scenes while respecting the metric layout of the printed target. For each scene, AprilTag detections first provide a vision-guided target localization prior. This prior is only used to crop a board-aligned LiDAR region and remove most background points. A target plane is then estimated from the cropped LiDAR points, and the local points are represented in a board-plane coordinate system as 
+
+uj = [ uj , v j ]⊤ with intensity Ij . The initial 2-D node layout is obtained from the known CAD geometry and is then refined by the iterative procedure described below. B. CAD-constrained iterative refinement of LiDAR cir-cular features The key LiDAR-side problem is to recover accu-rate 3-D structural feature points from noisy boundary measurements. Directly fitting the observed boundary points as ideal circular contours is unstable, because LiDAR points around black-white transitions are not located on a sharp physical edge. Due to partial beam hits, mixed returns, and range-angular uncertainty, the observed edge is often broadened, dragged, or locally distorted. Therefore, LV-Calib estimates the circular features iteratively: local boundary transitions provide center corrections, and the shared CAD layout regular-izes all circular nodes jointly. For the i-th circular node with current center ci =[cu, c v ]⊤ and radius ri, local LiDAR samples are first unwrapped into angle–distance coordinates: 
+
+θj = atan2( vj − cv , u j − cu)
+
+dj = ∥uj − ci∥ − ri
+
+(1) where θj is the angular coordinate of the sample around the current circle center, and dj is its signed radial distance to the current circular boundary. This representation preserves the angular location of each sample. A biased circle center does not only produce a constant radial offset; instead, it appears as a low-frequency angular variation of the transition midpoint. This property makes the center correction observable from the boundary response. The circle is divided into angular bins. In each valid bin, the inner and outer intensity levels are estimated by robust medians, and the transition midpoint d⋆k is obtained by interpolating the signed distance where the intensity crosses the mid-level. A first-order perturbation of the circle gives 
+
+d⋆k ≃ ∆cu cos θk + ∆ cv sin θk + ∆ r (2) Stacking all valid bins gives an over-determined linear system for ∆ξi = [∆ cu, ∆cv , ∆r]⊤, which is solved by weighted least squares. The bin weights increase with intensity contrast and sample support, while bins with insufficient support or weak contrast are rejected. The update is step-limited to avoid fitting high-frequency noise in the transition band. The circular features are not optimized independently. After each local update round, the refined 2-D centers 
+
+˜ci are projected back to a single scale-fixed CAD layout: 
+
+min  
+
+> R2∈SO(2) ,t2
+
+∑
+
+> i
+
+αi
+
+∥∥˜ci − (R2qBi + t2)∥∥2 (3) where qBi is the designed board-plane coordinate of the 
+
+i-th node. The scale is fixed by the printed board, and no Sim(2) or Sim(3) rescaling is introduced. The updated CAD layout predicts the next-round center positions, and the angle–distance refinement is repeated until the center correction becomes small. Finally, the refined 2-D centers are lifted back to the LiDAR frame using the estimated target plane. C. Weighted registration with reprojection consistency After LiDAR-side structural features are refined, the remaining problem is to estimate the LiDAR-camera ex-trinsic from visual and LiDAR observations. A common solution is to first recover camera-side 3-D nodes from the PnP board pose and then perform 3-D registration. However, these reconstructed 3-D nodes inherit finite image resolution, tag-corner localization noise, and fixed intrinsic-calibration errors, which are not directly ob-served as isotropic 3-D noise. LV-Calib therefore uses a joint weighted formulation that keeps the visual constraint in the image domain and aligns the LiDAR nodes in the metric board domain. The optimization jointly estimates the global extrinsic C TL
+
+and the per-scene board poses C TB,s :
+
+min   
+
+> CTL,{CTB,s }
+
+∑
+
+> s,m
+
+∥∥zs,m − π(C TB,s PBm)∥∥2
+
+σ2px 
+
++ ∑
+
+> s,i
+
+∥∥(C TB,s )−1C TLpLs,i − pBi
+
+∥∥2
+
+σ2
+
+> s,i
+
+.
+
+(4) The first term constrains AprilTag corners by repro-jection with pixel noise scale σpx , while the second term constrains each refined LiDAR node by its board-frame fitting uncertainty σs,i . Thus pixels and meters are not added directly; both residuals are normalized into dimensionless weighted errors. In our implementation, 
+
+σs,i is derived from the LiDAR circle-refinement error with a minimum noise floor. The separate 3-D-only, reprojection-only, and joint objectives in the experiments further verify the contribution of each term. D. LiDAR boundary-response calibration The refined circular features also provide a natural ref-erence for LiDAR boundary-response calibration. Once the circular nodes and the extrinsic are estimated, the corresponding ideal circular boundaries are known in the LiDAR frame. This makes it possible to compare LiDAR points in the transition band with their nearest ideal boundaries, instead of treating these points only as unstable outliers. For each LiDAR point near a recovered circular bound-ary, we compute its signed distance d to the nearest estimated circle. The intensity transition around the boundary is modeled by 
+
+I(d) = μin (1 − λ(d)) + μout λ(d)
+
+λ(d) = 12
+
+[
+
+1 + erf 
+
+( d − δ
+
+√2σ
+
+)] (5) where μin and μout denote the two intensity levels, and 
+
+λ(d) describes the smooth transition between them. The fitted transition width is used only to select boundary-overlap samples within the mixed-response region. It is not interpreted as a direct estimate of the physical LiDAR beam diameter. For each measured LiDAR point xL, we find the nearest ideal boundary point ˆxL and compare the two points in pitch-yaw-range coordinates: 
+
+∆q = [ϕ(xL) − ϕ(ˆ xL), ψ (xL) − ψ(ˆ xL), r (xL) − r(ˆ xL)]⊤
+
+(6) The empirical mean and covariance of ∆q form a practi-cal uncertainty model for LiDAR returns near reflectivity discontinuities. This model characterizes the angular and range dispersion of boundary points around an ideal reflectivity edge, and converts the transition band into calibrated boundary-response statistics for downstream registration and mapping. IV. Experiments A. Equipment Setup As shown in Fig. 1, our calibration setup consists of a LiDAR, a camera, and the proposed printable target. We evaluate the proposed LiDAR-side feature extraction and refinement front-end on three static calibration scenes, denoted as Scene A–C. In each scene, the same printed target is observed under a different board pose. The camera-side AprilTag detection is used to guide background cropping in the LiDAR scan and to more accurately isolate the board point cloud. Based on the cropped board region, the target plane is estimated and the nine circular reflectivity nodes are initialized from the known CAD layout. The same parameters are used for all scenes. Our experiment focuses on the effectiveness of accu-rate LiDAR-side circular feature extraction, since these features directly determine the 3-D correspondences used in the subsequent extrinsic calibration. To better reveal the behavior of the proposed refinement process, we visualize the intermediate angle–distance responses and the resulting center updates for each scene and each circular node. B. LiDAR Feature Extraction and Refinement Fig. 3 summarizes the full refinement process for all three scenes. The unwrapped angle–distance represen-tation preserves the angular position of each LiDAR sample around a circular node. Therefore, a center bias appears as a structured low-frequency variation in the boundary response rather than being averaged out by a one-dimensional radial profile. This makes the update direction directly observable from the shape of the fitted response. Before refinement, the fitted responses show scene-dependent deviations caused by the initial CAD transfer, samples fitted curves before ! after                          
+
+> -20 020
+> d [mm]  (a)
+> -0.4 -0.2 00.2 00.2 0.4 0.6
+> u [m] v [m]
+> (b)
+> 090 180 270 360 -5 05
+> 3[deg] d [mm]  (c)
+> -20 020
+> d [mm]  (d)
+> -0.6 -0.4 -0.2 00.2 00.2 0.4 0.6
+> u [m] v [m]
+> (e)
+> 090 180 270 360 -5 05
+> 3[deg] d [mm]  (f)
+> -20 020
+> d [mm]
+> (g)
+> -0.4 -0.2 00.2 00.2 0.4 0.6
+> u [m] v [m]
+> (h)
+> 090 180 270 360 -5 05
+> 3[deg] d [mm]  (i)
+> ABC
+
+Fig. 3: Optimization process of the proposed method in three representative scenes. (a)–(c) Scene A, (d)–(f) Scene B, and (g)–(i) Scene C. For each scene, the top-left panel shows the initial angle–distance profile, the bottom-left panel shows the refined profile, and the right panel shows the corresponding circle-center updates on the calibration board. point sparsity, and mixed returns around the reflectiv-ity boundary. After refinement, the responses become more centered around the nominal boundary and the remaining fluctuations are largely symmetric around zero. This indicates that the first-order center error has been removed while avoiding an over-sensitive fit to local noise. The right column of Fig. 3 further shows that the node updates are not solved independently. The final centers are constrained by the same scale-fixed CAD layout, so the nine nodes move coherently as one board-level structure. This is important for calibration: the extracted LiDAR features remain geometrically consistent with the printed target, while still exploiting the local intensity transition around each node. Across the three scenes, the visualization confirms that the proposed front-end can produce stable LiDAR-side 3-D node correspondences from a standard printed board without relying on a special mechanical target. C. Extrinsic calibration accuracy Table I compares several extrinsic estimation ob-jectives on the same three-scene dataset. The com-pared methods cover three types of formulations. 3D-SVD performs closed-form 3-D alignment of cross-modal nodes, as commonly used in target-based calibration pipelines [16]. W-SVD further introduces measurement weighting in the 3-D alignment stage, but still operates purely in the reconstructed 3-D domain. PnP-reproj. mainly optimizes the image reprojection error, which is related to image-plane refinement strategies used in prior calibration methods [20]. In contrast, the proposed weighted reprojection-consistent formulation keeps the visual constraints in the AprilTag-corner reprojection domain while aligning the refined LiDAR nodes in the metric board domain. Therefore, both visual measure-ment uncertainty and LiDAR feature uncertainty are explicitly reflected in the optimization. The AD-ref. rows use the proposed CAD-constrained iterative refinement, whereas the raw rows directly use the initialized LiDAR node centers. Even for closed-form 3-D alignment, AD-refinement improves the result from 2.324 to 2.073 px in projection RMS and from 27.620 to 26.564 mm in LiDAR-node residual, confirming the benefit of accurate LiDAR-side circular feature recovery. More importantly, the proposed formulation achieves substantially better metric consistency than the 3-D alignment baselines. Compared with the AD-refined 3D-SVD baseline, Ours with AD-ref. reduces the LiDAR-node residual from 26.564 mm to 3.580 mm while main-taining a 0.973 px AprilTag-corner reprojection RMS. Compared with W-SVD, the improvement indicates that uncertainty weighting in the 3-D domain alone is insufficient when the camera-side 3-D nodes already contain image measurement noise. Although PnP-reproj. obtains a relatively low image-plane error, its 3-D consistency degrades noticeably, suggesting that a purely image-domain objective can absorb depth uncertainty and overfit the extrinsic es-timate. In contrast, the proposed formulation uses the board layout as a geometric prior and jointly optimizes reprojection consistency and LiDAR metric alignment, making it less sensitive to noisy reconstructed 3-D visual correspondences. Fig. 4 further visualizes the residual distributions in both the image and 3-D domains. Ours with AD-ref. achieves low reprojection error and low 3-D alignment error simultaneously, whereas the competing methods tend to favor only one domain. Therefore, we use Ours with AD-ref. as the final extrinsic estimate. D. Boundary-response calibration results We further use the extracted overlap region together with the recovered CAD circle centers to calibrate the TABLE I: Comparison of camera–LiDAR extrinsic esti-mation objectives.                                 
+
+> Method Centers Visual term RMS px RMS mm
+> 3D-SVD [16] raw node 2.324 27.620 3D-SVD [16] AD-ref. node 2.073 26.564 W-SVD raw node 2.695 26.468 W-SVD AD-ref. node 2.528 25.537 PnP-reproj. [20] raw node 1.346 36.892 Ours raw corner 0.972 4.866 Ours AD-ref. corner 0.973 3.580 3D-SVD raw 3D-SVD AD W-SVD raw W-SVD AD PnP-reproj. W-PnP raw W-PnP AD 0123456
+> Pixel error [px] (a) Distribution of node projection errors
+> 3D-SVD raw 3D-SVD AD W-SVD raw W-SVD AD PnP-reproj. W-PnP raw W-PnP AD
+> Extrinsic estimation method
+> 020 40 60 80
+> 3-D matching error [mm] (b) Distribution of fixed-node 3-D matching errors
+
+Fig. 4: Residual distributions of different extrinsic esti-mation objectives. Ours with AD-ref. achieves low errors in both the image and 3-D domains. LiDAR boundary response. In this stage, the fitted black–white transition in Eq. (5) is only used to localize the mixed-response region near each circular boundary. After the overlap region is identified, each measured LiDAR point is paired with its nearest estimated true boundary point, and the residual is evaluated in the LiDAR pitch–yaw–range coordinates defined in Eq. (6). Fig. 5 first verifies the quality of this calibration process. The top panel aggregates the LiDAR intensity responses from the three scenes. The gray points indicate the boundary ROI, while the selected points around the black–white transition correspond to the overlap region used for boundary-response calibration. Their binned means are well described by the error-function model. The bottom panel provides a board-frame visualization for a representative scene. The boundary ROI, selected overlap region, calibration points, and recovered circular boundaries are shown together in the board plane. It can be seen that the selected calibration points consistently follow the nine circular boundaries, while the recovered true boundaries remain aligned with the designed target layout. This confirms that the calibration is spatially tied to the intended reflectivity discontinuities rather than to arbitrary intensity measurements. Table II reports the calibrated residual statistics over -60 -40 -20 0 20 40 60       
+
+> Signed distance [mm]
+> 050 100 150
+> LiDAR intensity  (a) Boundary response
+> ROI samples selected overlap binned mean boundary model
+> -0.6 -0.4 -0.2 00.2 0.4
+> Board u [m]
+> -0.2 00.2 0.4 0.6 0.8
+> Board v [m]
+> 012345678
+> (b) Board overview, scene A
+> 050 100 150 Intensity
+> ROI overlap beam samples true edge
+
+Fig. 5: LiDAR boundary-response calibration using black–white circular boundaries. Top: LiDAR intensity as a function of signed boundary distance, showing the boundary ROI, the overlap region near the mixed response, and the fitted transition model. Bottom: board-frame visualization of the LiDAR intensity map, bound-ary ROI, selected overlap region, calibration points, and recovered circular boundaries. TABLE II: Pitch–yaw–range residual statistics of the calibrated LiDAR boundary response.                                          
+
+> Scene N[k] ¯∆ϕ¯∆ψ¯∆rσϕσψσr
+> [deg] [deg] [mm] [deg] [deg] [mm] A28.0 0.001 0.002 1.44 0.165 0.165 9.38 B18.9 0.001 0.002 -0.77 0.177 0.178 10.23 C16.0 0.001 -0.001 -0.14 0.100 0.100 7.05 All 63.0 0.001 0.001 0.38 0.155 0.156 9.17
+
+the three scenes. The mean residuals in pitch, yaw, and range are all close to zero, with overall values of only 0.001 deg, 0.001 deg, and 0.38 mm, respectively. This indicates that, after nearest-boundary pairing, the selected overlap points are not systematically displaced to one side of the recovered circular boundaries. The calibrated standard deviations are 0.155 deg, 0.156 deg, and 9.17 mm in pitch, yaw, and range, respectively. Notably, the pitch and yaw dispersions are of simi-lar magnitude, whereas the range residual exhibits a larger spread. This is consistent with the different error characteristics of angular and range measurements in Livox non-repetitive scanning LiDARs. Scene C shows the tightest distribution, with approximately 0.100 deg angular standard deviation and 7.05 mm range standard deviation, whereas Scenes A and B are wider. Fig. 6 further visualizes the overall residual distri--0.4 -0.2 0 0.2 0.4            
+
+> yaw [deg]
+> -0.4 -0.2 00.2 0.4
+> pitch [deg]
+> (a) Angular residual
+> residuals 1ellipse true edge
+> -20 -15 -10 -5 0510 15 20
+> range [mm]
+> 0200
+> Count  (b) Range residual
+
+Fig. 6: Pitch–yaw–range residual distribution of the cali-brated boundary-response points. The angular residuals form a compact footprint around the recovered true boundary, while the range histogram is centered near its empirical peak with the one-standard-deviation interval marked by dashed lines. bution. The angular residuals are concentrated around the recovered true boundary, and the one-standard-deviation ellipse summarizes their lateral spread in the pitch–yaw plane. The range histogram is also compact around its empirical peak, with most selected points lying within the calibrated ±σr interval. Overall, these results statistically characterize the measurement uncertainty of the LiDAR boundary response in pitch–yaw–range space. V. Conclusion We presented LV-Calib, a calibration framework for joint LiDAR-camera extrinsic estimation and LiDAR boundary-response calibration using a printable planar target. The method uses AprilTag-guided target local-ization to suppress background points, iteratively refines LiDAR-side circular features under a CAD-constrained model, and estimates the final extrinsic with a weighted reprojection-consistent formulation. The same recovered boundaries are further used to estimate pitch-yaw-range residual statistics for LiDAR boundary-response cali-bration. Experiments demonstrate sub-pixel reprojection accuracy, millimeter-level LiDAR feature consistency, and improved odometry performance. These results show that LV-Calib provides a practical calibration proce-dure for accurate cross-modal alignment and LiDAR boundary-response modeling. References 
+
+[1] T. Shan, B. Englot, D. Meyers, W. Wang, C. Ratti, and D. Rus, “LIO-SAM: Tightly-coupled lidar inertial odometry via smoothing and mapping,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots and Syst., 2020, pp. 5135–5142. [2] W. Xu and F. Zhang, “FAST-LIO: A fast, robust lidar-inertial odometry package by tightly-coupled iterated Kalman filter,” IEEE Robot. Autom. Lett., vol. 6, no. 2, pp. 3317–3324, 2021. [3] W. Xu, Y. Cai, D. He, J. Lin, and F. Zhang, “FAST-LIO2: Fast direct lidar-inertial odometry,” IEEE Trans. Robot., vol. 38, no. 4, pp. 2053–2073, 2022. [4] X. Zuo, P. Geneva, W. Lee, Y. Liu, and G. Huang, “LIC-Fusion: Lidar-inertial-camera odometry,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots and Syst., 2019, pp. 5848–5854. [5] J. Lin, C. Zheng, W. Xu, and F. Zhang, “R2LIVE: A robust, real-time, lidar-inertial-visual tightly-coupled state estimator and mapping,” IEEE Robot. Autom. Lett., vol. 6, no. 4, pp. 7469–7476, 2021. [6] T. Shan, B. Englot, C. Ratti, and D. Rus, “LVI-SAM: Tightly-coupled lidar-visual-inertial odometry via smoothing and mapping,” in Proc. IEEE Int. Conf. Robot. Autom., 2021, pp. 5692–5698. [7] J. Lin and F. Zhang, “R3LIVE: A robust, real-time, RGB-colored, lidar-inertial-visual tightly-coupled state estimation and mapping package,” in Proc. IEEE Int. Conf. Robot. Autom., 2022, pp. 10672–10678. [8] C. Zheng, Q. Zhu, W. Xu, X. Liu, Q. Guo, and F. Zhang, “FAST-LIVO: Fast and tightly-coupled sparse-direct lidar-inertial-visual odometry,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots and Syst., 2022, pp. 4003–4009. [9] C. Zheng, W. Xu, Z. Zou, T. Hua, C. Yuan, D. He, B. Zhou, Z. Liu, J. Lin, F. Zhu, Y. Ren, R. Wang, F. Meng, and F. Zhang, “FAST-LIVO2: Fast, direct lidar-inertial-visual odometry,” IEEE Trans. Robot., 2025, doi: 10.1109/TRO.2024.3502198. [10] J. Lin and F. Zhang, “R 3LIVE++: A robust, real-time, radiance reconstruction package with a tightly-coupled lidar-inertial-visual state estimator,” IEEE Trans. Pattern Anal. Mach. Intell., 2024, doi: 10.1109/TPAMI.2024.3456473. [11] S. Hong, J. He, X. Zheng, C. Zheng, and S. Shen, “LIV-GaussMap: LiDAR-inertial-visual fusion for real-time 3D radi-ance field map rendering,” IEEE Robot. Autom. Lett., vol. 9, no. 7, pp. 6766–6773, 2024. [12] S. Hong, C. Zheng, Y. Shen, C. Li, F. Zhang, T. Qin, and S. Shen, “GS-LIVO: Real-time LiDAR, inertial, and visual multisensor fused odometry with Gaussian mapping,” IEEE Trans. Robot., vol. 41, pp. 4253–4268, 2025. [13] A. Geiger, F. Moosmann, O. Car, and B. Schuster, “Automatic camera and range sensor calibration using a single shot,” in Proc. IEEE Int. Conf. Robot. Autom., 2012, pp. 3936–3943. [14] Y. Park, S. Yun, C. Won, K. Cho, K. Um, and S. Sim, “Cal-ibration between color camera and 3D LiDAR instruments with a polygonal planar board,” Sensors, vol. 14, no. 3, pp. 5333–5353, 2014. [15] L. Zhou, Z. Li, and M. Kaess, “Automatic extrinsic calibration of a camera and a 3D LiDAR using line and plane correspon-dences,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots and Syst., 2018, pp. 5562–5569. [16] C. Zheng and F. Zhang, “FAST-Calib: LiDAR-camera extrinsic calibration in one second,” arXiv preprint arXiv:2507.17210, 2025. [17] G. Pandey, J. R. McBride, S. Savarese, and R. M. Eustice, “Automatic extrinsic calibration of vision and LiDAR by maximizing mutual information,” Journal of Field Robotics, vol. 32, no. 5, pp. 696–722, 2015. [18] P. Furgale, J. Rehder, and R. Siegwart, “Unified temporal and spatial calibration for multi-sensor systems,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots and Syst., 2013, pp. 1280– 1286. [19] K. Koide, S. Oishi, M. Yokozuka, and A. Banno, “General, single-shot, target-less, and automatic LiDAR-camera extrin-sic calibration toolbox,” in Proc. IEEE Int. Conf. Robot. Autom., 2023, pp. 2156–2162. [20] C. Yuan, X. Liu, X. Hong, and F. Zhang, “Pixel-level extrinsic self calibration of high resolution lidar and camera in targetless environments,” IEEE Robot. Autom. Lett., vol. 6, no. 4, pp. 7517–7524, 2021. [21] T. Ye, W. Xu, C. Zheng, and Y. Cui, “MFCalib: Single-shot and automatic extrinsic calibration for LiDAR and camera in targetless environments based on multi-feature edge,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots and Syst., 2024, pp. 864–871. [22] J. Wang and E. Olson, “AprilTag 2: Efficient and robust fiducial detection,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots and Syst., 2016, pp. 4193–4198. [23] C. Yuan, W. Xu, X. Liu, X. Hong, and F. Zhang, “Efficient and probabilistic adaptive voxel mapping for accurate online lidar odometry,” IEEE Robot. Autom. Lett., vol. 7, no. 3, pp. 8518–8525, 2022.

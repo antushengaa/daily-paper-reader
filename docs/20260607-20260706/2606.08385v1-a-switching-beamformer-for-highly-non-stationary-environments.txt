@@ -1,0 +1,925 @@
+Title: A Switching Beamformer for Highly Non-Stationary Environments
+
+URL Source: https://arxiv.org/pdf/2606.08385v1
+
+Published Time: Tue, 09 Jun 2026 01:10:01 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+> ARXIV, JUNE 2026 1
+
+# A Switching Beamformer for Highly Non-Stationary Environments 
+
+Manan Mittal, Ryan M. Corey, John R. Buck, and Andrew C. Singer 
+
+Abstract —Adaptive beamforming is a cornerstone of array signal processing, yet its performance often collapses in the face of complex, rapidly changing interference. When interferers appear or move unpredictably, conventional estimators encounter a fundamental memory trade-off: short windows enable rapid tracking but suffer from high estimation variance, while long windows provide stable rejection but fail to adapt to shifts. This challenge is resolved by introducing the Universal Switch-ing Beamformer (USB), which integrates competitive sequential prediction into the beamforming architecture. By employing a linear transition diagram, the USB implicitly maintains an exponentially large family of candidate covariance histories and dynamically re-weights them based on their cumulative output power. This mechanism allows the beamformer to automatically vary its effective memory length without explicit change detection or heuristic parameter tuning. A theoretical upper bound is proven on the regret relative to an omniscient oracle that selects the best piecewise-stationary covariance model in hindsight. Extensive simulations and experiments on the SwellEx-96 dataset demonstrate that the USB achieves the agility of short-window estimators and the precision of long-term integration, providing a principled solution for tracking highly non-stationary scenes. 
+
+Index Terms —Adaptive beamforming, array signal processing, non-stationary environments, sequential prediction, covariance matrices. 
+
+I. I NTRODUCTION 
+
+Beamforming constitutes a core methodology in array signal processing and underpins a broad spectrum of modern sensing and communication technologies. The objective is to process the measurements collected by multiple spatially distributed sensors in a manner that enhances a desired signal, while suppressing unwanted interference and noise. Classical formu-lations, and in particular the minimum power distortionless re-sponse (MPDR) beamformer [1], achieve this by constructing a spatial filter that preserves the response in the look direction while minimizing the total output power. Adaptive beamforming’s utility is fundamentally con-strained by the dynamic nature of real-world environments. While the theory of optimal beamforming is mature [2], [3], its practical implementation hinges on the accurate es-timation of the environment’s spatial covariance. In non-stationary environments, where interferers move, appear, or 
+
+Manan Mittal is with Electrical and Computer Engineering, Stony Brook University, Stony Brook, NY 11794, USA (e-mail: manan.mittal@stonybrook.edu). Ryan M. Corey is with Electrical and Computer Engineering, University of Illinois Chicago, Chicago, IL 60607, USA. John R. Buck is with Electrical and Computer Engineering, University of Massachusetts Dartmouth, Dartmouth, MA 02747, USA. Andrew C. Singer is with the College of Applied Science and Engineering, Stony Brook University, Stony Brook, NY 11794, USA. 
+
+vanish abruptly, the covariance structure evolves on multiple timescales. A beamformer must therefore track these changes without sacrificing the statistical stability required for deep interference rejection. Conventional adaptive beamformers attempt to track non-stationarity using sliding-window estimators or exponential forgetting. Both approaches impose an implicit memory length that governs how past observations influence the current co-variance estimate. This choice dictates a rigid performance trade-off: a short window allows the algorithm to adapt quickly to environmental shifts but results in high estimation variance and noise sensitivity. Conversely, a long window provides low-variance estimates and stable nulls but responds slowly to transitions, often persisting in suppressing interferers long after they have moved. Because the ideal timescale of adaptation depends on unknown and variable environmental change rates, selecting a single fixed window length remains a persistent challenge in array signal processing. To address this limitation, researchers have proposed heuris-tic schemes such as dominant subspace selection, adaptive forgetting factors and explicit change-point detection [4]–[7]. While these methods can improve tracking, they typically rely on pre-specified thresholds or assumptions about the magni-tude of environmental shifts. When these assumptions fail, as in unpredictable or adversarial settings, the beamformer either overreacts to benign fluctuations or fails to track significant transitions, leading to performance degradation. It is argued that the problem of choosing an adaptation timescale is better framed through the lens of sequential decision theory, which evaluates performance without statistical assumptions on the data [8], [9]. By comparing an algorithm’s performance to the best beamformer chosen in hindsight, one can design adaptive systems that are robust against arbitrary patterns of interference variation. This competitive framework, which includes universal and competitive prediction schemes, ensures that a learner’s cu-mulative error does not substantially exceed that of an oracle strategy, and develops bounds on the excess regret regardless of how the environment evolves [10]. These sequential deci-sion theory algorithms provide rigorous performance bounds by comparing the learner to the best predictor in a reference class chosen in hindsight [8], [11]. The universal switching beamformer (USB) is presented to achieve this goal. At its core, a linear transition diagram encodes an exponentially large number of possible switching patterns among beamformers. Each path through this diagram represents a particular sequence of beamformer selections, including the possibility of switching at any time step. By  
+
+> arXiv:2606.08385v1 [eess.SP] 7 Jun 2026 ARXIV, JUNE 2026 2
+
+maintaining a distribution over these paths and updating it se-quentially as new data arrive, the algorithm simulates all possi-ble switching schedules simultaneously. It implicitly evaluates the performance of each path, increasing the weight of paths that explain the data well. Through this sequential updating, the switching beamformer nearly matches the performance of the correct switching strategy chosen in hindsight, while the transition diagram’s structure ensures computational efficiency. This formulation links beamforming to universal sequen-tial prediction, the USB acquires performance guarantees typically unavailable in classical beamforming theory [12]. The algorithm satisfies a theoretical upper bound on regret relative to the best sequence of piecewise-constant covariance models selected in hindsight. This bound formally measures robustness against arbitrary patterns of interference variation, ensuring that the beamformer’s cumulative performance tightly tracks an oracle strategy possessing perfect knowledge of all future environmental changes. This analytical framework thus shifts the paradigm of adaptive beamforming: rather than relying on assumed statistical models, data-driven competitive performance is established against an adversarially varying environment. Beyond these theoretical guarantees, the for-mulation eliminates delicate parameter tuning and provides a unified mechanism that adapts seamlessly across stationary and nonstationary regimes. A complete implementation of the algorithm is provided to enable reproducibility and facilitate integration into existing signal processing systems. II. S IGNAL MODEL 
+
+Consider an array comprising Nm sensors and Ns sources. The sensors are assumed to be arbitrarily positioned within the environment, without any geometric constraints such as uniform spacing or planar arrangement. Despite this generality, centralized processing is assumed to be available, allowing all sensor measurements to be shared without restriction for joint beamforming. Let sj denote the real-valued signal generated by the jth 
+
+source. As this signal propagates through the environment, it reaches sensor m after passing through a sensor–source-specific transfer function hm,j . Each sensor measurement also contains additive noise vm, assumed to be spatially uncor-related across sensors. Under these conditions, the observed signal at sensor m and time t is modeled as 
+
+xm[t] = 
+
+> Ns
+
+X
+
+> j=1
+
+(hm,j ∗ sj )[ t] + vm[t], (1) where ∗ denotes convolution. Beamforming is performed by applying a linear filter to each sensor signal and summing the resulting outputs. Let 
+
+wm denote the linear filter associated with sensor m. The beamformer output at time t is therefore 
+
+z[t] = 
+
+> Nm
+
+X
+
+> m=1
+
+(wm ∗ xm)[ t]. (2) For analytical convenience, the filter-and-sum structure is expressed in vector form. Each filter wm is assumed to possess a finite-length impulse response (FIR) of length L. The complete filter vector w ∈ RNmL is constructed by stacking all filter coefficients in sensor-major order: 
+
+w = w1[0] w1[1] . . . wNm [L−1] ⊤
+
+Similarly, the most recent L samples from each sensor are concatenated to form the observation vector x[t] ∈ RNmL:
+
+x[t] = x1[t], . . . , x 1[t−L+1] ,x2[t], . . . , x Nm [t−L+1] 
+
+Under this notation, the beamformer output reduces to the inner product 
+
+z[t] = w[t]T x[t]. (3) The instantaneous second-order statistics of the array snap-shot are captured by the instantaneous correlation matrix 
+
+R[t] = Ex[t]x[t]T  ∈ RNmL×NmL, and all signals are assumed to be real-valued and zero-mean. Here E denotes expectation. In many beamforming applications, partial knowledge of the desired source’s spatial signature is available. A common example is the set of weights that optimizes the white-noise gain, which coincides with the conventional beamformer for the known look direction. This beamformer can be viewed as the solution to the MPDR (Capon) problem under a diagonal-loading approximation, wherein only the diagonal of the co-variance matrix is retained. Such formulations arise naturally in structured fields, for example, environments dominated by plane waves, where the array response can be synthesized directly from directional parameters. In environments lacking clear geometric structure, or in re-verberant settings where analytic steering vectors are unavail-able, it is common to estimate the relative transfer function (RTF) between sensors. The RTF characterizes the relative gains and delays for the desired source and serves as an empirical counterpart to the steering vector, either obtained offline or estimated adaptively. The subsequent development applies equally to both scenar-ios. Whether the steering vector is known a priori or derived from an RTF estimate, the corresponding steering weights are denoted by ν [13]. In the following section an upper bound is provided for the regret of the universal switching beamformer. Notably the produced bound is constructive such that the algorithm to implement the proposed method follows the proof and, by construction, satisfies the bound. III. U NIVERSAL SWITCHING BEAMFORMER 
+
+In this section, a bound is derived on the regret for the USB algorithm. 
+
+A. Deriving an Upper Bound 1) Leveraging probability assignment methods: A per-formance bound is established for the universal switching beamformer (USB) relative to the best piecewise-stationary beamformer selected in hindsight. Consider a sequence of observations ˜xn = {x[1] , . . . , x[n]} partitioned into 
+
+k + 1 stationary segments defined by the transition times ARXIV, JUNE 2026 3
+
+[t0, t 1), [t1, t 2), . . . , [tk, t k+1 ) where segment 1 is [t0, t 1) and segment k + 1 is [tk, t k+1 ). Let Tk,n denote this specific segmentation path. For a sequence of beamforming weight vectors W =
+
+{w1, . . . , wk+1 }, where the weight vector wi is fixed during the i-th segment [ti−1, t i − 1] , the cumulative output power loss for this model (transition path and sequence of weight vectors) is given by 
+
+Ln(˜xn|W, Tk,n ) = 
+
+> k+1
+
+X
+
+> i=1
+
+X
+
+> j∈[ti−1,t i)
+
+ wTi x[j]2 . (4) To facilitate the analysis within a sequential probability assign-ment framework, this loss is mapped to a “pseudo-probability” assigned to the data by the given model. This assignment relates the cumulative output power to an assigned pseudo-probability, or likelihood, defined as 
+
+P (˜xn|W, Tk,n ) ≜ exp 
+
+
+
+− 12κ Ln(˜xn|W, Tk,n )
+
+
+
+, (5) where κ > 0 is a user-defined scaling constant that controls the curvature of the loss function. This formulation allows us to treat the selection of the optimal beamformer weights and switching times as a maximum likelihood estimation problem. For a fixed segmentation path Tk,n , a competing oracle is defined as a sequence of locally optimal, fixed beamformers that maximize the likelihood of the observed data ˜xn within each stationary segment. By mapping the cumulative output power to a probability measure, the performance of this oracle can be expressed as the maximum possible likelihood assigned to the observation sequence. This probability is defined as 
+
+P ∗(˜xn|T k,n ) = sup 
+
+> W
+
+P (˜xn|W, Tk,n ). (6) Substituting the maximum likelihood solution yields 
+
+P ∗(˜xn|T k,n ) = exp 
+
+(
+
+− 12κ
+
+> k+1
+
+X
+
+> i=1
+
+X
+
+> t∈[ti−1,t i)
+
+ (w∗ 
+
+> i
+
+)T x[t]2
+
+)
+
+,
+
+(7) where the optimal weight vector for the i-th segment, obtained by minimizing the squared error subject to the distortionless constraint νT wi = 1 , is the standard Sample Matrix Inversion (SMI) Capon beamformer: 
+
+w∗ 
+
+> i
+
+=
+
+h ˆSti−1
+
+> ti−1,˜xn
+
+i−1
+
+ννT
+
+h ˆSti−1
+
+> ti−1,˜xn
+
+i−1
+
+ν
+
+. (8) Here, ˆSti−1 
+
+> ti−1,˜xn
+
+denotes the sample covariance matrix of the observations within the segment, defined as 
+
+ˆSti−1 
+
+> ti−1,˜xn
+
+=
+
+P 
+
+> j∈[ti−1,t i)
+
+x[j]xT [j](ti − 1) − ti−1
+
+, (9) and ν represents the steering vector in the desired look direction. Finally, the best global probability assignment is identified with k transitions, by maximizing over all possible segmentation paths Tk,n with k transitions: 
+
+P ∗(˜xn|T ∗ 
+
+> k
+
+) = sup 
+
+> Tk,n
+
+P ∗(˜xn|T k,n ) (10) 
+
+= sup 
+
+> W, Tk,n
+
+P ∗(˜xn|W, Tk,n ). (11) This expression corresponds to the probability assigned to the data by the best piecewise-stationary beamformer in the class of models exhibiting k transitions. 
+
+2) The strategy: The objective is to determine a sequential beamforming algorithm capable of achieving a performance comparable to 
+
+P ∗(˜xn|W ∗, T ∗
+
+> k,n
+
+)
+
+without prior knowledge of the number of transitions k or the sequence length n.This paper adopts a double mixture strategy. First, consider the probability assigned to the best beamformers for a fixed segmentation path Tk,n . A Universal Dominant Mode Rejec-tion (UDMR) [11], [14] beamformer is employed for each stationary segment. The cumulative loss for the i-th segment is bounded by 
+
+X
+
+> j∈[ti−1,t i)
+
+ (w∗ 
+
+> i
+
+)T x[j]2 ≤ min 
+
+> d
+
+ X
+
+> j∈[ti−1,t i)
+
+ wTd,i x[j]2
+
+
+
++ 2 Ax Awi ln( D + 1) , (12) where each wd,i corresponds to a beamformer with dominant dimension d, and D is the maximum rank. The probability assignment is defined for a given path as 
+
+˜P (˜xn|T k,n ) = exp 
+
+− 12κ
+
+> k+1
+
+X
+
+> i=1
+
+X
+
+> j∈[ti−1,t i)
+
+ (w∗ 
+
+> i
+
+)T [j]x[j]2
+
+ .
+
+(13) Taking the negative logarithm and applying the bound yields 
+
+−2κ ln ˜P (˜xn|T k,n ) ≤ inf  
+
+> W
+
+Ln(˜xn|W, Tk,n )+ 2 Axk+1 X
+
+> i=1
+
+Awi ln( D + 1) (14) 
+
+≤ inf 
+
+> W
+
+n
+
+Ln(˜xn|W, Tk,n )
+
+o
+
++ 2 Ax Aw ln( D + 1) · (k + 1) , (15) where Ax bounds the squared norm of the input signal x[j],
+
+Awi bounds the squared norm of the beamforming weight vector in segment i, and the global maximum weight bound is defined as Aw = max i(Awi ).Next, the universal probability distribution is defined 
+
+˜Pu(˜xn) as a mixture over all possible paths and segment counts: 
+
+˜Pu(˜xn) = 
+
+> n−1
+
+X
+
+> k=0
+
+X
+
+> Tk,n
+
+P (Tk,n ) ˜P (˜xn|T k,n ), (16) subject to the constraints 
+
+P (Tk,n ) ≥ 0,
+
+> n−1
+
+X
+
+> k=0
+
+X
+
+> Tk,n
+
+P (Tk,n ) = 1 .ARXIV, JUNE 2026 4
+
+By construction, the universal probability satisfies 
+
+ln ˜Pu(˜xn) ≥ ln P (Tk,n ) + ln ˜P (˜xn|T k,n )
+
+for any specific transition path Tk,n . Consequently, the univer-sal loss is bounded by 
+
+− 2κ ln ˜Pu(˜xn) ≤ − 2κ ln P (Tk,n )+ inf 
+
+> W
+
+n
+
+Ln(˜xn|W, Tk,n )
+
+o
+
++ 2 AxAw(k + 1) ln( D + 1) .
+
+(17) 
+
+3) Assigning Path Probabilities: The excess loss is now clearly a function of the probability assignment to the cho-sen path. To minimize this cost, the Krichevsky–Trofimov estimator is employed (KT) estimator [15], which assigns probabilities based on a mixture over Bernoulli parameters using the Beta (0 .5, 0.5) prior: 
+
+PKT (e, b ) ≜
+
+Z 10
+
+1
+
+πpθ(1 − θ) (1 − θ)e θb dθ. (18) The KT estimator admits simple sequential updates, making it computationally efficient [16]: 
+
+PKT (e + 1 , b ) = e + 12
+
+e + b + 1 PKT (e, b ), (19) 
+
+PKT (e, b + 1) = b + 12
+
+e + b + 1 PKT (e, b ). (20) For any segmentation path Tk,n characterized by k transitions (“ones”) and n − k − 1 non-transitions (“zeros”), the path probability is defined as 
+
+P (Tk,n ) ≜
+
+> k−1
+
+Y
+
+> i=0
+
+PKT (ti+1 − ti − 1, 1) 
+
+!
+
+PKT (n − tk, 0) .
+
+(21) This probability assignment satisfies the redundancy bound 
+
+−2AxAw ln P (Tk,n ) ≤ 2AxAw · 3( k + 1) 2 ln nk +O(k). (22) 
+
+4) The regret bound: Combining this with the double mix-ture results derived earlier, an upper bound for the universal probability assignment is obtained: 
+
+− 2AxAw ln ˜Pu(˜xn) ≤ min 
+
+> W
+
+n
+
+Ln(˜xn|W, Tk,n )
+
+o
+
++ 2 AxAw(k + 1) ln( D + 1) + 2 AxAw · 3k + 1 2 ln nk + O(k). (23) Equivalently, the universal regret is bounded in terms of the cumulative loss: 
+
+Ln,u (˜xn) ≤ min 
+
+> W
+
+n
+
+Ln(˜xn|W, Tk,n )
+
+o
+
++ 2 AxAw(k + 1) ln( D + 1) + 2 AxAw · 3k + 1 2 ln nk + O(k). (24)   
+
+> Fig. 1. A graphical depiction of the linear transition diagram for 4time steps. At each time, the state may transition to a new state (upward transition) or remain in the same state (horizontal transition).
+
+B. Constructing a Sequential Algorithm 
+
+To implement the universal beamformer efficiently, a mech-anism to compute the conditional predictive density is required 
+
+˜Pu(x[n] | ˜xn−1) = ˜Pu(˜xn)˜Pu(˜xn−1) (25) in a sequential manner. By definition, the universal probability 
+
+˜Pu(˜xn) is a mixture over an exponentially growing number of segmentation paths Tk,n . Direct evaluation of this sum is computationally intractable. However, the structure of the Krichevsky–Trofimov estimator allows this probability to be calculated recursively by organizing the paths into states based on their most recent transition. 
+
+1) Bayesian Formulation: The set of all possible switching paths is partitioned into n disjoint sets. Let the state variable 
+
+sn denote the time index of the most recent covariance reset (transition) prior to or at time n. That is, for any path Tk,n 
+
+with transition times {t1, . . . , t k}, the state is defined as sn =
+
+tk. Under this definition, all paths that share the same last transition time tk = s are grouped into the same state sn = s.This grouping is sufficient because the optimal beamformer weight w∗ 
+
+> i
+
+for the current segment depends only on the data observed since the last transition. The history prior to tk
+
+influences the path probability weight but not the parameter estimate itself. 
+
+Pn(s, ˜xn) is defined as the total probability mass assigned to all paths ending in state s at time n:
+
+Pn(s, ˜xn) = X  
+
+> T′:sn=s
+
+P (T ′) ˜P (˜xn | T ′). (26) 
+
+2) Double Mixture Approach: The total universal probabil-ity is then the marginal sum over all possible current states: 
+
+˜Pu(˜xn) = 
+
+> n
+
+X
+
+> s=1
+
+Pn(s, ˜xn). (27) This formulation reduces the complexity of the update from exponential in n to linear in n. To compute Pn(s, ˜xn) recur-sively, a linear transition diagram is employed. Figure 1 shows the linear transition diagram for n = 4 . At each time step n,a process currently in state sn−1 has only two possibilities: 1) Maintenance: The process remains in the current state (sn = sn−1), implying no new changes occurred. ARXIV, JUNE 2026 5
+
+The covariance estimate continues to update using the existing history. 2) Transition: The process switches to a new state ( sn =
+
+n), implying a sudden change in the environment. This corresponds to resetting the covariance estimate. This structure allows the posterior probabilities of all candidate effective memory lengths to be propagated simultaneously. The evolution of the state variable sn is governed by the transition probabilities derived from the Krichevsky–Trofimov estimator. At each time step n, a path currently in state sn−1
+
+can either persist in the same state (extending the current co-variance history) or transition to a new state sn = n (resetting the covariance history). The probability of maintaining the current state sn−1 = s is given by 
+
+PT (sn = s | sn−1 = s) = (n − 1) − s + 12
+
+(n − 1) − s + 1 , (28) while the probability of switching to a new state is 
+
+PT (sn = n | sn−1 = s) = 
+
+> 12
+
+(n − 1) − s + 1 . (29) These probabilities reflect the prior belief assigned to the continuation or termination of a stationary segment. Next, the predictive likelihood of the observation x[n] is incorporated. For a path that does not switch, the likelihood is determined by the beamformer w∗ 
+
+> s
+
+trained on the history starting from t = s. The incremental update factor is 
+
+ρ(n, s ) = exp 
+
+
+
+− 12κ
+
+ wTs [n − 1] x[n]2
+
+
+
+, (30) where ws[n − 1] denotes the UDMR beamformer estimated using data from the interval [s, n − 1] .Conversely, if a transition occurs ( sn = n), the history is reset. In the absence of a new covariance estimate, the beamformer reverts to the quiescent steering vector ν. The corresponding update factor is 
+
+ρ0(n) = exp 
+
+
+
+− 12κ
+
+ νT x[n]2
+
+
+
+. (31) Combining the transition priors and the predictive likelihoods allows the state probabilities to be updated the state probabil-ities recursively. For any state s < n (representing a preserved history), the probability mass comes exclusively from the same state at the previous time step: 
+
+Pn(s, ˜xn) = Pn−1(s, ˜xn−1) PT (s | s)
+
+× exp 
+
+
+
+− 12κ
+
+ wTs [n − 1] x[n]2
+
+
+
+. (32) For the new state s = n (representing a reset), the proba-bility mass is the aggregate of all paths that chose to switch at time n, regardless of their previous state. This forms the “birth” node of the transition diagram: 
+
+Pn(n, ˜xn) = exp 
+
+
+
+− 12κ
+
+ νT x[n]2
+
+
+
+×
+
+> n−1
+
+X
+
+> j=1
+
+Pn−1(j, ˜xn−1) PT (sn = n | sn−1 = j).
+
+(33) Consequently, the total universal probability at time n can be expressed by marginalizing over the previous states: 
+
+˜Pu(˜xn) = 
+
+> n−1
+
+X
+
+> sn−1=1
+
+Pn−1(sn−1, ˜xn−1)
+
+×
+
+h
+
+PT (sn = sn−1 | sn−1) Pn(x[n] | ˜xn−1, s n−1)+ PT (sn = n | sn−1) Pn(x[n] | ˜xn−1, s n = n)
+
+i
+
+,
+
+(34) where the state-dependent predictive likelihoods are defined as 
+
+Pn(x[n] | ˜xn−1, s n−1) = exp 
+
+
+
+− 12κ
+
+
+
+wTsn−1 [n − 1] x[n]
+
+2
+
+,Pn(x[n] | ˜xn−1, n ) = exp 
+
+
+
+− 12κ
+
+ νT x[n]2
+
+
+
+.
+
+(35) Hence, the sequential conditional probability is given by the ratio of the total probabilities: 
+
+˜Pu(x[n] | ˜xn−1)= ˜Pu(xn)˜Pu(˜xn−1)=
+
+Pnsn=1 Pn(sn, xn)
+
+Pn−1 
+
+> sn−1=1
+
+Pn−1(sn−1, ˜xn−1)= 1
+
+Zn−1
+
+> n−1
+
+X
+
+> sn−1=1
+
+Pn−1(sn−1, ˜xn−1)
+
+×
+
+
+
+PT (sn = sn−1 | sn−1)
+
+× Pn(x[n] | ˜xn−1, s n−1)+ PT (sn = n | sn−1)
+
+× Pn(x[n] | ˜xn−1, n )
+
+
+
+, (36) where Zn−1 = Pn−1 
+
+> j=1
+
+Pn−1(j, ˜xn−1) serves as the normaliza-tion factor from the previous time step. To facilitate the analysis, the composite transition probabil-ity is defined as a density: 
+
+PT x (x[n] | ˜xn−1, s n−1)
+
+≜ PT (sn = sn−1 | sn−1) Pn(x[n] | ˜xn−1, s n−1)+ PT (sn = n | sn−1) Pn(x[n] | ˜xn−1, n ). (37) Substituting this definition into the recursive update yields a mixture representation for the sequential conditional probabil-ity: 
+
+˜Pu(x[n] | ˜xn−1) = 
+
+> n−1
+
+X
+
+> sn−1=1
+
+μn−1(sn−1) PT x (x[n] | ˜xn−1, s n−1),
+
+(38) where μn−1(sn−1) represents the normalized posterior prob-ability of the state sn−1 given the past data: 
+
+μn−1(sn−1) = Pn−1(sn−1, ˜xn−1)
+
+Pn−1 
+
+> j=1
+
+Pn−1(j, ˜xn−1) . (39) ARXIV, JUNE 2026 6
+
+The objective is to synthesize a single universal beamform-ing vector ˜wu[n] that satisfies the domination condition 
+
+exp 
+
+
+
+− 12κ
+
+  ˜wTu [n]x[n]2
+
+
+
+≥ ˜Pu(x[n] | ˜xn−1). (40) Let the transformation function be defined as ft(z) ≜
+
+exp 
+
+
+
+− z2
+
+> 2κ
+
+
+
+. This function is concave over the domain z2 ≤
+
+κ = AxAw. The conditional probability can be bounded applying Jensen’s inequality: 
+
+˜Pu(x[n] | ˜xn−1)
+
+≤ ft
+
+> n−1
+
+X
+
+> sn−1=1
+
+μn−1(sn−1)
+
+×
+
+h
+
+PT (sn = sn−1 | sn−1) wTsn−1 [n − 1] x[n]+ PT (sn = n | sn−1) νT x[n]
+
+i!
+
+. (41) The argument of ft identifies the explicit form of the universal switching beamformer weight vector: 
+
+˜wu[n] = 
+
+> n−1
+
+X
+
+> sn−1=1
+
+μn−1(sn−1)
+
+×
+
+n
+
+PT (sn = sn−1 | sn−1) wsn−1 [n − 1] + PT (sn = n | sn−1) ν
+
+o
+
+. (42) Finally, the regret RW [n] is defined as the difference in cumulative loss between this universal algorithm and the best piecewise-stationary sequence selected in hindsight: 
+
+RW [n] = inf 
+
+> W1,...,W k+1 ∈W
+> 1≤t1<··· <t k+1 =n+1
+
+( nX
+
+> t=1
+
+  ˜wTu [t]x[t]2
+
+−
+
+> k+1
+
+X
+
+> i=1
+
+X
+
+> t∈[ti−1,t i)
+
+ wTi [t]x[t]2
+
+)
+
+. (43) Substituting the redundancy bounds inherent to the Krichevsky–Trofimov estimator and the universal parameter mixture, an explicit upper bound is obtained on the cumulative regret: 
+
+RW [n] ≤2AxAw(k + 1) ln( D + 1)+ (44) 
+
+AxAw(3 k + 1) ln 
+
+ nk
+
+
+
++ O(k). (45) 
+
+C. Algorithmic Description 
+
+This section presents an implementation of the Universal Switching Beamformer. To maintain computational tractability while adhering to the theoretical derivation, the algorithm utilizes a recursive update structure with a MPDR beamformer. The inverse correlation matrix for each state is updated via the Sherman-Morrison (Woodbury) identity, allowing for an efficient O(N 2
+
+> m
+
+) update per state rather than O(N 3
+
+> m
+
+). Addi-tionally, a practical implementation would employ pruning, where the most likely states are maintained and updated. Table I summarizes the key symbols used in the algorithm.                          
+
+> TABLE I ALGORITHM NOTATION
+> Symbol Description
+> NmNumber of sensors.
+> x[t]Observation vector at time t.
+> νSteering vector (Look direction).
+> ˜zu[t]Universal beamformer output at time t.
+> Pj[t]Inverse correlation matrix (state j).
+> wj[t]Beamforming weight vector (state j).
+> qj[t]Unnormalized weight vector.
+> μj[t]Posterior probability of state j.
+> τj[t]Probability of maintaining state.
+> ηAccumulated mass for new state.
+> κLoss scaling parameter.
+> λDiagonal loading factor.
+> Fig. 2. An image of the bearing time record for the USB and the Omniscient Capon beamformer for the demonstrative example of section IV-A.
+
+IV. S IMULATIONS 
+
+To empirically validate the theoretical bounds established in previous sections and empirically benchmark the universal switching beamformer, the evaluation utilizes a comprehensive suite of numerical simulations. All compared beamformers use adaptive diagonal loading [17]. 
+
+A. Demonstrative Example 
+
+The fundamental behavior of the USB is first demon-strated in a simulated narrowband environment with piecewise-stationary interference. Sliding window algorithms struggle with sudden environmental changes, necessitating an evalu-ation of how the switching beamformer blends over these transitions. The simulation establishes an environment with a target signal arriving from broadside, corresponding to a direction ARXIV, JUNE 2026 7
+
+Algorithm 1: Universal Switching Beamformer 
+
+Inputs: x[1: n] (observations), ν (steering vector), λ
+
+(loading) 
+
+Outputs: {˜zu[t]} (universal output) 
+
+Initialize: 
+
+P1 ← λ−1INm , q1 ← λ−1ν ; // Unnormalized weights 
+
+w1 ← ν/(νT ν), μ1 ← 1
+
+Define priors PKT (e, b ) per Eq. (16). 
+
+for t = 1 to n do 
+
+Nstates ← t
+
+// 1. Beamforming and Universal Output 
+
+zj [t] ← wTj [t − 1] x[t] ; // for j = 1 ..N states 
+
+τj [t] ← (t−1) −t(j) 
+
+> start +0 .5(t−1) −t(j)
+> start +1
+
+; // Transition prob 
+
+¯μj ← μj / P 
+
+> i
+
+μi
+
+˜zu[t] ← P 
+
+> j
+
+¯μj τj [t] zj [t]
+
+// 2. Measurement Update 
+
+Est. local noise power σ2 
+
+> t
+
+;; 
+
+η ← 0
+
+for j = 1 to Nstates do 
+
+Lj ← exp 
+
+
+
+− zj [t]2
+
+> 2σ2
+> t
+
+
+
+; // Compute likelihood // Recursive Update (Woodbury) 
+
+kj ← Pj x[t]/(1 + x[t]T Pj x[t]) 
+
+Pj ← Pj − kj x[t]T Pj
+
+qj ← qj − kj (x[t]T qj )
+
+wj ← qj /(νT qj )
+
+// Posterior Update 
+
+μj ← μj · L j · τj [t]
+
+η ← η + μj · L j · (1 − τj [t]) 
+
+// 3. State Augmentation 
+
+jnew ← t + 1 ; μjnew ← η
+
+Pjnew ← λ−1I; wjnew ← ν/(νT ν)
+
+qjnew ← λ−1ν
+
+Rescale all μj to prevent underflow. 
+
+return {˜zu[t]}nt=1 
+
+cosine of cos( θ) = 0. Transient interferers shift spatial locations at discrete true switch times, specifically at snapshots 
+
+t ∈ { 200 , 450 , 700 , 850 }. The USB assesses the scene and updates its blend weights to best estimate the signal at the current snapshot. Figure 2 contrasts the estimated Bearing Time Record (BTR) of the USB against an omniscient Capon beamformer. To visualize the USB’s internal dynamics, the evolution of the blend weights is examined across the linear transition diagram. Figure 3 illustrates how the algorithm distributes weight over available states over time. Figure 4 tracks the arg max of the PMF, confirming that the algorithm consistently identifies optimal states and tracks environmental switch points accurately. Finally, Figure 5 extracts instantaneous beampat-terns at four analysis times: t ∈ { 150 , 215 , 350 , 465 }.             
+
+> Fig. 3. A heatmap of the state probabilities from the demonstrative example. As the sequence length grows, old states that no longer represent the environment, quickly have their probability set to 0.
+> Fig. 4. The argmax of the state probabilities over time. Note, the value of the function strongly corresponds with changes in the environment.
+
+B. Adaptive Beamforming in Piecewise-Stationary Environ-ments 1) Piecewise Constant in Bearing: The interference land-scape is constructed from a predefined pool of four candidate arrival angles. A piecewise-stationary environment is enforced by activating exactly one interferer at any given moment. Figure 6 visualizes the bearing-time trajectory of this scenario. The proposed USB is evaluated against a suite of con-ventional sliding-window MPDR beamformers, Omniscient Capon beamformer, the Conventional Beamformer (CBF), and the online segmented beamformer(OSB) [7], [18]. Figure 7 presents the cumulative Mean Squared Error (MSE) averaged over 200 Monte Carlo iterations. To further demonstrate this, Figure 8 shows the bearing time record and the beampattern for the USB at marked times. 
+
+2) Adaptation to Irregular Temporal Scales: A subsequent simulation investigates the algorithms’ robustness against fluc-tuating timescales, defining a piecewise-constant time environ-ment. The defining characteristic of this scenario is its high temporal variance: the duration of each dual-interferer block fluctuates wildly. The environment’s ground truth temporal evolution for one trial is depicted in Figure 9. The USB is benchmarked against the same fixed-window MPDR array and reference methods. Figure 10 depicts the cumulative MSE evaluated across 200 Monte Carlo trials. To inspect the behavior further Figure 11 shows the bearing time record and the beampattern for the USB at the same times as the piecewise constant in bearing trials. ARXIV, JUNE 2026 8
+
+Fig. 5. Demonstrative evaluation of the Universal Switching Beamformer (USB). The visualization depicts the spatial-temporal BTR and highlights the beampattern at denoted times. The USB quickly adapts to the time-varying environment and adaptively nulls active interferers. 
+
+Fig. 6. The bearing-time record illustrating the piecewise-stationary in bearing interference environment, characterized by abrupt spatial transitions. 
+
+3) Tracking a Stochastic Birth-Death Interference Process: 
+
+To ascertain the real-time reliability of the proposed Uni-versal Switching Beamformer in highly volatile settings, the interference field is modeled using a stochastic birth-death process. The activation and deactivation of these sources are governed by a Markovian birth-death framework. Figure 12 illustrates the scanned response, demonstrating the USB’s abil-ity to maintain sharp spatial contrast alongside the omniscient baseline. 
+
+Fig. 7. Cumulative mean-squared error for estimating the desired signal in the piecewise-stationary spatial environment. The USB seamlessly navigates the bias-variance trade-off encountered by fixed-window methods. 
+
+Fig. 8. Bearing time record and beampatterns at marked times for the universal switching beamformer for the example trial BTR for the piecewise stationary in bearing simulations. 
+
+Fig. 9. The bearing-time record for the temporally variable scenario, high-lighting the unpredictable duration of stationary interference blocks. 
+
+The algorithm’s performance is quantitatively validated via output SINR (Figure 13) and cumulative MSE (Figure 14). As in the previous trials, the bearing time record and the beampattern for the universal switching beamformer is shown in Figure 15. V. E XPERIMENT - S WELL EX96 The framework is validated in a complex, real-world envi-ronment using the S59 event from the SwellEx-96 experiment. The scanned response is computed in the horizontal plane ( 0◦
+
+Fig. 10. Cumulative mean-squared error in the temporally fluctuating sce-nario. The USB natively adapts its effective integration time to match the irregular durations of the interference states. ARXIV, JUNE 2026 9  
+
+> Fig. 11. Bearing time record and beampatterns at marked times for the universal switching beamformer for the example trial BTR shown for the piecewise stationary in time simulations.
+> Fig. 12. Ground truth scanned response for one piecewise-stationary birth-death trial.
+
+elevation) to track the source bearing over time. Figure 16 presents the resulting Bearing-Time Records (BTR). Performance quantification relies on evaluating the cumu-lative output power of the beamformers over the observation period. Figure 17 shows the accumulated power at 43 ◦. The USB outperforms the best sliding window beamformer. Figure 18 compares the white noise gain of the different beamformers and the accumulated output power at 0◦. Finally, the bearing time record alongside the the beampattern at uniformly se-lected times is shown in Figure 19.    
+
+> Fig. 13. Output signal-to-interference-plus-noise ratio (SINR) for the birth-death Monte Carlo trials. The USB swiftly redirects probability mass to reset states during new interference onsets, rapidly recovering optimal SINR.
+> Fig. 14. Cumulative MSE of the target signal estimate for the birth death scenario averaged over 200 Monte Carlo trials. The switching algorithm tightly tracks the theoretical limit, confirming its regret-minimizing properties.
+> Fig. 15. Bearing time record and beampatterns at marked times for the universal switching beamformer for the example trial BTR shown for the birth-death simulations.
+
+VI. C ONCLUSION 
+
+Non-stationary environments force a fundamental trade-off: adaptive systems must track rapid environmental changes while maintaining statistical stability. To overcome this chal-lenge, the universal switching beamformer is introduced (USB). By framing the problem of estimating covariance through the lens of sequential decision theory, the algorithm implicitly maintains and updates a large ensemble of candidate memory lengths. Theoretically, this approach satisfies a logarithmic regret bound relative to the best piecewise-stationary beamformer selected in hindsight. Empirically, the switching beamformer consistently outperforms fixed-window MPDR formulations in both plane-wave and reverberant environments. The USB successfully arbitrates between tracking abruptly transitioning environments and reducing variance during stable periods. ACKNOWLEDGMENT 
+
+This work was supported by the US Navy, Office of Naval Research, under award N00014-23-1-2133. ARXIV, JUNE 2026 10 
+
+Fig. 16. A comparison of different sliding window length beamformers, the sample Capon beamformer, and the USB on the SwellEx-96 S59 data recorded with the Horizontal Linear Array South (HLA-S). CBF refers to the Conventional Beamformer applied without adaptation. All outputs are peak normalized and then plotted with the same dynamic range to enable a fair comparison of the contrast. The USB maintains better noise suppression than short windows and better angular resolution than long windows with moving sources. 
+
+Fig. 17. Accumulated output power at 43 ◦. The USB minimizes its regret over time, performing better with the best sliding window MPDR and the OSB. 
+
+AUTHOR DECLARATIONS 
+
+The authors have no conflicts of interest to disclose. DATA AVAILABILITY 
+
+The data that support the findings of this study are available from the corresponding author upon reasonable request. The majority of the data employed in this work were either gener-ated using standard physics-based simulations or are available through public repositories. REFERENCES [1] J. Capon, “High-resolution frequency-wavenumber spectrum analysis,” 
+
+Proceedings of the IEEE , vol. 57, no. 8, pp. 1408–1418, 1969. [2] H. L. Van Trees, Optimum array processing: Part IV of detection, estimation, and modulation theory . John Wiley & Sons, 2002. [3] D. H. Johnson and D. E. Dudgeon, Array signal processing: concepts and techniques . Simon & Schuster, Inc., 1992. [4] R. P. Adams and D. J. MacKay, “Bayesian online changepoint detec-tion,” arXiv preprint arXiv:0710.3742 , 2007. 
+
+Fig. 18. Accumulated output power and white noise gain at 0◦. The USB performs reliably across the target metric dimensions. 
+
+Fig. 19. Bearing time record and beampatterns for the SwellEx dataset at marked times for the universal switching beamformer steered toward broadside. The plots confirm that the switching beamformer dynamically adjusts the mixture weights to place nulls in relevant locations. Marked interference may contain small estimation errors as ground truth position data is unavailable. [5] H. Cox, R. Zeskind, and M. Owen, “Robust adaptive beamforming,” 
+
+IEEE Transactions on Acoustics, Speech, and Signal Processing , vol. 35, no. 10, pp. 1365–1376, 1987. [6] D. A. Abraham and N. L. Owsley, “Beamforming with dominant mode rejection,” in OCEANS’90 . IEEE, 1990, pp. 470–475. [7] M. Mittal, R. M. Corey, D. Cuji, J. R. Buck, and A. C. Singer, “Time segmented beamforming via dynamic programming: Theory and implementation,” arXiv preprint arXiv:2605.24825 , 2026. [8] N. Cesa-Bianchi and G. Lugosi, Prediction, learning, and games .Cambridge university press, 2006. [9] N. Merhav and M. Feder, “Universal prediction,” IEEE Transactions on Information Theory , vol. 44, no. 6, pp. 2124–2147, 1998. [10] S. S. Kozat and A. C. Singer, “Universal switching linear prediction,” 
+
+IEEE Transactions on Signal Processing , vol. 56, no. 1, pp. 189–204, 2008. ARXIV, JUNE 2026 11 
+
+[11] J. R. Buck and A. C. Singer, “A performance-weighted blended dominant mode rejection beamformer,” in 2018 IEEE 10th Sensor Array and Multichannel Signal Processing Workshop (SAM) , 2018, pp. 124–128. [12] I. S. Reed, J. D. Mallett, and L. E. Brennan, “Rapid convergence rate in adaptive arrays,” IEEE Transactions on Aerospace and Electronic Systems , vol. AES-10, no. 6, pp. 853–863, 1974. [13] S. Gannot, E. Vincent, S. Markovich-Golan, and A. Ozerov, “A consol-idated perspective on multimicrophone speech enhancement and source separation,” IEEE/ACM Transactions on Audio, Speech, and Language Processing , vol. 25, no. 4, pp. 692–730, 2017. [14] k. E. Wage and J. R. Buck, “Experimental evaluation of a universal dominant mode rejection beamformer,” in 2018 IEEE 10th Sensor Array and Multichannel Signal Processing Workshop (SAM) , 2018, pp. 119– 123. [15] R. Krichevsky and V. Trofimov, “The performance of universal encod-ing,” IEEE Transactions on Information Theory , vol. 27, no. 2, pp. 199– 207, 1981. [16] F. M. J. Willems, “Coding for a piecewise stationary source,” IEEE Transactions on Information Theory , vol. 42, no. 6, pp. 2236–2243, 1996. [17] M. Mittal, R. M. Corey, J. R. Buck, and A. C. Singer, “Adaptive diagonal loading using krylov subspaces for robust beamforming,” arXiv preprint arXiv:2605.11286 , 2026. [18] M. Mittal, R. M. Corey, D. Cuji, J. R. Buck, and A. C. Singer, “Online segmented beamforming via dynamic programming,” arXiv preprint arXiv:2605.08554 , 2026.

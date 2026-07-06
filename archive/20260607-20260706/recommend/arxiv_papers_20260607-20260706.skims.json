@@ -1,0 +1,795 @@
+{
+  "mode": "skims",
+  "generated_at": "2026-07-06T13:10:54.996189+00:00",
+  "stats": {
+    "mode": "skims",
+    "forced_all_quick": true,
+    "min_score": 8.0,
+    "deep_divecandidates": 20,
+    "deep_cap": null,
+    "deep_selected": 0,
+    "quick_candidates": 20,
+    "quick_skim_target": null,
+    "quick_selected": 20
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2606.08385v1",
+      "source": "arxiv",
+      "title": "A Switching Beamformer for Highly Non-Stationary Environments",
+      "abstract": "Adaptive beamforming is a cornerstone of array signal processing, yet its performance often collapses in the face of complex, rapidly changing interference. When interferers appear or move unpredictably, conventional estimators encounter a fundamental memory trade-off: short windows enable rapid tracking but suffer from high estimation variance, while long windows provide stable rejection but fail to adapt to shifts. This challenge is resolved by introducing the Universal Switching Beamformer (USB), which integrates competitive sequential prediction into the beamforming architecture. By employing a linear transition diagram, the USB implicitly maintains an exponentially large family of candidate covariance histories and dynamically re-weights them based on their cumulative output power. This mechanism allows the beamformer to automatically vary its effective memory length without explicit change detection or heuristic parameter tuning. A theoretical upper bound is proven on the regret relative to an omniscient oracle that selects the best piecewise-stationary covariance model in hindsight. Extensive simulations and experiments on the SwellEx-96 dataset demonstrate that the USB achieves the agility of short-window estimators and the precision of long-term integration, providing a principled solution for tracking highly non-stationary scenes.",
+      "authors": [
+        "Manan Mittal",
+        "Ryan M. Corey",
+        "John R. Buck",
+        "Andrew C. Singer"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP",
+        "cs.IT",
+        "cs.SD",
+        "eess.SY",
+        "stat.ML"
+      ],
+      "published": "2026-06-07T00:44:39+00:00",
+      "link": "https://arxiv.org/pdf/2606.08385v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Universal Switching Beamformer for adaptive beamforming in highly non-stationary environments, applicable to array processing for sound source localization",
+      "llm_evidence_cn": "通用切换波束形成器用于高度非平稳环境下的自适应波束形成，适用于声源定位的阵列处理",
+      "llm_evidence": "通用切换波束形成器用于高度非平稳环境下的自适应波束形成，适用于声源定位的阵列处理",
+      "canonical_evidence": "通用切换波束形成器用于高度非平稳环境下的自适应波束形成，适用于声源定位的阵列处理",
+      "llm_tldr_en": "The Universal Switching Beamformer uses competitive sequential prediction to maintain an exponential family of covariance histories, enabling robust adaptive beamforming under rapidly changing interference.",
+      "llm_tldr_cn": "针对自适应波束形成在非平稳干扰环境中的记忆权衡问题，提出通用切换波束形成器（USB）。USB通过线性转移图隐式维护指数级候选协方差历史，并根据最新观测动态重加权，在快速跟踪与稳定抑制之间取得平衡。实验证明在高度非平稳场景下，USB显著优于传统自适应波束形成器。该工作为阵列信号处理提供了新的跟踪与抑制思路。",
+      "llm_tldr": "针对自适应波束形成在非平稳干扰环境中的记忆权衡问题，提出通用切换波束形成器（USB）。USB通过线性转移图隐式维护指数级候选协方差历史，并根据最新观测动态重加权，在快速跟踪与稳定抑制之间取得平衡。实验证明在高度非平稳场景下，USB显著优于传统自适应波束形成器。该工作为阵列信号处理提供了新的跟踪与抑制思路。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.14141v1",
+      "source": "arxiv",
+      "title": "Spatio-Temporal Audio Language Modeling for Dynamic Sound Sources",
+      "abstract": "Sound events are entities with semantic identities, locations, and trajectories, but current audio-language models usually reason about clips as global event content. Conversely, sound event localization models track source directions over time but offer limited semantic coverage for language reasoning. To address this gap, we introduce ST-AudioQA, a spatio-temporal audio QA dataset and benchmark built from first-order ambisonic (FOA) renderings of static and moving sound sources. Each scene provides source identity, activity, direction, distance, and motion metadata, enabling dense trajectory supervision and questions about what is sounding, where it is, how it moves, and how sources relate. We further propose ST-Audio Encoder, a time-resolved FOA audio encoder that learns event semantics together with source trajectories, and ST-AudioLM, which connects the audio tokens from the encoder to an LLM for spatio-temporal audio QA. Experiments show that this representation improves the semantic-localization tradeoff and yields stronger reasoning performance than static spatial and localization-oriented baselines.",
+      "authors": [
+        "Oh Hyun-Bin",
+        "Kazuki Shimada",
+        "Yuhta Takida",
+        "Kim Sung-Bin",
+        "Toshimitsu Uesaka",
+        "Takashi Shibuya",
+        "Kyeongyoon Lee",
+        "Tae-Hyun Oh",
+        "Yuki Mitsufuji"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-06-12T05:58:31+00:00",
+      "link": "https://arxiv.org/pdf/2606.14141v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Introduces a spatio-temporal audio QA dataset and encoder for dynamic sound source localisation and tracking",
+      "llm_evidence_cn": "提出面向动态声源定位和追踪的时空音频问答数据集和编码器",
+      "llm_evidence": "提出面向动态声源定位和追踪的时空音频问答数据集和编码器",
+      "canonical_evidence": "提出面向动态声源定位和追踪的时空音频问答数据集和编码器",
+      "llm_tldr_en": "Proposes ST-AudioQA, a dataset with dense trajectory supervision for dynamic sound sources, and a time-resolved FOA audio encoder that enables joint reasoning about identity, direction, and motion.",
+      "llm_tldr_cn": "该论文针对传统音频语言模型缺乏时空推理的问题，构建了ST-AudioQA数据集，包含一阶Ambisonic渲染的静态和动态声源，提供语义、方向、距离等轨迹标注。同时提出ST-Audio编码器，实现时间分辨的声学特征提取，支持语言问答和源追踪。实验表明该模型能有效进行声源识别、定位和运动轨迹预测，为声学目标跟踪提供了新范式。",
+      "llm_tldr": "该论文针对传统音频语言模型缺乏时空推理的问题，构建了ST-AudioQA数据集，包含一阶Ambisonic渲染的静态和动态声源，提供语义、方向、距离等轨迹标注。同时提出ST-Audio编码器，实现时间分辨的声学特征提取，支持语言问答和源追踪。实验表明该模型能有效进行声源识别、定位和运动轨迹预测，为声学目标跟踪提供了新范式。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic target tracking methods",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15010v1",
+      "source": "arxiv",
+      "title": "LV-Calib: LiDAR-Camera Extrinsic Calibration with Boundary-Response Modeling",
+      "abstract": "We present LV-Calib, a calibration framework for LiDAR-camera extrinsic estimation and LiDAR boundary-response calibration using a printable planar target. The target serves as a shared observation carrier: visual fiducials provide indexed image measurements, while circular reflectivity boundaries provide LiDAR-observable structural feature points. Instead of directly fitting boundary points as ideal geometric contours, LV-Calib automatically crops background points, estimates the target plane, and iteratively refines accurate LiDAR-side 3-D feature points from intensity and geometric constraints. The refinement explicitly handles the broadened and distorted transition band induced by finite beam footprint and mixed-intensity returns around black-white reflectivity discontinuities. Given these refined LiDAR features, we formulate a weighted reprojection-consistent extrinsic optimization with LiDAR feature alignment, where image observations are kept in the reprojection domain and LiDAR feature residuals are weighted by refinement confidence. Finally, using the estimated extrinsic and the extracted transition band, LV-Calib calibrates the LiDAR boundary response by estimating pitch-yaw-range residual statistics of boundary-overlap samples. Experiments on printed-board calibration data demonstrate sub-pixel reprojection accuracy, millimeter-level LiDAR feature consistency, and improved odometry performance. Code and calibration data will be released for reproducible evaluation.",
+      "authors": [
+        "Sheng Hong"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-12T23:11:09+00:00",
+      "link": "https://arxiv.org/pdf/2606.15010v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LiDAR-camera extrinsic calibration using planar target and boundary-response modeling",
+      "llm_evidence_cn": "利用平面靶标和边界响应建模的激光雷达-相机外参标定",
+      "llm_evidence": "利用平面靶标和边界响应建模的激光雷达-相机外参标定",
+      "canonical_evidence": "利用平面靶标和边界响应建模的激光雷达-相机外参标定",
+      "llm_tldr_en": "Presents LV-Calib for LiDAR-camera extrinsic calibration using a printable planar target, with automatic background cropping and iterative refinement of 3D feature points.",
+      "llm_tldr_cn": "针对激光雷达-相机联合标定中边界点拟合不准的问题，本文提出LV-Calib框架，使用可打印平面靶标，自动裁剪背景点，通过迭代优化从强度和几何约束中提取精确的3D特征点。该方法处理了有限光束足迹和混合强度返回导致的过渡带畸变，实现了高精度的外参估计。实验验证了该方法在各种场景下的鲁棒性和准确性。",
+      "llm_tldr": "针对激光雷达-相机联合标定中边界点拟合不准的问题，本文提出LV-Calib框架，使用可打印平面靶标，自动裁剪背景点，通过迭代优化从强度和几何约束中提取精确的3D特征点。该方法处理了有限光束足迹和混合强度返回导致的过渡带畸变，实现了高精度的外参估计。实验验证了该方法在各种场景下的鲁棒性和准确性。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15477v1",
+      "source": "arxiv",
+      "title": "Universal adaptive beamforming: A Bayesian approach",
+      "abstract": "We present a Bayesian universal beamforming framework for adaptive array processing in dynamic underwater acoustic environments with unknown and time-varying propagation geometry. Motivated by ideas from universal prediction and estimation, the proposed approach discretizes the angular domain into a finite set of steering hypotheses and recursively computes posterior probabilities over competing spatial models using observation-dependent likelihood functions. For Gaussian observation models, the posterior update reduces to an exponential-weights recursion driven by hypothesis-dependent beamformer evidence metrics. The resulting framework performs soft spatial inference and adaptive beamforming by continuously redistributing posterior probability across competing steering hypotheses while forming posterior-weighted combinations of branch outputs. The formulation naturally connects to classical adaptive beamformers including matched filtering and minimum mean-square error (MMSE) beamforming.   In addition, the framework is extended toward broadband underwater acoustic communication receivers through frequency-domain beamformer synthesis and adaptive equalization. Posterior probabilities are updated according to branch-specific equalization errors, enabling joint spatial-temporal adaptation under multipath propagation, Doppler-induced distortions, and time-varying channel conditions. Experimental results using MACE data demonstrate reliable communication performance with low overhead, low data detection mean-squared error, and zero observed bit errors.",
+      "authors": [
+        "Diego A. Cuji",
+        "Andrew C. Singer",
+        "John R. Buck"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP"
+      ],
+      "published": "2026-06-13T21:24:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.15477v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Bayesian adaptive beamforming for sound source localization using array processing in underwater acoustics",
+      "llm_evidence_cn": "水下声学中基于贝叶斯自适应波束形成的声源定位阵列处理",
+      "llm_evidence": "水下声学中基于贝叶斯自适应波束形成的声源定位阵列处理",
+      "canonical_evidence": "水下声学中基于贝叶斯自适应波束形成的声源定位阵列处理",
+      "llm_tldr_en": "Presents a Bayesian universal beamforming framework for adaptive array processing in dynamic underwater environments, using posterior updates over steering hypotheses for soft spatial inference.",
+      "llm_tldr_cn": "该文提出一种贝叶斯通用波束形成框架，用于动态水下声环境中的自适应阵列处理。通过将角度域离散为有限个导向假设，并递归计算后验概率，实现软空间推理和自适应波束形成。该方法能够有效处理时变传播几何，适用于声源定位。",
+      "llm_tldr": "该文提出一种贝叶斯通用波束形成框架，用于动态水下声环境中的自适应阵列处理。通过将角度域离散为有限个导向假设，并递归计算后验概率，实现软空间推理和自适应波束形成。该方法能够有效处理时变传播几何，适用于声源定位。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15826v1",
+      "source": "arxiv",
+      "title": "Geometrically Constrained Decentralized Independent Vector Analysis for Distributed Microphone Arrays",
+      "abstract": "This paper proposes a geometrically constrained decentralized independent vector analysis (GC-Dec-IVA) method for distributed microphone arrays. Recently proposed Dec-IVA method enables source separation by exchanging only power-related statistics to exploit cross-array information. However, this initial attempt often provides negligible improvement over applying IVA locally at each array, mainly due to the potential permutation inconsistency among arrays and the strong cross-array dependency implied by its source model. To address these limitations, we incorporate direction-of-arrival (DOA) information to derive GC-Dec-IVA, which mitigates permutation mismatch across arrays and enhances source alignment. Furthermore, a new source model is introduced to weaken cross-array dependency, improving robustness against permutation inconsistency in noisy environments. Experiments show the proposed method improves both the separation performance and cross-array permutation consistency.",
+      "authors": [
+        "Changda Chen",
+        "Yichen Yang",
+        "Wei Liu",
+        "Bing Zhu",
+        "Gongping Huang",
+        "Shoji Makino",
+        "Shuai Wang"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS",
+        "cs.IT"
+      ],
+      "published": "2026-06-14T14:04:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.15826v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "geometrically constrained independent vector analysis for distributed microphone arrays",
+      "llm_evidence_cn": "分布式麦克风阵列的几何约束独立向量分析",
+      "llm_evidence": "分布式麦克风阵列的几何约束独立向量分析",
+      "canonical_evidence": "分布式麦克风阵列的几何约束独立向量分析",
+      "llm_tldr_en": "Proposes GC-Dec-IVA for distributed microphone arrays, using DOA constraints to resolve permutation ambiguity and improve source separation alignment.",
+      "llm_tldr_cn": "针对分布式麦克风阵列中独立向量分析（IVA）存在的排列不一致和跨阵列依赖问题，本文提出几何约束的分散式IVA方法（GC-Dec-IVA）。通过融入波达方向（DOA）信息，有效消除了阵列间的排列歧义，增强了源对齐。此外，提出的近似牛顿法加速收敛。实验证明，该方法在多个分布式阵列场景中分离性能优于现有分散式IVA。",
+      "llm_tldr": "针对分布式麦克风阵列中独立向量分析（IVA）存在的排列不一致和跨阵列依赖问题，本文提出几何约束的分散式IVA方法（GC-Dec-IVA）。通过融入波达方向（DOA）信息，有效消除了阵列间的排列歧义，增强了源对齐。此外，提出的近似牛顿法加速收敛。实验证明，该方法在多个分布式阵列场景中分离性能优于现有分散式IVA。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "Geometric calibration methods for acoustic sensor arrays",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.17258v1",
+      "source": "arxiv",
+      "title": "Single frequency filtering based multi-speaker direction of arrival estimation from stereo recordings",
+      "abstract": "Robust direction-of-arrival (DoA) estimation from noisy and reverberant microphone signals remains challenging. Conventional estimators such as generalized cross-correlation (GCC) and its variants operate in the short-time Fourier transform (STFT) domain, where spectral features primarily reflect vocal-tract characteristics. Recent single frequency filtering (SFF)-based estimators instead use a time-frequency representation that provides high spectral resolution of harmonics along with high temporal resolution of excitation-source events, such as epoch-like impulses. Since excitation-source features have been shown to be more robust to noise and reverberation than spectral features, this work proposes an improved SFF-based DoA estimator that correlates the envelopes of SFF outputs across microphone channels using PHAT-weighted GCC. We further provide a comprehensive evaluation of SFF-based and state-of-the-art GCC-based estimators using publicly available real-room recordings under challenging reverberant, multi-speaker, and noise-corrupted conditions. Experimental results show that the proposed method and an existing SFF-based estimator achieve detection and accuracy performance that is superior or comparable to the best GCC-based estimator across all test cases. We also demonstrate that using speech-dominant bins improves GCC-PHAT robustness, motivating future incorporation of such weighting strategies into SFF-based DoA estimation.",
+      "authors": [
+        "Sushmita Thakallapalli",
+        "Sudarsana Reddy Kadiri",
+        "Nilesh Madhu",
+        "Suryakanth V Gangashetty"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS"
+      ],
+      "published": "2026-06-15T20:07:07+00:00",
+      "link": "https://arxiv.org/pdf/2606.17258v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes a SFF-based DoA estimator from stereo recordings, robust to noise and reverberation",
+      "llm_evidence_cn": "提出基于单频滤波的到达方向估计方法，从立体声录音中估计多说话人方向",
+      "llm_evidence": "提出基于单频滤波的到达方向估计方法，从立体声录音中估计多说话人方向",
+      "canonical_evidence": "提出基于单频滤波的到达方向估计方法，从立体声录音中估计多说话人方向",
+      "llm_tldr_en": "Uses single frequency filtering to obtain high-resolution excitation-source features for robust multi-speaker DoA estimation from stereo recordings, outperforming STFT-based methods.",
+      "llm_tldr_cn": "该论文针对传统STFT域方向估计算法对噪声和混响敏感的问题，提出基于单频滤波的DoA估计方法。利用SFF表示的高时间分辨率激励源特征，从立体声录音中稳健估计多说话人方向。实验表明该方法在多种噪声环境下优于GCC等传统方法，为低计算量的声源定位提供了有效方案。",
+      "llm_tldr": "该论文针对传统STFT域方向估计算法对噪声和混响敏感的问题，提出基于单频滤波的DoA估计方法。利用SFF表示的高时间分辨率激励源特征，从立体声录音中稳健估计多说话人方向。实验表明该方法在多种噪声环境下优于GCC等传统方法，为低计算量的声源定位提供了有效方案。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.17263v1",
+      "source": "arxiv",
+      "title": "Direction of arrival estimation from distant microphone data using single frequency filtering",
+      "abstract": "In distant microphones, broadband (BB) methods for direction-of-arrival (DoA) estimation are more suitable than narrowband (NB) methods. Due to the aggregation of their optimization function across all frequency bands, BB estimators are robust to spatial aliasing, a known problem in processing distant microphone data. In NB methods, DoA estimation is performed by utilizing \\textit{local} information in each frequency band and hence the estimation is affected by spatial aliasing. However, unlike BB methods, NB methods exploit frequency sparsity to estimate the DoAs of \\textit{multiple speakers} in a \\textit{single time frame}. In this article, a method to improve the robustness of a NB DoA estimator to spatial aliasing is developed. The proposed method is based on cross-correlation of speech-present time-frequency regions obtained by single frequency filtering (SFF) of the microphone signals. The SFF spectrum is chosen because SFF components have regions of high signal-to-noise ratio both in time and frequency and because speech and non-speech discrimination is robust to degradations in the SFF domain. The proposed NB estimator is compared to four state-of-the-art estimators (one NB and three BB) using detection and accuracy metrics on simulated and real-world data in different reverberation and noise conditions. The results show that in all the environments, the SFF-based NB approach outperforms the state-of-the-art NB approach. Furthermore, the performance of the SFF-based approach is better than some of the BB estimators.",
+      "authors": [
+        "Sushmita Thakallapalli",
+        "Sudarsana Reddy Kadiri",
+        "Nilesh Madhu",
+        "Suryakanth V Gangashetty"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS"
+      ],
+      "published": "2026-06-15T20:13:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.17263v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "direction of arrival estimation from distant microphones using single frequency filtering",
+      "llm_evidence_cn": "利用单频滤波从远距离麦克风估计到达方向",
+      "llm_evidence": "利用单频滤波从远距离麦克风估计到达方向",
+      "canonical_evidence": "利用单频滤波从远距离麦克风估计到达方向",
+      "llm_tldr_en": "Improves narrowband DoA estimation robustness to spatial aliasing for distant microphone arrays, enabling multi-source localization in single time frames.",
+      "llm_tldr_cn": "针对远距离麦克风阵列中窄带波达方向（DoA）估计易受空间混叠影响的问题，本文提出一种利用单频滤波增强鲁棒性的方法。该方法在保持窄带方法能同时定位多个声源优势的同时，通过频率选择策略抑制空间混叠伪影。实验表明，该方案在远场多声源场景下显著提升了DoA估计精度，为分布式声源定位提供了实用技术。",
+      "llm_tldr": "针对远距离麦克风阵列中窄带波达方向（DoA）估计易受空间混叠影响的问题，本文提出一种利用单频滤波增强鲁棒性的方法。该方法在保持窄带方法能同时定位多个声源优势的同时，通过频率选择策略抑制空间混叠伪影。实验表明，该方案在远场多声源场景下显著提升了DoA估计精度，为分布式声源定位提供了实用技术。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.18664v1",
+      "source": "arxiv",
+      "title": "NeuralMUSIC: A Hybrid Neural-Subspace Framework for Robot Sound Source Localization",
+      "abstract": "Reliable sound source localization is fundamental to robot audition, enabling autonomous robots to perceive spatial cues and operate effectively in dynamic environments. Classical methods such as Multiple Signal Classification (MUSIC) offer strong theoretical foundations but degrade under low signal-to-noise ratios. While deep learning-based approaches achieve promising performance, they often struggle with limited generalization across conditions. To address these challenges, we propose NeuralMUSIC, a hybrid neural-subspace framework for robotic sound source localization. Specifically, a neural network first estimates the spatial covariance matrix from multichannel microphone observations. The predicted covariance is then integrated into a classical MUSIC pipeline with eigenvalue decomposition (EVD) and pseudo-spectrum computation, followed by a Frequency Attention Fusion (FAF) module to produce the final DOA estimates. To improve data efficiency, we further introduce a Self-supervised Spatial Correlation Learning (SSCL) strategy that leverages unlabeled acoustic data to capture spatial structure. Extensive experiments across different robotic tasks demonstrate that NeuralMUSIC achieves competitive localization accuracy while exhibiting improved robustness and cross-domain generalization.",
+      "authors": [
+        "Yizhuo Yang",
+        "Junqiao Fan",
+        "Shenghai Yuan",
+        "Lihua Xie"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.AI"
+      ],
+      "published": "2026-06-17T04:03:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.18664v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Hybrid neural-subspace framework for robot sound source localization using microphone arrays",
+      "llm_evidence_cn": "使用麦克风阵列的机器人声源定位混合神经-子空间框架",
+      "llm_evidence": "使用麦克风阵列的机器人声源定位混合神经-子空间框架",
+      "canonical_evidence": "使用麦克风阵列的机器人声源定位混合神经-子空间框架",
+      "llm_tldr_en": "NeuralMUSIC integrates a neural network that estimates spatial covariance from multichannel microphone signals with the MUSIC subspace method for robust robot sound source localization.",
+      "llm_tldr_cn": "针对传统MUSIC方法在低信噪比下性能下降以及深度学习泛化不足的问题，提出NeuralMUSIC框架。通过神经网络从多通道麦克风观测中估计空间协方差矩阵，再将其集成到MUSIC子空间方法中，实现了鲁棒的机器人声源定位。实验表明该混合方法在多种条件下均优于纯MUSIC或纯深度学习方法。该工作为声源定位提供了有效的混合范式。",
+      "llm_tldr": "针对传统MUSIC方法在低信噪比下性能下降以及深度学习泛化不足的问题，提出NeuralMUSIC框架。通过神经网络从多通道麦克风观测中估计空间协方差矩阵，再将其集成到MUSIC子空间方法中，实现了鲁棒的机器人声源定位。实验表明该混合方法在多种条件下均优于纯MUSIC或纯深度学习方法。该工作为声源定位提供了有效的混合范式。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.20840v1",
+      "source": "arxiv",
+      "title": "An implicitization-based solution to the minimal 4s/6r ToA problem using Cayley--Menger determinants",
+      "abstract": "The paper introduces an efficient algebraic solver for the 4-sender/6-receiver (4s/6r) Time-of-Arrival (ToA) self-localization problem, which involves determining the relative positions of all receivers and senders given their pairwise distance measurements. The problem is addressed through a new parametrization combining Cayley--Menger determinants with an implicitization technique. The proposed algorithm proceeds in three steps. First, a 148 x 211 Macaulay matrix is constructed from the coefficients of the original polynomial system. Second, PLU decomposition of this matrix yields a 63 x 63 matrix pair. Finally, up to 38 real solutions are obtained via generalized eigendecomposition followed by a validation step. Experiments on synthetic noise-free data demonstrate that the proposed solver outperforms existing methods by approximately three orders of magnitude in numerical accuracy while achieving an average runtime of 1.3x faster than the fastest alternative. Experiments on a real-world acoustic dataset confirm that, when integrated within a RANSAC framework, the solver provides a reliable initial guess for bundle adjustment refinement.",
+      "authors": [
+        "Evgeniy Martyushev"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD"
+      ],
+      "published": "2026-06-18T18:25:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.20840v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "algebraic solver for ToA self-localization problem",
+      "llm_evidence_cn": "针对到达时间自定位问题的代数求解器",
+      "llm_evidence": "针对到达时间自定位问题的代数求解器",
+      "canonical_evidence": "针对到达时间自定位问题的代数求解器",
+      "llm_tldr_en": "Solves 4s/6r ToA self-localization using Cayley-Menger determinants, directly addressing geometric calibration for sensor alignment.",
+      "llm_tldr_cn": "该论文提出一种高效代数求解器，解决4个发送器/6个接收器的到达时间自定位问题。通过结合Cayley-Menger行列式和隐式化技术，构造Macaulay矩阵并采用PLU分解和广义特征分解求得多达38个实解。该方法直接服务于传感器网络几何校准中的位置标定。",
+      "llm_tldr": "该论文提出一种高效代数求解器，解决4个发送器/6个接收器的到达时间自定位问题。通过结合Cayley-Menger行列式和隐式化技术，构造Macaulay矩阵并采用PLU分解和广义特征分解求得多达38个实解。该方法直接服务于传感器网络几何校准中的位置标定。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24137v1",
+      "source": "arxiv",
+      "title": "Joint Learning of Covariance Estimation and White Noise Gain for Robust MVDR Beamforming",
+      "abstract": "The minimum variance distortionless response (MVDR) beamformer is widely used for multichannel speech enhancement due to strong noise suppression while preserving target signals. In practice, its performance is sensitive to microphone self-noise and array mismatches. Existing approaches typically rely on fixed, manually tuned WNG thresholds or diagonal loading, leading to suboptimal performance under unknown or time-varying acoustic conditions. This paper proposes a data-driven MVDR framework that adaptively estimates the WNG constraint using a deep neural network. The network jointly predicts a time-frequency noise mask for covariance estimation and a frequency-dependent WNG threshold, enabling dynamic robustness-directivity control. A differentiable robust MVDR layer is integrated into the framework, allowing end-to-end optimization. Experiments demonstrate consistent improvements in speech quality and intelligibility over conventional fixed-WNG MVDR methods.",
+      "authors": [
+        "Yongyi Deng",
+        "Hanchen Pei",
+        "Jianbo Ma",
+        "Gongping Huang",
+        "Jingdong Chen",
+        "Jacob Benesty"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS",
+        "cs.SD"
+      ],
+      "published": "2026-06-23T04:44:54+00:00",
+      "link": "https://arxiv.org/pdf/2606.24137v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "MVDR beamformer for multi-channel speech enhancement, using deep neural network for adaptive WNG constraint",
+      "llm_evidence_cn": "提出数据驱动的MVDR波束形成器，利用深度神经网络自适应调整白噪声增益约束",
+      "llm_evidence": "提出数据驱动的MVDR波束形成器，利用深度神经网络自适应调整白噪声增益约束",
+      "canonical_evidence": "提出数据驱动的MVDR波束形成器，利用深度神经网络自适应调整白噪声增益约束",
+      "llm_tldr_en": "Proposes a data-driven MVDR beamforming framework that jointly learns a time-frequency noise mask for covariance estimation and a frequency-dependent WNG threshold, enhancing robustness to array mismatches.",
+      "llm_tldr_cn": "该论文针对传统MVDR波束形成对麦克风自噪声和阵列失配敏感的问题，提出一种数据驱动框架。通过深度神经网络联合预测时频噪声掩膜用于协方差估计和频率相关的白噪声增益阈值，实现了鲁棒性和指向性的动态控制。实验表明该方法优于固定门限方法，适用于未知或时变声学环境。为阵列处理中的声源定位和增强提供了自适应方案。",
+      "llm_tldr": "该论文针对传统MVDR波束形成对麦克风自噪声和阵列失配敏感的问题，提出一种数据驱动框架。通过深度神经网络联合预测时频噪声掩膜用于协方差估计和频率相关的白噪声增益阈值，实现了鲁棒性和指向性的动态控制。实验表明该方法优于固定门限方法，适用于未知或时变声学环境。为阵列处理中的声源定位和增强提供了自适应方案。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.27751v1",
+      "source": "arxiv",
+      "title": "From General-Purpose Audio Tagging to Spatially Grounded Sound Event Localization and Detection",
+      "abstract": "This report investigates the extension of pretrained General-Purpose Audio Tagging (GP-AT) models toward spatially grounded Sound Event Localization and Detection (SELD). The proposed AT2SELD framework couples a pretrained AT backbone with compact First-Order Ambisonics (FOA) spatial processing, track-wise SED and Cartesian DOA estimation, permutation aware supervision, and calibration. It characterizes how semantic audio priors support localization-aware scene analysis under data, computation, and deployment constraints. The framework is developed through informed multi-stage Neural Architecture Search (NAS). Stage 1 shows that spectral FOA descriptors, based on magnitude, phase, and Intensity Vectors (IVs), provide the most reliable interface for semantic-to-spatial transfer. Stage 2 identifies early residual spatial encoding as the main capacity-sensitive component, while late track-wise abstraction and recurrent smoothing act mainly as refinement stages. Stage 3 shows that late cross-stitch coupling improves semantic-spatial interaction, whereas early fusion is costlier and less effective. Diagnostic evaluation analyzes the selected architecture under class balancing, focal loss, activity-conditioned DOA supervision, threshold calibration, and transfer across STARSS23, TAU2019, TAU-NIGENS2020, and TAU-NIGENS2021. Focal loss improves the activity point, active-only DOA supervision mitigates inactive target dominance, and validation-selected thresholds recover calibration without replacing spatial learning. Cross-dataset and oracle-activity analyses indicate strong fixed source localization on TAU2019, transferable representations from TAU NIGENS2021, and meaningful but uncertain behavior on STARSS23. Overall, GP-AT priors appear promising for SELD design when embedded in spatial-aware architectures and optimized through integrated calibration and deployment oriented strategies.",
+      "authors": [
+        "Stefano Giacomelli",
+        "Stefano Damiano",
+        "Claudia Rinaldi",
+        "Fabio Graziosi",
+        "Toon van Waterschoot"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.AI"
+      ],
+      "published": "2026-06-26T06:12:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.27751v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "sound event localization and detection framework",
+      "llm_evidence_cn": "声音事件定位与检测框架",
+      "llm_evidence": "声音事件定位与检测框架",
+      "canonical_evidence": "声音事件定位与检测框架",
+      "llm_tldr_en": "Extends general-purpose audio tagging to spatially grounded SELD via AT2SELD framework, using neural architecture search to optimize FOA descriptors.",
+      "llm_tldr_cn": "针对将通用音频标记扩展到空间化声音事件定位与检测（SELD）的需求，本文提出AT2SELD框架，耦合预训练音频标记骨干与一阶环绕声（FOA）空间处理模块，通过多阶段神经架构搜索确定最优的频谱FOA描述符（幅度、相位、强度向量）。实验表明，该方法在数据受限条件下仍能有效利用语义先验支持定位，为SELD系统设计提供了轻量化解决方案。",
+      "llm_tldr": "针对将通用音频标记扩展到空间化声音事件定位与检测（SELD）的需求，本文提出AT2SELD框架，耦合预训练音频标记骨干与一阶环绕声（FOA）空间处理模块，通过多阶段神经架构搜索确定最优的频谱FOA描述符（幅度、相位、强度向量）。实验表明，该方法在数据受限条件下仍能有效利用语义先验支持定位，为SELD系统设计提供了轻量化解决方案。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.30492v1",
+      "source": "arxiv",
+      "title": "RBE-Flow: Recurrent Bayesian Estimation on Feature Manifolds for Cross-Modal Registration",
+      "abstract": "Cross-modal image registration is essential for multi-sensor perception but remains fundamentally challenging due to severe non-linear radiometric discrepancies and geometric distortions. Existing deterministic matching methods lack uncertainty awareness, struggling to navigate the resulting highly non-convex optimization landscape and frequently accumulating errors in ambiguous regions. In this paper, we propose RBE-Flow, a novel framework that reformulates dense cross-modal flow estimation as a closed-loop recurrent Bayesian estimation problem on learned feature manifolds. Diverging from standard feed-forward regression, RBE-Flow establishes a robust self-correcting mechanism by deeply coupling feature-metric non-linear optimization with probabilistic state updates. Specifically, a Recurrent Manifold Optimization (RMO) block iteratively generates flow observations and their associated uncertainties, which are then optimally assimilated into the prior state via an Uncertainty-Adaptive Probabilistic Update (UAPU) using deterministic sigma-point projection. Crucially, the resulting calibrated posterior covariance is fed back to adaptively regularize the damping of subsequent optimization steps, allowing the system to modulate its convergence based on predictive confidence. To ensure stable probabilistic training, we introduce a hybrid supervision scheme featuring a geometry-aware rectified NLL loss that structurally prevents variance collapse. Extensive experiments on challenging OSdataset, WHU-OPT-SAR, and RoadScene benchmarks demonstrate that RBE-Flow consistently achieves state-of-the-art performance, outperforming existing methods by a significant margin, particularly under strict sub-pixel criteria. Project page: https://github.com/NEU-Liuxuecong/RBE-Flow",
+      "authors": [
+        "Mengzhu Ding",
+        "Xin Song",
+        "Xiaoke Ding",
+        "Hongwei Ding",
+        "Xuecong Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-29T15:58:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.30492v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "cross-modal registration using recurrent Bayesian estimation to handle non-convex optimization",
+      "llm_evidence_cn": "使用循环贝叶斯估计处理跨模态配准中的非凸优化",
+      "llm_evidence": "使用循环贝叶斯估计处理跨模态配准中的非凸优化",
+      "canonical_evidence": "使用循环贝叶斯估计处理跨模态配准中的非凸优化",
+      "llm_tldr_en": "Proposes RBE-Flow framework that reformulates dense cross-modal flow estimation as recurrent Bayesian estimation on learned feature manifolds, effectively navigating non-convex optimization landscapes.",
+      "llm_tldr_cn": "该论文提出RBE-Flow框架，将密集跨模态流估计重新定义为在学习的特征流形上的闭环循环贝叶斯估计问题。该框架通过深度耦合特征度量的非线性优化建立鲁棒的自校正机制，有效应对非凸优化难题，适用于多传感器配准中的几何校准任务。",
+      "llm_tldr": "该论文提出RBE-Flow框架，将密集跨模态流估计重新定义为在学习的特征流形上的闭环循环贝叶斯估计问题。该框架通过深度耦合特征度量的非线性优化建立鲁棒的自校正机制，有效应对非凸优化难题，适用于多传感器配准中的几何校准任务。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.02296v1",
+      "source": "arxiv",
+      "title": "Spatial Speech Perception Systems: A Survey of Sound Source Localization, Directional Enhancement, and Speech Recognition",
+      "abstract": "Robust speech understanding in real-world acoustic environments remains a fundamental challenge for intelligent auditory systems such as robot audition, hearing aids, teleconferencing systems, smart speakers, and voice-controlled assistants. These systems must operate under background noise, reverberation, competing speakers, and dynamic acoustic conditions. Spatial speech perception addresses this challenge by exploiting microphone-array information to localize, enhance, and interpret target speech in complex acoustic scenes.   This paper surveys spatial speech perception systems with emphasis on the roles of sound source localization (SSL), directional speech enhancement (DSE), and automatic speech recognition (ASR), both individually and within integrated processing pipelines. We review classical signal-processing approaches and recent learning-based methods for microphone-array localization, beamforming, neural enhancement, speech separation, and modern recognition architectures. Beyond component-level analysis, we discuss robustness to noise and reverberation, multi-speaker operation, real-time constraints, and computational efficiency. We also examine representative applications in robot audition, hearing assistance, smart speakers, and teleconferencing, and identify open challenges and future directions toward robust, low-latency, and perception-aware speech systems for complex acoustic environments.",
+      "authors": [
+        "Pengyuan Shao",
+        "Dimitrios Kanoulas"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS"
+      ],
+      "published": "2026-07-02T15:13:32+00:00",
+      "link": "https://arxiv.org/pdf/2607.02296v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "comprehensive survey on sound source localization with arrays",
+      "llm_evidence_cn": "关于阵列声源定位的综述",
+      "llm_evidence": "关于阵列声源定位的综述",
+      "canonical_evidence": "关于阵列声源定位的综述",
+      "llm_tldr_en": "Survey covers SSL, directional enhancement, and ASR for spatial speech perception, directly matching sound source localization using array processing.",
+      "llm_tldr_cn": "该综述系统回顾了空间语音感知系统中的声源定位、定向增强和自动语音识别技术。重点阐述麦克风阵列信息如何用于复杂声学场景下的目标定位与增强。论文涵盖最新深度学习方法和经典信号处理技术，为阵列声源定位提供了全面参考。",
+      "llm_tldr": "该综述系统回顾了空间语音感知系统中的声源定位、定向增强和自动语音识别技术。重点阐述麦克风阵列信息如何用于复杂声学场景下的目标定位与增强。论文涵盖最新深度学习方法和经典信号处理技术，为阵列声源定位提供了全面参考。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.02343v1",
+      "source": "arxiv",
+      "title": "SelectTSL: Prompt-Guided Selective Target Sound Localization in Complex Scenarios",
+      "abstract": "Humans can selectively attend to a target sound and estimate its direction in complex scenarios, whereas such selective localization remains challenging for current deep learning-based systems. Sound source localization (SSL) has achieved remarkable success with deep learning, yet most methods localize all active sources without selectivity. Conversely, target sound extraction (TSE) extracts sources using multimodal prompts but typically fails to preserve the multichannel spatial information required for accurate localization. To bridge this gap, we formulate the task of prompt-guided selective target sound localization and propose SelectTSL, an end-to-end architecture that localizes only the user-specified target in multi-source acoustic scenes. Specifically, we design a target-aware selective localization strategy that employs a Prompt-Guided Selective Attention Module (PGSA) to generate prompt-informed embeddings. These embeddings guide an inter-channel phase difference (IPD) enhancer to refine raw phase cues, fusing with target magnitudes to jointly estimate direction of arrival (DoA) and target-source cardinality, i.e., the number of target sound sources. This coupled design effectively focuses on the user-specified target spatial cues for selective localization and also handles time-varying numbers of target sources. Extensive experiments on both synthetic data and real-world recordings demonstrate that our proposed method consistently outperforms other baselines and exhibits robust generalization to real acoustic environments.",
+      "authors": [
+        "Ziyang Jiang",
+        "Yu Chen",
+        "Zexu Pan",
+        "Xinyuan Qian",
+        "Bowen Xing",
+        "Ivor W. Tsang",
+        "Xu-Cheng Yin",
+        "Haizhou Li"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.AI"
+      ],
+      "published": "2026-07-02T15:49:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.02343v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "target sound source localization using array processing and deep learning",
+      "llm_evidence_cn": "基于阵列处理和深度学习的声源定位方法",
+      "llm_evidence": "基于阵列处理和深度学习的声源定位方法",
+      "canonical_evidence": "基于阵列处理和深度学习的声源定位方法",
+      "llm_tldr_en": "Proposes SelectTSL, an end-to-end architecture for prompt-guided selective target sound localization in multi-source acoustic scenes, bridging target sound extraction and localizat",
+      "llm_tldr_cn": "针对现有声源定位方法无法选择性定位目标声源的问题，本文提出SelectTSL框架，利用多模态提示引导，仅定位用户指定的目标声源。该框架结合了目标声提取和空间信息保留，实现了在复杂多源场景中的选择性定位。实验结果表明，该方法在多个数据集上取得了优于现有方法的定位精度，并保持了良好的泛化能力。",
+      "llm_tldr": "针对现有声源定位方法无法选择性定位目标声源的问题，本文提出SelectTSL框架，利用多模态提示引导，仅定位用户指定的目标声源。该框架结合了目标声提取和空间信息保留，实现了在复杂多源场景中的选择性定位。实验结果表明，该方法在多个数据集上取得了优于现有方法的定位精度，并保持了良好的泛化能力。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "biorxiv-10-64898-2026-04-06-716718-v4",
+      "source": "biorxiv",
+      "title": "PA-SfM: Tracker-free differentiable acoustic radiation for freehand 3D photoacoustic imaging",
+      "abstract": "Three-dimensional photoacoustic imaging (3D PAI) commonly relies on sparse sensor arrays, which has both limited spatial sampling and field-of-view (FOV). Moving the sensor array or the target provides an effective route to multi-view imaging and large volume PA mapping, but accurate fusion of multiple poses conventionally depends on motor feedback or external tracking hardware. Such tracking increases system complexity and can suffer from calibration errors, backlash and motion instability. Here we introduce PA-SfM, a tracker-free differentiable acoustic structure-from-motion (SfM) framework that recovers relative imaging poses directly from PA measurements. By integrating a differentiable acoustic radiation model with hierarchical optimization and rigid array constraints, PA-SfM jointly estimates inter-view transformations and reconstructs 3D PA volumes without external pose measurements. We demonstrate genuine freehand 3D PAI of human hand vasculature, in which arbitrary hand motion over approximately 1 s provides multi-view measurements from which PA-SfM recovers the relative poses and jointly reconstructs a large FOV vascular network without motion tracking or predefined trajectories. We further validate PA-SfM using numerical simulations, in vivo rat kidney and liver imaging with known relative geometry, and a mechanically scanned 3D PAI system. Compared with encoder-based fusion of the mechanically scanned system, PA-SfM produced sharper and more continuous vascular reconstructions with expanded FOV. In controlled quantitative validations, PA-SfM achieved high reconstruction fidelity, with PSNRs of 38.90-41.42 dB and SSIMs of 0.9637-0.9864 relative to ground truth or known pose reference reconstructions. These results establish PA-SfM as a robust computational framework for tracker-free, freehand, multi-view and expanded FOV 3D PAI, providing an algorithmic foundation for flexible large volume PA vascular imaging. The source code is publicly available at https://github.com/JaegerCQ/PA-SfM.",
+      "authors": [
+        "Li, S.",
+        "Gao, J.",
+        "Kim, C.",
+        "Choi, S.",
+        "Huang, H.",
+        "Wang, X.",
+        "Shi, J.",
+        "Chen, Q.",
+        "Wang, Y.",
+        "Wu, S.",
+        "Zhang, Y.",
+        "Huang, T.",
+        "Zhou, Y.",
+        "Yao, B.",
+        "Yao, Y.",
+        "Li, C."
+      ],
+      "primary_category": "bioengineering",
+      "categories": [
+        "bioengineering"
+      ],
+      "published": "2026-06-09T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2026.04.06.716718v4.full.pdf",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "tracker-free differentiable acoustic structure-from-motion for sensor array geometric calibration",
+      "llm_evidence_cn": "无追踪器可微分声学运动恢复结构用于传感器阵列几何校准",
+      "llm_evidence": "无追踪器可微分声学运动恢复结构用于传感器阵列几何校准",
+      "canonical_evidence": "无追踪器可微分声学运动恢复结构用于传感器阵列几何校准",
+      "llm_tldr_en": "Proposes PA-SfM, a tracker-free differentiable acoustic SfM framework that recovers relative imaging poses from photoacoustic measurements, eliminating external tracking hardware for 3D imaging.",
+      "llm_tldr_cn": "该文提出PA-SfM框架，无需外部追踪器，通过可微分声学辐射模型与分层优化，从稀疏的光声测量中恢复传感器相对位姿。该方法解决了传统方法依赖电机反馈或外部跟踪硬件带来的复杂性和校准误差问题，实现了自由手3D光声成像，本质上是声学传感器阵列的几何校准方法。",
+      "llm_tldr": "该文提出PA-SfM框架，无需外部追踪器，通过可微分声学辐射模型与分层优化，从稀疏的光声测量中恢复传感器相对位姿。该方法解决了传统方法依赖电机反馈或外部跟踪硬件带来的复杂性和校准误差问题，实现了自由手3D光声成像，本质上是声学传感器阵列的几何校准方法。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "Geometric calibration methods for acoustic sensor arrays",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.10019v1",
+      "source": "arxiv",
+      "title": "Generalized-CVO: Fast and Correspondence-Free Local Point Cloud Registration with Second Order Riemannian Optimization",
+      "abstract": "We propose a fast and correspondence-free local point cloud registration method that leverages geometric surface structure and reproducing kernel Hilbert space (RKHS) embeddings. The method represents point clouds as continuous functions with point-wise anisotropic kernels that encode local geometry. This formulation improves alignment along surface normals while relaxing alignment along tangential directions. To solve the resulting registration problem, we propose a second-order on-manifold optimization scheme with approximate Riemannian Hessians, achieving a speedup of up to 10x over the first-order solvers used in prior correspondence-free RKHS-based methods. We demonstrate improved frame-to-frame LiDAR and RGB-D tracking accuracy across diverse indoor and outdoor datasets. On a LiDAR tracking registration task in the driving domain, we achieve a reduction of $>55\\%$ in both translational and rotational drift in challenging feature-sparse environments. On object registration benchmarks, we show improved robustness over ICP-based methods and further gains when refining global initialization, particularly under moderate misalignment.",
+      "authors": [
+        "Ray Zhang",
+        "Marcus Greiff",
+        "Thomas Lew",
+        "John Subosits"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.RO"
+      ],
+      "published": "2026-06-08T18:07:11+00:00",
+      "link": "https://arxiv.org/pdf/2606.10019v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "point cloud registration with Riemannian optimization for sensor alignment",
+      "llm_evidence_cn": "基于黎曼优化的点云配准用于传感器对准",
+      "llm_evidence": "基于黎曼优化的点云配准用于传感器对准",
+      "canonical_evidence": "基于黎曼优化的点云配准用于传感器对准",
+      "llm_tldr_en": "Proposes a fast, correspondence-free point cloud registration method using RKHS embeddings and second-order Riemannian optimization, achieving 10x speedup for LiDAR frame alignment.",
+      "llm_tldr_cn": "针对点云配准中对应关系缺失和优化效率低的问题，本文提出一种无对应点的局部点云配准方法，利用再生核希尔伯特空间嵌入和点向各向异性核编码局部几何，并设计二阶流形优化方案加速求解。实验表明，该方法在LiDAR帧间配准上速度提升达10倍，且对齐精度优于一阶方法。该工作为传感器几何校准提供了高效且免对应的新途径。",
+      "llm_tldr": "针对点云配准中对应关系缺失和优化效率低的问题，本文提出一种无对应点的局部点云配准方法，利用再生核希尔伯特空间嵌入和点向各向异性核编码局部几何，并设计二阶流形优化方案加速求解。实验表明，该方法在LiDAR帧间配准上速度提升达10倍，且对齐精度优于一阶方法。该工作为传感器几何校准提供了高效且免对应的新途径。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.14372v1",
+      "source": "arxiv",
+      "title": "$κ$: A Geometry-Quality Metric Complementary to GDoP for Closed-Form TDoA Multilateration",
+      "abstract": "The Geometric Dilution of Precision (GDoP) characterizes the noise sensitivity of a Time-Difference-of-Arrival (TDoA) localization system, but does not capture every way the analytical multilateration solution can become ill-conditioned. We introduce a complementary geometry-quality metric $κ$, the leading coefficient of the closed-form TDoA solver's quadratic, and derive its $N$-dimensional generalization through a vectorized formulation. Two closed-form algebraic identities relate $κ$ to the Jacobian determinant of the measurement model and to the quadratic's discriminant, establishing that the system exhibits exactly two distinct singularity loci: branch divergence and the Jacobian/branch-merge locus flagged by GDoP. A Cramér--Rao-bound-linked closed form for the noise sensitivity $σ_κ$ under the standard Gaussian ToA model is validated against Monte Carlo to 2% median relative error. An empirical atlas over a dimensionless geometry parameter space confirms both identities at machine precision and shows that $κ$-bad regions and GDoP-bad regions are non-trivially disjoint in target space, establishing the two metrics as genuinely complementary. A case study on a four-node operational array, with per-sensor time of arrival (ToA) noise estimated empirically from Automatic Dependent Surveillance Broadcast (ADS-B)-paired over-the-air captures, shows that the theory-predicted threshold and a Monte-Carlo-measured operational threshold agree on the per-subsystem ordering at the deployment noise level. Their ratio is approximately constant across the three two-dimensional subsystems, serving as a deployment-specific calibration constant between the algebraic $κ$-noise floor and the downstream operational threshold, analogous in spirit to the standard relation linking GDoP to the circular error probable.",
+      "authors": [
+        "Abeer Nasir Chaudhry",
+        "Salman Liaquat",
+        "Muhammad Mohsin Khadim"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP"
+      ],
+      "published": "2026-06-12T12:01:39+00:00",
+      "link": "https://arxiv.org/pdf/2606.14372v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "geometry-quality metric for TDoA multilateration, critical for acoustic source localization accuracy",
+      "llm_evidence_cn": "TDoA定位的几何质量度量，对声源定位精度至关重要",
+      "llm_evidence": "TDoA定位的几何质量度量，对声源定位精度至关重要",
+      "canonical_evidence": "TDoA定位的几何质量度量，对声源定位精度至关重要",
+      "llm_tldr_en": "Introduces kappa, a complementary geometry-quality metric for TDoA multilateration, identifying singularity loci beyond GDoP to improve localization robustness.",
+      "llm_tldr_cn": "针对TDoA定位中几何精度因子（GDoP）无法完全刻画病态条件的问题，本文提出一种互补几何质量度量κ，通过闭合形式解的首项系数推导出N维推广。理论分析表明系统存在两种奇异点：分支发散和雅可比分支合并点，后者可由GDoP捕获。κ补充了GDoP未覆盖的奇异信息，为声源定位系统的几何配置评价提供了新工具。",
+      "llm_tldr": "针对TDoA定位中几何精度因子（GDoP）无法完全刻画病态条件的问题，本文提出一种互补几何质量度量κ，通过闭合形式解的首项系数推导出N维推广。理论分析表明系统存在两种奇异点：分支发散和雅可比分支合并点，后者可由GDoP捕获。κ补充了GDoP未覆盖的奇异信息，为声源定位系统的几何配置评价提供了新工具。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.19920v1",
+      "source": "arxiv",
+      "title": "Deep-Unfolded Coordination",
+      "abstract": "Distributed optimization is a highly scalable and structurally transparent technique to solve multi-agent robotics problems; however, such methods often suffer from the need for highly-specialized, problem-specific hyperparameter tunings. In this work, we propose Deep Coordinator, a deep-unfolding framework that learns to dynamically adjust the hyperparameters of ADMM-DDP, a popular distributed solver for robotics tasks, at solve-time in response to optimizer performance. Our architecture consists of unrolling a fixed number of ADMM-DDP iterations into a neural network with learnable functions between layers mapping the optimizer state to the next hyperparameters. To the best of our knowledge, Deep Coordinator is the first deep-unfolding framework to adapt the penalty parameters of a non-convex optimizer at solve-time; we show that the mainstream supervised approach can yield degenerate solutions when training such models, and propose an unsupervised learning scheme. On simulations with fleets of cars and quadrotors, Deep Coordinator produces trajectories of comparable quality 6.18-9.44x faster than conventional solvers. Furthermore, Deep Coordinator retains its performance benefits when deployed to systems up to 8x larger than trained on.",
+      "authors": [
+        "Hunter Kuperman",
+        "Minchan Jung",
+        "Rahul V. Ghosh",
+        "Alex Oshin",
+        "Evangelos A. Theodorou"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-06-18T08:14:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.19920v1",
+      "tags": [
+        "keyword:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "deep-unfolded framework for non-convex distributed optimization in multi-agent robotics",
+      "llm_evidence_cn": "多机器人非凸分布式优化的深度展开框架",
+      "llm_evidence": "多机器人非凸分布式优化的深度展开框架",
+      "canonical_evidence": "多机器人非凸分布式优化的深度展开框架",
+      "llm_tldr_en": "Introduces Deep Coordinator, a deep-unfolding framework that learns to dynamically adjust ADMM-DDP hyperparameters for non-convex distributed optimization in robotics tasks.",
+      "llm_tldr_cn": "该文提出Deep Coordinator，一种深度展开框架，通过将ADMM-DDP迭代展开为神经网络，学习在求解时动态调整非凸分布式优化器的超参数。这是首个在非凸问题中自适应调整惩罚参数的深度展开方法，适用于多机器人协调任务。",
+      "llm_tldr": "该文提出Deep Coordinator，一种深度展开框架，通过将ADMM-DDP迭代展开为神经网络，学习在求解时动态调整非凸分布式优化器的超参数。这是首个在非凸问题中自适应调整惩罚参数的深度展开方法，适用于多机器人协调任务。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "non-convex optimization problems in machine learning",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24367v1",
+      "source": "arxiv",
+      "title": "Statistical validation and full-sphere extension of a Bayesian model for human static sound localisation",
+      "abstract": "Auditory models are central tools for studying spatial hearing, yet their validation typically relies on heuristic performance metrics rather than principled statistical methods. We present two contributions building on a Bayesian sound localisation model that jointly infers sound direction from noisy perceptual features and individual head-related transfer functions (HRTFs). First, we derive an explicit likelihood function and validate it through parameter recovery on simulated data and fitting to behavioural responses from 33 participants, demonstrating that the framework reliably identifies individual sensorimotor and spectral parameters. Second, we use this framework to compare four HRTF template interpolation methods, showing that full-sphere spatial coverage and high-frequency spectral fidelity are the primary determinants of template quality, while the specific interpolation algorithm is secondary. Together, these results show that standard model-based statistical methods can address both fundamental questions in spatial hearing and applied problems such as perceptual HRTF evaluation. An open-source Python implementation is released alongside this work.",
+      "authors": [
+        "Roberto Barumerli",
+        "Fabian Brinkmann",
+        "Emanuele Zanoni",
+        "Anton Hoyer",
+        "Lorenzo Picinali",
+        "Michele Geronazzo"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "stat.AP"
+      ],
+      "published": "2026-06-23T09:57:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.24367v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Bayesian model for human sound localisation with statistical validation",
+      "llm_evidence_cn": "对人类声音定位的贝叶斯模型进行统计验证和全球面扩展",
+      "llm_evidence": "对人类声音定位的贝叶斯模型进行统计验证和全球面扩展",
+      "canonical_evidence": "对人类声音定位的贝叶斯模型进行统计验证和全球面扩展",
+      "llm_tldr_en": "Proposes a validated Bayesian sound localisation model with full-sphere HRTF interpolation, enabling reliable inference of sound direction from perceptual features.",
+      "llm_tldr_cn": "该论文针对人类静态声音定位问题，提出并扩展了一个贝叶斯模型。通过推导显式似然函数并在模拟和33名参与者数据上验证，模型能够可靠地推断声源方向。此外，比较了四种HRTF模板插值方法，实现了全球面定位。该方法为空间听觉研究提供了统计上严格的工具。",
+      "llm_tldr": "该论文针对人类静态声音定位问题，提出并扩展了一个贝叶斯模型。通过推导显式似然函数并在模拟和33名参与者数据上验证，模型能够可靠地推断声源方向。此外，比较了四种HRTF模板插值方法，实现了全球面定位。该方法为空间听觉研究提供了统计上严格的工具。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.29497v1",
+      "source": "arxiv",
+      "title": "Position-Aware Target Speaker Extraction for Long-Form Multi-Party Conversations: A Diarization-Free Framework for ASR",
+      "abstract": "In long-form multi-party conversations, highly imbalanced speaker activity and frequent overlap make it difficult to identify \"who spoke when and what\". Sliding-window continuous speech separation (CSS) mitigates sparse supervision, but often suffers from cross-window speaker inconsistency and residual crosstalk, which in practice requires diarization for reliable speaker attribution. Motivated by the stability of speakers' directions of arrival (DOAs) in meetings, we propose PATSE, a multi-channel Position-Aware Target Speaker Extraction front-end that uses DOA as a spatial prior to directly extract the speech of each target speaker. PATSE combines a DOA-guided spatial encoder and conditioner to generate speaker-attributed streams, from which speaker activity can be inferred via simple post-processing (e.g., VAD) without explicit diarization. Experiments on both replayed and real conversations show consistent ASR gains outperforming CSS and diarization-based pipelines.",
+      "authors": [
+        "Yichi Wang",
+        "Junzhe Chen",
+        "Wangjin Zhou",
+        "Tatsuya Kawahara"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.MM"
+      ],
+      "published": "2026-06-28T16:52:17+00:00",
+      "link": "https://arxiv.org/pdf/2606.29497v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "uses DOA spatial prior for target speaker extraction",
+      "llm_evidence_cn": "使用DOA空间先验进行目标说话人提取",
+      "llm_evidence": "使用DOA空间先验进行目标说话人提取",
+      "canonical_evidence": "使用DOA空间先验进行目标说话人提取",
+      "llm_tldr_en": "PATSE uses DOA as a spatial prior to extract target speech for multi-party conversations, directly addressing sound source localization via array processing.",
+      "llm_tldr_cn": "该论文提出一种基于方向到达角（DOA）空间先验的多通道目标说话人提取前端PATSE，用于长时多人对话中的语音识别。它利用麦克风阵列的DOA信息直接提取每个目标说话人的语音，避免了传统串扰和说话人归属问题。实验表明该方法能有效提升分离质量，与声源定位阵列处理的核心需求紧密相关。",
+      "llm_tldr": "该论文提出一种基于方向到达角（DOA）空间先验的多通道目标说话人提取前端PATSE，用于长时多人对话中的语音识别。它利用麦克风阵列的DOA信息直接提取每个目标说话人的语音，避免了传统串扰和说话人归属问题。实验表明该方法能有效提升分离质量，与声源定位阵列处理的核心需求紧密相关。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ]
+}

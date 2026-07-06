@@ -1,0 +1,296 @@
+Title: Direction of arrival estimation from distant microphone data using single frequency filtering
+
+URL Source: https://arxiv.org/pdf/2606.17263v1
+
+Published Time: Wed, 17 Jun 2026 00:11:55 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# Direction of arrival estimation from distant microphone data using single frequency filtering 
+
+Sushmita Thakallapalli 1, Sudarsana Reddy Kadiri 2, Nilesh Madhu 3, and Suryakanth V Gangashetty 4  
+
+> 1Speech Processing Laboratory, International Institute of Information Technology, Hyderabad, India
+> 2Signal Analysis and Interpretation Laboratory, University of Southern California, Los Angeles, USA
+> 3IDLab, Dept. Electronics &Information Systems, Ghent University - imec, Belgium
+> 4Koneru Lakshmaiah Education Foundation, Vaddeswaram, Guntur District, Andhra Pradesh, India
+
+Abstract 
+
+In distant microphones, broadband (BB) methods for direction-of-arrival (DoA) estimation are more suitable than narrowband (NB) methods. Due to the aggre-gation of their optimization function across all frequency bands, BB estimators are robust to spatial aliasing, a known problem in processing distant microphone data. In NB methods, DoA estimation is performed by utilizing local informa-tion in each frequency band and hence the estimation is a ff ected by spatial alias-ing. However, unlike BB methods, NB methods exploit frequency sparsity to estimate the DoAs of multiple speakers in a single time frame . In this article, a method to improve the robustness of a NB DoA estimator to spatial aliasing is developed. The proposed method is based on cross-correlation of speech-present time-frequency regions obtained by single frequency filtering (SFF) of the micro-phone signals. The SFF spectrum is chosen because SFF components have regions of high signal-to-noise ratio both in time and frequency and because speech and non-speech discrimination is robust to degradations in the SFF domain. The pro-posed NB estimator is compared to four state-of-the-art estimators (one NB and three BB) using detection and accuracy metrics on simulated and real-world data in di ff erent reverberation and noise conditions. The results show that in all the environments, the SFF-based NB approach outperforms the state-of-the-art NB approach. Furthermore, the performance of the SFF-based approach is better than some of the BB estimators. 1
+
+> arXiv:2606.17263v1 [eess.AS] 15 Jun 2026
+
+Keywords: Time delay estimation, DoA estimation, single frequency filtering, cross-correlation. 
+
+1. Introduction 
+
+Networks with large microphone spacings (0.15 - 6 m apart) have gained at-tention in applications such as source separation, signal enhancement and tracking [1, 2]. In these applications, the first and primary step is sound source localiza-tion (SSL). In most SSL approaches, direction-of-arrival (DoA) is estimated by exploiting some form of cross-correlation of signals across microphones. The DoA estimation can be performed using broadband (BB) methods [3, 4, 5] or narrowband (NB) methods [6, 7, 8, 9, 10]. While NB methods exploit spar-sity and disjointness of speech in a time-frequency (T-F) representation, BB ap-proaches exploit time sparsity only [11]. NB methods first compute the DoA of the mixture signal locally in each T-F bin after which they localize the peaks of the resulting histogram. BB methods, on the other hand, compute the DoA by av-eraging the locally computed functions of the DoA across frequencies. Due to this averaging, BB methods are robust to spatial aliasing. However, since BB methods do not exploit frequency domain sparsity, their use leads to poor DoA estimates in the case when the speech signal waveform has no prominent temporal components (such as in soft speech). On the other hand, NB methods can estimate DoAs of multiple speakers in a single frame but these methods are a ff ected by spatial alias-ing. To improve DoA estimation accuracy of NB techniques, this study proposes a method, which computes the DoA locally using those T-F regions where speech is present. The DoA estimation in speech-present segments leads to accurate DoA estimates, while the DoA estimation in segments, where speech is absent or where signal-to-noise ratio (SNR) is poor, results in inaccurate DoA estimates. In this paper, we propose a DoA estimation method using voiced speech recorded by a distant microphone. To compute DoA of a sound source in signal regions where (voiced) speech is present, both a robust voice activity detection (VAD) al-gorithm as well as a T-F representation are needed. We develop a VAD algorithm and a T-F representation based on single frequency filtering (SFF) [12]. Selecting SFF as the basis of VAD and the T-F representation is justified, respectively, by the following rationales. First, a SFF-based VAD method was reported in [12] to be 
+
+> ∗Corresponding author (Sudarsana Reddy Kadiri; sudarsana.kadiri@aalto.fi)
+
+robust with respect to various additive noise degradations. The key idea proposed in [12] is to use variance of spectral information across frequencies to discrim-inate speech from non-speech. The variance is higher for speech compared to di ff erent types of noise signals. In this paper, spectral flatness, which is a measure of variance, is used for VAD. The idea of using spectral flatness for VAD has also been studied in [13, 14]. Second, spectral envelopes of the SFF-based TF repre-sentation have regions of high SNR both in the time and frequency domain [12]. In voiced speech, high SNR regions are located around glottal closure instants (GCIs), where the acoustical excitation of the glottal source is most prominent. By identifying speech samples in high SNR regions in voiced segments, cross-correlations are computed. This results in robust DoA estimates because speech samples in the vicinity of GCIs are of high SNR and therefore less a ff ected by degradations [15]. Furthermore, SFF o ff ers a good trade-o ff between time and frequency resolution. The main highlights of this study are as follows: 
+
+• We propose a new SFF-based NB DoA estimator, which takes advantage of signal regions of high SNR during voiced speech segments. 
+
+• We conduct a systematic comparison of the SFF-based NB DoA estima-tor with a well-known NB DoA estimator and widely used three BB DoA estimators. 
+
+• We report experiments based on both simulated as well as real-world data in noisy and reverberant conditions. The paper is organized as follows: Prior work in the topic is described in Section 2. In Section 3, the SFF-based DoA estimation approach is presented. The experimental setup is described in Section 4 and the results are reported and discussed in Section 5. Finally, the summary and conclusions of the study are given in Section 6. 
+
+2. Prior work 
+
+SFF-based TF representations have been successfully applied in di ff erent speech processing applications such as detection of speech regions [12], GCI /epoch ex-traction [16, 17, 18], dysarthic speech detection [19], and time-delay estimation [20]. Furthermore, high SNR regions of mixtures (signals captured by multiple microphones) were used for time delay estimation in [15] and SNR weighting of localization approaches was studied in [21] and in [22]. The present study extends 3these ideas to a SFF-based TF representation for (i) VAD, and (ii) DoA estimation in voiced regions of speech signals. SFF was studied in the sound source DoA estimation in [20], where cross-correlation was computed at all time instants between the SFF spectral envelopes from di ff erent microphones to obtain DoA estimates. This approach has the fol-lowing two drawbacks. First, cross-correlation in signal regions where speech is absent leads to false DoA estimates. Second, the computational complexity of the method is high because correlation is performed at all frequencies and at all time instants. To tackle these issues, the focus of this study is on performing cross-correlation only in specific regions of voiced speech in order to get DoA estimates that are accurate and robust to degradations. Furthermore, we evaluate the pro-posed approach in the current study using a more versatile setting compared to [20]: the simulated dataset of the current study evaluates the DoA estimator in conditions of severe reverberations and very low SNR whereas the experiments in [20] were based on recordings in laboratory conditions, which lack the diver-sity of room acoustic conditions. In addition, since the proposed SFF-based DoA estimation approach is a NB method, it is compared in this study with a state-of-the-art NB approach, Steered Response Power with Phase Transform Weight-ing (SRP-PHAT) as described in [23], along with various WB methods including Hilbert Envelope of Linear Prediction residual (HE-LP) [15], Generalized Cross Correlation (GCC) [3] and Generalized Cross Correlation with Phase Transform Weighting (GCC-PHAT) [3]. In [20], such multiple comparisons were not studied. 
+
+3. Using SFF in Sound Source DoA estimation 
+
+In this section, the benefits of the SFF representation over the conventional short-time Fourier transform (STFT) representation are discussed and the SFF-based source DoA estimation algorithm is described. 
+
+3.1. Time-frequency representation by narrowband filtering 
+
+To compute the SFF-based TF representation, the speech signal is filtered with a narrowband filter which has a single complex-valued pole. The transfer function of this filter is given by: 
+
+H(z) = zz + r , (1) where r = |r|ejωr is the pole location. For a stable filter, |r| < 1. The value of 
+
+|r| determines the filter bandwidth ( B): the larger the value of |r|, the narrower the bandwidth. Since a narrow bandwidth gives good frequency resolution, |r|
+
+4is chosen close to 1. The chosen value of r in this study is 0.995. The center frequency of the filter is set to half of the sampling frequency ( fs) corresponding to ωr = π.The SFF spectral envelope can be obtained at any desired frequency fk. Let [ f1, f2, ..., fK ] be the frequency components of interest. To estimate the SFF spec-tral envelope at frequency fk, we first assign ˜ fk = fs 
+
+> 2
+
+− fk. Subsequently, the spectral envelope emk [n] at fk in the mth microphone channel is estimated as shown in Fig-ure 1, where xm[n] is the input signal at the mth microphone, fωk = 2π efk, xc[n]is the complex output of the multiplier, h[n] is the impulse response of the filter defined in Equation (1) and ymk [n] is the complex output of the filter.     
+
+> Figure 1: Block diagram of the computation of the spectral envelope emk[n] for the kth frequency from the mth microphone signal.
+
+In Figure 2, analysis of a synthetic signal consisting of a sequence of impulses and narrowband signals is depicted based on the experiments reported in [24]. Panels (a) and (b) depict the results obtained using STFT computed with the 512-point FFT using a short (20 ms) and long (64 ms) Hamming window, respectively, and a hop size of one sample. Panel (c) shows SFF of the same signals with 
+
+r = 0.992 and K = 256. It can be observed that in panel (a) the temporal resolution is good while spectral leakage between the bands is clearly visible. On the other hand, in panel (b), closely spaced spectral components are visible but at the cost of decreased time resolution. In panel (c), good spectral and temporal resolution (at impulses) can be observed. SFF thus gives a good trade-o ff between frequency and time resolution for 0 .95 ≤ | r| ≤ 0.995 [19, 25]. 
+
+3.2. The SFF-based NB sound source DoA estimator 
+
+In this section, the SFF-based approach for the DoA estimation of sound sources from degraded stereo mixtures is described. The basic idea is to compute 5Figure 2: TF representations for a synthetic signal consisting of impulses and narrowband com-ponents. Panels (a) and (b) were computed using STFT with a frame size of 20 ms and 64 ms ,respectively, using a hop size of one sample. Panel (c) shows the SFF-based TF representation computed using r = 0.992. In all panels, the number of frequency components between 0 and fs
+
+> 2
+> is 256 (adapted from [24]).
+
+the DoA estimates by cross-correlating the SFF spectral envelopes at all frequen-cies using signal regions where speech is present. These regions of high SNR contain information of the excitation impulse sequence which are robust to degra-dations [20, 15]. Furthermore, these regions are obtained with good resolution as demonstrated in subsection 3.1. Therefore, the DoA estimates obtained from these high SNR regions are more likely to be accurate. Since these high SNR re-gions are primarily present in voiced speech segments, a robust SFF-based VAD is used. To detect voiced regions in SFF envelopes, a spectral flatness measure is com-puted. Spectral flatness is higher in regions where speech is absent compared to regions where speech is present. An illustration of the use of the spectral flat-ness measure for VAD is shown in Figure 3. In Figure 3, panel (a) shows a noisy speech signal corrupted with white noise at SNR of −5 dB and panel (b) depicts the corresponding clean speech signal and spectral flatness estimated from the sig-nal shown in panel (a). As observed from panel (b), the low values (troughs) in 
+
+δ[n] coincide with speech segments. While spectral flatness of speech is small due to its correlated nature, this measure is higher for uncorrelated noise [14]. In dis-tant microphones, noise can be assumed to be uncorrelated due to reduced spatial coherence between the microphones [26]. 6The steps involved in the proposed SFF-based sound source DoA estimation approach are as follows: 1. SFF spectral envelopes of mixture signals xm[n] are estimated using the SFF technique as described in subsection 3.1. 2. Voiced speech segments are identified using spectral flatness δ[n] across the SFF frequency components in all microphone channels. 
+
+• δ[n] is calculated by dividing the geometric and arithmetic means of the normalized and squared spectral envelopes according to Equation (2). 
+
+δ[n] =
+
+qQKk=1 e2 
+
+> mk
+
+[n]
+
+> 1
+> K
+
+PKk=1 e2 
+
+> mk
+
+[n] , (2) where m refers to the microphone, (i.e., m = 1 or 2), k refers to the 
+
+kth frequency channel ( fk). emk [n] denotes the spectral envelope at frequency fk of the mth microphone. -1 -0.5 00.5 1 (a) 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 
+
+> Time (s)
+> -1 -0.5 00.5 1(b)
+
+Figure 3: An example of computing spectral flatness for a sentence. Panel (a) shows the speech signal corrupted with additive white noise at SNR of -5 dB. Panel (b) shows the spectral flatness (red curve) estimated using the SFF spectrum from the noisy signal shown in panel (a). The original clean signal (blue curve) is shown as reference in panel (b). 
+
+73. A few lowest valleys in the spectral flatness are chosen by a peak picking algorithm. Subsequently, a few hundred samples around the valley locations are extracted from the envelopes at all frequencies. 
+
+• Let tv be the time index of a valley location in δ[n]. In the SFF ap-proach, 30 such locations are chosen with a minimum separation of 500 samples between the adjacent valleys. The choice of these num-bers is not critical. Considering 30 valleys enables getting multiple evidence for the DoA estimation. A distance of 500 samples (50 ms) between the adjacent valleys ensures that the valleys are picked across the signal and not from a restricted region. 
+
+• Let ymktv [n] as in Equation (3) represent a short segment of the kth spectral envelope in the mth microphone channel containing samples around tv.
+
+ymktv [n] = [emk [tv − N], ..., emk [tv], ... emk [tv + N]] , (3) where N = 250. Thus ymktv [n] has 501 samples (50 ms). 4. The segments y1ktv [n] and y2ktv [n] are cross-correlated according to Equation (4). 
+
+c[τ] =
+
+X
+
+> n
+
+y1ktv [n]y2ktv [n + τ], −τmax ≤ τ ≤ τmax , (4) where τmax = 29, since the maximum delay with a microphone separation of 1 m and with fs = 10 kHz is 29 samples. Subsequently, the peak location indicates a local DoA estimate. 5. Assuming that the number of speakers is known, the location of top peaks in the histogram of the local DoA estimates (obtained from all valley locations and across all frequencies) are the final location estimates of the sources. 
+
+4. Experimental Setup 
+
+The performance evaluation of the SFF-based source DoA estimation approach described in Section 3 was performed using simulated data and real-world record-ings and compared with four baseline techniques. In this section, the details of the datasets, the baseline DoA estimators used for comparison, the parameters chosen for the DoA estimators and the performance metrics are described. 84.1. Simulated dataset 
+
+Two omnidirectional microphones, 1 m apart, were placed in a simulated rect-angular room (dimensions: 5 .6×4.5×2.6 m) as in [15]. The details of the simulator are described in [27]. Clean speech data of four male and four female speakers from the Signal Separation and Evaluation Campaign (SiSEC) dev1 database were used as the source speakers [28]. A source was placed at a distance of 2 m us-ing seven angles from the centre of the array. The seven DoAs were as follows: 30 o, 50 o, 70 o, 90 o, 110 o, 130 o and 150 o. The room impulse response was calcu-lated for each of these seven positions of the source and the microphone pair and for four di ff erent reverberation times (0.0 s, 0.1 s, 0.2 s, 0.3 s). Thus for each source, 28 mixture files were generated, resulting in 224 combinations (i.e. mixture files) of speakers, speaker locations and reverberation times. In addition to the simulated reverberation data, simulated noisy speech were also generated. Noisy speech mixtures were generated by adding white noise from the NOISEX database [29] using four SNRs (-10 dB, -8 dB, -5 dB, 0 dB). 
+
+4.2. Real-world dataset 
+
+The real-world dataset chosen was the development set (both dev1 and dev2 )of SiSEC [28, 30]. The SiSEC live speech recording datasets consist of ten 10 s stereo mixtures of three female and four male speakers. The mixtures were recorded with reverberation times of 130 ms and 250 ms using a microphone separation of 1 m. The ground-truth DoAs of the sources are provided in the dataset [28]. 
+
+4.3. Baseline DoA Estimators 
+
+This section describes the baseline DoA estimators that were compared with the proposed SFF-based DoA estimator. The following four methods were se-lected as the baseline estimators to be used in the comparison: Hilbert Envelope of Linear Prediction residual (HE-LP) [15], Generalized Cross Correlation (GCC) [3], Generalized Cross Correlation with Phase Transform Weighting (GCC-PHAT) [3], and Narrowband Steered Response Power with PhaseTransform Weighting (NB-SRP-PHAT) [31]. 
+
+4.3.1. Hilbert Envelope of Linear Prediction Residual (HE-LP) 
+
+In order to estimate the DoAs, the Hilbert envelopes of the linear prediction (LP) residual ([32]) of the microphone signals are cross-correlated [15]. The 9Hilbert envelope of the LP residual signal l[n] is defined as: 
+
+h[n] =
+
+q
+
+l2[n] + l2
+
+> h
+
+[n], (5) where lh[n] is the Hilbert transform of l[n]. Let h1[n] and h2[n] denote the Hilbert envelopes of the LP residuals of the speech signals at two microphones. Let h1b[n]and h2b[n] be two corresponding frames each with a length of N samples. The cross-correlation function of these frames is given by: 
+
+JHE-LP [τ(θ), b] =
+
+> N−1
+
+X
+
+> n=0
+
+h1b[n]h2b[n + τ(θ)] , (6) where −Tmax ≤ τ(θ) ≤ Tmax and Tmax is the maximum time-delay between the given pair of microphones. The cross-correlation function is estimated at each frame b where 0 ≤ b ≤ B. Each block begins at b∆T . The peak location in 
+
+JHE-LP [θ, b] at each time frame is estimated as: ˆθ(b) = arg max 
+
+> θ
+
+JHE-LP [τ(θ), b]. (7) The peak locations in the histogram plot of ˆ θ(b) for 0 ≤ b ≤ B correspond to the source DoA estimates. Since the correlation is performed in the time domain, HE-LP is a BB method. 
+
+4.3.2. Generalized Cross Correlation (GCC) 
+
+Generalized Cross Correlation is defined as the cross-correlation of filtered versions of the signals [3]. The cross-correlation function Jcc [τ(θ), b] is obtained by frequency domain operations as follows: 
+
+JGCC [τ(θ), b] =
+
+X
+
+> k
+
+W(k)X1[k, b]X∗
+
+> 2
+
+[k, b]e− j2π fkτ(θ), (8) where W(k) is the weight function, X1[k, b] and X2[k, b] are the STFT of x1[n]and x2[n], respectively, and fk is the frequency (in Hertz) corresponding to the 
+
+kth bin. Since the correlation involves summing across frequencies, GCC is a BB method. Di ff erent weight functions were studied in [3]. In this study, two variants of GCC are used as baseline DoA estimators. The first one, referred to as GCC, is obtained by W(k) = 1 and the second one, referred to as GCC-PHAT, is described in Section 4.3.3. At each time frame b, the peak location in 
+
+JGCC [τ(θ), b] is estimated, indicating the DoA of an active speaker in that time-10 frame as: ˆθ(b) = arg max 
+
+> θ
+
+JGCC [τ(θ), b]. (9) The peak locations in the histogram plot of ˆ θ(b) for 0 ≤ b ≤ B correspond to the source DoA estimates. 
+
+4.3.3. Generalized Cross Correlation with Phase Transform Weighting (GCC-PHAT) 
+
+In GCC-PHAT, the cross-correlation function JGCC-PHAT [τ(θ), b] of the signals at two microphones, x1[n] and x2[n], is given by: 
+
+JGCC-PHAT [τ(θ), b] = GCC-PHAT( x1[n], x2[n]) 
+
+=
+
+X
+
+> k
+
+X1[k, b]X∗
+
+> 2
+
+[k, b]
+
+|X1[k, b]|| X∗
+
+> 2
+
+[k, b]|e− j2π fkτ(θ) (10) where X1[k, b] and X2[k, b] are the STFT of x1[n] and x2[n], respectively, and fk is the frequency (in Hertz) corresponding to the kth bin. At each time frame b, the peak location in JGCC-PHAT [τ(θ), b] is estimated, indicating the DoA of an active speaker in that time frame as: ˆθ(b) = arg max 
+
+> θ
+
+JGCC-PHAT [τ(θ), b]. (11) The peak locations in the histogram plot of ˆ θ(b) for 0 ≤ b ≤ B correspond to the source DoA estimates. 
+
+4.3.4. Narrowband Steered Response Power with Phase Transform Weighting (NB-SRP-PHAT) 
+
+In NB-SRP-PHAT, the target DoA is found from the peaks of the histogram of the local DoA estimates at each TF bin. The DoA estimate is obtained at a time frame b and frequency bin k as follows: 
+
+JNB-SRP-PHAT [τ(θ), k, b] = X1[k, b]X∗
+
+> 2
+
+[k, b]
+
+|X1[k, b]|| X∗
+
+> 2
+
+[k, b]|e− j2π fkτ(θ). (12) 11 At each TF bin, the peak location in JNB-SRP-PHAT [τ(θ), k, b] is estimated, indicat-ing the DoA of an active speaker in that TF bin as: ˆθ(k, b) = arg max 
+
+> θ
+
+JNB-SRP-PHAT [τ(θ), k, b]. (13) The DoA estimates at each TF bin (ˆ θ(k, b)) are pooled by a histogram. The peak locations in the histogram are considered as source DoA estimates. 
+
+4.4. Parameters used in DoA estimators 
+
+The use of the baseline DoA estimators described in the previous sub-sections calls for setting parameters for proper comparison with the proposed SFF-based DoA estimator. For all DoA estimators, fs = 10 kHz is considered and the DoA estimation is performed using 2.5 s of data. The maximum time di ff erence of ar-rival (TDoA) for microphones that are 1 m apart from each other is 2.9 ms (29 samples). The number of TDoAs /DoAs used in all the approaches is 59, corre-sponding to a resolution of 3 degrees. To have a fair comparison, the temporal resolution is equal in all DoA estima-tors and only voiced speech segments of high SNR are used in the DoA estimation. 
+
+• In SRP-PHAT and GCC-PHAT, complex spectrograms are estimated with 512-point FFT using the Hann window with a frame duration of 50 ms and a hop size of 1 sample. 
+
+• In GCC, GCC-PHAT and SRP-PHAT, the instants of high SNR are detected just as in the SFF approach, but using the STFT spectrum. In HE-LP, the corresponding instants detected by the SFF approach are used. After the detection of the instants of high SNR, 300 (30 ms) samples to the left and right of the 30 deepest valleys (corresponding to the minimum distance between valleys equalling 500 samples) are used for correlation. Correlation is computed using 50 ms time-frames. 
+
+4.5. Performance Metrics 
+
+Two performance metrics, root mean square error (RMSE) in degrees and the percent of missed detections (MD), are considered. If the estimated DoA is not within ±5o of the ground truth angle, it will be counted as a missed detection. The better the system performance, the lower the value of both RMSE and MD. 12 Table 1: RMSE and MD (in percentage) for the five sound source DoA estimation techniques by varying the reverberation time using clean speech signals from the simulated dataset. Techniques include both narrowband (NB) and broadband (BB) approaches. 
+
+Rev. time SRP-PHAT NB GCC BB HE-LP BB GCC-PHAT BB SFF NB RMSE MD RMSE MD RMSE MD RMSE MD RMSE MD 0.0 s 0.94 0 1.70 0 1.70 0 1.70 0 1.70 0
+
+0.1 s 1.34 0 1.94 0 1.70 0 1.39 0 1.70 0
+
+0.2 s 1.34 5 1.98 16 1.70 0 1.34 0 1.71 1
+
+0.3 s 1.39 27 2.05 35 1.67 0 1.34 0 1.77 9
+
+5. Results and Discussion 
+
+This section describes the results of the comparison between the various DoA estimators. The results are first reported for the simulated dataset (Tables 1 and 2) and then for the real-world dataset (Table 3), after which a brief discussion of the results is given. 
+
+5.1. Results on the Simulated Dataset 
+
+Table 1 shows the RMSE and MD results obtained for the the di ff erent DoA approaches at four di ff erent reverberation times based on the simulated dataset. From the table, it can be observed that the performance of all the approaches is similar at low reverberation times of 0.0 s and 0.1 s. At the two larger reverbera-tion times, the performances of SFF, HE-LP and GCC-PHAT are comparable, and they are better than SRP-PHAT and GCC. Table 2 shows the obtained RMSE and MD values for the di ff erent methods when the speech data was corrupted with white additive noise of di ff erent SNRs. It can be observed that the MD values are high for HE-LP and SRP-PHAT. It can also be seen that although GCC-PHAT and GCC show the best performance, their results are comparable with those obtained by the SFF-based method. 
+
+5.2. Results on the Real-world Dataset 
+
+The metrics obtained using the real-world SiSEC data in the comparison of the five DoA methods are shown in Table 3. From the table, it can be observed that SFF, HE and GCC-PHAT perform better than GCC and SRP-PHAT. By combining the main results shown in Tables 1, 2 and 3, it can be concluded that the proposed SFF-based DoA method shows a clearly better performance 13 Table 2: RMSE and MD (in percentage) for the five sound source DoA estimation techniques using speech signals from the simulated dataset that were corrupted by additive white noise in di ff erent SNR categories. Techniques include both narrowband (NB) and broadband (BB) approaches. 
+
+SNR SRP-PHAT NB GCC BB HE-LP BB GCC-PHAT BB SFF NB RMSE MD RMSE MD RMSE MD RMSE MD RMSE MD 0 dB 0.96 5 1.70 0 1.58 5 1.38 0 1.65 4
+
+-5 dB 1.06 29 1.66 5 1.97 15 1.86 4 1.54 10 
+
+-8 dB 0.98 57 1.61 10 2.57 26 2.18 11 1.81 15 
+
+-10 dB 1.33 70 1.73 13 2.91 37 2.20 11 2.03 19 
+
+Table 3: RMSE and MD (in percentage) for the five sound source DoA estimation techniques using speech signals from the real-world SiSEC dataset. Techniques include both narrowband (NB) and broadband (BB) approaches. 
+
+SRP-PHAT NB GCC BB HE-LP BB GCC-PHAT BB SFF NB RMSE MD RMSE MD RMSE MD RMSE MD RMSE MD 
+
+1.5 20 1.89 17 1.70 0 1.65 0 1.71 314 than the narrowband SRP-PHAT in all the cases. Comparing the SFF-based DoA estimator with the BB estimators, we observe that while GCC performs poorly in the reverberation dataset, HE-LP performs poorly in the noisy dataset. The performance of the SFF-based DoA estimator is consistent in both of the datasets. Furthermore, the performance of the SFF-based method is only slightly lower than the performance of the state-of-the-art GCC-PHAT method. 
+
+5.3. Discussion 
+
+The results are in line with the known pros and cons of the approaches com-pared. GCC is known to be vulnerable to multiple reflections and therefore it does not perform well in conditions where speech is distorted by reverberations [33]. On the other hand, GCC with the PHAT weighting is known to give good DoA estimates in conditions with reverberation and low SNR [34]. SRP-PHAT is most suitable for closely spaced microphones where the e ff ect of spatial aliasing is smaller and hence it is understandable that the method performs poorly in other, more di ffi cult cases. The performance of HE mainly depends on the performance of LP analysis. LP analysis is known to be vulnerable to low SNR conditions [35]. The proposed SFF approach benefits from robust estimation of speech regions in the SFF spectrum and by restricting the DoA estimation to these regions. How-ever, the spectral flatness measure is not suitable for speech detection in coloured noise. To improve the SFF-based approach, other measures that can be used for the estimation of speech segments in coloured noise can be explored [13]. 
+
+6. Summary and Conclusions 
+
+For the DoA estimation of sound sources, a narrowband method of exploit-ing signal regions of high SNR in voiced speech segments based on SFF spec-tral envelopes was presented. The performance of the proposed SFF-based NB technique was compared to four state-of-the-art DoA estimation approaches us-ing both simulated and real-word recordings. In all the estimators only the high SNR regions are used. The results show that the SFF-based NB method was better than the SRP-PHAT NB method in both datasets, indicating the benefit of performing the VAD and DoA estimation using the SFF spectrum instead of the STFT spectrum. Furthermore, the performance of the SFF-based approach was more consistent than HE-LP and GCC in varying noise and reverberation, and was only slightly worse than that of GCC-PHAT. 15 References 
+
+[1] L. Wang, T. Hon, J. D. Reiss, A. Cavallaro, Self-localization of ad-hoc arrays using time di ff erence of arrivals, IEEE Trans. Signal Process. 64 (4) (2016) 1018–1033. [2] L. Wang, T. Hon, J. D. Reiss, A. Cavallaro, An iterative approach to source counting and localization using two distant microphones, IEEE Trans. Au-dio, Speech and Lang. Process. 24 (6) (2016) 1079–1093. [3] C. Knapp, G. Carter, The generalized correlation method for estimation of time delay, IEEE Trans. Acoustics, Speech and Signal Process. 24 (4) (1976) 320–327. [4] L. H. DiBiase, H. F. Silverman, M. S. Brandstein, "Robust localization in re-verberant rooms" in Springer: Microphone Arrays - Signal Processing Tech-niques and Applications, 2001, pp. 157–180. [5] C. Liu, B.C. Wheeler, W.D. O’Brien, D.William, R.C. Bilger, C.R. Lans-ing and A.S. Feng, Localization of multiple sound sources with two micro-phones, J.Acoust. Soc. Am. 108 (4) (2000) 1888–1905. [6] F. Christof, M. Juha, Source localization in complex listening situations: Selection of binaural cues based on interaural coherence, J. Acoust. Soc. Am. 116 (5) (2004) 3075–3089. [7] J. Mouba, H. Marchand, Source localization /separation /respatialization sys-tem based on unsupervised classification of interaural cues, in: Proc. Conf. Digital Audio E ff ects, 2006, pp. 233–238. [8] H. Viste, G. Evangelista, On the use of spatial cues to improve binaural source separation, in: Proc. Conf. Digital Audio E ff ects, 2003, pp. 209–213. [9] B. Loesch, B. Yang, Source number estimation and clustering for under-determined blind source separation, in: Proc. IEEE Int. Workshop on Acous-tic Signal Enhancement (IWAENC), 2008. [10] N. Madhu, R. Martin, A scalable framework for multiple speaker localiza-tion and tracking, in: Proc. IEEE International Workshop on Acoustic Signal Enhancement (IWAENC), 2008, pp. 1–4. 16 [11] S. Thakallapalli, S. V. Gangashetty, N. Madhu, NMF-weighted SRP for multi-speaker direction of arrival estimation: Robustness to spatial aliasing while exploiting sparsity in the atom-time domain, EURASIP J. Audio Speech Music. Process. (1) (2021) 13. doi:10.1186/ s13636-021-00201-y .URL https://doi.org/10.1186/s13636-021-00201-y 
+
+[12] G. Aneeja and B. Yegnanarayana, Single frequency filtering approach for discriminating speech and nonspeech, IEEE Trans. Audio, Speech and Lan-guage Process. 23 (4) (2015) 705–717. [13] P. Renevey, A. Drygajlo, Entropy Based Voiced Activity Detection in Very Noisy Conditions, in: Proc. Int. Conf. on Speech Communication and Tech-nology (INTERSPEECH), 2001. [14] N. Madhu, Note on measures for spectral flatness, Electronics Letters 45 (23) (2009) 1195–1196. [15] V. C. Raykar, B. Yegnanarayana, S. R. M. Prasanna and R. Duraiswami, Speaker localization using excitation source information in speech, IEEE Trans. Speech and Audio Process. 13 (5) (2005) 751–761. [16] S. R. Kadiri, B. Yegnanarayana, Epoch extraction from emotional speech using single frequency filtering approach, Speech Comm. 86 (2017) 52 – 63. [17] S. R. Kadiri, B. Yegnanarayana, Determination of glottal closure instants from clean and telephone quality speech signals using single frequency fil-tering, Comput. Speech Lang. (2020) 101097. [18] G. Aneeja, S. R. Kadiri, B. Yegnanarayana, Detection of glottal closure in-stants in degraded speech using single frequency filtering analysis, in: Proc. Interspeech, 2018, pp. 2300–2304. [19] K. Gurugubelli and A. K. Vuppala, Perceptually enhanced single frequency filtering for dysarthric speech detection and intelligibility assessment, in: Proc. Int. Conf. Acoustics Speech and Signal Processing (ICASSP), 2019, pp. 6410–6414. [20] N. Murthy, B. Yegnanarayana, and S. R. Kadiri, Time delay estimation from mixed multispeaker speech signals using single frequency filtering, Circuits, Systems, and Signal Processing. 17 [21] Z. Wang, X. Zhang, D. Wang, Robust speaker localization guided by deep learning-based time-frequency masking, IEEE Trans. Audio, Speech and Language Process 27 (1) (2019) 178–188. [22] H. Kang, M. Graczyk, J. Skoglund, On pre-filtering strategies for the GCC-PHAT algorithm, in: Proc. IEEE International Workshop on Acoustic Signal Enhancement (IWAENC), 2016, pp. 1–5. [23] J.Traa, P.Smaragdis, N.D.Stein, D.Wingate, Directional NMF for Joint Source Localization and Separation, in: Proc. IEEE Workshop Appl. Sig-nal Process. Audio Acoust., 2015, pp. 1–5. [24] S. Thakallapalli, S. R. Kadiri, S. V. Gangashetty, Spectral features derived from single frequency filter for multispeaker localization, in: 2020 National Conference on Communications (NCC), 2020, pp. 1–6. [25] N. Chennupati, S. R. Kadiri, B. Yegnanarayana, Significance of phase in single frequency filtering outputs of speech signals, Speech Communication 97 (2018) 66–72. [26] E. A. P. Habets and S. Gannot, Generating sensor signals in isotropic noise fields, J. Acoust. Soc. Am. 122 (6) (2007) 3464–3470. [27] S. Sivasankaran, Room simulator in python, https://github.com/ sunits/rir_simulator_python , [Last accessed: ]. [28] A. Liutkus, F.R. Stöter, Z.Rafii, D.Kitamura, B.Rivet, N.Ito, N.Ono, and J.Fontecave, The 2016 signal separation evaluation campaign, in: Latent Variable Analysis and Signal Separation, Springer International Publishing, Cham, 2017, pp. 323–332. [29] A. Varga, H. J. M. Steeneken, Assessment for automatic speech recognition: II. NOISEX-92: A database and an experiment to study the e ff ect of additive noise on speech recognition systems, Speech Comm. 12 (3) (1993) 247–251. URL http://www.speech.cs.cmu.edu/comp.speech/Section1/ Data/noisex.html 
+
+[30] N. Ono, Z. Koldovský, S. Miyabe, N. Ito, The 2013 signal separation evalua-tion campaign, in: Proc. IEEE International Workshop on Machine Learning for Signal Processing (MLSP), 2013, pp. 1–6. 18 [31] J. H. DiBiase, A high-accuracy, low-latency technique for talker localization in reverberant environments using microphone arrays, PhD thesis, Brown University, 2000. [32] J. Makhoul, Linear prediction: A tutorial review, Proc. IEEE 63 (4) (1975) 561–580. doi:10.1109/PROC.1975.9792 .[33] J. Perez-Lorenzo, R. Viciana-Abad, P. Reche-Lopez, F. Rivas, J. Escolano, Evaluation of generalized cross-correlation methods for direction of arrival estimation using two microphones in real environments, Applied Acoustics 73 (8) (2012) 698 – 712. [34] C. Zhang, D. Florencio, Z. Zhang, Why does PHAT work well in lownoise, reverberative environments?, in: Proc. Int. Conf. Acoustics Speech and Sig-nal Processing (ICASSP), 2008, pp. 2565–2568. [35] B. Yegnanarayana, C. Avendano, H. Hermansky, P. S. Murthy, Speech en-hancement using linear prediction residual, Speech Comm. 28 (1) (1999) 25 – 42. 19

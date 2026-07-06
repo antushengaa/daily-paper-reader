@@ -1,0 +1,875 @@
+Title: κ: A Geometry-Quality Metric Complementary to GDoP for Closed-Form TDoA Multilateration
+
+URL Source: https://arxiv.org/pdf/2606.14372v1
+
+Published Time: Mon, 15 Jun 2026 00:51:10 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+> IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS 1
+
+# κ: A Geometry-Quality Metric Complementary to GDoP for Closed-Form TDoA Multilateration 
+
+Abeer Nasir Chaudhry, Salman Liaquat, Member, IEEE , and Muhammad Mohsin Khadim 
+
+Abstract —The Geometric Dilution of Precision (GDoP) char-acterizes the noise sensitivity of a Time-Difference-of-Arrival (TDoA) localization system, but does not capture every way the analytical multilateration solution can become ill-conditioned. We introduce a complementary geometry-quality metric κ, the leading coefficient of the closed-form TDoA solver’s quadratic, and derive its N -dimensional generalization through a vectorized formulation. Two closed-form algebraic identities relate κ to the Jacobian determinant of the measurement model and to the quadratic’s discriminant, establishing that the system exhibits exactly two distinct singularity loci: branch divergence and the Jacobian/branch-merge locus flagged by GDoP. A Cramér–Rao-bound-linked closed form for the noise sensitivity σκ under the standard Gaussian ToA model is validated against Monte Carlo to 2% median relative error. An empirical atlas over a dimensionless geometry parameter space confirms both identities at machine precision and shows that κ-bad regions and GDoP-bad regions are non-trivially disjoint in target space, establishing the two metrics as genuinely complementary. A case study on a four-node operational array, with per-sensor time of arrival (ToA) noise estimated empirically from Automatic Dependent Surveillance Broadcast (ADS-B)-paired over-the-air captures, shows that the theory-predicted threshold and a Monte-Carlo-measured opera-tional threshold agree on the per-subsystem ordering at the de-ployment noise level. Their ratio is approximately constant across the three two-dimensional subsystems, serving as a deployment-specific calibration constant between the algebraic κ-noise floor and the downstream operational threshold, analogous in spirit to the standard relation linking GDoP to the circular error probable. 
+
+Index Terms —Time-difference of arrival, multilateration, geo-metric dilution of precision, ill-conditioning, analytical solution, Jacobian, CRLB. 
+
+I. I NTRODUCTION 
+
+# TIME-Difference-of-Arrival (TDoA) multilateration is a foundational technique in modern passive surveillance, supporting applications that span civil air-traffic management via Automatic Dependent Surveillance Broadcast (ADS-B) multilateration networks [1]–[3], wide-area Global Navigation Satellite System (GNSS) jamming and spoofing detection [4], maritime moving-target tracking with multistatic passive radar [5], and electronic-warfare emitter geolocation. The architec-tural appeal of a TDoA system is parsimony: a network of time-synchronized receivers, no transmitter, and no specialized 
+
+A. N. Chaudhry is with the American University of Sharjah, Sharjah, United Arab Emirates (e-mail: b00085496@aus.edu). S. Liaquat is with the School of Electrical and Electronic Engineering, Universiti Sains Malaysia, Penang, Malaysia and National Aerospace Science and Technology Park, Islamabad, Pakistan (e-mail: salmanliaquat@ieee.org). M. M. Khadim is with the National University of Sciences and Technology, Islamabad, Pakistan (e-mail: mohsinkhadim59@gmail.com). Manuscript prepared June 15, 2026. Corresponding author: Salman Liaquat. 
+
+angle-of-arrival hardware. Its principal challenge is geometric: the localization accuracy, the uniqueness of the position solu-tion, and the numerical stability of the underlying solver all depend on where the receivers sit relative to the target. Two families of solvers dominate the TDoA literature. Iter-ative methods (e.g., Taylor-series least-squares [6]) linearize the nonlinear TDoA equations around an initial guess and refine through successive updates; they sidestep the algebraic degeneracies analyzed here at the cost of initial-guess depen-dence and possible divergence in near-collinear configurations. Closed-form analytical methods avoid iteration entirely: by squaring and combining the TDoA equations, eliminating cross-terms via a coordinate transformation, and reducing the system to a single scalar polynomial, they obtain candidate solutions in finite steps [7]–[19]. The closed-form route is preferred in operational systems for its determinism, computa-tional efficiency, and insensitivity to initial-guess pathology. It pays a price, however: the algebraic manipulations introduce degenerate configurations specific to the closed-form route that the iterative route does not encounter, because it never forms the offending polynomial in the first place. The geometric quality of a TDoA receiver array has been studied extensively. The Cramér–Rao bound (CRLB) framework [20] provides a lower bound on the position-estimation variance achievable by any unbiased estimator, and the Geometric Dilution of Precision (GDoP) is its dimension-less companion [15], [21]. Recent work has extended these tools to moving-source TDoA–FDoA configurations [22], to sensor-placement design accounting for sensor-location un-certainty [23], to four-receiver three-dimensional TDoA with explicit treatment of the convergence-sphere parameter as a scalar geometry-quality indicator [24], to closed-form three-dimensional extensions with hybrid measurement types [17], [18], to the well-posedness of source-localization closed forms via semi-definite-programming and generalized-trust-region reductions [25], and to fault-tolerant hyperbolic localization with sensor consensus [26]. The unifying assumption across this literature is that the relevant geometric pathology is captured by the Jacobian of the measurement map: GDoP diverges precisely when this Jacobian becomes rank-deficient. This assumption is sufficient if the only failure mode of a TDoA solver is noise amplification near a rank-deficient Jacobian. For closed-form algebraic solvers, it is not. The coordinate-transformation and squaring steps that linearize the TDoA equations introduce an algebraic-singularity structure that does not coincide with Jacobian rank-deficiency: the resulting polynomial in the unknown range can degenerate in a manner that has no counterpart in the Jacobian-based picture.  
+
+> arXiv:2606.14372v1 [eess.SP] 12 Jun 2026 2IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS
+
+Hubáˇ cek et al. [16], working with the two-dimensional three-sensor case, noted this degeneracy and denoted its indicator 
+
+M = B2 + D2 − 1, observing that the analytical solver exhibits root-divergence on the locus M = 0 . They further reported empirically that the localization error grows sharply in the same neighborhood, writing of these high-error regions that “there are just the areas where the M = 0 condition is satisfied” [16, p. 231]. This is the closest the prior literature comes to using M as a quality indicator: the empirical coin-cidence between the M = 0 locus and the high-error pattern is identified, but M is treated as a solvability condition with a degenerate locus, not as a metric whose value is propagated under measurement noise. Algebraic-geometric treatments of the TDoA map have characterized the bifurcation locus where the analytical solver degenerates, together with the related Jacobian-discriminant locus, for the planar three-receiver case [27], [28], with partial extensions to the three-dimensional range-map setting [29]. A subsequent statistical treatment of the same singular set under range-difference noise appears in [30], the closest prior framing to the noise-propagation approach we adopt for σκ in Section III-D. These results, however, treat the degeneracy as a mathematical object to be classified or as a statistical model of the source, not as a quantity to be propagated and reported alongside GDoP at runtime. To the best of our literature search, no prior publication names and operationally packages the leading-coefficient indicator as a general-N geometry-quality metric in solver-state coordinates, derives a closed-form noise sensi-tivity for it, or quantifies its empirical complementarity with GDoP across the dimensionless geometry space. The need for this characterization is operational: a four-node array can simultaneously support a three-dimensional solver and several three-sensor two-dimensional subsystem solvers, each carrying its own closed-form polynomial whose algebraic-degeneracy locus must be flagged independently of the GDoP layer. This paper closes that gap. Treating the leading-coefficient indicator as a first-class geometry-quality metric in its own right, we generalize it to N -dimensional configurations through a vectorized derivation, link it to the Jacobian de-terminant via two new closed-form algebraic identities, and demonstrate, both theoretically and through an extensive em-pirical atlas, that it is genuinely complementary to GDoP. We denote the generalized coefficient κN and refer to its associated diagnostic as the κ layer of multilateration geom-etry quality, distinct from the noise-sensitivity GDoP layer. 1
+
+Used jointly, the two metrics yield a 2 × 2 classification of target positions that refines the GDoP-only picture and resolves operational ambiguities about per-subsystem solver health in multi-receiver arrays. This paper makes three main contributions: 1) A unified N -dimensional vectorized derivation of κN =
+
+∥B∥2 − 1 as the leading coefficient of the analytical TDoA K-quadratic for N +1 sensors in RN (the 2D case recovers Hubáˇ cek’s M ; the 3D case the four-         
+
+> 1Poisel [31, §5.2.7] uses the symbol ¯κfor the TDoA-Jacobian matrix that defines GDoP, g=ptr((¯ κ⊤¯κ)−1). Our κNis unrelated: a scalar leading coefficient of the K-quadratic, not a Jacobian matrix.
+
+node operational solver), together with two closed-form algebraic identities (T2.1, T2.2) factoring det J′ and the K-quadratic discriminant ∆N in the solver-state quantities (κN , K, ∥A∥2) for general N . The singularity loci themselves were identified in the planar three-receiver case by Compagnoni and Notari [27], [28]; our contribution is the closed-form factorization in solver-state coordinates that is directly computable from TDoA data and extends to general N .2) A CRLB-linked closed-form expression for 
+
+σκ(q, σ t, geometry ) from a chain-rule derivation under the standard Gaussian ToA noise model, validated against Monte Carlo to within 2% median relative error. 3) A dimensionless empirical atlas in (β, γ, ˜r, θ ) confirm-ing the identities at machine precision and demonstrating that κN -bad and GDoP-bad regions are non-trivially disjoint in target space, together with a case-study ap-plication on a deployed four-node array showing that the algebraic threshold of Corollary 1, at the deploy-ment’s empirically estimated σt, predicts the correct per-subsystem operational ordering with a near-constant calibration ratio between the algebraic and operational thresholds. The remainder of the paper is organized as follows. Sec-tion II reviews the TDoA measurement model, the closed-form solver structure, and GDoP. Section III develops the theoretical framework. Section IV presents the empirical atlas. Section V quantifies the empirical relationship between κN
+
+and GDoP. Section VI applies the framework to an operational four-node array. Section VII discusses practical implications, and Section VIII concludes. II. B ACKGROUND AND SYSTEM MODEL 
+
+Throughout the paper, vectors are typeset in boldface lower-case ( pi, q), matrices in boldface uppercase ( P , ¯P , ΣT ), and unit vectors with a hat ( ˆei). Subscript 0 denotes the central reference sensor (CRS) and subscripts 1, . . . , N denote the secondary reference sensors (SRSs). Primed quantities ( q′, p′
+
+> i
+
+,
+
+J′) live in the canonical frame. 
+
+A. TDoA measurement model and noise 
+
+Consider a network of N + 1 time-synchronized sensors at positions p0, p1, . . . , pN ∈ RN , with p0 designated CRS. A target at unknown position q ∈ RN radiates a signal whose times of arrival (ToAs) t0, t 1, . . . , t N at the N + 1 sensors are recorded. The pairwise TDoA range-differences are 
+
+Ri = c (ti−t0) = ∥q−pi∥−∥ q−p0∥, i = 1 , . . . , N, (1) where c is the signal-propagation speed. Without loss of generality we adopt the world frame in which the CRS lies at the origin, p0 = 0; this rigid translation leaves (1) and the Jacobian of R with respect to q unchanged, and reduces 
+
+K := ∥q − p0∥ to ∥q∥ throughout. Each Ri constrains the target to one sheet of a hyperboloid of revolution (a hyperbola, in 2D) with foci at p0 and pi. With N + 1 sensors in RN ,the intersection of N such hyperboloids generically contains 3
+
+exactly two candidate target positions [12], [16], [19], only one of which is the true target; distinguishing the true point from the phantom is the object of any subsequent disambiguation step. We adopt the standard per-sensor noise model: each ToA ti
+
+is corrupted by zero-mean Gaussian noise of variance σ2 
+
+> t
+
+, inde-pendent across sensors. The per-sensor variance σt subsumes timestamping jitter, clock-synchronization error, and signal-processing-induced ToA uncertainty. The induced covariance of the range-difference vector R = ( R1, . . . , R N )⊤ follows from cov( ti − t0, t j − t0) = σ2 
+
+> t
+
+(δij + 1) and is 
+
+cov( R) = c2σ2 
+
+> t
+
+ΣT , ΣT = IN + 1N 1⊤ 
+
+> N
+
+, (2) i.e., ΣT has 2 on the diagonal and 1 on the off-diagonals. In operational settings σt is typically estimated empirically from per-sample-detrended TDoA residuals against ground-truth target positions, as σt = std( residuals )/√2, where the √2 accounts for the differencing. 
+
+B. Closed-form linearization and the canonical transforma-tion 
+
+Equation (1) is nonlinear in q through the Euclidean norms. Closed-form algebraic methods [7], [8], [12], [13], [15]–[19] avoid iteration by exploiting algebraic structure. Squaring (1): writing ri := ∥q − pi∥ and K := r0 = ∥q∥, the identity 
+
+r2 
+
+> i
+
+= ( Ri + K)2 combined with r2 
+
+> i
+
+= ∥q∥2 − 2 q · pi + ∥pi∥2
+
+produces, after cancellation of the ∥q∥2 term that does not depend on i,
+
+q · pi = 12
+
+ ∥pi∥2 − R2
+
+> i
+
+ − RiK, i = 1 , . . . , N. (3) Each equation in (3) is now linear in q once K is treated as an additional scalar unknown. Stacking the N equations gives 
+
+P q = α − KR, (4) where P has rows p⊤ 
+
+> i
+
+and αi := 12 (∥pi∥2 − R2 
+
+> i
+
+). The system has N + 1 scalar unknowns in N linear equations, leaving one residual degree of freedom that the geometric norm constraint 
+
+K = ∥q∥ will fix. We apply an orthogonal transformation ¯R, constructed via successive Givens rotations, that maps the world frame to a canonical frame in which p′ 
+
+> 0
+
+= 0 and the SRS positions are lower triangular ( p′ 
+
+> i
+
+has only its first i coordinates nonzero). The linear system (4) becomes 
+
+¯P q ′ = α′ − KR, (5) with ¯P the N × N lower-triangular canonical sensor matrix, 
+
+α′ 
+
+> i
+
+= 12 (∥p′
+
+> i
+
+∥2 − R2 
+
+> i
+
+), and R invariant under the (Euclidean) rotation. ¯P is invertible by forward substitution whenever the sensors are in general position (i.e., not all in a common (N −
+
+1) -dimensional subspace). The closed-form solution to (5) is the affine position parameterization 
+
+q′ = A + K · B, (6) with A = ¯P −1α′ and B = − ¯P −1R. The transformation makes (4) numerically well-posed and exposes the affine K-dependence of (6) ready for the final geometric constraint. The price of this route is that the squaring step in (3) introduces algebraic degeneracies distinct from those of the iterative route; characterizing them is the subject of Section III. 
+
+C. The K-quadratic 
+
+To close the system into a single scalar equation, we impose 
+
+K = ∥q′∥, i.e., K2 = ∥q′∥2. Substituting (6), 
+
+K2 = ∥A + KB∥2 = ∥A∥2 + 2 K(A · B) + K2∥B∥2,
+
+which rearranges to the K-quadratic :
+
+κN K2 + 2( A · B)K + ∥A∥2 = 0 , κN := ∥B∥2 − 1.
+
+(7) The two roots of (7) correspond to the two intersection points of the N hyperboloids; pairing each root with (6) and inverting the canonical transformation yields the two candidate target positions in world coordinates, with a geometric disambigua-tion rule (typically K > 0, plus a sequential-measurement or prior-position consistency check) selecting the true target. The leading coefficient κN , the central object of this paper, depends on the TDoA measurements and canonical sensor geometry but not on K itself. The 2D three-sensor case has 
+
+B = ( B, D )⊤ and κN = B2 + D2 − 1, which is the indicator 
+
+M studied by Hubáˇ cek et al. [16]. The 3D four-sensor case has B = ( B1, B 2, B 3)⊤ and κN = B21 + B22 + B23 − 1,the leading coefficient of the closed-form solver employed in the operational four-node array of Section VI. The vectorized definition κN = ∥B∥2 − 1 is the natural N -dimensional generalization. 
+
+D. Geometric Dilution of Precision 
+
+Let J denote the Jacobian of the range-difference measure-ment vector R with respect to target position q. Differentiating (1) gives row i as the line-of-sight unit-vector difference 
+
+Ji = ˆ ei − ˆe0, where ˆei = ( q − pi)/∥q − pi∥. Under the noise model of (2), the CRLB on the variance of any unbiased position estimator gives 
+
+σpos (q) = c σ t · ˜G(q),
+
+˜G(q) = 
+
+r
+
+tr 
+
+ J⊤Σ−1 
+
+> T
+
+J−1
+
+, (8) with ˜G the dimensionless GDoP. The inner quantity 
+
+(J⊤Σ−1 
+
+> T
+
+J)−1 is the Fisher-information-matrix inverse for an unbiased estimator of q under the noise model (2); the dimensionless ˜G is therefore the trace-CRLB baseline (in units of metres per cσ t). ˜G diverges precisely when J becomes rank-deficient, i.e., when the rows ˆei − ˆe0 become linearly dependent [15], [20]–[23]. The dimensionless ˜G has a direct operational counterpart in the circular error probable at the 
+
+50 % confidence level [20, eq. (74)], [32, §9.2], 
+
+CEP 50 (q) ≈ 0.75 c σ t ˜G(q), (9) valid in the 2D approximately-isotropic-error regime. The two are proportional at fixed σt; we report results in dimensionless 
+
+˜G for geometry-only analysis and in CEP 50 wherever an operational threshold is implied. 4 IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS 
+
+III. T HEORETICAL FRAMEWORK 
+
+A. Theorem 1: K-quadratic identity 
+
+Theorem 1 (Algebraic identity for κN ). Under the setup of Sections II-A–II-B, at any physical target the analytical TDoA solution satisfies the position parameterization q′ = A+K ·B
+
+of (6) together with the K-quadratic identity (7) , where κN =
+
+∥B∥2 − 1.Proof: Squaring (1) and collecting terms in q yields the linear system P q = α − KR in the unrotated frame. After the canonical transformation ¯R, the system becomes ¯P q ′ =
+
+α′ − KR with ¯P lower triangular. Solving for q′ gives (6). Imposing ∥q′∥2 = K2 produces 
+
+∥A∥2 + 2 K(A · B) + K2∥B∥2 = K2,
+
+which is (7). 
+
+a) Runtime computation: Theorem 1 prescribes a direct recipe for κN without prior knowledge of the source position. Given p0, . . . , pN and {τi}Ni=1 : (i) compute Ri = cτ i and 
+
+¯P by Givens rotations of {pi − p0}; (ii) solve ¯P A = α′
+
+and ¯P B = −R by forward substitution; (iii) read κN =
+
+∥B∥2 − 1. Step (i) is once per array; steps (ii)–(iii) per sample cost O(N 2). Reporting κN alongside the solution adds no work beyond a single dot product on B.
+
+B. Algebraic identities (T2.1, T2.2): κN ↔ J and κN ↔ ∆N
+
+Proposition 1 (T2.1) factors the determinant of the TDoA Jacobian into a sensor-only piece and a single target-dependent piece that vanishes precisely when κN K2 = ∥A∥2; Theo-rem 2 (T2.2) shows that this same target-dependent factor governs the discriminant of the K-quadratic, so the “two roots coincide” picture (branch merge) and the “inverse map is non-invertible” picture (Jacobian singularity) describe the same algebraic condition on the target. T2.1 is presented as a Proposition because, given the augmented hyperbolic linear system of [9], [10], [12], [13], the factorization is a matrix-determinant-lemma manipulation; the substantive contribution is the explicit form in solver-state coordinates (κN , K, ∥A∥2),which is the form that connects directly to the discriminant identity T2.2 and to the closed-form σκ of Section III-D. 
+
+Proposition 1 (Jacobian determinant identity (T2.1)) . In the canonical frame, the N × N Jacobian J′ with rows J′ 
+
+> i
+
+=ˆe′ 
+
+> i
+
+− ˆe′ 
+
+> 0
+
+has determinant 
+
+det J′(q′) = ( −1) N +1 det ¯P
+
+2K2 QNi=1 ri
+
+(κN K2 − ∥ A∥2), (10) 
+
+where ri = ∥q − pi∥ and the product runs over the N SRSs. Proof: Row i of J′ in canonical frame is q′⊤ (1 /r i −
+
+1/K ) − p′⊤  
+
+> i
+
+/r i. Stacking gives J′ = uq ′⊤ − D ¯P , where 
+
+ui = 1 /r i − 1/K and D = diag(1 /r i). Using ri = K +
+
+Ri to identify D−1u = −R/K , and applying the matrix determinant lemma to ¯P + (1 /K )Rq ′⊤ yields 
+
+det J′ = ( −1) N det ¯P
+
+Q ri
+
+
+
+1 − q′⊤ B
+
+K
+
+
+
+.
+
+Substituting q′⊤ B = A · B + K∥B∥2 from (6) and using 
+
+κN = ∥B∥2 − 1 gives 
+
+1 − q′⊤ B
+
+K = −κN − A · B
+
+K .
+
+The K-quadratic (7) gives A · B = −(κN K2 + ∥A∥2)/(2 K),hence 
+
+−κN − A · B
+
+K = − κN K2 − ∥ A∥2
+
+2K2 .
+
+Combining the leading (−1) N factor with this minus sign yields (10). 
+
+Theorem 2 (Discriminant identity (T2.2)) . Assume the sensors are in general position ( det ¯P̸ = 0 ) and the target is not coincident with any sensor (all ri > 0). On the constraint 
+
+K = ∥q′∥, the K-quadratic discriminant satisfies 
+
+∆N := ( A · B)2 − κN ∥A∥2 = (κN K2 − ∥ A∥2)2
+
+4K2 . (11) 
+
+Under these assumptions, ∆N = 0 if and only if det J′ = 0 
+
+at the same target position. Proof: From (7), A · B = −(κN K2 + ∥A∥2)/(2 K), so 
+
+(A · B)2 = ( κN K2 + ∥A∥2)2/(4 K2). Expanding: 
+
+∆N = (κN K2 + ∥A∥2)2
+
+4K2 − κN ∥A∥2
+
+= (κN K2)2 + 2 κN K2∥A∥2 + ∥A∥4 − 4κN K2∥A∥2
+
+4K2
+
+= (κN K2 − ∥ A∥2)2
+
+4K2 ,
+
+which is (11). Under the stated regularity assumptions, 
+
+det ¯P /(2 K2 Q ri)̸ = 0 , so by (10) det J′ = 0 if and only if 
+
+κN K2 − ∥ A∥2 = 0 ; by (11) the same condition is equivalent to ∆N = 0 .
+
+C. Singularity structure 
+
+Combining Proposition 1 and Theorem 2 yields a clean clas-sification: the multilateration system has exactly two distinct (codimension-one) singularity loci in target space. 1) κN (q) = 0 : the leading coefficient of the K-quadratic vanishes; the quadratic degenerates to a linear equation and one of its two roots escapes to infinity. We refer to this as the branch-divergence locus. 2) det J(q) = 0 : equivalently (by Theorem 2) ∆N (q) = 0 ;the two roots of the K-quadratic coincide ( branch-merge ), and the linearized inverse map from TDoA to position is rank-deficient ( Jacobian interpretation). GDoP diverges on this locus. The two loci are distinct: at κN = 0 (off the intersection set) det J is generically nonzero, and conversely. By (10), 
+
+det J = 0 requires κN K2 = ∥A∥2; intersecting this with 
+
+κN = 0 forces ∥A∥2 = 0 , so the two loci meet on the doubly-singular set characterized by κN = 0 and ∥A∥2 = 0 . This set has codimension two and corresponds to specific collinearity configurations of target and sensor pair. The Jacobian-singular locus along sensor-pair baselines is a known phenomenon (Torrieri [20, Sec. V, eq. (103)]; the resulting lobed CRLB-driven CEP pattern for a three-sensor array appears in textbook form in O’Donoughue [32, Fig. 11.6]). 5
+
+D. Theorem 3: CRLB-linked noise sensitivity of κN
+
+Theorem 3 treats κN as a random variable induced by Gaus-sian per-sensor ToA noise and gives its first-order variance in closed form, propagated through the same noise model that underlies the CRLB. 
+
+Theorem 3 (Closed-form σκ). Under the per-sensor independent-noise convention cov( ti) = σ2 
+
+> t
+
+giving cov( R) = 
+
+c2σ2 
+
+> t
+
+ΣT as in (2) , the linearized variance of κN at target q
+
+is 
+
+σ2
+
+> κ
+
+(q) = ( ∇RκN )⊤ c2σ2 
+
+> t
+
+ΣT (∇RκN ), (12) 
+
+with ∇RκN = −2 ¯P −⊤ B.Proof: Since κN = ∥B(R)∥2 − 1 = R⊤( ¯P −⊤ ¯P −1)R −
+
+1, the gradient is ∇RκN = 2( ¯P −⊤ ¯P −1)R. Substituting 
+
+¯P −1R = −B gives ∇RκN = −2 ¯P −⊤ B. The linearized (first-order Taylor) variance of any smooth scalar f (R) of a Gaussian R ∼ N ( ¯R, Σ) at the mean is Var( f ) ≈
+
+(∇Rf )⊤Σ(∇Rf ), the standard delta-method variance propa-gation used throughout the CRLB-linked TDoA literature [13], [15], [25]. Setting f = κN and Σ = c2σ2 
+
+> t
+
+ΣT gives (12); novelty lies in the closed-form gradient ∇RκN = −2 ¯P −⊤ B,not in the variance-propagation machinery itself. 
+
+Corollary 1 (Threshold from theory) . A useful per-subsystem threshold for flagging samples on which κN is statistically indistinguishable from zero takes the form εs ≥ k · σ(typ ) 
+
+> κ
+
+,where σ(typ ) 
+
+> κ
+
+is the median of σκ over the operational target envelope for subsystem s. The choice k = 3 corresponds to the standard three-sigma criterion: a measured |κN | < 3σ(typ ) 
+
+> κ
+
+has probability less than 0.3% of arising from a non-degenerate 
+
+κN (q) ≫ 0 target, so samples falling below εs are flagged as algebraically ill-conditioned. The factor k may be tuned higher for more conservative gating or lower at the cost of higher false-flag rate. E. Bridge to GDoP 
+
+By construction, GDoP diverges as det J → 0; by Theorem 2, this locus coincides with ∆N = 0. The two indepen-dent geometry-quality diagnostics are therefore κN and det J
+
+(equivalently ∆N or GDoP), giving the 2 × 2 classification: GDoP OK GDoP bad 
+
+κN OK well-conditioned branch-merge regime 
+
+κN bad branch-divergence regime doubly-singular set Targets in the off-diagonal regimes are detected by one di-agnostic but not the other; these are the cases where the κN
+
+layer adds information beyond GDoP. IV. E MPIRICAL ATLAS IN DIMENSIONLESS COORDINATES 
+
+To make the analysis site-agnostic, we work in dimension-less coordinates. After the canonical transformation, the 2D geometry is fully specified by canonical coefficients (a, b, c )
+
+with SRSs at (a, 0) and (b, c ); we normalize by a to obtain 
+
+β = b/a, γ = c/a, (13) 10 -15 10 -10 10 -5 10 0                 
+
+> |det J|
+> 10 -15
+> 10 -10
+> 10 -5
+> 10 0
+> "N
+> (T2.2) Algebraic identity: "N/(det J) 2
+> Fig. 1. Numerical verification of identity (T2.2): |det J|vs √∆Nat 5000
+> atlas points. Unit slope confirms that ∆Nand det Jshare the same zero locus.
+
+and likewise the dimensionless target polar coordinates ˜r =
+
+r/a and θ. The atlas is computed on a 20 × 20 × 60 × 60 = 1.44 ×10 6 grid with β, γ ∈ [−1.5, 1.5] (20 points linear each), 
+
+˜r ∈ [0 .2, 10] (60 points log-spaced), and θ ∈ [0 , 2π) (60 points linear). At each grid point we record κN , ∆N , det J, ˜G, and the theoretical σκ at σt = 1 .
+
+A. Numerical verification of Theorems 1–3 
+
+Identity (10) was checked at every atlas point by comparing 
+
+det J′ computed directly from ˆe′ 
+
+> i
+
+− ˆe′ 
+
+> 0
+
+against the right-hand-side of (10). The maximum relative residual across the 
+
+1.44 × 10 6 atlas points is 2.2 × 10 −13 , with median residual 
+
+3.5 × 10 −17 , both at the floating-point round-off floor. An independent set of 1500 random configurations (1000 two-dimensional, 500 three-dimensional) gives a maximum relative residual of 6.8×10 −11 , again at the conditioning-limited floor. Identity (10) is therefore exact and established empirically across six decades. Identity (11) is verified in Figure 1, which plots | det J|
+
+against √∆N for 5000 atlas points. The points fall on a single unit-slope line in log-log coordinates, with vertical scatter confined to the round-off floor. For Theorem 3, 200 random (β, γ, ˜r, θ ) configurations were drawn with the deployment-realistic baseline a = 16 .5 km. At each configuration, the ToA vector was Monte-Carlo perturbed with per-sensor Gaussian noise of σt = 30 ns over nmc = 500 realizations. Figure 2 compares closed-form prediction (12) against empirical standard deviation across roughly six decades. The points cluster tightly along y = x:median relative error 2.0% , p95 = 5 .8% , maximum 10 .2% ,consistent with the finite-sample Monte-Carlo standard error 
+
+1/p2( nmc − 1) ≈ 3.2% . The linearized closed form (12) therefore agrees with the full nonlinear noise propagation to within sampling noise. 
+
+B. Singularity loci across the atlas 
+
+Figure 3 shows the two layers stacked: top: log 10 |κN |,and bottom: log 10 ˜G over the dimensionless target plane at 6 IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS 10 -4 10 -2 
+
+Empirical <5 (MC) 
+
+10 -4 
+
+10 -3 
+
+10 -2 
+
+10 -1 
+
+> Predicted  <5 (Theorem 3)
+
+Theorem 3 validation                 
+
+> Fig. 2. Closed-form σκ(Theorem 3) vs Monte-Carlo empirical σκat 200
+> random (β, γ, ˜r, θ )configurations ( σt= 30 ns, nmc = 500 ). Dashed: y=x.
+
+four representative geometries (the first three correspond to the deployment subsystems of Section VI; the fourth is a generic far-from-deployment point shown for contrast). The two singularity loci κN = 0 (red solid) and det J = 0
+
+(blue dashed) are overlaid on both blocks. The two curves are distinct (Proposition 1, Theorem 2) and meet only at the doubly-singular set on the sensor-pair baselines. Their enclosed regions differ visibly: target regions inside the red curve but outside the blue (and vice versa) are flagged by exactly one gate. All four geometries exhibit multi-lobed patterns of low-|κN | filaments emanating from the doubly-singular configurations, with lobe shape varying systematically with geometry; the (β, γ ) = ( −1.31 , −0.62) panel (subsystem B-like) shows the widest lobes. The visual contrast between the two blocks of Fig. 3is the central empirical claim of the paper: in the bottom block, GDoP-bad regions track the Jacobian-singular locus (as expected, since ˜G diverges at det J = 0) but do not 
+
+track the κN -bad lobes visible in the top block. In two of the four geometries, the GDoP-bad region and the κN -bad lobes occupy nearly complementary sectors; in the other two, they partially overlap but each retains substantial regions not covered by the other. V. E MPIRICAL RELATIONSHIP BETWEEN κN AND GD OPWe ask whether the κ layer and the GDoP layer are statisti-cally redundant (knowing one nearly determines the other) or 
+
+complementary , from two angles: the pooled joint distribution of (log 10 |κN |, log 10 ˜G) across the full atlas (Fig. 4a), and the per-geometry Pearson correlation ρκ,G aggregated over the 400 geometries (Fig. 4b). Panel (a) shows the joint cloud is broad along both axes: at any fixed value of log 10 ˜G, the corresponding log 10 |κN | spans several decades, and vice versa. Knowing one metric does not pin down the other. Panel (b) shows ρκ,G concentrated in [−0.78 , −0.52] with median −0.65 and interquartile range (a) A: ( -,.)=(-0.16, 0.98)                                          
+
+> -5 05(b) B: ( -,.)=(-1.31,-0.62) (c) C: ( -,.)=(-0.41, 1.40)
+> -5 05-5 05(d) ( -,.)=(0.5, 0.5)
+> -5 05
+> -4 -3.5 -3 -2.5 -2 -1.5 -1 -0.5 0log 10  |5N|
+> (top) log 10 |κN|(a) A: ( -,.)=(-0.16, 0.98)
+> -5 05(b) B: ( -,.)=(-1.31,-0.62) (c) C: ( -,.)=(-0.41, 1.40)
+> -5 05-5 05(d) ( -,.)=(0.5, 0.5)
+> -5 05
+> 00.5 11.5 22.5 33.5 4
+> log 10  ~G
+> (bottom) log 10 ˜G
+> Fig. 3. Stacked comparison of the two geometry-quality layers in the dimensionless target plane (˜ rcos θ, ˜rsin θ)for four representative (β, γ )
+> points. Top: log 10 |κN|;bottom: log 10 ˜Gon the same four geometries. Inner panels (a)–(c) within each block: deployment subsystems A, B, C (Section VI); inner panel (d): generic contrast point. Singularity loci overlaid on both blocks: κN= 0 (red solid), det J= 0 (blue dashed). Black triangles: sensors.
+
+[−0.69 , −0.61] . Three observations follow: (i) ρκ,G < 0 at every (β, γ ) tested; (ii) no geometry achieves |ρκ,G | > 0.9, so the two metrics are never tight enough for substitution; (iii) no geometry achieves |ρκ,G | < 0.5 either, so the two layers always share some signal (the doubly-singular collinearity events couple them). κN and GDoP are therefore neither redundant nor independent : the empirical-statistics counterpart to the algebraic-independence statement of Section III-C. 
+
+A. Range and bearing dependence 
+
+Figure 5 traces |κN |, | det J|, and ˜G along radial sweeps at three configurations representing the deployment subsystems. Panel C exhibits the diagnostic feature: at ˜r ≈ 2, |κN | drops by nearly five decades into a narrow algebraic-singularity dip while ˜G continues to vary gradually, and | det J| shows the corresponding sharp dip predicted by Theorem 2. This is a concrete instance of the off-diagonal regime: a target classified “GDoP-acceptable” at ˜r = 2 on this bearing would be flagged “κN -bad” by the algebraic layer, and a solver relying on GDoP alone would not see the warning. Panels A and B exhibit the typical pattern in which ˜G rises with range while |κN | and 
+
+| det J| decrease. 7-4 -2 0 2
+
+log 10 j5N j
+
+00.5 11.5 22.5 33.5 4
+
+> log 10  ~G
+
+(a) Pooled joint density 
+
+10 0
+
+10 2
+
+10 4
+
+> count (log scale)
+
+(b) Per-geometry correlation 
+
+median = -0.65 
+
+-0.9 -0.8 -0.7 -0.6 -0.5 -0.4 
+
+;5;G per geometry 
+
+0510 15 20 25 30 35 40 
+
+> count over ( -; .) grid
+
+Fig. 4. (a) Joint log-count density of (log 10 |κN |, log 10 ˜G) across 1.44 × 10 6 atlas points. (b) Distribution of per-geometry Pearson ρκ,G over the 20 × 20 (β, γ ) grid; range [−0.78 , −0.52] , median −0.65 (red dashed). 0 5 10 
+
+r/a 
+
+10 -4 
+
+10 -3 
+
+10 -2 
+
+10 -1 
+
+10 0
+
+10 1
+
+> |5N|, |det J|
+
+0100 200 300 400 500 
+
+> ~G
+
+A (12,3-like), 3=0.50 
+
+0 5 10 
+
+r/a 
+
+10 -4 
+
+10 -2 
+
+10 0
+
+10 2
+
+> |5N|, |det J|
+
+050 100 150 200 250 300 
+
+> ~G
+
+B (12,4-like), 3=1.20 
+
+0 5 10 
+
+r/a 
+
+10 -4 
+
+10 -2 
+
+10 0
+
+> |5N|, |det J|
+
+0500 1000 1500 2000 2500 3000 
+
+> ~G
+
+C (13,4-like), 3=2.00 
+
+Fig. 5. Twin-axis radial sweeps of |κN | (left axis, solid blue), | det J| (left axis, dashed green), and ˜G (right axis, solid red) versus ˜r, at three configurations representative of the deployment subsystems. Panel C shows a sharp κN dip at ˜r ≈ 2 where ˜G remains moderate, an off-diagonal κN -bad / GDoP-acceptable instance. TABLE I ATLAS -DERIVED κN AND ˜G AT ONE REPRESENTATIVE TARGET PER QUADRANT OF THE 2 × 2 CLASSIFICATION , AT THE ATLAS -WIDE MATCHED 
+
+5TH -PERCENTILE THRESHOLDS |κN | < 5.47 × 10 −3 , ˜G > 2.34 × 10 3 .Regime (β, γ ) ˜r θ (deg) |κN | | det J| ˜G
+
+both-good (−0.87 , +0 .55) 0.86 262.4 6.45e-02 2.17e-03 1.52e+02 
+
+κ-bad only (+1 .50 , −1.34) 0.58 244.1 3.32e-03 1.44e-03 3.01e+02 GDoP-bad only (−0.24 , −0.08) 8.76 311.2 2.08e-02 2.87e-05 2.78e+03 both-bad (−0.87 , +1 .03) 0.98 335.6 2.24e-03 1.18e-05 7.46e+03 
+
+B. Gate complementarity 
+
+Table I reports κN and ˜G at one representative atlas target per quadrant of the 2 × 2 classification, at the matched fifth-percentile thresholds ( |κN | < 5.47 × 10 −3, ˜G > 2.34 × 10 3). The four rows span markedly different parts of (β, γ, ˜r, θ )
+
+space, demonstrating that the four regimes are not co-located. Treating κN and ˜G as thresholded gates, Table II reports the ROC summary over the full atlas, where “true positive” means | det J| falls in the bottom 5% (truly Jacobian-singular). 
+
+TABLE II SINGULARITY GATE ROC AT MATCHED 5% PERCENTILE . B Y IDENTITY 
+
+(T2.2), ∆N = 0 ≡ det J = 0 , SO A ∆N -GATE IS REDUNDANT WITH THE 
+
+GD OP GATE AND OMITTED .Gate TPR FPR 
+
+|κN | < 5.47 e − 03 0.551 0.024 
+
+G > 2.34 e + 03 0.900 0.015 
+
+The disjoint 2 × 2 classification of all atlas points at matched 5% thresholds yields 93 .0% “both good”, 2.0% “κN -bad only” (caught by κ alone), 2.4% “GDoP-bad only” (caught by GDoP alone), and 2.6% “both bad”. Approximately 4.4% of the atlas (the off-diagonal sum) is detected by exactly one of the two diagnostics, a quantifiable complementarity signal at scale. The ˜G-gate has a direct operational reading through (9): at σt = 30 ns, the threshold ˜G > 2.34 × 10 3 corresponds to 
+
+CEP 50 ≳ 16 km. The κ-gate is independent of this operational reading: it flags target positions where the analytical solver’s 
+
+K-quadratic structure itself degenerates, irrespective of the 8 IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS           
+
+> TABLE III PER -SUBSYSTEM DIMENSIONLESS GEOMETRY (β, γ )FOR THE FOUR -NODE OPERATIONAL ARRAY ’S THREE TWO -DIMENSIONAL SUBSYSTEMS .Subsystem βγ
+> A-0.157 0.983 B-1.313 -0.620 C-0.406 1.400
+
+noise-floor-set position-error budget. VI. C ASE STUDY : A N OPERATIONAL FOUR -N ODE ARRAY 
+
+We validate the framework on an operational four-node TDoA array whose three two-dimensional subsystems are formed by selecting any three of the four sensors with the CRS held fixed at the first sensor. The case study (i) instantiates the dimensionless atlas analysis on a deployed geometry with empirically estimated noise, and (ii) tests whether the theory-predicted threshold of Corollary 1 agrees, at the deployment noise level, with a direct downstream Monte Carlo measure-ment of localization error. The dimensionless geometry of the three subsystems is reported in Table III; the three subsystems span markedly different geometries, with B exhibiting the most extreme aspect ratio ( |β| > 1). 
+
+a) Why three-sensor 2D subsystems rather than the four-sensor 3D solver: The deployment’s four receivers sit at altitudes 510 to 608 m over a horizontal baseline of order 
+
+30 km, an aspect ratio of roughly 1 : 300 . The four-node 3D analytical solver under this near-coplanar configuration is poorly conditioned in the vertical direction: the median dimen-sionless 3D GDoP across the operational range envelope is of order 290 , two orders of magnitude above the 2D values. Two-dimensional analysis on a three-sensor subsystem is therefore the operationally faithful granularity, with vertical recovered from the ADS-B-broadcast altitude or an independent altimeter - standard practice for wide-area multilateration deployments with co-sited altitudes [33]. 
+
+A. Per-subsystem threshold prediction 
+
+For each subsystem, we sample 1000 random target posi-tions in the operational range envelope ˜r ∈ [0 .5, 10] , compute 
+
+σκ from Theorem 3, and apply Corollary 1 with k = 3 to obtain the predicted threshold εpred  
+
+> s
+
+= 3 · median( σκ).The per-sensor ToA noise σt is estimated from 9 ADS-B-truth-paired OTA captures of distinct Mode-S transponders, retained from a larger pool by an iid-consistency check: a capture is kept only if all three per-pair residual stan-dard deviations fall below 500 ns and agree within a factor of 1.5. For each retained capture, the predicted sensor-pair TDoA is computed from the four receivers’ published Earth-Centered, Earth-Fixed (ECEF) positions and the ADS-B-reported aircraft Lat/Long/Alt; raw integer-tick TOA differ-ences are converted to seconds, and a per-pair static clock skew is removed as a constant offset (consistent with un-compensated cable-delay differences). The post-fit residual standard deviation is σTDoA ,ij , and the per-sensor noise follows as σt = σTDoA ,ij /√2.6529 4766 9673 5890 8127 4095 4650 5310 5353            
+
+> Clean ADS-B capture (short ICAO label)
+> 200 250 300 350 400
+> per-pair  <t (ns)
+> Pooled <t= 283 ns
+> Pair (1,2) Pair (1,3) Pair (1,4)
+> Fig. 6. Per-pair σtfor the 9ADS-B-paired captures. Horizontal line: pooled
+> σt= 283 ns from (14).
+
+Variance-pooling across 9 captures ( 3305 samples per pair) and averaging across the three pairs gives 
+
+σt = 283 ns (95% CI : [278 .3, 284 .5] ns ) (14) with per-pair values 286 , 285 , 277 ns (Figure 6). The 95% 
+
+CI is computed by non-parametric cluster bootstrap over the 9
+
+aircraft ( 10 4 resamples). The per-pair values agree within ∼3% and the per-capture cluster is tightly contained in the 270 –
+
+290 ns band across all 9 aircraft, supporting the independent-per-sensor-noise model and indicating σt = 283 ns is a property of the deployment’s timestamping infrastructure rather than any single transponder. This value is used in all subsequent runs. Applying the threshold procedure at 
+
+σt = 283 ns gives εpred  
+
+> A
+
+= 4 .38 × 10 −2, εpred  
+
+> B
+
+= 8 .57 × 10 −2,
+
+εpred  
+
+> C
+
+= 4 .06 × 10 −2. Subsystem B’s predicted threshold is approximately double those of A and C, consistent with B’s more extreme dimensionless geometry ( |β| > 1) producing a larger σκ noise floor per Theorem 3. 
+
+B. Operational threshold from Monte Carlo localization-error analysis 
+
+We now run a separate, downstream-coupled Monte Carlo procedure that measures the operational threshold: the |κN |
+
+value below which downstream localization error exceeds an operational tolerance. For each subsystem, twelve trajectories within 80 km of the array centroid, with five independent noise realizations each, are perturbed at the empirical σt =283 ns and passed through the analytical solver. Per-sample localization error is scattered against |κN | (Figure 7). The measured threshold εmeas is the smallest |κN | cutoff such that the survivor population achieves the 5 km tolerance with 
+
+≥ 95% reliability. The characteristic L-shape is present in all three panels: samples with large |κN | cluster at low error, while small-
+
+|κN | samples fan upward into the 10 4 to 10 5 m error tail, one to two orders of magnitude above the 5 km tolerance (red dashed). The L-elbow positions, where the upper error envelope first crosses tolerance, locate the per-subsystem εmeas 
+
+(green vertical). Figure 8 compares predicted versus measured thresholds. Subsystem A: εpred = 4 .38 ×10 −2, εmeas = 3 .16 ×10 −1 (ηA ≈
+
+7.2); subsystem B: 8.57 × 10 −2 vs 5.62 × 10 −1 (ηB ≈ 6.6); subsystem C: 4.06 × 10 −2 vs 3.16 × 10 −1 (ηC ≈ 7.8). Two features stand out. First, theory and Monte Carlo agree on 910 -5 10 0
+
+|5|
+
+10 -4 
+
+10 -2 
+
+10 0
+
+10 2
+
+10 4
+
+10 6
+
+> Localization error (m)
+
+Subsystem A 
+
+10 -5 10 0
+
+|5|
+
+10 -4 
+
+10 -2 
+
+10 0
+
+10 2
+
+10 4
+
+10 6
+
+> Localization error (m)
+
+Subsystem B 
+
+10 -5 10 0
+
+|5|
+
+10 -4 
+
+10 -2 
+
+10 0
+
+10 2
+
+10 4
+
+10 6
+
+> Localization error (m)
+
+Subsystem C 
+
+Fig. 7. Per-subsystem localization error vs |κN | from 10 4-trajectory Monte-Carlo. Red dashed: 5 km tolerance. Green dashed: empirical εmeas at 95% 
+
+reliability. Per-subsystem threshold: prediction vs measurement at empirical <t
+
+0.44 0.86 0.41 3.16 5.62 3.16 
+
+2 = 7.2 2 = 6.6 2 = 7.8 
+
+A B C
+
+Subsystem 
+
+01234567  
+
+> 0 (# 10 -1 , dimensionless)
+> Predicted (Corollary 1) Measured (MC, <t= 283 ns)
+
+Fig. 8. Theory-predicted (Corollary 1) versus Monte-Carlo-measured ε per subsystem at empirical σt = 283 ns. Theory and MC agree on per-subsystem ordering ( B > A ≈ C in both); εmeas /ε pred ≈ 7 across all three subsystems. 
+
+per-subsystem ordering: both rank B as the most restrictive (εpred  
+
+> B
+
+> ε pred  
+
+> A
+
+≈ εpred  
+
+> C
+
+, and likewise for εmeas ). The algebraic gate of Corollary 1 therefore predicts the correct operational ordering at deployment noise. Second, defining 
+
+ηs ≡ εmeas 
+
+> s
+
+εpred 
+
+> s
+
+, η ≡ 1
+
+|S| 
+
+X
+
+> s∈S
+
+ηs, (15) the per-subsystem η values lie in a narrow band of width 
+
+∼17% , with η ≈ 7.2 at the deployment σt.
+
+η is the case-study counterpart, at the deployment noise level, to CEP 50 ≈ 0.75 c σ t ˜G of (9), which converts di-mensionless GDoP into operational CEP 50 . The two relations together let an operator translate κN and GDoP gates between 
+
+TABLE IV SENSITIVITY OF PREDICTED THRESHOLD εPRED TO PER -SENSOR TOA 
+
+> NOISE
+
+σt . T HRESHOLD SCALES LINEARLY WITH σt PER THEOREM 3; 
+
+> PER
+
+-SUBSYSTEM ORDERING IS INVARIANT . B OTTOM ROW :
+
+> DEPLOYMENT
+
+-SPECIFIC EMPIRICAL σt FROM (14). 
+
+σt Subsys A Subsys B Subsys C 10 ns 1.55 × 10 −3 3.03 × 10 −3 1.43 × 10 −3
+
+30 ns 4.64 × 10 −3 9.09 × 10 −3 4.30 × 10 −3
+
+100 ns 1.55 × 10 −2 3.03 × 10 −2 1.43 × 10 −2
+
+283 ns (emp.) 4.38 × 10 −2 8.57 × 10 −2 4.06 × 10 −2
+
+their algebraic and operational forms. The two thresholds remain valid for distinct operational decisions: εpred flags sam-ples on which the analytical solver’s algebraic conditioning is in question regardless of the downstream error budget; 
+
+εmeas flags samples whose downstream localization error would exceed tolerance. Joint deployment in the 2 × 2 classification of §III-E gives finer per-sample reporting than either alone. 
+
+C. Sensitivity to σt and tolerance choice 
+
+Theorem 3 predicts that σκ scales linearly with σt, so εpred 
+
+also scales linearly; Table IV reports predicted thresholds at three representative noise levels covering typical ADS-B and SDR-receiver timestamping accuracies. The per-subsystem or-dering is invariant. The same σt axis maps to CEP 50 through (9), giving per-subsystem CEP 50 at σt = 30 ns of order a few kilometres for A and C and a few tens of kilometres for B. The Monte-Carlo-measured threshold εmeas depends on the downstream tolerance through the L-shape of Fig. 7, with sub-linear dependence because the vertical edge spans many decades. The calibration ratio η is, however, deployment-specific in a stricter sense than εpred : while σκ scales lin-early with σt, εmeas does not, because the L-elbow’s position reflects a balance between σκ-coupled and GDoP-coupled error contributions whose mix shifts with σt. As a numerical 10 IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS 
+
+illustration, re-running the MC at σt = 30 ns yields εmeas 
+
+values {1.8 × 10 −2, 5.6 × 10 −3, 1.8 × 10 −2} for A, B, C; the per-subsystem ordering changes to A ≈ C > B and the meas-to-pred ratios fan out to {3.9, 0.6, 4.2}. The deployment-meaningful calibration is therefore the one run at the deploy-ment σt directly. VII. D ISCUSSION 
+
+A. Practical implications for receiver-array design 
+
+Identity (10) expresses det J as a product of det ¯P (a geo-metric volume of the canonical sensor matrix) and (κN K2 −∥A∥2) (a target-dependent term). Receiver-array design there-fore admits a clean decomposition: det ¯P is set by sensor placement (small det ¯P means a near-degenerate baseline configuration to be avoided), while the target-dependent factor sets which regions of operational airspace are Jacobian-good or Jacobian-bad. Similarly, identity (11) says that any branch-merge target is automatically a Jacobian-singular target, so an analytical solver that picks a single root via geometric disambiguation can use the GDoP layer alone to flag ambigu-ous samples, avoiding the need for an explicit discriminant gate. In operational practice, the GDoP-layer threshold can be expressed equivalently in CEP 50 at the deployment’s nominal 
+
+σt via (9); the algebraic-complementarity claim between κN
+
+and ˜G transfers directly to κN and CEP 50 without modifica-tion. The κ-gate adds a category of pathology - the branch-divergence regime of §III-C - that no purely position-error-budget metric ( ˜G, CEP 50 , major-axis σ) can reach. 
+
+a) Relation to algebraic-geometric prior work: The two singularity loci of §III-C are not new objects: the leading-coefficient locus ( κN = 0 ) and the related Jacobian-discriminant locus were characterized for the planar three-receiver case by Compagnoni and Notari [27], [28], with related range-map and three-receiver three-dimensional results in [29] and a statistical treatment of the singular set in [30]. Our contribution is twofold: (i) closed-form identities (T2.1, T2.2) factoring det J′ and ∆N in solver-state co-ordinates (κN , K, ∥A∥2) for general dimension N , directly evaluable from TDoA data without prior knowledge of the source position; and (ii) the operationalization of κN as a runtime geometry-quality metric reported alongside GDoP, with a closed-form noise sensitivity σκ and a complementarity statistic measured across a parameterized atlas. 
+
+B. Limitations 
+
+The current treatment is for time-synchronized receiver arrays in line-of-sight conditions. Extensions to unsynchro-nized arrays [2], [17], to non-line-of-sight conditions [34], and to over-the-horizon multistatic-radar configurations [5] are natural future directions. The calibration constant η ≈ 7 be-tween the algebraic and operational thresholds is deployment-specific; generalizing η to other deployments requires a com-parable per-deployment MC, since the L-shape elbow’s σt-sensitivity is non-linear in the singular regime even though σκ
+
+itself scales linearly with σt.VIII. C ONCLUSION 
+
+We introduced κN = ∥B∥2 − 1, the leading coefficient of the analytical-TDoA K-quadratic, as a geometry-quality diagnostic for multilateration. Two algebraic identities ((T2.1) factoring det J′ and (T2.2) the discriminant ∆N = ( κN K2 −∥A∥2)2/(4 K2)) tie κN to the Jacobian determinant and the 
+
+K-quadratic discriminant, establishing exactly two distinct codimension-one singularity loci: branch divergence ( κN = 0 )and Jacobian / branch-merge ( det J = 0 ≡ ∆N = 0), the latter captured by GDoP. A CRLB-linked closed-form noise sensitivity σκ under the standard Gaussian ToA model, validated against Monte Carlo to 2% median relative error, supports the three-sigma threshold rule of Corollary 1. An empirical atlas over 1.44 × 10 6 dimensionless samples confirms both identities at machine precision and establishes that κN and GDoP carry substantially independent geometry-quality information: per-geometry Pearson correlation between 
+
+log 10 |κN | and log 10 ˜G ranges from −0.88 to −0.56 (median 
+
+−0.71 ), with approximately 4.4% of the atlas falling in off-diagonal regimes detected by exactly one of the two diagnos-tics. The case study on a four-node operational array validates the framework against direct downstream Monte Carlo at the deployment’s empirically estimated σt = 283 ns: theory and Monte Carlo agree on per-subsystem ordering (B most restrictive in both), with a near-constant calibration ratio 
+
+η ≈ 7 anchoring a deployment-specific bridge between the algebraic and operational threshold definitions, analogous in spirit to the standard CEP 50 –GDoP relation. The framework provides receiver-array designers with two distinct geometry-quality layers and a 2 × 2 classification of target positions that refines the GDoP-only picture, applicable to any closed-form analytical TDoA system. Extensions to wider-aperture arrays, unsynchronized configurations, non-line-of-sight en-vironments, and FDoA-augmented hybrid measurements are immediate next directions. REFERENCES [1] M. Schäfer and P. Jonáš, “ADS-B positional accuracy and anomalies: A comprehensive analysis using high-resolution MLAT data,” in Proc. ICNS 2025 , 2025, iEEE Xplore document 10976935. [2] C. Sonnleitner and T. Hobiger, “Wide-area multilateration airspace surveillance with unsynchronized low-cost ADS-B receivers using TDOA observations,” NAVIGATION: J. Inst. Navig. , vol. 72, no. 3, p. navi.704, 2025. [3] R. Osypiuk and F. Surma, “Uncertainty of aircraft localization with multilateration and known altitude,” Electronics , vol. 14, no. 12, p. 2420, 2025. [4] B. Gattis, J. Cydejko, and D. Akos, “Baltic sea GNSS jamming and spoofing emitter detection and localization in real-time using a time difference of arrival (TDOA) system,” GPS Solut. , vol. 30, p. 96, 2026, published online 2025. [5] I. Nasso and F. Santi, “Maritime moving target detection and localisation technique for GNSS-based passive multistatic radar,” IET Radar Sonar Navig. , vol. 18, no. 1, pp. 93–106, 2024. [6] W. H. Foy, “Position-location solutions by Taylor-series estimation,”     
+
+> IEEE Trans. Aerosp. Electron. Syst. , vol. AES-12, no. 2, pp. 187–194, Mar. 1976. [7] S. Bancroft, “An algebraic solution of the GPS equations,” IEEE Trans. Aerosp. Electron. Syst. , vol. AES-21, no. 1, pp. 56–59, Jan. 1985. [8] J. O. Smith and J. S. Abel, “The spherical interpolation method of source localization,” IEEE J. Ocean. Eng. , vol. OE-12, no. 1, pp. 246–252, Jan. 1987. 11
+
+[9] ——, “Closed-form least-squares source location estimation from range-difference measurements,” IEEE Trans. Acoust. Speech Signal Process. ,vol. ASSP-35, no. 12, pp. 1661–1669, Dec. 1987. [10] H. C. Schau and A. Z. Robinson, “Passive source localization employing intersecting spherical surfaces from time-of-arrival differences,” IEEE Trans. Acoust. Speech Signal Process. , vol. ASSP-35, no. 8, pp. 1223– 1225, Aug. 1987. [11] B. Friedlander, “A passive localization algorithm and its accuracy analysis,” IEEE J. Ocean. Eng. , vol. OE-12, no. 1, pp. 234–245, Jan. 1987. [12] B. T. Fang, “Simple solutions for hyperbolic and related position fixes,” 
+
+IEEE Trans. Aerosp. Electron. Syst. , vol. 26, no. 5, pp. 748–753, Sep. 1990. [13] Y. T. Chan and K. C. Ho, “A simple and efficient estimator for hyperbolic location,” IEEE Trans. Signal Process. , vol. 42, no. 8, pp. 1905–1915, Aug. 1994. [14] Y. Huang, J. Benesty, G. W. Elko, and R. M. Mersereau, “Real-time passive source localization: A practical linear-correction least-squares approach,” IEEE Trans. Speech Audio Process. , vol. 9, no. 8, pp. 943– 956, Nov. 2001, iEEE Xplore document 972137. [15] Y. Sun, K. C. Ho, and Q. Wan, “Solution and analysis of TDOA localization of a near or distant source in closed form,” IEEE Trans. Signal Process. , vol. 67, no. 2, pp. 320–335, 2019. [16] P. Hubáˇ cek, J. Veselý, and J. Olivová, “The complete analytical solution of the TDOA localization method,” Def. Sci. J. , vol. 72, no. 2, pp. 227– 235, Mar. 2022. [17] D. Lin, G. Wang, K. C. Ho, and L. Huang, “Hybrid DTD-AOA multi-object localization in 3-D by single receiver without synchronization and some transmitter positions: Solutions and analysis,” IEEE Trans. Signal Process. , 2024. [18] T. Xing, Y. Sun, L. Ni, X. Peng, K. Zhang, and Q. Wan, “Solution and analysis for 3-D localization in closed-form integrating SA and TDOA measurements,” in Proc. IEEE ICASSP 2024 , 2024. [19] N. K. Inamdar, “Time difference of arrival source localization: Exact linear solutions for the general 3D problem,” arXiv preprint , 2025, arXiv:2501.01076. [20] D. J. Torrieri, “Statistical theory of passive location systems,” IEEE Trans. Aerosp. Electron. Syst. , vol. AES-20, no. 2, pp. 183–198, Mar. 1984. [21] K. C. Pine, S. Pine, and M. Cheney, “The geometry of far-field passive source localization with TDOA and FDOA,” IEEE Trans. Aerosp. Electron. Syst. , vol. 57, no. 6, pp. 3782–3790, 2021. [22] Y. Yang, J. Zheng, H. Liu, K. C. Ho, Z. Yang, and S. Gao, “Optimal sensor placement and velocity configuration for TDOA-FDOA localiza-tion and tracking of a moving source,” IEEE Trans. Aerosp. Electron. Syst. , vol. 60, no. 6, pp. 8255–8272, Dec. 2024. [23] C. Zhang, X. Han, H. Kong, and K. C. Ho, “Optimal sensor placement for full-set TDOA localization accounting for sensor location errors,” 
+
+IEEE Trans. Aerosp. Electron. Syst. , 2025, early access; IEEE Xplore document 10972121. [24] J. Díez-González, R. Álvarez, L. Sánchez-González, L. Fernández-Robles, H. Pérez, and M. Castejón-Limas, “3D TDOA problem solution with four receiving nodes,” Sensors , vol. 19, no. 13, p. 2892, Jun. 2019. [25] A. Beck, P. Stoica, and J. Li, “Exact and approximate solutions of source localization problems,” IEEE Trans. Signal Process. , vol. 56, no. 5, pp. 1770–1778, May 2008, iEEE Xplore document 4407653. [26] G. Simon and G. Zachár, “Fast and fault-tolerant passive hyperbolic localization using sensor consensus,” Sensors , vol. 24, no. 9, p. 2891, 2024. [27] M. Compagnoni, R. Notari, F. Antonacci, and A. Sarti, “A comprehen-sive analysis of the geometry of TDOA maps in localization problems,” 
+
+Inverse Probl. , vol. 30, no. 3, p. 035004, 2014. [28] M. Compagnoni and R. Notari, “TDOA-based localization in two dimensions: The bifurcation curve,” Fundam. Inform. , 2014. [29] M. Compagnoni, R. Notari, A. A. Ruggiu, F. Antonacci, and A. Sarti, “The algebro-geometric study of range maps,” J. Nonlinear Sci. , vol. 27, no. 1, pp. 99–157, 2017. [30] M. Compagnoni, R. Notari, F. Antonacci, and A. Sarti, “On the statistical model of source localization based on range difference measurements,” 
+
+arXiv preprint , 2016. [31] R. A. Poisel, Electronic Warfare Target Location Methods , 2nd ed. Norwood, MA: Artech House, 2012. [32] N. A. O’Donoughue, Emitter Detection and Geolocation for Electronic Warfare . Norwood, MA: Artech House, 2020. [33] EUROCONTROL, “Wide area multilateration: Report on EATMP TRS 131/04,” European Organisation for the Safety of Air Navigation, Tech. Rep. Version 1.1, Aug. 2005. [34] C. Dickerson, S. Masrur, J. Dickerson, O. Ozdemir, and I. Guvenc, “Impact of altitude, bandwidth, and NLOS bias on TDOA-based 3D UAV localization: Experimental results and CRLB analysis,” in Proc. IEEE ICC 2025 Workshop PSWiN , 2025, arXiv:2502.01771. 
+
+Abeer Nasir Chaudhry received the B.E. degree in Avionics Engineering from the National University of Sciences and Technology (NUST), Islamabad, Pakistan, in 2019, and the M.S. degree in Electrical Engineering from the American University of Shar-jah, Sharjah, U.A.E., in 2021. Since 2021, he has been working as a DSP Simulation Engineer with the National Aerospace Science and Technology Park (NASTP), Islamabad, Pakistan. His research interests include statistical signal processing, remote sensing, and automotive radar signal processing. Mr. Chaudhry was the recipient of the Rector’s Gold Medal for the Best Undergraduate Final Year Project in 2019. He is also a recipient of the Marie Skłodowska-Curie Actions (MSCA) Doctoral Networks (DN) Fellowship and the University International Postgraduate Award (UIPA), University of New South Wales (UNSW), Australia. 
+
+Salman Liaquat (Member IEEE) completed his B.E. Avionics from National University of Sciences and Technology (NUST), Islamabad, Pakistan, in 2010, Master of Science in Avionics Engineering from Air University, Islamabad, Pakistan, in 2019, and Ph.D. in Electrical and Electronic Engineering from Universiti Sains Malaysia, Penang, Malaysia in 2026. He is currently working with the National Aerospace Science and Technology Park (NASTP), Islamabad, Pakistan. His research interests include digital signal processing and its applications in radars. With over ten years of professional experience in avionics and radar systems, he has authored several publications in international journals and presented at peer-reviewed conferences. He is the recipient of IEEE AESS Engineering Scholarship for Graduate Students in 2025, and IEEE Signal Processing Society Scholarship in 2023 and 2024. He is professionally registered as a Professional Engineer with Pakistan Engineering Council, Chartered Engineer (CEng) with the Engineering Council UK, and is a Member of the Royal Aeronautical Society (MRAeS), United Kingdom. 
+
+Muhammad Mohsin Khadim completed his B.E. in Avionics from the National University of Sciences and Technology (NUST), Pakistan, in 2024. He has over two years of professional experience in avionics and digital signal processing. His research interests lie in fine-tuning large language models, natural language processing, and applying classical signal-processing methods to deep neural networks.

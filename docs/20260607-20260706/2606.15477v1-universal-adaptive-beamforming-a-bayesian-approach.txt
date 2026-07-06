@@ -1,0 +1,776 @@
+Title: Universal adaptive beamforming: A Bayesian approach
+
+URL Source: https://arxiv.org/pdf/2606.15477v1
+
+Published Time: Tue, 16 Jun 2026 00:52:17 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# Universal Adaptive Beamforming: A Bayesian Approach 
+
+Diego A. Cuji 1, Andrew C. Singer 1, and John R. Buck 2
+
+1Stony Brook University, Stony Brook, NY, USA 
+
+2University of Massachusetts Dartmouth, Dartmouth, MA, USA 
+
+Abstract 
+
+We present a Bayesian universal beamforming framework for adaptive array processing in dynamic underwater acoustic environments with unknown and time-varying propagation geometry. Motivated by ideas from universal prediction and estimation, the proposed ap-proach discretizes the angular domain into a finite set of steering hypotheses and recursively computes posterior probabilities over competing spatial models using observation-dependent likelihood functions. For Gaussian observation models, the posterior update reduces to an exponential-weights recursion driven by hypothesis-dependent beamformer evidence metrics. The resulting framework performs soft spatial inference and adaptive beamforming by continu-ously redistributing posterior probability across competing steering hypotheses while forming posterior-weighted combinations of branch outputs. The formulation naturally connects to classical adaptive beamformers including matched filtering and minimum mean-square error (MMSE) beamforming. In addition, the framework is extended toward broadband underwater acoustic communi-cation receivers through frequency-domain beamformer synthesis and adaptive equalization. Posterior probabilities are updated according to branch-specific equalization errors, enabling joint spatial-temporal adaptation under multipath propagation, Doppler-induced distortions, and time-varying channel conditions. Experimental results using MACE data demonstrate re-liable communication performance with low overhead, low data detection mean-squared error, and zero observed bit errors. 
+
+# 1 Introduction 
+
+Underwater acoustic communication channels exhibit severe multipath propagation, long delay spreads, Doppler effects, and strong temporal variability. Surface and bottom reflections generate arrivals with different delays, gains, and angles of arrival, while transmitter-receiver motion intro-duces Doppler distortion. Consequently, underwater acoustic communication systems must operate in environments where both the temporal and spatial characteristics of the propagation channel vary over time. To illustrate these underwater channel effects, consider the shallow-water channel geometry shown in Fig. 1(a). The transmitter is initially located at a distance LT R from the receiver array, while the transmitter and receiver are positioned at depths DT and DR, respectively. We consider three representative propagation paths: the direct path, the surface-reflected path, and the bottom-reflected path. The propagation paths arrive at the receiver with relative delays τp, p = 0 , 1, 2, and 1
+
+> arXiv:2606.15477v1 [eess.SP] 13 Jun 2026
+
+angles of arrival θp (for example, the angle of arrival of the direct path is denoted by θ0 and measured with respect to the horizontal axis). As the transmitter moves relative to the receiver with velocity 
+
+vtr , the propagation paths continuously vary their lengths, resulting in time-varying delays modeled as τp(t) = τp + ap · t, where ap = vtr,p /c is the Doppler scaling factor. This scaling factor is related to the relative transmitter/receiver velocity projected onto the p-th path vtr,p and the speed of sound 
+
+c (nominally 1500 m/s in water). Figure 1(b) illustrates a three-dimensional visualization of the underwater acoustic propagation paths, extracted from a real recording, as a function of angle of arrival, delay, and time. The multiple yellow trajectories highlight the multipath structure of the channel, while their slanted evolution over time reveals time-varying delays caused by platform motion. 
+
+> Array
+> θ0
+> Field-of-view direct path surface bounce path bottom bounce path
+> DR
+> DT
+> LT R
+> direction of motion
+> TX
+
+(a) (b) 
+
+Figure 1: (a) Shallow-water channel geometry illustrating the direct, surface-reflected, and bottom-reflected propagation paths between the transmitter and receiver array. (b) Three-dimensional visualization of the propagation paths observed at the receiver as functions of angle of arrival, delay, and time. The multiple yellow trajectories illustrate the multipath structure of the channel and their slanted evolution reveals time-varying delays caused by platform motion. To mitigate the time-varying effects and multipath propagation, underwater acoustic receivers commonly employ array processing techniques together with adaptive equalization methods. In particular, beamforming techniques are widely used to provide spatial gain, interference suppres-sion, path separation, and improved signal detection. When multiple strong arrivals exist, and their relative gains and delays vary across the duration of transmission, beamforming approaches often rely on estimating one or more dominant angles of arrival for stable paths and subsequently con-structing beamforming filters matched to those estimated directions. Such approaches often require hard beam selection or switching operations and may become sensitive to directional estimation errors in dynamic underwater acoustic channels. Consequently, beamformers designed for static or slowly varying geometries may experience degraded performance when the spatial structure of the channel varies rapidly over time. In this work, we propose a Bayesian adaptive beamforming framework based on a universal mixture over a finite set of steering hypotheses. The receiver maintains a set of candidate steering directions with prior probabilities representing spatial uncertainty. Each beamformer output is as-signed a posterior probability that quantifies its consistency with the received observations. These probabilities are recursively updated via Bayes’ theorem using exponential-family likelihoods, yield-ing sequential exponential-weighting updates. The beamformer outputs are then probabilistically combined, enabling joint angle-of-arrival estimation, adaptive beamforming, and continuous spatial tracking without hard beam switching. 2Building upon this probabilistic framework, we further introduce a universal equalization ap-proach in which an adaptive equalizer is placed after each beamforming branch. While the beam-formers continuously track the evolving angles of arrival and spatial structure of the channel, the equalizers compensate for channel gain fluctuations, intersymbol interference, and path-dependent Doppler drifts. The posterior probabilities are similarly updated using exponential likelihood func-tions constructed from the branch-specific data-detection performance. The branch outputs are then combined according to their posterior probabilities, enabling joint spatio-temporal adaptation under time-varying underwater acoustic propagation conditions. The remainder of this paper is organized as follows. Section 2 introduces the proposed universal adaptive beamforming framework and derives the associated Bayesian posterior adaptation rule. A Gaussian observation model is then used to establish the connection between the probabilistic formulation and classical minimum mean-square error (MMSE) beamforming. Section 3 extends the framework toward universal adaptive equalization. Finally, experimental results and conclusions are presented in Section 4 and Section 5, respectively. 
+
+# 2 Universal Adaptive Beamforming 
+
+We first consider a narrowband array model to introduce the proposed Bayesian beamforming framework. Let vm[n] denote the complex baseband sample observed on the m-th array element at time index n. Under the plane-wave and narrowband assumptions, the received signal can be expressed as 
+
+vm[n] = x[n]e−jmχ 0 + wm[n], m = 0 , . . . , M − 1 (1) where x[n] denotes the complex envelope of the signal of interest, wm[n] represents additive complex noise, and χ0 = 2 πf δc sin θ0 denotes the spatial phase shift induced by plane-wave propagation across adjacent array elements. Here, f is the signal frequency, δ is the inter-element spacing, and θ0 is the angle of arrival of the signal. The received signal model can be equivalently expressed as 
+
+v[n] = sM (χ0)x[n] + w[n] (2) where v[n] = [v0[n] v1[n] . . . vM −1[n]]⊤ and 
+
+sM (χ) = [1 e−jχ . . . e−j(M −1) χ]⊤ (3) denotes the steering vector associated with spatial phase shift χ.In the array signal processing literature, the tasks are twofold: to estimate the angle of arrival ˆθ0
+
+and subsequently construct a beamforming filter Φ(ˆθ0). The resulting beamformed output provides an estimate of the desired signal 
+
+ˆx[n] = ΦH (ˆθ0)v[n] (4) In the proposed universal beamforming framework, angle inference and spatial filtering are performed jointly through adaptive probabilistic weighting over multiple steering hypotheses. 32.1 Bayesian approach 
+
+Consider a grid of hypothesized angles of arrival θi ∈ Θ = {θ1, θ 2, . . . , θ K }. For each hypothesis, we obtain a corresponding beamforming filter Φi = Φ(θi) and compute the output 
+
+ˆxi[n] = ΦHi v[n] (5) The final estimate of the signal is expressed through a weighted blending operation 
+
+ˆx[n] = 
+
+> K
+
+∑
+
+> i=1
+
+μi[n]ˆ xi[n] (6) where the weights μi[n] ≜ P (θi|vn−10
+
+) are interpreted as the posterior probabilities of the hypothesis angles θi given the observation signal samples vn−10 = {v[0] , v[1] , . . . , v[n − 1] }. These posterior probabilities are computed using Bayes’ theorem 
+
+P (θi|vn−10
+
+) = Pi · P (vn−10 |θi
+
+)∑Kj=1 Pj · P (vn−10 |θj
+
+) (7) where Pi are the prior probabilities associated with the hypothesis θi, i.e. Pi = P (θi), and the conditional likelihood P (vn−10 |θi
+
+) admits an exponential form [1, 2] 
+
+P (vn−10 |θi
+
+) = B · exp 
+
+(
+
+− 12ν L (vn−10 , Φi
+
+))
+
+(8) where B is a scaling constant, ν is a constant that controls the sensitivity to the loss function 
+
+L (vn−10 , Φi
+
+), which depends on the input samples vn−10 and hypothesis θi.
+
+2.1.1 Example 
+
+Consider the scenario described by Eq. (2) where x[n] is an i.i.d. source of interest arriving from an unknown direction θ0, e.g. x[n] ∼ CN (0 , σ 2
+
+> x
+
+), and the noise is zero-mean and i.i.d. circularly symmetric complex Gaussian, e.g. w[n] ∼ CN (0, Rw) with covariance Rw = σ2
+
+> w
+
+IM .Defining the i-th hypothesis as 
+
+v[n] = sM (χi) x[n] + w[n] (9) where χi = 2 πf δc sin θi. Under the steering hypothesis θi, the received vector v[n] is distributed according to v[n]|θi ∼ CN (0, Ri), where 
+
+Ri = σ2
+
+> x
+
+sM (χi)sHM (χi) + σ2
+
+> w
+
+IM (10) Then, we obtain the joint conditional probability density function upon observing vn−10
+
+P (vn−10 |θi
+
+) =
+
+> n−1
+
+∏
+
+> k=0
+
+p(v[k]|θi) = 
+
+> n−1
+
+∏
+
+> k=0
+
+1
+
+πM det (Ri) exp (−vH [k]R−1 
+
+> i
+
+v[k])
+
+= 1(πM det (Ri)) n exp 
+
+(
+
+−
+
+> n−1
+
+∑
+
+> k=0
+
+vH [k]R−1 
+
+> i
+
+v[k]
+
+) (11) 4Applying the matrix inversion lemma to R−1 
+
+> i
+
+and removing terms independent of the steering hypothesis θi, the conditional likelihood can be expressed as 
+
+P (vn−10 |θi
+
+) ∝ exp 
+
+(
+
+− 12ν L (vn−10 , Φi
+
+))
+
+(12) with ν = σ2
+
+> x
+
+/
+
+(
+
+2 + 2σ2
+
+> x
+> σ2
+> w
+
+M
+
+)
+
+and a loss function defined as 
+
+L (vn−10 , Φi
+
+) = −
+
+> n−1
+
+∑
+
+> k=0
+
+|ΦHi v[k]|2 (13) where the beamformer 
+
+Φi = σ2
+
+> x
+
+σ2 
+
+> w
+
++ σ2
+
+> x
+
+M sM (χi) (14) coincides with the linear MMSE beamformer associated with the Gaussian observation model[3–5], i.e. ΦMMSE = σ2
+
+> x
+
+R−1 
+
+> i
+
+sM (χi).The posterior weights are then computed as 
+
+μi[n] = Pi · exp (− 12ν L (vn−10 , Φi
+
+)) ∑Kj=1 Pj · exp (− 12ν L (vn−10 , Φj
+
+)) (15) where the denominator ensures that the weights add up to one 
+
+> K
+
+∑
+
+> i=1
+
+μi[n] = 1 (16) Thus, steering hypotheses producing larger coherent beamformer output energy receive larger pos-terior probability and therefore contribute more strongly to the final beamformed output. In Fig. 2, we illustrate the block diagram of the universal adaptive beamforming algorithm. 
+
+...     
+
+> ΦK
+> Φ2
+> Φ1
+> Θ = {θ1, θ 2, . . . , θ K}
+> v[n]
+> ΦH
+> 1v[n]
+> ΦH
+> 2v[n]
+> ΦHKv[n]
+> ×
+> ×
+> ×
+> ˆx[n]
+
+∑               
+
+> μi[n] = Piexp (−12νL(vn−10,Φi
+> )) ∑Kj=1 Pjexp (−12νL(vn−10,Φj
+> )) vn−10
+> μ1[n]
+> μ2[n]
+> μK[n]
+
+Figure 2: Universal Adaptive Beamforming. A simulation example is presented to illustrate the posterior adaptation behavior of the proposed universal beamforming framework under unknown angle-of-arrival conditions. We consider the narrowband model of Eq. (2) with a vertical linear array of 12 elements equally-spaced by δ =0.075 m (corresponding to half of the wavelength), the speed of sound is c = 1500 m/s, and the 5frequency of interest is f = 10 kHz. The signal source x[n] and noise elements wm[n] are i.i.d. and drawn from zero-mean circularly-symmetric complex Gaussian distributions with variances σ2
+
+x and 
+
+σ2
+
+w. The signal-to-noise ratio (SNR) in decibels is defined as SNR = 10 log 10 
+
+σ2
+
+> x
+
+σ2
+
+> w
+
+and set to 0 dB. Two scenarios are considered: 1) a fixed-angle source with θ0 = 11 ◦ and 2) a time-varying source whose angle of arrival evolves over time θ0[n] = 11 ◦ − 150000 n.The hypothesis angles are set to Θ ∈ [0 ◦, 19 ◦] and uniformly distributed according to Pi = 1/20 ,
+
+∀i. In Fig. 3(a) and Fig. 3(b), we illustrate the evolution of the posterior weights μi[n] for both cases. For the static scenario, the posterior distribution rapidly converges toward the correct steering direction θ0, producing a stable angle estimate and coherent beamformer output. In the time-varying scenario, the posterior weights continuously redistribute across neighboring steering hypotheses as the source direction changes, demonstrating the ability of the proposed framework to perform soft spatial tracking without explicit beam switching. Simultaneous tracking of the angle of arrival can be established by computing 
+
+ˆθ0[n] = 
+
+K∑
+
+i=1 
+
+μi[n] · θi (17) and the performance is shown in Fig. 3(c) and Fig. 3(d) for both scenarios. We observe that the resulting angle estimates closely follow the true angle θ0[n], illustrating the adaptive nature of the Bayesian posterior weighting mechanism. 0    
+
+> 1000
+> 2000
+> 3000
+> Time index n
+> Angle i[deg]
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Posterior weights i[n]
+
+(a) 0     
+
+> 1000
+> 2000
+> 3000
+> Time index n
+> Angle i[deg]
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> Posterior weights i[n]
+
+(b) 0 500 1000 1500 2000 2500 3000 3500 4000    
+
+> Time index n
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> Angle  i [deg]
+> Angle Tracking
+> True angle
+> Estimated angle 0[n]
+
+(c) 0 500 1000 1500 2000 2500 3000 3500 4000    
+
+> Time index n
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> Angle  i [deg]
+> Angle Tracking
+> True angle
+> Estimated angle 0[n]
+
+(d) 
+
+Figure 3: (a,b) Evolution of the posterior weights μi[n]. (c,d) Angle of arrival estimation ˆθ0[n] = ∑Ki=1 μi[n] · θi.
+
+# 3 Universal Beamforming and Equalization 
+
+Following the idea of universal beamforming and prediction, we extend the application to underwater acoustic communication and equalization. In this case, the baseband continuous-time received signal on the m-th element is given by 
+
+vm(t) = ∑
+
+n
+
+d[n] hm(t, t − nT ) + wm(t) (18) where wm(t) is additive noise, d[n] represents the data symbols taken from a constellation, e.g. PSK, and hm(t, τ ) represents the baseband-equivalent time-varying channel response. The variable 6t denotes the observation time associated with the temporal evolution of the propagation environ-ment, while τ denotes the delay variable of the impulse response. The baseband-equivalent channel response is modeled as 
+
+hm(t, τ ) =  
+
+> P−1
+
+∑
+
+> p=0
+
+hmp (t)g(τ − τ mp (t)) e−j2πf cτ mp (t) (19) where hmp (t), τ mp (t), and P denote the path gains, path delays, and total number of propagation paths, respectively. The carrier frequency is represented by fc, while g(t) denotes the transmitted pulse-shaping filter, e.g. a raised-cosine pulse with roll-off factor αrc . The symbol duration is denoted by T = 1/ R, which is associated with the symbol rate R. The baseband-equivalent impulse response may be interpreted as a pulse-shaped version of the physical time-varying impulse response 
+
+hm(t, τ ) =  
+
+> P−1
+
+∑
+
+> p=0
+
+hmp (t)δ(τ − τ mp (t)) (20) The time-varying propagation delays are modeled according to 
+
+τ mp (t) = τ mp + ϵp(t), m = 0 , . . . , M − 1 (21) where ϵp(t) represents the Doppler-induced perturbation associated with the p-th propagation path. For sufficiently small array apertures, the Doppler perturbation is assumed approximately identical across sensors for each path. Assuming plane-wave propagation, the propagation delays across the array aperture satisfy 
+
+τ mp = τ 0 
+
+> p
+
++ mδc sin θp, m = 0 , . . . , M − 1 (22) where θp is the angle of arrival associated with the p-th propagation path. The proposed receiver em-ploys a front-end broadband beamformer to spatially align the received array observations across the occupied signal bandwidth prior to equalization. The beamformed branch signals are subsequently processed by adaptive equalizers that jointly compensate residual Doppler distortion, intersymbol interference, and time-varying channel fluctuations in order to detect the transmitted data symbols. 
+
+3.1 Broadband Beamforming 
+
+The narrowband beamforming model introduced in Section 2 assumes that the signal bandwidth is sufficiently small such that spatial propagation delays across the array can be represented by frequency-independent phase shifts. In underwater acoustic communication systems, however, the transmitted waveform occupies a finite bandwidth and therefore requires frequency-dependent spa-tial filtering. Because the propagation delay across the array depends on frequency, broadband spatial filtering cannot generally be implemented using a single narrowband steering vector. In-stead, frequency-dependent beamforming responses must be synthesized across the occupied signal bandwidth. For each steering hypothesis θi, we define a broadband beamforming response 
+
+Φi(f ) = [ϕi, 0(f ) ϕi, 1(f ) . . . ϕi,M −1(f )]⊤ (23) where the explicit dependence on frequency is emphasized in the response associated with the m-th 7array element 
+
+ϕi,m (f ) = exp (−j2πf m δc sin θi
+
+) (24) The beamforming filters are synthesized over a discrete set of frequency bins spanning the occupied signal bandwidth. Let the frequency bins be defined as 
+
+fℓ =
+
+
+
+fc + ℓ∆f, 0 ≤ ℓ ≤ L
+
+> 2
+
+fc + ( ℓ − L)∆ f, L 
+
+> 2
+
++ 1 ≤ ℓ ≤ L − 1
+
+(25) where L is the total number of frequency bins and ∆f = 1 
+
+> LT s
+
+is the frequency resolution associated with the sampling interval Ts. For each steering hypothesis θi, the desired broadband spatial response is sampled over the discrete frequency grid according to 
+
+Φi,ℓ = Φi(fℓ) = [ϕi, 0[ℓ] ϕi, 1[ℓ] . . . ϕi,M −1[ℓ]]⊤ (26) where ϕi,m [ℓ] = ϕi,m (fℓ). In addition, the synthesized beamforming responses are set to zero for the frequencies outside of the signal band 
+
+Φi,ℓ =
+
+
+
+Φi(fℓ), ℓ ∈ L B
+
+0, ℓ /∈ L B
+
+(27) where the subset of active frequency bins is defined as 
+
+LB = {ℓ ∣∣ 0 ≤ ℓ ≤ ¯L or L − ¯L ≤ ℓ ≤ L − 1} (28) with ¯L =
+
+⌈L(1+ αrc )2Ns
+
+⌉
+
+, where Ns = T /Ts is the oversampling ratio. The broadband beamforming frequency responses are subsequently transformed into realizable time-domain FIR filters through an inverse discrete Fourier transform (IDFT). Before applying the IDFT, we obtain ˜ϕi,m [ℓ] = ( −1) ℓϕ∗
+
+> i,m
+
+[ℓ], where the factor (−1) ℓ introduces an L/2 -sample circular shift of the resulting impulse response, thereby centering the synthesized FIR filter. This operation is equivalent to applying the same shift directly in the time domain after the IDFT. Specifically, the synthesized beamforming filter for the m-th array element and the i-th steering hypothesis is given by 
+
+ψi,m (nT s) = 1
+
+L
+
+> L−1
+
+∑
+
+> ℓ=0
+
+˜ϕi,m [ℓ]ej2πℓn /L = 1
+
+L
+
+∑
+
+> ℓ∈L B
+
+˜ϕi,m [ℓ]ej2πℓn /L. (29) The synthesized filters compensate for frequency-dependent propagation delays across the array aperture and therefore implement broadband spatial alignment over the signal bandwidth. The broadband beamformed signal associated with steering hypothesis θi is therefore expressed as 
+
+˜yi(nT s) =  
+
+> M−1
+
+∑
+
+> m=0
+
+ψi,m (nT s) ⋆ v m(nT s) (30) where ⋆ represents convolution. The resulting branch signals ˜yi(nT s), i = 1 , . . . , K , are subse-quently processed by adaptive equalizers to compensate for Doppler-induced effects and to detect the transmitted data symbols. 83.2 Universal Equalization 
+
+For each steering hypothesis θi, the beamformed branch signal ˜yi[n] is processed by a fractionally-spaced decision-feedback equalizer (DFE) operating at spacing Ts = T /2 . The equalizer jointly compensates residual Doppler distortion, intersymbol interference, and time-varying channel fluc-tuations in order to recover the transmitted data symbols. The Doppler compensation is performed through two coupled operations: (1) adaptive resam-pling to compensate for the time-varying delays, and (2) residual phase tracking using a digital phase-locked loop (PLL). Adaptive resampling is applied to the signal in Eq. (30) using linear interpolation. Specifically, during the n-th symbol interval, two interpolated samples are generated according to 
+
+yi
+
+(
+
+nT + ℓ′ T
+
+2
+
+)
+
+= I
+
+{
+
+˜yi
+
+(
+
+nT + ℓ′ T
+
+2 − ˆφi(nT )2πf c
+
+)} 
+
+, ℓ′ = N1, N 1 − 1 (31) where I{·} denotes linear interpolation as described in [6], N1 represents the number of causal feedforward taps, and ˆφi(nT ) denotes the estimated Doppler-induced carrier phase associated with the i-th branch. The interpolated samples are inserted into the top of an existing vector yi[n − 1] and the two bottom elements of yi[n − 1] are discarded (represented by yi[n − 1] 1: Nf −2). The resulting equalizer input vector of length Nf is therefore given by 
+
+yi[n] = 
+
+
+
+yi
+
+(nT + N1 T
+
+> 2
+
+)
+
+yi
+
+(nT + N1 T 
+
+> 2
+
+− T
+
+> 2
+
+)
+
+yi[n − 1] 1: Nf −2
+
+ , i = 1 , . . . , K (32) The DFE structure follows the formulation proposed in [7]. A feedforward filter ai[n], consisting of Nf coefficients, is applied to the input vector yi[n] and phase-corrected according to the estimated carrier phase 
+
+xi[n] = aHi [n]yi[n]e−j ˆφi(nT ). (33) The feedback equalizer filter bi[n], which contains Nb coefficients, operates on the vector of symbol decisions 
+
+˜di[n] = [ ˜di[n − 1] ˜di[n − 2] . . . ˜di[n − Nb]]⊤
+
+to produce zi[n] = bHi [n]˜di[n]. The decision ˜di[n] = decision 
+
+{ ˆdi[n]
+
+}
+
+is formed by quantizing the estimate ˆdi[n] to the nearest symbol value. The estimate of the data symbol is then obtained as 
+
+ˆdi[n] = xi[n] − zi[n] = cHi [n]ui[n], i = 1 , . . . , K (34) where the composite vector of the feedforward and feedback equalizer filter taps is formed as 
+
+ci[n] = [a⊤ 
+
+> i
+
+[n] −b⊤ 
+
+> i
+
+[n]]⊤ (35) and the composite vector of signal samples is given by 
+
+ui[n] = [y⊤ 
+
+> i
+
+[n]e−j ˆφi(nT ) ˜d⊤ 
+
+> i
+
+[n]]⊤ (36) 9and the phases ˆφi(nT ) are updated using a digital PLL 
+
+ˆφi(nT + T ) = ˆ φi(nT ) + Kf1 ξi[n] + Kf2
+
+> n
+
+∑
+
+> q=0
+
+ξi[q], i = 1 , . . . , K (37) where ξi[n] = Im 
+
+{
+
+xi[n][ ˜di[n] + zi[n]] ∗
+
+}
+
+, Kf1 and Kf2 represent the PLL tracking coefficients, and the phase estimates are initialized as ˆφi(0) = 0 , i = 1 , . . . , K . The symbol error 
+
+ei[n] = 
+
+{d[n] − ˆdi[n], training mode ,
+
+˜di[n] − ˆdi[n], decision-directed mode , (38) is then used to obtain the weights ci[n] recursively over time as 
+
+ci[n + 1] = ci[n] + A { ui[n], e i[n]} (39) where A {· , ·} denotes an update term, which can be computed using an adaptive algorithm, such as least mean squares (LMS) or recursive least squares (RLS), that operates on the input ui[n] and the error ei[n]. During training mode, the vector ˜di[n] contains the training data symbols and in the decision-directed mode, the vector ˜di[n] contains the symbol decisions. The universal receiver forms the final symbol estimate by posterior-weighted blending, 
+
+ˆd[n] = 
+
+> K
+
+∑
+
+> i=1
+
+μi[n] ˆdi[n]. (40) The posterior weights are similarly computed as 
+
+μi[n] = Pi · exp (− 12ν L (en−1
+
+> i, 0
+
+)) ∑Kj=1 Pj · exp (− 12ν L (en−1
+
+> j, 0
+
+)) (41) where the loss function is now defined as 
+
+L (en−1
+
+> i, 0
+
+) =
+
+> n−1
+
+∑
+
+> k=0
+
+|ei[k]|2 (42) with argument en−1 
+
+> i, 0
+
+= {ei[0] , e i[1] , . . . , e i[n − 1] }. Thus, branches producing smaller equalization error receive larger posterior probability and contribute more strongly to the final symbol estimate. A block diagram of the universal adaptive beamforming and equalization receiver is illustrated in Fig. 4. 
+
+# 4 Experimental Results 
+
+In this section, we present results using a recording from the 2010 Mobile Acoustic Communications Experiment (MACE). The receiver array consisted of 12 equally spaced elements and spanned a total aperture of 1.32 m. The array was deployed at a depth of 40 m, while the transmitter was towed at depths ranging from 40 to 60 m. During the experiment, the transmitter moved both away from and toward the receiver array at speeds varying between approximately 0.5 and 1.5 m/s. Each 10 v(nT s)   
+
+> Ψ1
+> Ψ2
+> ΨK
+> Θ = {θ1, θ 2, . . . , θ K}
+> ˜y1(nT s)
+> ˜y2(nT s)
+> ˜yK(nT s)
+
+...   
+
+> DFE 1
+> DFE 2
+> DFE K
+
+... 
+
+> ×
+> ×
+> ×
+> ˆd1[n]
+> ˆd2[n]
+> ˆdK[n]
+
+∑ ˆd[n]        
+
+> μi[n] =
+> Piexp
+> (
+> −12νL
+> (
+> en−1
+> i, 0
+> )) ∑Kj=1 Pjexp
+> (
+> −12νL
+> (
+> en−1
+> j, 0
+> )) en−1
+> i, 0
+> μ1[n]
+> μ2[n]
+> μK[n]
+
+Figure 4: Universal Adaptive Beamforming and Equalization. Table 1: MACE Signal Parameters 
+
+Parameter Value 
+
+center frequency fc [kHz] 13 sampling frequency fs [kHz] 10 7/256 
+
+symbol rate R [symbols/s] 4882 .8
+
+M-sequence length 211 − 1
+
+modulation BPSK number of array elements M 12 element spacing δ [m] 0.12 transmission lasted approximately one minute and consisted of 128 repeated binary PSK (BPSK)-modulated M-sequences of length 2047. The corresponding signal parameters are summarized in Table 1. The performance is evaluated in terms of the data-detection mean squared error (MSE) MSE = 1
+
+Nd − NtNd−1∑
+
+> n=Nt
+
+∣∣∣d[n] − ˆd[n]
+
+∣∣∣2
+
+(43) where Nt denotes the number of training symbols and Nd denotes the total number of symbols processed in a frame. We process a frame composed of eight M-sequences, resulting in a total of Nd = 8(2 11 − 1) = 16376 symbols. The receiver employs an LMS-based decision-feedback equalizer with feedforward and feedback filter lengths of Nf = 15 and Nb = 8 , respectively. The number of training symbols is set to Nt = 20( Nf +Nb) = 460 , which corresponds to a pilot overhead of only 2.81%. The PLL gains are chosen as Kf1 = 0 .01 and Kf2 = Kf1 /10 = 0 .001 , while the LMS step size is set to μ = 0 .01 .In addition, we use K = 10 uniformly spaced steering hypotheses spanning the angular interval 
+
+Θ ∈ [−12 ◦, −7◦], and assume a discrete uniform prior distribution over the steering hypothesis set 
+
+Pi = 1 
+
+> K
+
+, i = 1 , . . . , K . In Fig. 5, we illustrate the PLL output ˆφ(nT ) = ∑Ki=1 μi[n] · ˆφi(nT ), the constellation of the detected data symbols ˆd[n], and the evolution of the posterior blending weights. 11 An MSE of −16 .72 dB and zero bit errors are reported. As observations are accumulated and branch-specific equalization errors are recursively evaluated, the posterior probabilities progressively concentrate around the steering hypotheses yielding improved communication performance. These results demonstrate the ability of the proposed receiver to continuously adapt its spatial confidence distribution according to evolving channel conditions while jointly performing adaptive beamforming and equalization under time-varying multipath propagation and Doppler distortion. 0 1 2 3
+
+> Time [s]
+> 250
+> 200
+> 150
+> 100
+> 50
+> 0
+> PLL output
+
+(a) 2 1 0 1 2 
+
+> In-phase
+> 2.0
+> 1.5
+> 1.0
+> 0.5
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> Quadrature
+> MSE = -16.72 dB
+
+(b) 0 2000 4000 6000 8000 10000 12000 14000 16000        
+
+> Symbol index
+> 12
+> 11
+> 10
+> 9
+> 8
+> 7
+> Angle  i [deg]
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Posterior Weights i[n]
+
+(c) 
+
+Figure 5: (a) PLL output shows the Doppler-induced phase tracking. (b) Constellation of the detected data symbols. (c) Evolution of the posterior blending weights μi[n].
+
+# 5 Conclusion 
+
+In this paper, we introduced a Bayesian universal adaptive beamforming framework for underwater acoustic receivers operating under dynamic propagation conditions. The proposed approach per-forms probabilistic model averaging across multiple steering hypotheses and continuously adapts posterior confidence according to branch-specific loss functions, enabling adaptive spatial-temporal tracking. The framework was further extended toward broadband underwater acoustic communica-tion through frequency-domain beamformer synthesis and adaptive decision-feedback equalization. Posterior probabilities were recursively updated according to branch-specific equalization errors, allowing the receiver to jointly track angle of arrival, Doppler-induced distortions, and compensate intersymbol interference. Experimental results using MACE data demonstrated reliable commu-nication performance together with low detection error and zero observed bit errors in a mobile scenario. The results illustrate the potential of probabilistic spatial-temporal adaptation for under-water acoustic communication in rapidly evolving propagation environments. 
+
+# References 
+
+[1] A. Singer and M. Feder, “Universal Linear Prediction by Model Order Weighting,” IEEE Trans-actions on Signal Processing , vol. 47, no. 10, pp. 2685–2699, 1999. [2] J. R. Buck and A. C. Singer, “A Performance-Weighted Blended Dominant Mode Rejection Beamformer,” in 2018 IEEE 10th Sensor Array and Multichannel Signal Processing Workshop (SAM) , 2018, pp. 124–128. 12 [3] K. Bell, Y. Ephraim, and H. Van Trees, “A Bayesian Approach to Robust Adaptive Beamform-ing,” IEEE Transactions on Signal Processing , vol. 48, no. 2, pp. 386–398, 2000. [4] H. L. V. Trees, Optimum Array Processing . John Wiley & Sons, Inc., Mar. 2002. [5] C. Lam and A. Singer, “Bayesian Beamforming for DOA Uncertainty: Theory and Implemen-tation,” IEEE Transactions on Signal Processing , vol. 54, no. 11, pp. 4435–4445, 2006. [6] D. A. Cuji and M. Stojanovic, “Path-Specific Beamforming and Nonuniform Doppler Compensa-tion for Underwater Acoustic Communications,” IEEE Journal of Oceanic Engineering , vol. 51, no. 2, pp. 1442–1457, 2026. [7] M. Stojanovic, J. Catipovic, and J. G. Proakis, “Adaptive multichannel combining and equaliza-tion for underwater acoustic communications,” The Journal of the Acoustical Society of America ,vol. 94, no. 3, pp. 1621–1631, 09 1993. 13
