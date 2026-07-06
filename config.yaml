@@ -65,6 +65,7 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-07-06T12:47:14.788Z'
+      paused: true
 source_backends:
   arxiv:
     papers_table: arxiv_papers
