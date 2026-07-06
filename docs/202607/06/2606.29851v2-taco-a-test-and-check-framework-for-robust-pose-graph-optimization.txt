@@ -1,0 +1,927 @@
+Title: TACO: A Test and Check Framework for Robust Pose Graph Optimization
+
+URL Source: https://arxiv.org/pdf/2606.29851v2
+
+Published Time: Wed, 01 Jul 2026 00:59:26 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# TACO: A Test and Check Framework for Robust Pose Graph Optimization 
+
+Emilio Olivastri 1, Alberto Pretto 2, and Tobias Fischer 1
+
+Abstract 
+
+Pose Graph Optimization (PGO) is one of the most widely adopted approaches for solving Simultaneous Localization and Mapping (SLAM) problems. However, PGO approaches are particularly sensitive to outliers, which can substantially degrade the quality of the estimated trajectories. These outliers arise from incorrect place recognition associations caused by perceptual aliasing in the environment. In this paper, we present TACO (short for Test And Check Optimization), a robust optimization framework designed to filter out outliers from PGO systems. Rather than explicitly modeling measurements as inliers or outliers, TACO finds an approximation to the maximally consistent set of measurements incrementally through two complementary components: (i) The test component, namely the Incremental Probabilistic Consensus (IPC) algorithm, evaluates the consistency of each incoming loop closure online. (ii) The check component dubbed Switchable Outlier Sanitization leverages the existing Switchable Constraints to periodically sanitize any inconsistent measurements from the consistent set that IPC may have mistakenly included. We evaluate TACO on 2D SLAM and 3D Visual SLAM datasets against several state-of-the-art methods. The results show robustness comparable to state-of-the-art offline methods while preserving the computational efficiency required for online deployment, achieving a success rate above 90% in 2D and 83% in 3D across outlier rates up to 50%, with mean convergence times of approximately 45 ms and 100 ms, respectively. We release an open-source implementation of our method with this paper. 
+
+Keywords 
+
+Simultaneous Localization and Mapping, Robust Pose Graph Optimization, Back-end Optimization, Non-Linear Least Squares, Autonomous Vehicle Navigation 
+
+1 Introduction 
+
+A widely used approach for solving the Maximum a Posteriori (MAP) problem in Simultaneous Localization and Mapping (SLAM) is Pose Graph Optimization (1 ; 2), where the problem is formulated as a graph whose nodes represent robot poses and whose edges encode spatial constraints derived from front-end measurements. Within a SLAM pipeline, the front-end is responsible for constructing these constraints, including relative motion estimates between consecutive sensor observations (referred to as odometry ) ( 3 ; 4), and the detection of previously visited locations ( 5 ; 6 ), commonly referred to as place recognition 
+
+or loop closure detection . The PGO back-end then estimates the robot trajectory using Non-Linear Least Squares (NLLS) techniques. Despite their widespread use ( 7 ; 8; 9), NLLS methods are inherently sensitive to initialization and to the presence of outliers due to the non-convexity of the underlying problem ( 10 ; 11 ; 12 ). Our work addresses the challenge of handling outliers within the NLLS optimization process, where even a single outlier can invalidate the estimated trajectory. In this context, an outlier refers to a spurious loop closure that incorrectly associates distinct places, whereas an inlier corresponds to a correct association between observations of the same location. Most SLAM systems (13 ; 14 ; 15 ; 16 ; 17 ) adopt conservative thresholds in the loop closure detector to minimize the likelihood of introducing outliers. However, in complex environments, perceptual aliasing makes it unrealistic to expect the front-end to avoid such errors when relying on isolated observations. Consequently, it should be the back-end that takes charge of proactively dealing with erroneous measurements, thanks to its ability to access the complete measurement history. Existing approaches extend classical NLLS solvers by incorporating robust cost functions ( 18 ; 19 ), performing constraint consistency checks ( 20 ; 21 ; 22 ; 23 ), or adopting graduated strategies that progressively reintroduce non-convexity ( 24 ; 25 ). However, these approaches often increase sensitivity to initialization or are primarily suited for offline processing. To address these limitations, we introduce TACO, short for Test And Check Optimization, a framework for Robust Pose Graph Optimization (RPGO). TACO consists of two complementary components: a “test” and a “check” component (see Fig. 1 for an overview). The test component, namely the Incremental Probabilistic Consensus (IPC) algorithm, falls under the category of Consistent Set Maximization methods. Its goal is to approximate, in an incremental manner, the combinatorial problem of identifying the maximally consistent set of measurements, therefore enabling online performance. The check component, namely Switchable Outlier Sanitization (SOS), leverages the Switchable Constraints (SC) framework ( 26 ) to periodically filter out, or “ sanitize ”, outliers   
+
+> 1Queensland University of Technology, AU
+> 2University of Padova, IT
+> Corresponding author:
+> Emilio Olivastri, Queensland University of Technology, QUT Centre for Robotics, Brisbane, Queensland, 4000, AU. Email: e.olivastri@qut.edu.au
+> Prepared using sagej.cls [Version: 2017/01/17 v1.20]
+> arXiv:2606.29851v2 [cs.RO] 30 Jun 2026
+
+2 Journal Title XX(X) Loop Closure     
+
+> Visual Place Recognition Database
+> IPC
+> Odometry
+> Pose Graph
+> SOS
+> Unrevised loops set
+> Test consistency
+> TACO
+> Check & revise
+> Update Update
+> Figure 1. Overview of the TACO framework used inside a Visual SLAM system. The front-end generates both odometry and loop closures constraints from a sequence of images. IPC tests the consistency of candidate loop closures against their best loop matches. The output of IPC provides an online estimate of the trajectory (bottom right in blue). Each candidate loop closure, classified as an inlier, is then added to a set called unrevised set . Once such a set reaches size
+
+M , SOS will double-check the loop closures and update the original pose graph, along with the estimates of the related variables. 
+
+from the consistent set of measurements that were mistakenly included by IPC. Using SC strictly for consistency evaluation rather than full inlier-outlier classification allows effective sanitization with limited temporal overhead. We also highlight the limitations of standard SLAM evaluation metrics for assessing robustness in the presence of outliers, and propose metrics specifically designed to evaluate the performance of RPGO. Experimental results on both 2D and 3D Visual SLAM benchmarks show that our proposed TACO attains robustness comparable to state-of-the-art offline methods, while preserving the fast responsiveness required for an online SLAM system. This reduces reliance on outdated estimates during integration of new data without compromising robustness, which is essential for navigating in challenging environments. The primary contributions of this work can be summarized as follows: 1. The Test And Check Optimization Framework: A two-stage framework that combines incremental consensus (IPC) with a dedicated error recovery module (SOS), effectively combining the advantages of online and offline approaches; 2. A discussion of the assumptions and heuristics from the robust optimization literature that guide the design of the framework; 3. An analysis highlighting the limitations of traditional SLAM evaluation metrics for assessing robustness, together with the identification of more suitable metrics for evaluating RPGO performance. An open-source implementation of TACO is released with this work *.The remainder of this paper is organized as follows: Sec. 2 reviews related work on robust optimization and outlier rejection. Sec. 3 provides the necessary background and foundational concepts for the paper. In Sec. 4, we introduce the TACO framework and its components, IPC and SOS. A discussion about suitable metrics for Robust Pose Graph Optimization (RPGO) is reported in Sec. 5, while Sec. 6 presents a comprehensive evaluation of the proposed method, comparing it against state-of-the-art solutions on datasets derived from 2D and 3D Visual SLAM real-world data, specifically adapted for RPGO problems. Finally, Sec. 8 summarizes our findings and draws conclusions. This paper extends our previous conference version presented at ICRA ( 27 ), which introduced the IPC algorithm as a standalone framework. In this work, we extend that formulation by introducing the SOS component, which addresses a key limitation of IPC by actively revising accepted loop closures and recovering from degenerate estimates. Furthermore, we propose a set of evaluation metrics for assessing robust pose graph optimization frameworks effectively. Finally, we expand the experimental evaluation from 2D datasets to include 3D Visual SLAM benchmarks, and provide ablation studies analyzing the effect of key parameters on the behavior and performance of the proposed framework. 
+
+2 Related Work 
+
+Interest in robust pose graph optimization has increased in recent years ( 28 ), as optimization is a delicate process, and even a few outliers can substantially impact the final solution. To mitigate this, various techniques for robust pose graph optimization have been proposed throughout the literature. 
+
+2.1 M-Estimators 
+
+One of the earliest approaches to mitigate the effects of outliers in the optimization process is the use of M-estimators ( 29 ). These robust cost functions replace the   
+
+> ∗https://github.com/EmilioOlivastri/TACO
+> Prepared using sagej.cls Olivastri et al. 3
+
+standard quadratic error to prevent the optimizer from minimizing errors associated with outliers. M-estimators, such as Huber, Cauchy, Geman-McClure, and Truncated-Least-Squares, reduce or nullify the influence of errors exceeding a maximum acceptable threshold. The region within which errors are considered is referred to as the “trust region”. M-estimators inject additional non-linearity into the problem and are sensitive to the threshold defining the trust region. Selecting an appropriate threshold and M-estimator is problem-specific and often non-trivial. Barron et al. ( 18 )introduce a new general M-estimator called ADAPT. The ADAPT robust cost function is capable of representing the various robust cost functions, selecting the preferred one through a control parameter. This approach eliminates the need to manually choose the most suitable cost function, as the optimizer treats the control parameter as a latent variable and automatically determines the appropriate level of robustness. In contrast, TACO avoids introducing additional non-linearities to reduce sensitivity to problem initialization, which M-estimator-based approaches typically suffer from. 
+
+2.2 Graduated Non-Convexity 
+
+Graduated Non-Convexity (GNC) ( 24 ) is an iterative framework that solves a non-convex problem by first addressing its more convex approximations. Initially, a convex approximation of the original problem is solved, and with each iteration, non-convexity is gradually introduced until the original problem is fully restored. The core idea behind GNC is that the solution to a simpler version of the problem serves as an effective starting point for solving the more complex problem. GNC filters out outliers more effectively than the direct application of an M-estimator. This arises from GNC’s ability to better manage the non-linearity introduced by robust cost functions, albeit at the expense of increased convergence time. Ramezani et al. ( 30 ) aim to address both the non-linearity introduced by robust cost functions and the task of manually selecting a cost function with AEROS. AEROS combines the GNC paradigm with the general ADAPT loss ( 18 ). McGann et al. ( 25 ) propose a version of GNC suited for incremental solvers such as iSAM2 ( 31 ). The use of the Scale-Invariant Graduated (SIG) Kernel enables a dramatic reduction in the number of iteration steps required to achieve convergence. However, Graduated Non-Convexity-based approaches remain more suitable for offline processing, whereas TACO is designed for online deployment. 
+
+2.3 Augmented Pose Graph Optimization 
+
+A widely adopted alternative for solving robust pose graph optimization involves defining an augmented problem that integrates outlier removal as part of the cost function to be minimized. In ( 26 ), “switchable” variables are introduced to the classic PGO formulation. These variables are used to determine whether a measurement is an inlier or an outlier, automatically removing outliers from the optimization process. Agarwal et al. ( 19 ) present an equivalent formulation that eliminates the need for these additional variables, thereby reducing convergence time. Instead of using variables to model the presence of outliers, Olson et al. ( 32 ) employ a multi-modal Gaussian distribution. The optimizer selects the most promising Gaussian at each iteration by using the max-mixture distribution as the underlying model. In TACO, the use of switchable variables is restricted to control the increase in problem complexity, enabling a real-time revision step. 
+
+2.4 Maximal Consistent Set of Measurements 
+
+As noted in ( 33 ), the inlier or outlier status of measurements is not always directly observable. Consequently, joint consistency among measurements has emerged as a key criterion for robust PGO. Instead of explicitly distinguishing inliers from outliers, methods in this category prioritize identifying the largest subset of mutually consistent measurements, leveraging the inherent consistency between inliers. However, determining the maximally consistent set of measurements poses a problem of combinatorial complexity. This has pushed the research community to develop effective heuristics and approximations for this problem. Neira et al. ( 23 ) propose an exact method that is not exponential in most cases, but it is still not viable for real-time or online applications. The proposed Joint Compatibility Branch and Bound (JCBB) method leverages the Branch and Bound technique in conjunction with the joint compatibility test between measurements. Mangelson et al. ( 21 ) propose the Pairwise Consistency Maximization (PCM) method. PCM approximates the joint consistency check using pairwise consistency and employs heuristic Max-Clique algorithms to compute the largest set of pairwise consistent measurements. ROBIN ( 34 ) introduces and adopts a new invariance 
+
+criterion to effectively build the compatibility graph. An invariant assesses the consistency between measurements independently of the problem’s state variable estimates. Defining an effective invariant requires exploiting the inherent priors and properties of the specific problem at hand. Lusk et al. ( 22 ) address different registration problems and define specific geometric-based invariants for each. Their proposed method uses the projection gradient ascent with a back-tracking line search to maintain low execution time while still being able to compute the largest set of consistent measurements. A more heuristic approach is proposed in ( 35 ), where measurements are temporally grouped into clusters, and these clusters are used for testing both intra- and inter-cluster consistency. The largest set of consistent measurements is approximated to all measurements that pass both tests. Wu et al. ( 36 ) build on the previous approach by introducing an additional term designed to mitigate inconsistencies caused by noisy odometry measurements. However, it comes at the cost of increased execution time. In contrast to these approaches, which operate on the full pose graph and repeatedly reprocess all measurements at each iteration, making them inherently offline, TACO limits optimization to smaller subgraphs identified by the most recent loop closure to enable efficient online operation. 
+
+3 Preliminaries 
+
+Throughout this work, lowercase letters x denote scalar quantities, while bold lowercase letters x denote vectors. Bold uppercase letters X represent matrices, and calligraphic uppercase letters X are used for sets. Subscripts indicate  
+
+> Prepared using sagej.cls
+
+4 Journal Title XX(X) 
+
+discrete time indices. Finally, SE (d) denotes the Special Euclidean Group of dimension d.
+
+3.1 System Setup 
+
+We expect the robot to be equipped with (i) an ego-motion estimation front-end ( 37 ; 38 ) that provides, over time, the rigid transformations between consecutive poses xi, xi+1 ∈
+
+SE (d) traversed by the robot (i.e., an odometry measurement 
+
+or constraint ); (ii) a place recognition module ( 39 ; 40 ; 41 ) that can detect medium- and long-term previously seen locations and estimate the transformation zi,j ∈ SE (d) between the related previous pose xi and the current one xj (i.e., a 
+
+loop closure measurement or constraint ). Here, d ∈ { 2, 3}
+
+depending on whether the robot operates in two or three dimensions. These poses represent the robot’s poses in the map’s coordinate system. 
+
+3.2 Pose Graph Optimization Formulation 
+
+The prevailing paradigm for back-end optimization is called Pose Graph Optimization (PGO), which employs a graphical representation where nodes represent the robot’s poses, and edges capture the spatial relationships between them. This graphical representation provides a compact and expressive way to formulate and solve the underlying optimization problem. Here, we introduce the core concepts of PGO. A pose graph G = ( V, E) uses nodes in V to represent the discretized poses xi of the robot, while the edges (i, j ) ∈ E 
+
+encode the spatial relation between the nodes xi and xj .The full state can be represented using the vector x =[x1, . . . , xn], where the subscript defines the temporal order and n is the total number of poses. The goal of PGO is to find a solution x∗ that minimizes the following objective function: 
+
+x∗ = argmin 
+
+> x
+
+X
+
+> (i,j )∈E
+
+ei,j (xi, xj )T Ωi,j ei,j (xi, xj ), (1) where Ωi,j denotes the information matrix representing the uncertainty associated with the measurement zi,j , which correlates the state variables xi and xj . The corresponding error is defined as follows: 
+
+ei,j (xi, xj ) = h(xi, xj ) ⊟ zi,j , (2) where h(xi, xj ) represents the measurement function, which computes the expected measurement based on the current state estimates. In the context of PGO, h(xi, xj ) computes the rigid transformation between the two poses xi and xj . The term zi,j denotes the odometry or loop closure measurement provided by the front-end module, and ⊟ indicates the difference operator defined over the underlying manifold. The solution to Eq. (1) is obtained by solving a Non-Linear Least Squares (NLLS) problem using minimization algorithms such as Gauss-Newton ( 10 ), Levenberg-Marquardt ( 11 ), or Powell’s Dog Leg (12 ). Throughout the text, xi denotes both a robot pose and its corresponding graph node. Similarly, ei,j (xi, xj ) denotes the error term, measurement, and constraint, as well as the edge 
+
+(i, j ) ∈ E .Following ( 35 ), we partition the edges in two sets, 
+
+E = Eo ∪ E l with Eo ∩ E l = ∅, where Eo = {(i, j ) ∈ E ∧ 
+
+i < j | j = i + 1 } is the set of edges associated with the odometry measurements, and El = {(i, j ) ∈ E ∧ i < j | j̸ =
+
+i + 1 } is the set of edges associated with the loop closure measurements. To make the notation more fluid the following abbreviations are used: • ei,i +1 = ei,i +1 (xi, xi+1 ) for the odometry errors; • ei,j = ei,j (xi, xj ) for the loop closures. We can rewrite Eq. (1) as: 
+
+x∗ = argmin 
+
+> x
+
+X
+
+> (i,i +1) ∈E o
+
+eTi,i +1 Ωi,i +1 ei,i +1 
+
++ X
+
+> (i,j )∈E l
+
+eTi,j Ωi,j ei,j ,
+
+(3) where in an ideal case only inlier loop closure measurements should be taken into account. The goal of our approach is to minimize the probability of integrating loop closure outliers during optimization. 
+
+4 The TACO Framework: Test and Check for Robust PGO 
+
+The Test And Check Optimization (TACO) framework (Fig. 1) belongs to the class of consistent set maximization methods for robust pose graph optimization (see Section 2.4). TACO is composed of two main components that work in synergy. Section 4.2 introduces the test component, namely the Incremental Probabilistic Consensus (IPC) algorithm, evaluates the consistency of each incoming loop closure in an online manner, incrementally building an approximation of the maximal set of consistent measurements. Section 4.3 then presents the check component, namely the Switchable Outlier Sanitization (SOS), leverages the existing Switchable Constraints ( 26 ) to revise the last M loop closures accepted by IPC, correcting potentially degenerate estimates that would impact subsequent IPC decisions. As a result, the set of consistent measurements produced by IPC is further refined by removing residual outliers. Before presenting the details of IPC and SOS, we first introduce the assumptions and heuristics from robust optimization literature that guided the design of the proposed framework. These are subsequently referenced where they are applied within IPC and SOS. 
+
+4.1 Assumptions and Heuristics 
+
+The TACO framework is built on the following assumptions: 
+
+A1 : Odometry measurements are inliers. Odometry measurements are affected by different levels of Gaussian noise, whose magnitude depends on the quality of the front-end. However, as noted in ( 33 ), they are free of outliers, thus greatly reducing the complexity of assessing measurement consistency. Furthermore, these measurements can be leveraged to enforce maintaining the local shape of the trajectory. 
+
+A2 : Prevalence of inliers. Given the inherent aliasing effect in the environment, it is natural for a place recognition module to produce a certain percentage of outliers. On the other hand, it is reasonable to expect that the majority of loop closure measurements are inliers. Furthermore, considering A1 and the higher frequency of odometry measurements relative to  
+
+> Prepared using sagej.cls
+
+Olivastri et al. 5
+
+loop closure measurements, the overall prevalence of inlier measurements is ensured. In TACO, we incorporate the following heuristics drawn from the existing literature on robust pose graph optimization: 
+
+H1 : Start from a simpler version of the problem, for which its solution will be meaningful for the more complex version of the problem. As stated in ( 42 ; 43 ), a simpler version of a problem exhibits a broader and more stable convergence basin, thus ensuring better convergence. The solution obtained for the reduced problem can be used as the initial guess for the full problem, thus improving the convergence of the latter. 
+
+H2 : The nature of the compatibility test is to reject as many outliers as possible while preserving the inliers. 
+
+Since the distinction between outliers and inliers is not always observable ( 33 ), consistency between measurements is evaluated instead of explicitly detecting outliers. 
+
+4.2 The Incremental Probabilistic Consensus Algorithm 
+
+The Incremental Probabilistic Consensus (IPC) algorithm constitutes the test component of TACO. Its purpose is to assess the consistency of incoming loop closures in an online fashion, allowing for rapid integration of measurements and timely updates of the refined pose estimate. To evaluate consistency, IPC leverages the set of previously accepted loop closure measurements, referred to as the 
+
+consensus set C.The following steps outline the IPC algorithm. Each step reports, in square brackets, the corresponding assumptions and heuristics (see Sec. 4.1) and the relevant pseudocode lines in Alg. 1: • [Lines 4-8] : Integrates all odometry measurements and generates a new node when necessary (for example, if the distance to the previous node is above a certain threshold) [ A1 ]; • [Lines 9-17] : For each incoming loop closure measurement zi,j , compute the (minimal) independent subgraph (see Sec. 4.2.1) that contains the relative odometry constraints and loop closure constraint in 
+
+C collected so far; • [Line 18] : Solve the PGO problem only for the independent subgraph [ H1 ]; • [Lines 19-21] : Accept and include zi,j in C only if 
+
+all measurements in the independent subgraph are consistent (i.e., agree , see below) with the solution obtained in the previous point [ A1 , A2 , H1 , H2 ]; • [Line 22] : If zi,j is accepted, propagate the obtained solution to the remaining nodes as described in Sec. 4.2.1. • [Lines 23-24] : If zi,j is rejected, restore the nodes in the independent subgraph to their state prior to the optimization. 
+
+Algorithm 1: IPC  
+
+> 1
+
+C, Eo, El ← ∅  
+
+> 2
+
+V ← { x0} 
+
+> 3
+
+upon receiving zi,j then 
+
+// odometry measurement  
+
+> 4
+
+if j = i + 1 then  
+
+> 5
+
+xi+1 ← xi ⊞ zi,i +1 // integrate motion  
+
+> 6
+
+ei ← edge (xi, xi+1 , zi,i +1 , Ωi,i +1 ) 
+
+> 7
+
+Eo ← E o ∪ { ei} // update edges  
+
+> 8
+
+V ← V ∪ { xi+1 } // update nodes // loop closure measurement  
+
+> 9
+
+else 
+
+// GI initialized to G(i, j ) 
+
+> 10
+
+ei,j ← edge (xi, xj , zi,j , Ωi,j ) 
+
+> 11
+
+VI , EI , GI ← G (i, j ) 
+
+> 12
+
+a ← i
+
+// add edges until there exists an // edge that has a node in both // VI and V \ V I 
+
+> 13
+
+while ∃ek,g ∈ C \ E I (a, b ) | xk ∈V \ V I (a, b ) ∧ xg ∈ V I (a + 1 , b ) do  
+
+> 14
+
+EI ← E I ∪ { ek , . . . , ea} 
+
+> 15
+
+EI ← E I ∪ { ek,g } 
+
+> 16
+
+VI ← V I ∪ { xk , . . . , xa−1} 
+
+> 17
+
+a ← k 
+
+> 18
+
+solve Eq. (6) // PGO on GI 
+
+> 19
+
+if eTa,b Ωa,b ea,b < χ 2 
+
+> α,δ
+
+, ∀ea,b ∈ E I then  
+
+> 20
+
+C ← C ∪ { eij } 
+
+> 21
+
+El ← E l ∪ { eij } 
+
+> 22
+
+propagate solution to xk ∈ V \ V I as described in Sec. 4.2.1  
+
+> 23
+
+else  
+
+> 24
+
+restore (VI )
+
+4.2.1 Independent Subgraphs 
+
+Since the pose graph encodes the underlying optimization problem in graphical form, solving one of its partitions is equivalent to addressing a reduced subproblem of the full formulation. One of the foundational components of IPC is the identification of a minimal yet informative partition of the pose graph for assessing the consistency of incoming loop closure constraints in an online manner. Furthermore, the solution obtained on this partition can be propagated and serves as an effective initialization for solving the full problem [ H1 ]. This section describes how such partitions are constructed. We define a subgraph G(a, b ) = ( V(a, b ), E(a, b )) where 
+
+V(a, b ) = {i ∈ V | a ≤ i ≤ b} and E(a, b ) = {(i, j ) ∈ E | 
+
+a ≤ i < j ≤ b}. By construction, such a subgraph defines a time interval that includes all nodes, and related edges, from index a to index b, with a < b and b − a > 1.A subgraph GI (a, b ) is independent if the following condition is satisfied: 
+
+∄ei,j ∈ E \ E I (a, b ) | xi ∈ V \ V I (a, b ) ∧ xj ∈ V I (a + 1 , b ).
+
+(4) The condition in Eq. (4) enforces that GI (a, b ) is connected to its complementary partition only at its endpoints through odometry edges. As a result, optimization over GI (a, b ) can be treated as a self-contained subproblem for measurement consistency evaluation (see Fig. 2), and its solution can  
+
+> Prepared using sagej.cls
+
+6 Journal Title XX(X) X0  X1  X5  X6  X7     
+
+> X10
+> X11 X12 X13
+> e(x0, x1) e(x1, x5) e(x5, x6) e(x6, x7)
+> e(x9, x10)
+> e(x10, x11)
+> X8
+> e(x7, x8) e(x8, x9)
+> e(x1, x2)
+> X4 X3 X2
+> e(x3, x4) e(x2, x3)
+> e(x4, x5)
+> e(x12, x11) e(x13, x12)
+> e(x7, x13)
+> e(x6, x9)
+> e(x10, x12)
+> X9
+
+Figure 2. An example of a pose graph with nodes represented by light blue circles. Each error term is associated with the corresponding edge. The coordinate system is usually fixed in the first node x0. Light green and purple ovals represent examples of simple independent subgraphs (i.e., they only include one loop) while the dotted red oval represents more complex independent subgraphs that include both multiple loops with crossing edges and internal loops. 
+
+be propagated to better initialize the remaining nodes via forward odometry composition from xb.To construct the independent subgraph GI (a, b ) correspond-ing to the loop closure edge ei,j ∈ E l, we first initialize 
+
+GI (a, b ) with a = i and b = j. The subgraph is then itera-tively expanded by incorporating edges ek,g ∈ E \ E I (a, b ),together with their corresponding nodes V(k, g ) \ V I (a, b ),whenever they violate the independence condition in Eq. (4). This process continues until no violating edges remain, ensuring that GI (a, b ) satisfies the independence property. Within IPC, this procedure is significantly accelerated (lines 9-17 of Alg. 1) by restricting the independence verification to loop closures in the consensus set C that are not already included in EI (a, b ) (line 13). This simplification is justified as, once initialized, odometry edges cannot violate the independence condition. In the example in Fig. 2, for loop closure e7,13 , the independent subgraph is initialized to GI (7 , 13) . Since 
+
+e7,13 violates the independence condition, the subgraph is expanded to GI (6 , 13) . The resulting subgraph satisfies the independence property, as both GI (6 , 13) and its complement 
+
+G \ G I (6 , 13) are connected only through the odometry edge 
+
+e5,6.
+
+4.2.2 Measurement Consistency Test 
+
+Another foundational idea behind IPC is the concept of consensus . In the absence of outliers and assuming a sufficiently accurate initial estimate, the solution of the PGO problem yields a set of poses [x1, . . . , xn] for which the residual errors associated with all edges in E are consistent with their Gaussian noise models ( 2). In this setting, the measurement set E is said to have reached consensus, or to agree, with PGO solution of G. More formally, E is said to reach consensus over the PGO solution of G if and only if each edge in G satisfies the χ2 test (23): 
+
+eTi,j Ωi,j ei,j < χ 2 
+
+> α,δ
+
+, ∀(i, j ) ∈ E (5) where α is the confidence parameter and δ the degrees of freedom of the error. Prior to incorporating loop closures, IPC operates on an edge set that is inherently in consensus, since pose estimates are obtained through odometry integration and odometry constraints are assumed to be outlier-free [ A1 ]. Consequently, IPC’s objective is to preserve this state of consensus throughout the robot’s navigation, while incrementally building the set C, referred to as the consensus set. Since odometry constraints are inherently consistent [ A1 ], consistency verification focuses exclusively on loop closure edges. A loop closure ei,j is included in C if and only if the PGO solution over the associated independent subgraph 
+
+GI (a, b ) satisfies Eq. (5). After identifying GI (a, b ), its edge set is partitioned as EI (a, b ) = EIo (a, b ) ∪ E Il (a, b ), separating odometry and loop closure constraints as done in Eq. (3). Most existing methods ( 24 ; 26 ; 30 ; 19 ; 32 ) mitigate outliers by introducing robust cost functions on loop closures. Robust cost functions introduce additional non-linearities and require estimating individual re-weighting factors for each loop closure, thus increasing computational complexity and sensitivity to initialization. Instead, IPC strengthens the contribution of the trustworthy 
+
+(i.e. more reliable) odometry measurements through a fixed scaling factor s > 1 applied to their information matrices: 
+
+X 
+
+> (i,i +1) ∈E Io(a,b )
+
+eTi,i +1 sΩi,i +1 ei,i +1 + X 
+
+> (i,j )∈E Il(a,b )
+
+eTi,j Ωi,j ei,j .
+
+(6) This factor is shared across all odometry edges and does not introduce additional non-linearities, preserving the original problem’s complexity. The factor s is used only to guide the optimization process, while consistency is evaluated using the original measurement noise model. This formulation can also be interpreted as applying a scaled L2 M-estimator to the odometry errors, namely: 
+
+ρIP C (e(x)) = s e(x)2
+
+2 . (7) The corresponding weight function γ(x)IP C , used to re-scale the information matrix as ˆΩi,i +1 = γ(x)IP C Ωi,i +1 , is therefore given by: 
+
+γ(x)IP C = 1
+
+e(x)
+
+∂p (e)
+
+∂e e=e(x) = s. (8) 
+
+4.2.3 IPC’s Limitations 
+
+The primary limitation of IPC stems from the fact that accepted loop closures are never re-evaluated. If an outlier is mistakenly included in C, future consistency checks may be negatively affected. This risk is highest during the early stages of incremental loop closure validation, when the inlier set C contains few or no elements. In such cases, the minimal independent subgraph GI (a, b )
+
+used for the consistency check may consist only of odometry edges. Depending on ||E Io (a, b )|| , the odometry edges may not impose enough constraints to prevent the integration of outliers. The relation between the cardinality of EIo (a, b ) and the likelihood of integrating an outlier follows from: 
+
+F (x) = X 
+
+> (i,i +1) ∈E Io(a,b )
+
+eTi,i +1 Ωi,i +1 ei,i +1 + eTi,j Ωi,j ei,j .
+
+(9) Satisfying the consistency condition Eq. (5) translates to finding any node configuration x∗ such that: 
+
+F (x∗) ≤ (||E Io (a, b )|| + 1) χ2 
+
+> α,δ
+
+. (10)  
+
+> Prepared using sagej.cls
+
+Olivastri et al. 7XbXa Xb+1 Xa-1  Xa+1    
+
+> φa,b
+> e(x a, x b,φa,b )
+> p( φa,b )
+> Figure 3. This figure illustrates the switchable constraint formulation described in (26). The green edge represents the ternary factor involving the variables
+
+xa, xb, and φa,b , where 
+
+φa,b serves as the switch variable, capable of activating or deactivating the constraint. The orange unary edge connected to 
+
+φa,b represents the prior constraint on the loop closure edge. 
+
+This expression defines the maximum admissible error that an outlier can introduce without violating the consistency test. Since in this scenario all state variables in VI (a, b ) are initialized purely from the odometry measurements, the first term of Eq. (9) is zero at the start of optimization. As the NLLS solver seeks a solution that satisfies all constraints, the resulting error may be distributed over the entire odometry chain, allowing a spurious loop closure to pass the test. Consequently, IPC becomes vulnerable when operating over long, open-loop trajectories. 
+
+4.3 SOS: Switchable Outlier Sanitization 
+
+To overcome IPC’s limitations, we propose integrating a 
+
+check component capable of retrospectively revising the decisions made on previously evaluated loop closures. This component dubbed Switchable Outlier Sanitization (SOS) leverages the existing Switchable Constraints (SC) to evaluate measurement consistency for the purpose of sanitizing any outliers mistakenly included in C.SOS runs periodically on a set we call the unrevised set Ur
+
+(see Fig. 1), which contains the last M loop closures evaluated 
+
+as consistent by IPC but not yet revised with SOS. On the other hand, the revised set Rc contains all the inlier loop closures that were revised at previous iterations using SOS. Therefore, C = Rc ∪ U r , with Rc ∩ U r = ∅.Similarly to IPC, SOS uses Rc to identify a meaningful subgraph for evaluating measurement consistency [ H1 ]. The following steps outline the SOS algorithm, with each step reporting, in square brackets, the corresponding assumptions and heuristics (see Sec. 4.1) and the relevant pseudocode lines in Alg. 2: • [Lines 1-8] : Compute the (minimal) trusted subgraph identified by the loop closure edges in Ur (see Sec. 4.3.2) [ H1 ]; • [Lines 9-12] : Replace the loop closure edges in Ur
+
+with their respective switchable variants and solve the augmented PGO problem on the trusted subgraph (see Sec. 4.3.1); • [Lines 13-16] : Reject from the consensus set C all loop closure measurements that are not mutually consistent (see Sec. 4.3.3) [ H2 ]. 
+
+4.3.1 Switchable Constraints 
+
+SOS builds upon the Switchable Constraints (SC) framework introduced in ( 26 ). SC augments the standard pose graph optimization problem by enabling the graph topology to change during optimization. This is achieved with the introduction of a new set of variables and constraints: 
+
+ˆei,j = e(xi, xj , φ i,j ) = Ψ( φi,j )ei,j (xi, xj ), (11) Eq. (11) is an extended version of the loop closure error factor in Eq. (3). While the original loop closure factor depends only on the variables xi and xj , Eq. (11) introduces an additional variable, φi,j ∈ R, referred to as the switch variable. This variable modulates the weight of the loop closure constraints through the function Ψ( ·) : R → [0 , 1] , which remaps the switch variable into the [0 , 1] interval. Ideally, Ψ( φi,j ) = 1 
+
+when the loop closure zi,j is an inlier, and Ψ( φi,j ) = 0 
+
+otherwise. Setting Ψ( φi,j ) = 0 .0 is equivalent to removing the topological connection between xi and xj introduced by 
+
+zi,j (see Fig. 3). As noted in ( 26 ), better convergence can be obtained by selecting the simple linear function Ψ( φi,j ) = φi,j , rather than sigmoid or step functions, as long as we constrain 
+
+0 ≤ φi,j ≤ 1. To avoid the trivial solution where all switch variables collapse to zero, an additional penalty term is introduced in Eq. (3): 
+
+pi,j = p(φi,j ) = || ηi,j − φi,j || . (12) This penalization term relies on ηi,j ∈ [0 , 1] , which encodes prior belief on the inlier or outlier nature of the loop constraint 
+
+ei,j . Finally, the full augmented problem is obtained by replacing the second error term in Eq. (3) with both Eq. (11) and Eq. (12): 
+
+X
+
+> (i,i +1) ∈E o
+
+eTi,i +1 Ωi,i +1 ei,i +1 +
+
+X
+
+> (i,j )∈E l
+
+(ˆ eTi,j Ωi,j ˆei,j + pi,j Ωpi,j pi,j ).
+
+(13) Direct integration of SC poses two major challenges. First, it increases the number of variables to estimate in an already highly non-convex SLAM problem. This added complexity results in a more irregular convergence basin ( 42 ), making it harder for the optimizer to reach a favorable local optimum. Second, the default prior value ηi,j of φi,j , is set to 1. This biases the optimizer toward accepting as many loop closures as possible. In environments with a high percentage of outliers, such as caves or underwater environments, this strategy for setting priors becomes suboptimal. 
+
+4.3.2 Trusted Subgraphs 
+
+To address the increased complexity of the PGO problem introduced by SC variables, SOS, similarly to IPC, identifies a minimal subgraph for evaluating the consistency of loop closure edges in the unrevised set Ur [H1 ]. The goal is to obtain a connected subgraph with the fewest possible nodes, which can be interpreted as an instance of the Steiner problem (44). The subgraph must include all edges in Ur and their associated nodes Vr = {i ∈ V | ∃ ek,g ∈ U r : k = i ∨ g = i}
+
+as their consistency is evaluated. To guarantee the existence of a solution of PGO problem, its corresponding graph must be connected ( 45 ). However, edges in the unrevised set Ur
+
+are replaced by their SC variants, which may deactivate connections and disconnect portions of the subgraph (lines 8-9 of Alg. 2). To address this, the subgraph connectivity must  
+
+> Prepared using sagej.cls
+
+8 Journal Title XX(X) 0 20 40 60 80 100 120 140        
+
+> Iteration
+> 0
+> 200
+> 400
+> 600
+> 800
+> 1000
+> 1200
+> Number of Variables
+> 020 40 60 80 100 120 140
+> Iteration
+> 2.50
+> 2.75
+> 3.00
+> 3.25
+> 3.50
+> 3.75
+> 4.00
+> 4.25
+> Average Node Degree
+
+Figure 4. The left plot compares the number of variables of the full problem in G (red) and the trusted subgraph GT (blue) across SOS iterations, while the right plot reports the corresponding average node degree. Results are obtained on the FRH dataset with 50% injected outliers. 
+
+Algorithm 2: SOS( G, Rc, Ur )
+
+// Set of mandatory vertices to visit  
+
+> 1
+
+Vr ← ∅  
+
+> 2
+
+a = inf , b = 0  
+
+> 3
+
+for ( each ei,j ∈ U r ) do  
+
+> 4
+
+a = min (a, i ) 
+
+> 5
+
+b = max (b, j ) 
+
+> 6
+
+Vr ← V r ∪ { xi, xj }
+
+// Compute trusted subgraph  
+
+> 7
+
+GT ← G (a, b ) 
+
+> 8
+
+GT ← PRUNE GRAPH DIJKSTRA (GT , Vr , Rc)
+
+// Augment GT with SC  
+
+> 9
+
+for ( each ei,j ∈ U r ) do  
+
+> 10
+
+VT ← V T ∪ { φi,j } 
+
+> 11
+
+ET ← E T ∪ { ˆei,j , p i,j } 
+
+> 12
+
+solve Eq. (14) 
+
+// Discard inconsistent loop closures  
+
+> 13
+
+for ( each ei,j ∈ U r ) do  
+
+> 14
+
+if φi,j ≥ th c then  
+
+> 15
+
+Rc ← R c ∪ { ei,j }
+
+// Clear the unrevised set  
+
+> 16
+
+Ur ← ∅ 
+
+be guaranteed to use only odometry edges and revised loop closure edges Eo ∪ R c, which do not rely on SC. Under this condition, we define a trusted subgraph GT as subgraph that remains connected when the loop closure edges in Ur are not considered. The simplest trusted subgraph is GT = G(a, b ), defined in Sec. 4.2.1, where a = min( Vr ) and b = max( Vr ).Connectivity is guaranteed by the odometry chain between these nodes. GT = G(a, b ) defines the base graph for consistency evaluation and typically involves far fewer nodes than G, i.e., ||V T || << ||V|| . Starting from this set, Dijkstra’s algorithm ( 46 ) is used to further prune unnecessary nodes and odometry edges by exploiting trusted loop edges in Rc as shortcuts (lines 1-8). As illustrated in Fig. 4, the average node degree of GT is comparable to that of the full graph. Since the average node degree is directly proportional to the likelihood of estimating a globally optimal PGO solution ( 47 ; 48 ), GT is expected to have a similar probability of reaching the global optimum as the full graph G. Furthermore, reducing both the number of switchable variables and the size of the optimization problem leads to faster optimization and a higher likelihood of convergence (42; 43). 
+
+4.3.3 Outlier Sanitization 
+
+Instead of using SC for inlier-outlier detection as in ( 26 ), in SOS it is leveraged to sanitize outliers mistakenly introduced by IPC. In this setting, the strategy of setting the prior ηi,j = 1 
+
+is effective, as SC is operating on a pre-filtered set of loop closures already deemed consistent by IPC. To assess the consistency of loop edges in Ur within the trusted subgraph, we reformulate the objective in Eq. (13) as 
+
+X 
+
+> (i,j )∈E T\U r
+
+eTi,j Ωi,j ei,j +
+
+X
+
+> (i,j )∈U r
+
+(ˆ eTi,j Ωi,j ˆei,j + pi,j Ωpi,j pi,j ).
+
+(14) The switch variables φi,j are interpreted as consistency scores, quantifying the agreement of each edge ei,j with the rest of the edges in ET . After optimization, edges ei,j ∈ U r with scores below th c = 0 .9 are discarded and excluded from C
+
+(lines 12-16 of Alg. 2). If any edge in Ur is classified as inconsistent, TACO re-optimizes G(1 , b ) using only Eo ∪ C to recover from a degraded estimate. 
+
+5 Metrics 
+
+5.1 On the Limitations of ATE and RPE for Robust SLAM Evaluation 
+
+In the evaluation of SLAM systems, the estimated trajectory 
+
+x∗ is usually compared against the ground truth xgt using two metrics: Absolute Trajectory Error (ATE) and Relative Pose Error (RPE) (49). ATE measures global trajectory accuracy by first estimating the rigid-body transformation xAT E ∈ SE (d) that best aligns the estimated and ground-truth trajectories. This transformation is then applied to the estimated trajectory for computing the position error between corresponding nodes. In contrast, the RPE measures local accuracy by comparing the relative transformations between consecutive poses in the two trajectories. Both metrics are reported as the root mean square error (RMSE). In practice, ATE and RPE are widely used to compare robust optimizers for pose graph optimization, even though neither metric is specifically designed to evaluate robustness to outliers. As a result, their values can be heavily influenced  
+
+> Prepared using sagej.cls
+
+Olivastri et al. 9   
+
+> (a1) GT KITTI 00 (a2) ATE=191.05 [m] RPE=3.48 [m]
+> (a3) ATE=140.65 [m] RPE=0.39 [m]
+> (b1) GT KITTI 05 (b2) ATE=151.1 [m] RPE=2.66 [m]
+> (b3) ATE=110.8 [m] RPE=0.25 [m]
+> Figure 5. Examples of Absolute Trajectory Error (ATE) and Relative Pose Error (RPE) scores for trajectories under high distortion levels. Although trajectories (a2) and (b2) appear qualitatively superior, the ATE and RPE metrics indicate the opposite.
+
+by outlier-induced distortions, complicating the selection and tuning of robust solvers. Fig. 5 illustrates examples of distorted trajectories alongside their corresponding ATE, RPE, and ground truth. In (a2) and (b2), the trajectories preserve their local structure, with (b2) remaining mostly unaltered, whereas (a3) and (b3) are severely distorted, making the ground truth trajectories in (a1) and (b1) difficult to recognize. From a qualitative standpoint, (a2) and (b2) are preferable to (a3) and (b3). However, ATE and RPE contradict this observation. Failures in PGO can result in different types of trajectory distortions, as illustrated in Fig. 6, with the following effects on ATE and RPE. In case (a), the trajectory collapses on itself, nearly degenerating into a point. The optimal ATE alignment, xAT E , moves the estimated trajectory x∗ to the center of xgt , bounding the ATE to the average distance of the ground-truth poses xgt i from the trajectory’s center. Meanwhile, the RPE is bounded to the average displacement between consecutive ground-truth poses xgt i and xgt i+1 . In case (b), severe disagreement between edges causes the trajectory to diverge outward due to numerical instability. Here, xAT E 
+
+aligns the ground truth xgt with the center of the estimated trajectory x∗, opposite to case (a). As a result, both ATE and RPE become unbounded. 
+
+5.2 Metrics for RPGO 
+
+ATE and RPE are meaningful metrics only when the estimated trajectory is not significantly distorted. Rather than relying directly on ATE, we use it to define the Success Rate (SR): 
+
+SR = Nsuc 
+
+Ntot 
+
+where Nsuc is the number of successful runs, and Ntot is the total number of the runs.   
+
+> (a) (b)
+> Figure 6. Image representing two distortion effects that arise from incorrectly integrating outliers into the optimization process.
+
+A run is deemed successful if the estimated trajectory achieves an ATE below a defined threshold th AT E , otherwise, it is considered a failure due to trajectory distortion or insufficient drift correction. As a result, the SR reflects the likelihood of a robust optimizer converging to a good solution. This probabilistic interpretation provides a more reliable assessment than raw ATE values, which may fluctuate significantly and fail to reflect true performance, as illustrated in Fig. 5. To provide further insight into the performance of the different RPGO systems, we also report Precision , Recall ,and F1 score :
+
+pr = tp tp + f p , rc = tp tp + f n , F 1 = 2 · pr · rc pr + rc 
+
+The precision pr captures how many outliers have been incorrectly integrated, while the recall rc reflects how many inliers have been discarded. The F1 score combines both measures to provide an overall evaluation. Ideally, both precision and recall should be 1. However, low precision poses a greater risk than low recall, as it can result in a highly distorted trajectory. In contrast, low recall primarily sacrifices drift removal, which is less detrimental overall. Finally, we report the mean convergence time, defined as the average time required for the optimizer to converge after incorporating a new loop closure constraint. 
+
+6 Experimental Setup 
+
+6.1 Baseline methods 
+
+We benchmark TACO against six state-of-the-art RPGO methods: MAXMIX (32 ), Switchable Constraints ( 26 ), Realizing-Reversing-Recovering ( 35 ), Dynamic Covariance Scaling( 19 ), Huber ( 29 ), and Graduated Non-Convexity ( 24 ). To ensure fair comparison, all methods are implemented within the g2o framework ( 7 ), avoiding discrepancies arising from differences between gtsam and g2o solvers. For Max-Mixture (MAXMIX) ( 32 ) and Switchable Constraints (SC) (26 ), we used the implementation provided in OpenSLAM †. The Realizing-Reversing-Recovering (RRR) method ( 35 ) is open-source and directly implemented in g2o. Dynamic Covariance Scaling (DCS) ( 19 ) and Huber ( 29 ) are natively available in g2o, while Graduated Non-Convexity (GNC) ( 24 ) is implemented in g2o following the gtsam version (8).  
+
+> †https://openslam-org.github.io/
+> Prepared using sagej.cls
+
+10 Journal Title XX(X) 0.0             
+
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Success Rate
+> 10 −1
+> 10 0
+> 10 1
+> Mean Convergence Time [s]
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> 1.0
+> F1 Score
+> 10 20 30 40 50
+> Outlier Ratio [%]
+> 10 −1
+> 10 0
+> 10 1
+> ATE [m]
+> 10 20 30 40 50
+> Outlier Ratio [%]
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> 1.0
+> Precision
+> 10 20 30 40 50
+> Outlier Ratio [%]
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> 1.0
+> Recall
+
+Figure 7. A comparison of the performance of TACO and state-of-the-art methods on 2D SLAM datasets as the outlier percentage varies. The metrics are presented in the following order from left to right: Success Rate, Runtime, and F1 score. Legend of the graphs: TACO( ), IPC( ), HUBER (29)( ), DCS (19)( ), SC (26)( ), MAXMIX (32)( ), RRR (35)( ), GNC (24)( ). 
+
+Table 1. Success rate (SR), precision (PR), and mean convergence time in ms (DT) for the compared methods on the 2D datasets as the outlier percentage varies. Bold indicates the best value per column.                                                                                                                                            
+
+> Method 10% 20% 30% 40% 50%
+> SR ↑PR ↑DT ↓SR ↑PR ↑DT ↓SR ↑PR ↑DT ↓SR ↑PR ↑DT ↓SR ↑PR ↑DT ↓
+> GNC 100.0 100.0 449.0 97.5 99.9 1474.3 100.0 99.9 5171.9 97.5 99.9 10690.5 92.5 99.9 23159.1
+> DCS 100.0 99.9 55.7 97.5 99.9 216.2 95.0 99.8 785.8 95.0 99.8 1635.9 92.5 99.7 3502.2
+> MAXMIX 70.0 99.9 37.6 50.0 99.7 137.7 20.0 99.5 484.5 15.0 98.6 974.1 2.5 97.8 2253.3
+> SC 100.0 100.0 78.3 97.5 99.9 257.8 92.5 99.9 847.0 87.5 99.8 1778.5 95.0 99.9 3577.8
+> RRR 40.0 99.3 1265.3 15.0 97.7 1830.2 2.5 94.1 2045.0 2.5 89.0 2115.7 0.0 81.0 2043.5
+> IPC S10 90.0 99.9 39.8 95.0 99.9 39.6 70.0 99.8 41.4 67.5 99.8 43.5 67.5 99.7 45.4 TACO 100.0 100.0 39.8 97.5 100.0 40.8 87.5 99.9 42.5 87.5 99.9 43.5 90.0 99.8 45.5
+
+6.2 Datasets 
+
+The datasets used for evaluation are divided into two categories: 2D and 3D. The 2D datasets, described in ( 45 ; 50 ), are publicly available and include Intel, Csail, Freiburg Building (FR079), and Freiburg University Hospital (FRH), all of which originate from real-world measurements. For the Visual SLAM evaluation, real-world datasets had to be adapted to the RPGO task. KITTI 00 and KITTI 05 were derived from sequences 00 and 05 of KITTI’s visual odometry dataset ( 51 ), while TUM FR1 DESK was extracted from the corresponding sequence in TUM’s RGB-D SLAM Dataset ( 52 ). Odometry and loop closure constraints were obtained using ORB SLAM3 ( 15 ) on the raw data from these sequences. The loop closure edges in the unaltered datasets served as ground truth for inliers. A pseudo-ground-truth trajectory was generated using SE-Sync ( 13 ), a fast non-minimal solver for PGO, applied to the outlier-free version of each dataset. Outliers were artificially added using the Vertigo package ( 53 ) as a percentage of the total loop closures to ensure balanced evaluation. Outliers are generated using the random constraint policy, which introduces constraints between randomly selected poses. Each dataset includes nine difficulty levels, representing outlier ratios from 10% to 50% in 5% increments. The 50% level represents the extreme case in which outliers are equal in number to inliers, meaning that the loop closure detector is as likely to generate an incorrect correspondence as a correct one, which is unrealistic in real-world applications. For each level, ten independent corrupted instances are generated. 
+
+6.3 Implementation details 
+
+TACO is implemented in C++, using the g2o framework ( 7 )and the original Switchable Constraints implementations ( 26 ). Optimization is performed via Gauss-Newton ( 12 ). IPC is configured with s = 10 and SOS with M = 10 unless otherwise mentioned, with ablation studies provided in Sec. 7.4 and Sec. 7.5. Parameters are kept constant across datasets with the same dimensionality (separate settings are used for 2D and Visual SLAM). Experiments are conducted on a PC with a single Intel(R) Xeon(R) Gold 5220 CPU. Following ( 25 ), methods that do not explicitly classify measurements treat a loop closure as an inlier if its χ2 error is below χ2 
+
+> th
+
+with 
+
+αth = 0 .95 . 
+
+> Prepared using sagej.cls
+
+Olivastri et al. 11 
+
+To simulate incremental operation, loop closure detections are provided sequentially in chronological order, one per step. Performance is evaluated at the end of the sequence. For success rate (SR) evaluation, we use th AT E = 0 .75 m, and compute ATE and RPE using the libraries from (43). Except for the methods that explicitly provide parameter settings, all remaining methods, including IPC and TACO, were configured through a grid search. The search was carried out on one representative dataset per dimensionality (Intel for 2D, KITTI 00 for 3D), each corrupted with 0% (original), 5%, and 10% outliers. The parameter configuration achieving the best average SR across these three levels was selected. 
+
+7 Results 
+
+7.1 Comparison with State-of-the-art Methods on 2D Datasets 
+
+The following results evaluate robustness of the methods across increasing outlier ratios, supporting claims 1 and 2: that IPC provides an effective online consistent-set approximation, and that SOS recovers from residual errors while preserving runtime efficiency. Fig. 7 reports performance metrics, including success rate, mean convergence time, F1 score, ATE, precision, and recall, averaged over all 2D datasets. Tab. 1 complements these results by summarizing the main metrics, providing a clearer comparison where visual trends overlap. In terms of SR, TACO achieves around 90% across all outlier percentages, with performance comparable to offline 
+
+state-of-the-art methods such as GNC, SC, and DCS. Among these, GNC achieves the highest SR, exceeding 97% in most cases. IPC maintains SR above 80% up to 25% outliers, after which it drops to around 65% . Adding SOS to IPC increases SR by approximately 15% on average and ensures consistent performance across all outlier levels. While achieving SR comparable to GNC, with only a 5% 
+
+average difference, TACO has a mean convergence time of just 45 ms, corresponding to an average speedup of about 
+
+150 × compared to GNC. As shown in Tab. 1, methods such as GNC, SC, DCS, MAXMIX, and HUBER exhibit increasing convergence time with higher outlier ratios. For example, MAXMIX’s convergence time (which is the fastest comparison method) increases from 37.6 ms for 10% outliers to over 2.2 s for 50% outliers. This compares to a near constant runtime of TACO (from 39.8 ms to 45.5 ms) and RRR (from 1.2 s to 2.0 s). We note that the introduction of SOS has minimal impact on runtime, keeping TACO close to IPC, with only a negligible overhead of about 0.009 × on average. Precision is the metric that most strongly affects SR, and should ideally be close to one, since even small amounts of incorrectly accepted outliers can severely degrade the trajectory estimate. Both the quantity and the quality of accepted outliers are important for successful convergence. As shown in Tab. 1, even a 0.1% difference in precision between SC at 30% and 40% outlier levels results in a 5% drop in SR. The top-performing methods, namely GNC, DCS, SC, and TACO, consistently maintain precision at or above 99 .7% .In contrast, the poor SR of RRR and HUBER is attributable to low precision. RRR shows a clear degradation in both precision and SR as the outlier ratio increases, from an SR of 10 20 30 40 50             
+
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> Success Rate
+> 10 20 30 40 50
+> Outlier Ratio [%]
+> 10 −1
+> 10 0
+> 10 1
+> Mean Convergence Time [s]
+> Figure 8. A comparison of the performance of TACO and state-of-the-art methods on 3D Visual SLAM datasets as the outlier percentage varies. The metrics are presented in the following order from top to bottom: Success Rate and Mean Convergence Time. Legend of the graphs: TACO( ), HUBER (29)( ), DCS (19)( ), SC (26)( ), MAXMIX (32)( ), RRR (35)( ), GNC (24)( ).
+
+40% and a precision of 99 .3% at 10% outliers to an SR of 0% 
+
+and a precision of 81% at 50% , while HUBER consistently fails to converge, yielding an SR of 0% across all scenarios. Recall mainly affects drift removal and therefore also influences SR, but less strongly than precision. GNC, DCS, and SC achieve recall close to 100% , while IPC reaches around 95% and TACO around 90% . Despite its lower recall, TACO achieves higher SR than IPC due to its improved precision. Conversely, MAXMIX’s poor SR is due to excessive inlier rejection, which limits its ability to mitigate drift. The F1 score provides a global view of performance by combining precision and recall, but it can be misleading since it assigns equal weight to both metrics. For example, MAXMIX and RRR show similar F1 trends, even though MAXMIX achieves higher SR than RRR. Likewise, IPC has a higher F1 score than TACO, despite TACO achieving better SR. Thus, for the evaluation of RPGO systems, it is more informative to consider precision and recall separately, as this provides clearer insight into whether failures arise from incorrect outlier acceptance or insufficient drift removal. To further support the claim that ATE alone is not a suitable metric for evaluating RPGO systems, Fig. 7 shows that ATE would incorrectly suggest RRR performs better than MAXMIX, whereas SR clearly indicates the opposite. This discrepancy arises because when MAXMIX fails to converge, its estimated trajectory diverges significantly, while RRR also diverges but less severely. 
+
+7.2 Comparison with State-of-the-art Methods on 3D Datasets 
+
+This experiment repeats the main comparison on the 3D Visual SLAM datasets, namely KITTI 00, KITTI 05, and TUM FR1 DESK, to evaluate whether the performance trends from the 2D case generalize to 3D. Fig. 8 reports only success rate and mean convergence time, as the other metrics are discussed in the 2D case. The increase in dimensionality significantly affects GNC, whose SR is now outperformed by DCS and SC, both  
+
+> Prepared using sagej.cls
+
+12 Journal Title XX(X) 
+
+Table 2. Success rate (SR), precision (PR), and mean convergence time in ms (DT) for the compared methods on the 3D datasets as the outlier percentage varies. Bold indicates the best value per column. 
+
+Method 10% 20% 30% 40% 50% 
+
+SR ↑ PR ↑ DT ↓ SR ↑ PR ↑ DT ↓ SR ↑ PR ↑ DT ↓ SR ↑ PR ↑ DT ↓ SR ↑ PR ↑ DT ↓
+
+GNC 100.0 100.0 467.3 80.0 86.6 754.0 76.6 83.3 1133.9 80.0 83.3 1016.3 43.3 53.3 936.0 
+
+DCS 100.0 100.0 123.1 90.0 100.0 116.4 96.6 100.0 123.0 100.0 100.0 128.1 100.0 100.0 137.4 
+
+RRR 90.0 96.6 2983.4 83.3 89.8 5687.6 96.6 95.0 8204.1 66.6 91.3 10920.3 63.3 61.6 14142.3 
+
+MAXMIX 53.3 86.6 74.6 46.6 83.0 81.7 33.3 69.0 87.6 36.6 68.8 100.0 26.6 58.5 110.1 SC 100.0 100.0 133.4 93.3 100.0 135.8 100.0 100.0 145.6 100.0 100.0 153.0 96.6 100.0 162.7 
+
+TACO 96.6 100.0 93.8 96.6 100.0 95.0 83.3 99.9 112.4 90.0 99.8 105.0 83.3 100.0 120.2 0 20 40 60 80 100           
+
+> Param s
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> Success Rate
+> 020 40 60 80 100
+> Param s
+> 0.90
+> 0.92
+> 0.94
+> 0.96
+> 0.98
+> 1.00
+> Precision
+> 020 40 60 80 100
+> Param s
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> Recall
+
+Figure 9. Comparison of IPC and TACO performance on 2D SLAM datasets with varying parameter s. Results are averaged across all datasets and outlier percentages. The metrics are presented from left to right: Success Rate, Precision, and Recall. Legend of the graphs: TACO( ), IPC( ). 10 20 30 40 50             
+
+> Parameter M
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Success Rate
+> 10 20 30 40 50
+> Parameter M
+> 0.040
+> 0.042
+> 0.044
+> 0.046
+> 0.048
+> 0.050
+> Mean Convergence Time [s]
+> 10 20 30 40 50
+> Parameter M
+> 0.004
+> 0.006
+> 0.008
+> 0.010
+> 0.012
+> Mean Recovery Time [s]
+> 10 20 30 40 50
+> Parameter M
+> 20
+> 40
+> 60
+> 80
+> 100
+> Recovery Ops
+
+Figure 10. Evaluation of TACO ( ) performance on 2D SLAM datasets with varying parameter M . Results are averaged across all datasets and outlier percentages. The metrics, presented from left to right, are Success Rate, Mean Convergence Time, Mean Recovery Time, and Recovery Operations. 
+
+achieving values exceeding 90% , as well as by TACO, which consistently maintains SR above 83% . RRR and MAXMIX exhibit decreasing trends, with SR remaining above 63% and 
+
+26% . In this setting, RRR performs substantially better than in the 2D case, while MAXMIX exhibits behavior consistent with the trends observed in the 2D experiments. In terms of runtime, TACO maintains an approximately constant mean convergence time of 100 ms across all outlier levels. DCS and SC achieve mean convergence times of approximately 120 ms and 140 ms, respectively, while MAXMIX is the fastest method, averaging approximately 90 ms. Since the computational complexity of the offline methods scales with the number of loop closures, and only a limited number of true loop closures are detected ( ≈60) due to the conservative ORB-SLAM3 loop detector, their overall runtime is reduced. Nevertheless, RRR and GNC remain the most computationally expensive methods. 
+
+7.3 Comparison with State-of-the-art Methods on Extreme Outlier Rates 
+
+For completeness, we conduct an ablation study under extreme outlier rates exceeding 50% to evaluate method performance in highly challenging conditions. For the Intel, FR079, and Csail datasets, four additional difficulty levels are generated with outlier ratios from 60% to 90% in 10% increments. Tab. 3 reports success rate and mean convergence time for the best-performing methods from the 2D evaluation, including TACO. The results show that as the deviation from assumption [A2 ], one of the core principles of TACO, performance degrades accordingly, with SR decreasing from 80% at 60% to 53% at 90%. SC achieves the best overall performance, reaching 100% SR at 60% and 70%, and remaining above 86% SR thereafter. It is followed by DCS and GNC, which, like TACO, exhibit a decreasing trend: DCS drops from 93%  
+
+> Prepared using sagej.cls
+
+Olivastri et al. 13                                                     
+
+> Method 60% 70% 80% 90%
+> SR ↑DT ↓SR ↑DT ↓SR ↑DT ↓SR ↑DT ↓
+> GNC 80.0 1436.8 80.0 3111.0 70.0 10758.0 63.3 67410.6
+> DCS 93.3 176.0 86.6 383.8 90.0 1438.6 60.0 9239.0
+> SC 100.0 186.8 100.0 414.0 90.0 1482.4 86.6 9389.0
+> TACO 80.0 39.7 70.0 35.2 63.3 36.0 53.3 33.9
+> Table 3. Success rate (SR), and mean convergence time in ms (DT) for the compared methods on the 2D datasets for extreme outlier rates. Bold indicates the best value per column.
+
+SR at 60% to 60% SR at 90%, and GNC from 80% SR to 63%. While GNC and TACO differ by approximately 7% in SR on average, TACO maintains a mean convergence time below 40 ms, whereas GNC mean convergence time increases significantly from 1.2 s to 67 s. A similar trend is observed for DCS and SC, whose mean convergence time increases from 180 ms to 9.2 s. Although TACO is designed for more realistic outlier regimes, it still achieves a reasonable SR of 53%, only about 10 percentage points below more complex methods such as GNC and DCS, while providing a substantial improvement in runtime. 
+
+7.4 Effect of the parameter s
+
+This section analyzes the impact of the parameter s on IPC and TACO, with M = 10 fixed for TACO. Experiments are conducted on the Intel, FR079, and Csail datasets, and results are averaged across all datasets and outlier levels up to 50%. As shown in Fig. 9, IPC is particularly sensitive to s
+
+in the range [0 , 20] , reaching its highest SR at s = 10 . In contrast, TACO remains stable over a large range [0 , 50) ,maintaining an SR above 80% thanks to its sanitization step, which compensates for the overly permissive behavior of IPC at low s.When s > 50 , the performance of the two methods converges, with TACO exhibiting slightly lower SR, precision, and recall. In this regime, the sanitization step begins to remove inliers from the consensus set C, reflecting an overly conservative behavior of SOS in poorly constrained scenarios, primarily due to the high rejection rate introduced by IPC. The inclusion of SOS enables TACO to maintain stable performance across a wide range of s values, significantly reducing the complexity of parameter tuning IPC. 
+
+7.5 Effect of the parameter M
+
+This section analyzes the impact of the parameter M on TACO performance. Experiments are conducted on all 2D datasets, and results are averaged across all datasets and outlier levels up to 50%. In Fig. 10, we denote the execution time of SOS as the mean recovery time, and the number of executions per run as the number of recovery operations. As shown in Fig. 10, the SR consistently remains above 
+
+80% , as SOS reliably recovers from degenerate solutions whenever it is invoked. The parameter M primarily controls the trade-off between mean recovery time and the number of recovery operations. For small values of M , recovery operations occur frequently, but each operates on a small trusted subgraph 
+
+GT , resulting in low mean recovery time. For larger M ,recovery is triggered less often, but each execution involves a larger subgraph and thus higher mean recovery time. These opposing effects balance out, leading to a nearly constant mean convergence time of approximately 43 ms. Therefore, 
+
+M does not significantly affect the final estimate, but it governs the system’s reactivity to degraded solutions. 
+
+8 Conclusions 
+
+We presented TACO, a two-stage framework that combines incremental consistent-set maximization (IPC) with retro-spective outlier sanitization (SOS) to achieve robust pose graph optimization in an online setting. Evaluated on 2D and 3D Visual SLAM benchmarks, TACO achieves success rates above 90% and 83% , respectively, across outlier rates up to 50% and without requiring any parameter retuning, while maintaining mean convergence times of approximately 45 ms in 2D and 100 ms in 3D. These results show that the test-and-check decomposition effectively bridges the gap between online performance and the robustness of offline state-of-the-art approaches. TACO’s test component, IPC, evaluates the measurement consistency of each loop closure measurement on the corresponding independent subgraph. By reweighting the cost function to emphasize odometry constraints and performing localized consistency checks, IPC enables consistency evaluation while maintaining performance. TACO’s check component, SOS, leverages the switchable constraints to identify and remove outliers that may have been deemed consistent by IPC. Its execution frequency is controlled by the parameter M , which determines how frequently past decisions are revisited, providing a mechanism to balance responsiveness and computational cost. Several directions for future work can be identified. First, strategies inspired by Graduated Non-Convexity could be explored to automatically tune the scaling parameter s, or more generally to design adaptive mechanisms for its dynamic selection. Second, the development of heuristics aimed at maximizing the connectivity of trusted subgraphs may further improve the convergence behavior of SOS. Another promising direction for future work involves developing more advanced recovery mechanisms that reduce reliance on the initial estimate produced by IPC, enabling more effective performance at extreme outlier rates. In particular, extending SOS to recover inliers that were erroneously rejected, in addition to sanitizing incorrectly accepted outliers, is promising. Moreover, it would be valuable to analyze the conditions under which IPC guarantees reliable performance, for example in relation to graph size and measurement uncertainty. Exploring alternative graph parameterizations, such as cycle basis representations, may also provide deeper insights into theoretical performance guarantees. Finally, investigating the use of Gaussian Belief Propagation could enable the design of active mechanisms for outlier detection within the optimization process.  
+
+> Prepared using sagej.cls
+
+14 Journal Title XX(X) 
+
+Author contributions 
+
+Dr. Emilio Olivastri : Investigation, Methodology, Formal Analysis, Data curation, Writing – original draft. 
+
+Prof. Alberto Pretto : Conceptualization, Supervision, Writing – review & editing. 
+
+Prof. Tobias Fischer : Conceptualization, Supervision, Funding acquisition, Project administration, Writing – review & editing. 
+
+Statements and declarations 
+
+Declaration of conflicting interests 
+
+The authors declared no potential conflicts of interest with respect to the research, authorship, and/or publication of this article. 
+
+Funding 
+
+This research was partially supported by funding from ARC DECRA Fellowship DE240100149 to TF and the QUT Centre for Robotics. 
+
+Ethical considerations 
+
+Not applicable. 
+
+Consent to participate 
+
+Not applicable. 
+
+Consent for publication 
+
+Not applicable. 
+
+References 
+
+[1] Cadena C, Carlone L, Carrillo H et al. Past, present, and future of simultaneous localization and mapping: Towards the robust-perception age. IEEE Transactions on Robotics 2016; 32(6): 1309–1332. [2] Grisetti G, K ¨ummerle R, Stachniss C et al. A tutorial on graph-based slam. IEEE Intelligent Transportation Systems Magazine 
+
+2010; 2(4): 31–43. DOI:10.1109/MITS.2010.939925. [3] Scaramuzza D and Fraundorfer F. Visual odometry [tutorial]. 
+
+IEEE Robotics and Automation Magazine 2011; 18(4): 80–92. DOI:10.1109/MRA.2011.943233. [4] Lee D, Jung M, Yang W et al. Lidar odometry survey: recent advancements and remaining challenges. Intelligent Service Robotics 2024; 17(2): 95–118. [5] Schubert S, Neubert P, Garg S et al. Visual place recognition: A tutorial [tutorial]. IEEE Robotics and Automation Magazine 
+
+2024; 31(3): 139–153. DOI:10.1109/MRA.2023.3310859. [6] Luo K, Yu H, Chen X et al. 3d point cloud-based place recognition: a survey. Artificial Intelligence Review 2024; 57(4): 83. [7] Grisetti G, K ¨ummerle R, Strasdat H et al. g2o: Ageneral framework for (hyper) graph optimization. In IEEE International Conference on Robotics and Automation . pp. 9– 13. [8] Dellaert F and Contributors G. borglab/gtsam, 2022. DOI: 10.5281/zenodo.5794541. URL https://github.com/ borglab/gtsam .[9] Agarwal S, Mierle K and Team TCS. Ceres Solver, 2022. URL https://github.com/ceres-solver/ ceres-solver .[10] Burke JV and Ferris MC. A gauss—newton method for convex composite optimization. Mathematical Programming 1995; 71(2): 179–194. [11] Mor ´e JJ. The levenberg-marquardt algorithm: implementation and theory. In Numerical analysis: proceedings of the biennial Conference held at Dundee, June 28–July 1, 1977 . pp. 105– 116. [12] Nocedal J and Wright SJ. Numerical optimization . Springer, 1999. [13] Rosen DM, Carlone L, Bandeira AS et al. Se-sync: A certifiably correct algorithm for synchronization over the special euclidean group. The International Journal of Robotics Research 2019; 38(2-3): 95–125. [14] Engel J, Sch ¨ops T and Cremers D. Lsd-slam: Large-scale direct monocular slam. In Fleet D, Pajdla T, Schiele B et al. (eds.) European Conference on Computer Vision . ISBN 978-3-319-10605-2, pp. 834–849. [15] Campos C, Elvira R, Rodr ´ıguez JJG et al. Orb-slam3: An accurate open-source library for visual, visual–inertial, and multimap slam. IEEE Transactions on Robotics 2021; 37(6): 1874–1890. DOI:10.1109/TRO.2021.3075644. [16] Gao X, Wang R, Demmel N et al. Ldso: Direct sparse odometry with loop closure. In IEEE/RSJ International Conference on Intelligent Robots and Systems . pp. 2198–2204. DOI: 10.1109/IROS.2018.8593376. [17] Guadagnino T, Mersch B, Gupta S et al. KISS-SLAM: A Simple, Robust, and Accurate 3D LiDAR SLAM System With Enhanced Generalization Capabilities. In IEEE/RSJ International Conference on Intelligent Robots and Systems .pp. 5363–5370. DOI:10.1109/IROS60139.2025.11246613. [18] Barron JT. A general and adaptive robust loss function. In IEEE/CVF Conference on Computer Vision and Pattern Recognition . pp. 4331–4339. [19] Agarwal P, Tipaldi GD, Spinello L et al. Robust map optimization using dynamic covariance scaling. In IEEE International Conference on Robotics and Automation . pp. 62–69. [20] Matas J and Chum O. Randomized ransac with td, d test. Image and vision computing 2004; 22(10): 837–842. [21] Mangelson JG, Dominic D, Eustice RM et al. Pairwise consistent measurement set maximization for robust multi-robot map merging. In IEEE International Conference on Robotics and Automation . pp. 2916–2923. [22] Lusk PC, Fathian K and How JP. Clipper: A graph-theoretic framework for robust data association. In IEEE International Conference on Robotics and Automation . pp. 13828–13834. [23] Neira J and Tard ´os JD. Data association in stochastic mapping using the joint compatibility test. IEEE Transactions on Robotics and Automation 2001; 17(6): 890–897. [24] Yang H, Antonante P, Tzoumas V et al. Graduated non-convexity for robust spatial perception: From non-minimal solvers to global outlier rejection. IEEE Robotics and Automation Letters 2020; 5(2): 1127–1134. [25] McGann D, Rogers JG and Kaess M. Robust incremental smoothing and mapping (risam). In IEEE International Conference on Robotics and Automation . pp. 4157–4163.  
+
+> Prepared using sagej.cls
+
+Olivastri et al. 15 
+
+[26] S ¨underhauf N and Protzel P. Switchable constraints for robust pose graph slam. In IEEE/RSJ International Conference on Intelligent Robots and Systems . pp. 1879–1884. [27] Olivastri E and Pretto A. IPC: Incremental probabilistic consensus-based consistent set maximization for SLAM backends. In IEEE International Conference on Robotics and Automation . pp. 10283–10289. DOI:10.1109/ICRA57147. 2024.10611214. [28] Carlone L, Kim A, Barfoot T et al. SLAM handbook: From localization and mapping to spatial intelligence . Cambridge University Press, 2025. [29] Black MJ and Rangarajan A. On the unification of line processes, outlier rejection, and robust statistics with applications in early vision. International Journal of Computer Vision 1996; 19(1): 57–91. [30] Ramezani M, Mattamala M and Fallon M. Aeros: Adaptive robust least-squares for graph-based slam. Frontiers in Robotics and AI 2022; 9: 789444. [31] Kaess M, Johannsson H, Roberts R et al. isam2: Incremental smoothing and mapping using the bayes tree. The International Journal of Robotics Research 2012; 31(2): 216–235. [32] Olson E and Agarwal P. Inference on networks of mixtures for robust robot mapping. The International Journal of Robotics Research 2013; 32(7): 826–840. [33] Carlone L, Censi A and Dellaert F. Selecting good measurements via l1 relaxation: A convex approach for robust estimation over graphs. In IEEE/RSJ International Conference on Intelligent Robots and Systems . pp. 2667–2674. [34] Shi J, Yang H and Carlone L. Robin: a graph-theoretic approach to reject outliers in robust estimation using invariants. In IEEE International Conference on Robotics and Automation .pp. 13820–13827. [35] Latif Y, Cadena C and Neira J. Robust loop closing over time for pose graph slam. The International Journal of Robotics Research 2013; 32(14): 1611–1626. [36] Wu F and Beltrame G. Cluster-based penalty scaling for robust pose graph optimization. IEEE Robotics and Automation Letters 2020; 5(4): 6193–6200. [37] Zhang J, Singh S et al. Loam: Lidar odometry and mapping in real-time. In Robotics: Science and systems , volume 2. Berkeley, CA, pp. 1–9. [38] Wang R, Schworer M and Cremers D. Stereo dso: Large-scale direct sparse visual odometry with stereo cameras. In IEEE International Conference on Computer Vision . pp. 3903–3911. [39] Galvez-L ´opez D and Tardos JD. Bags of binary words for fast place recognition in image sequences. IEEE Transactions on Robotics 2012; 28(5): 1188–1197. DOI:10.1109/TRO.2012. 2197158. [40] Lim H, Kim D, Shin G et al. Kiss-matcher: Fast and robust point cloud registration revisited. In IEEE International Conference on Robotics and Automation . pp. 11104–11111. [41] Schubert S, Neubert P, Garg S et al. Visual place recognition: A tutorial [tutorial]. IEEE Robotics & Automation Magazine 
+
+2023; 31(3): 139–153. [42] Grisetti G, K ¨ummerle R and Ni K. Robust optimization of factor graphs by using condensed measurements. In IEEE/RSJ International Conference on Intelligent Robots and Systems .pp. 581–588. [43] Guadagnino T, Di Giammarino L and Grisetti G. Hipe: Hierarchical initialization for pose graphs. IEEE Robotics and Automation Letters 2021; 7(1): 287–294. [44] Salazar-Gonz ´alez JJ. The steiner cycle polytope. European Journal of Operational Research 2003; 147(3): 671–679. [45] Carlone L, Aragues R, Castellanos JA et al. A fast and accurate approximation for planar pose graph optimization. 
+
+The International Journal of Robotics Research 2014; 33(7): 965–987. [46] Dijkstra EW. A note on two problems in connexion with graphs. 
+
+Numerische Mathematik 1959; : 269–271. [47] Olson E and Kaess M. Evaluating the performance of map optimization algorithms. In RSS Workshop on Good Experimental Methodology in Robotics , volume 15. p. 35. [48] Khosoussi K, Giamou M, Sukhatme GS et al. Reliable graphs for slam. The International Journal of Robotics Research 2019; 38(2-3): 260–298. [49] Zhang Z and Scaramuzza D. A tutorial on quantitative trajectory evaluation for visual (-inertial) odometry. In 
+
+IEEE/RSJ International Conference on Intelligent Robots and Systems . pp. 7244–7251. [50] Carlone L and Censi A. From angular manifolds to the integer lattice: Guaranteed orientation estimation with application to pose graph optimization. IEEE Transactions on Robotics 2014; 30(2): 475–492. [51] Geiger A, Lenz P and Urtasun R. Are we ready for autonomous driving? the kitti vision benchmark suite. In IEEE Conference on Computer Vision and Pattern Recognition . pp. 3354–3361. [52] Sturm J, Engelhard N, Endres F et al. A benchmark for the evaluation of rgb-d slam systems. In IEEE/RSJ International Conference on Intelligent Robots and Systems . pp. 573–580. [53] Suenderhauf N and Protzel P. Vertigo (versatile extensions for robust inference using graph optimization) source code, 2019. DOI:10.25912/5dcb33f1400ec. URL https:// openslam-org.github.io/vertigo.html .
