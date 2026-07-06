@@ -1,0 +1,437 @@
+Title: EchoHawk: A Reproducible Acoustic Pipeline for Drone Detection, Classification, and Direction-Finding, with a Cautionary Study of Session-Level Data Leakage
+
+URL Source: https://arxiv.org/pdf/2606.29589v1
+
+Published Time: Tue, 30 Jun 2026 01:27:13 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# EchoHawk: A Reproducible Acoustic Pipeline for Drone Detection, Classification, and Direction-Finding, with a Cautionary Study of Session-Level Data Leakage 
+
+David Shulman ∗
+
+github.com/shulm/echohawk 
+
+June 30, 2026 
+
+Abstract 
+
+Passive acoustic sensing is an attractive modality for counter–unmanned-aerial-system (counter-UAS) defence: it is covert, inexpensive, and effective against drones with small radar cross-sections or negligible radio emissions. We present EchoHawk, an open and fully reproducible reference pipeline that (i) detects a drone from the harmonic structure of its rotor noise, (ii) estimates its blade-passing frequency, and (iii) localises it with a microphone array us-ing classical wideband beamforming (delay-and-sum, MVDR, MUSIC) and time-delay pro-cessing (GCC-PHAT, SRP-PHAT), followed by recursive Bayesian tracking. We develop the underlying signal models and estimators in full, and evaluate on a physically transparent syn-thetic benchmark—which deliberately pits drones against hard low-frequency harmonic con-fusers (ground vehicles)—and on real recorded audio. Our central methodological contribution is a documented and quantified case of session-level data leakage in a widely used public dataset: because its recordings are pre-segmented into short clips, naive clip-level cross-validation places adjacent slices of the same continuous recording in both the training and test partitions, yield-ing optimistic estimates of generalisation. Enforcing recording-session–grouped cross-validation reduces, for example, a random-forest baseline’s probability of detection at a 1% false-alarm rate from 0.796 to 0.745 , and we report the corrected, trustworthy numbers throughout. All code, a synthetic data generator, unit tests, and figures are released so that every result is reproducible without any data download. 
+
+# 1 Introduction 
+
+The accessibility and growing capability of small multirotor unmanned aerial vehicles (UAVs) have created an urgent need for affordable, reliable counter-UAS sensing. Each sensing modality has char-acteristic strengths and failure modes. Radar offers long range and direct ranging but is challenged by the small radar cross-section of consumer drones and by ground clutter at low grazing angles. Electro-optical and infrared cameras provide intuitive imagery but require an unobstructed line of sight and adequate illumination. Radio-frequency (RF) interception of the command-and-control link is effective against remotely piloted drones but fails against autonomous platforms that radiate little. Acoustic sensing is complementary to all three: a multirotor’s propellers radiate a strong and highly structured acoustic signature whenever the vehicle is airborne, the sensor is entirely passive 
+
+> ∗
+
+Email: david.shulman.research@gmail.com 
+
+1
+
+> arXiv:2606.29589v1 [cs.SD] 28 Jun 2026
+
+and therefore difficult to detect or jam, and microphone hardware is inexpensive. Its principal limitations—reduced range relative to radar and sensitivity to wind and broadband environmental noise—argue for its use as one layer of a multi-sensor system rather than in isolation. This paper accompanies EchoHawk, an open reference implementation written with a deliberate emphasis on methodological correctness and honest measurement rather than on a single headline figure. We make the following contributions. 1. An open, end-to-end acoustic pipeline. We implement and document detection, blade-passing-frequency estimation, microphone-array direction-of-arrival (DOA) estimation, and temporal tracking, and we release a physically transparent synthetic generator so that every reported result reproduces with no external download. 2. A hard synthetic benchmark. Rather than separating drones from trivially dissimilar sounds, our simulator pits them against ground-vehicle confusers whose low-frequency har-monic content overlaps that of drones, across a wide signal-to-noise ratio (SNR) range, yielding a realistic detection problem. 3. A quantified data-leakage study. We identify, formalise, and correct a session-level leakage pathology in a common public dataset, and report the magnitude of the resulting inflation. 4. A comparative study of a hand-crafted-feature baseline against a convolutional neural network (CNN) for detection, and of classical DOA estimators as a function of SNR and array geometry. The remainder of the paper is organised as follows. Section 2 reviews related work. Section 3 develops the acoustic and array signal models. Section 4 derives the feature representations. Sec-tions 5 and 6 present detection and direction-finding. Section 7 describes the tracker. Sections 8–10 cover datasets, experimental protocol, and results, including the leakage analysis. Sections 11 and 12 discuss limitations and conclude. 
+
+# 2 Related work 
+
+Acoustic drone detection. Multirotor acoustic signatures are dominated by tonal components at the blade-passing frequency (BPF) and its harmonics, superimposed on broadband rotor tur-bulence. Detection systems typically transform short audio frames into time–frequency or cep-stral representations—spectrograms, log-mel spectrograms, or mel-frequency cepstral coefficients (MFCCs)—and apply either classical classifiers (support vector machines, random forests, hidden Markov models) or deep neural networks (convolutional and recurrent architectures). A recurring practical difficulty is the discrimination of drones from other low-frequency harmonic sources such as ground vehicles and generators, which our synthetic benchmark targets explicitly. 
+
+Array processing and DOA. Estimating the direction of a sound source from a microphone array is a classical problem. Beamforming methods range from the non-adaptive delay-and-sum (Bartlett) beamformer to the adaptive minimum-variance distortionless-response (MVDR/Capon) beamformer [2], while subspace methods such as MUSIC [1] and ESPRIT achieve super-resolution by exploiting the eigenstructure of the spatial covariance matrix. Time-difference-of-arrival (TDOA) approaches estimate inter-microphone delays, most robustly through the generalised cross-correlation with phase transform (GCC-PHAT) [3], and aggregate them with the steered-response power (SRP-PHAT) method for robust localisation in reverberant, noisy conditions. 2Datasets. Public resources for drone sensing include the DREGON dataset of UAV-embedded microphone-array recordings with ground-truth source directions [4], the DroneRF dataset of radio-frequency signatures [5], and recorded acoustic corpora such as the DroneAudioDataset [6]. We use the last for our real-audio evaluation and provide a loader for DREGON. 
+
+Data leakage. The phenomenon of information from the evaluation set contaminating training— data leakage—is a leading cause of optimistic and non-reproducible machine-learning results [7]. We present a concrete acoustic instance arising from the pre-segmentation of continuous recordings, and the grouped cross-validation that remedies it. 
+
+# 3 Signal and array models 
+
+3.1 Acoustic model of a multirotor 
+
+The dominant periodic excitation of a rotor with Nb blades turning at Ω revolutions per minute is the blade-passing frequency 
+
+f0 = Nb
+
+Ω60 [Hz] . (1) Because the excitation is periodic, the radiated pressure contains a harmonic stack at integer mul-tiples of f0. We model a single-channel drone clip s(t) as a sum of harmonics with geometrically decaying amplitudes, a slow frequency modulation that captures revolutions-per-minute jitter, and an additive broadband term η(t) representing rotor turbulence, 
+
+s(t) = 
+
+> K
+
+X
+
+> k=1
+
+ρ k−1 sin 
+
+
+
+2πk 
+
+Z t
+
+> 0
+
+f0(τ ) dτ + φk
+
+
+
++ η(t), f0(t) = f0
+
+ 1 + β sin 2 πf mt, (2) where ρ ∈ (0 , 1) is the harmonic decay, φk random phases, and β, f m the modulation depth and rate. The observation is corrupted by additive noise n(t) at a prescribed SNR, SNR dB = 10 log 10 (σ2 
+
+> s
+
+/σ 2
+
+> n
+
+).The hard negative class—a ground vehicle or generator—is modelled by the same harmonic form (2) but with a lower fundamental, faster amplitude decay (fewer effective harmonics), and slower mod-ulation, so that the drone and confuser distributions overlap rather than separate trivially. 
+
+3.2 Propagation 
+
+For a point source in a homogeneous medium the pressure amplitude decays as the inverse of range 
+
+r (spherical spreading), giving a sound-pressure-level reduction 
+
+∆L(r) = 20 log 10 
+
+rr0
+
++ α(f ) ( r − r0), (3) i.e. 6 dB per doubling of distance plus a frequency-dependent atmospheric absorption term α(f ) that grows with frequency. Consequently the higher harmonics attenuate first, and long-range detection relies on the lower members of the stack—an observation that also informs the choice of analysis band. 
+
+3.3 Microphone-array model 
+
+Consider M microphones at planar positions pm ∈ R2 and a far-field source whose wavefront arrives from azimuth θ with unit direction u(θ) = (cos θ, sin θ)T. Relative to the array origin, the 3propagation delay at microphone m is 
+
+τm(θ) = − pT
+
+> m
+
+u(θ)
+
+c , (4) with c ≈ 343 m /s the speed of sound. The time-domain signal is xm(t) = s t − τm(θ) + nm(t), and in the frequency domain, using the time-shift property, 
+
+Xm(f ) = S(f ) e−j2πf τ m(θ) + Nm(f ). (5) Collecting the channels into x(f ) = [ X1(f ), . . . , X M (f )] T gives x(f ) = S(f ) a(θ, f ) + n(f ), where the steering vector 
+
+a(θ, f ) 
+
+> m
+
+= exp 
+
+
+
+j2πf pT
+
+> m
+
+u(θ)
+
+c
+
+
+
+(6) encodes the array’s response to a unit-amplitude plane wave from θ. Two design rules follow from (6). With wavelength λ = c/f , the inter-element spacing must satisfy d ≤ λ/ 2 to avoid spatial aliasing (grating lobes), and the angular resolution improves with array aperture L roughly as ∆θ ≈ λ/L .An M -element array provides up to 10 log 10 M dB of array gain against spatially white noise. 
+
+# 4 Feature extraction 
+
+4.1 Short-time Fourier transform 
+
+All representations derive from the short-time Fourier transform (STFT). For a window w of length 
+
+N and hop H,
+
+X(m, k ) =  
+
+> N−1
+
+X
+
+> n=0
+
+x(n + mH ) w(n) e−j2πkn/N , S(m, k ) = |X(m, k )|2, (7) with S the spectrogram (power as a function of frame m and bin k). 
+
+4.2 Log-mel spectrogram and MFCCs 
+
+A bank of B triangular filters spaced uniformly on the mel scale mel( f ) = 2595 log 10 (1 + f / 700) 
+
+maps the linear spectrum to perceptual sub-bands. With Hb(k) the b-th filter, the mel energies and their logarithm are 
+
+Eb(m) = X
+
+> k
+
+Hb(k) S(m, k ), ˜Eb(m) = log  Eb(m) + ϵ, (8) and the ˜Eb form the log-mel spectrogram used as the CNN input. A discrete cosine transform decorrelates them into mel-frequency cepstral coefficients, 
+
+ci(m) = 
+
+> B
+
+X
+
+> b=1
+
+˜Eb(m) cos 
+
+h πi B
+
+ b − 12
+
+i
+
+, i = 0 , . . . , Q − 1, (9) which feed the classical baseline. 44.3 Blade-passing-frequency estimation 
+
+We estimate f0 with the harmonic product spectrum (HPS), which multiplies frequency-compressed copies of the magnitude spectrum so that energy aligned with a true fundamental and its harmonics reinforces: 
+
+HPS( f ) = 
+
+> H
+
+Y
+
+> h=1
+
+X(hf ) , ˆf0 = arg max  
+
+> f∈[fmin ,f max ]
+
+HPS( f ). (10) On a synthetic clip with f0 = 110 Hz, (10) returns 109 Hz. 
+
+4.4 Summary feature vector 
+
+The baseline operates on a fixed-length vector concatenating the per-coefficient mean and stan-dard deviation of the MFCCs with three spectral shape descriptors and the HPS estimate. With normalised power spectrum P (f ) = S(f )/ P 
+
+> f
+
+S(f ), the spectral centroid, spread, and flatness are 
+
+μ = X
+
+> f
+
+f P (f ), σ =
+
+sX
+
+> f
+
+(f − μ)2P (f ), SFM = exp   1
+
+> F
+
+P 
+
+> f
+
+log P (f )
+
+> 1
+> F
+
+P 
+
+> f
+
+P (f ) , (11) where a low spectral flatness SFM indicates a tonal (harmonic) signal. 
+
+# 5 Detection and classification 
+
+5.1 Detection as a hypothesis test 
+
+Detection is the binary test between H0 (no drone) and H1 (drone). A decision rule is characterised by its probability of detection and probability of false alarm, 
+
+Pd = Pr( decide H1 | H 1), Pf a = Pr( decide H1 | H 0). (12) Sweeping the decision threshold traces the receiver operating characteristic (ROC), and the area under it, AUC = R 10 Pd dP f a , summarises performance independently of any single operating point. Because operational counter-UAS systems tolerate few false alarms, we additionally report Pd at fixed Pf a ∈ { 1, 5, 10 }%. The Neyman–Pearson lemma motivates thresholding a likelihood ratio; in practice we threshold a learned class-posterior estimate, and a constant-false-alarm-rate (CFAR) threshold can adapt to a varying noise floor. 
+
+5.2 Classifiers 
+
+The baseline is a random forest—an ensemble of T decision trees whose bootstrap-aggregated votes estimate the posterior—applied to the summary feature vector. The deep model, DroneCNN, is a compact convolutional network applied to 1-second log-mel spectrograms; each layer computes 
+
+z(l) = ϕ W(l) ∗ z(l−1) + b(l) with ϕ a rectified-linear nonlinearity and ∗ a 2-D convolution, followed by global pooling and a linear classifier. Given the class imbalance (drones are the minority), the network is trained by minimising a class-weighted cross-entropy 
+
+L = − 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+wyi log pϑ(yi | Xi), wc ∝ 1
+
+nc
+
+, (13) where nc is the number of training examples of class c, using the Adam optimiser with weight decay and early stopping on a held-out validation split. 56 Direction-of-arrival estimation 
+
+6.1 Spatial covariance 
+
+All estimators below are built from the per-frequency spatial covariance matrix, estimated by aver-aging outer products over T STFT frames, 
+
+R(f ) = Ex(f )x(f )H ≈ 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+xt(f ) xt(f )H + γ tr   ˆR(f ) I, (14) where the final diagonal-loading term ( γ ≪ 1) regularises the inverse. 
+
+6.2 Bartlett and MVDR beamformers 
+
+The delay-and-sum (Bartlett) beamformer steers by w = a/M and reports the output power 
+
+PB(θ, f ) = a(θ, f )HR(f ) a(θ, f )
+
+a(θ, f )Ha(θ, f ) . (15) The MVDR/Capon beamformer instead minimises total output power subject to unit gain in the look direction, 
+
+wMVDR = arg min 
+
+> w
+
+wHR w s.t. wHa = 1 , (16) whose closed-form solution, via a Lagrange multiplier, is wMVDR = R−1a/(aHR−1a), giving the spectrum 
+
+PMVDR (θ, f ) = 1
+
+a(θ, f )HR(f )−1a(θ, f ) . (17) By suppressing energy from off-look directions, MVDR achieves a narrower main lobe than Bartlett at the cost of sensitivity to covariance estimation error. 
+
+6.3 MUSIC 
+
+For D sources ( D < M ), the eigendecomposition R = PMi=1 λi eieH 
+
+> i
+
+separates into a signal subspace spanned by the D dominant eigenvectors and a noise subspace En = [ eD+1 , . . . , eM ] orthogonal to the true steering vectors. The MUSIC pseudospectrum exploits this orthogonality, 
+
+PMUSIC (θ, f ) = 1
+
+a(θ, f )HEnEH 
+
+> n
+
+a(θ, f ) , (18) exhibiting sharp peaks at the source directions. 
+
+6.4 Wideband fusion 
+
+Because the drone signature is broadband, we fuse narrowband spectra incoherently over a set F of bins spanning the harmonic band, 
+
+¯P (θ) = 1
+
+|F| 
+
+X 
+
+> f∈F
+
+P (θ, f ), ˆθ = arg max 
+
+> θ
+
+¯P (θ). (19) 66.5 Time-delay processing 
+
+For a microphone pair (i, j ) the GCC-PHAT cross-correlation whitens the cross-spectrum before the inverse transform, emphasising delay structure over spectral colour, 
+
+Rij (τ ) = 
+
+Z Xi(f ) X∗ 
+
+> j
+
+(f )
+
+Xi(f ) X∗ 
+
+> j
+
+(f ) e j2πf τ df, ˆτij = arg max 
+
+> τ
+
+Rij (τ ) . (20) Steered-response power (SRP-PHAT) sums the pairwise correlations evaluated at the delays a can-didate direction would induce, τij (θ) = −(pi − pj )Tu(θ)/c ,
+
+PSRP (θ) = X
+
+> i<j
+
+Rij 
+
+ τij (θ), (21) yielding a robust azimuth map. A single array yields a bearing; several spatially separated ar-rays/nodes intersect their TDOA hyperbolae to triangulate a position. 
+
+# 7 Tracking 
+
+Successive single-frame bearings are noisy, but a drone’s motion is smooth, so we filter the azimuth sequence with a constant-velocity Kalman filter. With state ξ = [ θ, ˙θ]T, transition F, process and measurement covariances Q, r, and observation H = [1 0] , the predict and update recursions are 
+
+ξ− = Fξ, P− = FPF T + Q, (22) 
+
+K = P−HT HP −HT + r−1, ξ = ξ− + K z − Hξ−, (23) with P = ( I − KH )P−. The gain K trades measurement noise against model uncertainty; an α–β
+
+filter is the fixed-gain special case. 
+
+# 8 Datasets 
+
+8.1 Synthetic benchmark 
+
+The simulator instantiates (2) for drones and the modified harmonic form for ground-vehicle con-fusers, together with tonal distractors and pink/white background noise, drawing SNRs uniformly in [−15 , +3] dB. For DOA it synthesises M = 8 channels for a uniform circular array of radius 10 cm under the plane-wave model (6) plus sensor noise, with a known ground-truth azimuth. Because the generative process is fully specified, every result is reproducible from a seed with no download. 
+
+8.2 Real audio: DroneAudioDataset 
+
+The DroneAudioDataset [6] comprises recorded drone audio and everyday sounds (drawn from ESC-50 and a speech-commands corpus). After resampling to 16 kHz and segmentation into 1-second windows we obtain 19 ,275 clips ( 2,420 drone, 16 ,855 non-drone). Critically, the 1,332 drone files originate from only 257 continuous recording sessions , identifiable from filename prefixes such as 
+
+B_S2_D1_067-bebop ; this structure is central to Section 10.3. 79 Experimental setup 
+
+Audio is resampled to 16 kHz and segmented into 1-second windows. The STFT uses a Hann window. All randomness is seeded for exact reproducibility. For the real data we use a 70 /30 
+
+train/test partition created with a group-aware shuffle so that no recording crosses the partition (the necessity of which is the subject of Section 10.3); a further group-aware split of the training portion provides a validation set for early stopping. We report ROC-AUC, accuracy, and Pd at 1, 5,and 10% false alarm for detection, macro-averaged F1 for multi-class tasks, and root-mean-square azimuth error for DOA. 
+
+# 10 Results 
+
+10.1 Synthetic detection and direction-finding 
+
+On the synthetic hard-confuser task the random-forest baseline attains AUC ≈ 0.93 and accuracy 
+
+≈ 0.86 ; the deliberately overlapping drone and vehicle distributions make this a realistic, non-trivial problem rather than a separable toy. Table 1 reports DOA root-mean-square error versus array SNR for the eight-microphone array. As predicted by theory, MVDR and MUSIC outperform delay-and-sum at low SNR, where their narrower main lobes resolve the source from the noise floor; all methods converge to a fraction of a degree at high SNR (Fig. 1). Table 1: Synthetic DOA root-mean-square error (degrees) versus array SNR, 8-microphone uniform circular array. Array SNR Bartlett MVDR MUSIC 
+
+−10 dB ∼4.0 ∼1.6 ∼2.3 
+
+0 dB ∼0.6 ∼0.8 ∼0.9 
+
++10 dB ∼0.3 ∼0.3 ∼0.3 
+
+10.2 Real-data detection 
+
+Under recording-session–grouped evaluation the CNN outperforms the baseline across all metrics, and the gap is largest in the operationally important low-false-alarm regime (Table 2). At a 1% 
+
+false-alarm rate the CNN detects 93 .8% of drones against 74 .5% for the baseline, reflecting the benefit of learning the full spectro-temporal pattern rather than a hand-designed summary. Table 2: Real-data detection under session-grouped evaluation (held-out test). Metric RF baseline DroneCNN ROC-AUC 0.9815 0.9941 
+
+Accuracy 0.9638 0.9840 
+
+Pd @ 1% FA 0.7453 0.9384 
+
+Pd @ 5% FA 0.9185 0.9784 
+
+Pd @ 10% FA 0.9499 0.9834 
+
+8Figure 1: Azimuth spectra for a source at 65 ◦ (SNR = 5 dB). All four estimators peak at the true bearing; MUSIC is sharpest, Bartlett broadest—a direct illustration of the resolution/robustness trade-off. 
+
+10.3 The session-level leakage study 
+
+We now formalise and quantify the central methodological point. Let the dataset be D = {(Xi, y i, g i)}ni=1 ,where gi indexes the continuous recording session from which clip i was cut. Clips sharing a session, 
+
+gi = gj , also share latent nuisance factors—the same background, the same channel, the same drone unit at near-identical operating point. A random clip-level split assigns such clips independently and therefore, with high probability, places near-duplicates of one recording in both training and test. A classifier can then exploit the session-identifying nuisance, estimating Pr( y | g) rather than the intended Pr( y | X), and the empirical test risk understates the true risk on unseen recordings. The remedy is a group-constrained partition with Gtrain ∩ G test = ∅, which restores an (approximately) unbiased estimate of generalisation to new recordings. In this dataset each drone file is itself only ∼ 1 s, so even a file -level grouping is nearly equivalent to a clip-level split; the correct grouping unit is the session , recovered from the filename prefix. Table 3 contrasts the leaky (file-grouped) and corrected (session-grouped) metrics. Sealing the leak lowers every score—the baseline’s Pd@1% FA falls by roughly five points—exposing the magnitude of the inflation. The corrected numbers in Table 2 are the ones we regard as trustworthy. Table 3: Leaky (file-grouped) versus honest (session-grouped) metrics. The drop quantifies the inflation removed by correct grouping. RF baseline DroneCNN Metric File-grouped Session-grouped File-grouped Session-grouped ROC-AUC 0.9872 0.9815 0.9968 0.9941 
+
+Pd @ 1% FA 0.7964 0.7453 0.9519 0.9384 910.4 Tracking 
+
+On a moving-source simulation in which the true bearing sweeps across azimuth over roughly three seconds, the Kalman/ α–β tracker reduces the bearing root-mean-square error from ∼ 5.7◦ (raw per-frame MUSIC) to ∼ 1.9◦, confirming that exploiting temporal continuity substantially stabilises the estimate. 
+
+# 11 Discussion and limitations 
+
+Several limitations bound the interpretation of these results, and we state them explicitly. First, the real-audio benchmark uses easy negatives—everyday environmental and speech sounds rather than operational confusers such as ground vehicles—so its high absolute scores overstate the difficulty of fielded operation; the hard drone-versus-vehicle discrimination is exercised only on the synthetic benchmark. Second, the DOA evaluation is predominantly synthetic: a loader and runnable script for the real DREGON microphone-array dataset are provided, but physical-array results await data access, and DREGON’s UAV-mounted geometry additionally introduces strong ego-noise. Third, the array processing is developed for a single, far-field source; near-field effects, multiple simulta-neous sources, multipath, and strong wind are out of scope. Finally, the synthetic generator, while physically motivated, is an idealisation. None of these caveats affects the central methodological contribution—the leakage analysis and the discipline of grouped evaluation—which transfers to any study that segments continuous recordings into clips. 
+
+# 12 Conclusion 
+
+We presented EchoHawk, a compact, open, and fully reproducible acoustic pipeline for drone detec-tion, blade-passing-frequency estimation, microphone-array direction-finding, and tracking, together with the underlying signal models and estimators. Beyond the implementation, the most transfer-able result is methodological: when short clips are cut from a small number of continuous recordings, only recording-grouped cross-validation yields honest performance estimates; clip- or file-level splits inflate them measurably. We release all code, a synthetic data generator, tests, continuous inte-gration, and figures so that the results—and the cautionary analysis—can be reproduced and built upon. Future work includes evaluation on real microphone-array data (DREGON), hard real-world confusers, multi-source and multipath settings, and end-to-end fusion of detection with localisation across networked nodes. 
+
+# References 
+
+[1] R. O. Schmidt, “Multiple emitter location and signal parameter estimation,” IEEE Trans. An-tennas Propag. , vol. 34, no. 3, pp. 276–280, 1986. [2] J. Capon, “High-resolution frequency-wavenumber spectrum analysis,” Proc. IEEE , vol. 57, no. 8, pp. 1408–1418, 1969. [3] C. H. Knapp and G. C. Carter, “The generalized correlation method for estimation of time delay,” IEEE Trans. Acoust., Speech, Signal Process. , vol. 24, no. 4, pp. 320–327, 1976. [4] M. Strauss, P. Mordel, V. Miguet, and A. Deleforge, “DREGON: Dataset and methods for UAV-embedded sound source localization,” in Proc. IEEE/RSJ IROS , 2018. 10 [5] M. F. Al-Sa’d, A. Al-Ali, A. Mohamed, T. Khattab, and A. Erbad, “RF-based drone detec-tion and identification using deep learning approaches,” Future Gener. Comput. Syst. , vol. 100, pp. 86–97, 2019. [6] S. Al-Emadi, A. Al-Ali, A. Mohammad, and A. Al-Ali, “Audio based drone detection and iden-tification using deep learning,” in Proc. IWCMC , 2019. [7] S. Kapoor and A. Narayanan, “Leakage and the reproducibility crisis in machine-learning-based science,” Patterns , vol. 4, no. 9, 2023. 11

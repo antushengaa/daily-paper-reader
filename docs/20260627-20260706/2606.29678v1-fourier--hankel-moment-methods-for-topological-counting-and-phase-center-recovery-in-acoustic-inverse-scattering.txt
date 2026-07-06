@@ -1,0 +1,1871 @@
+Title: Fourier–Hankel Moment Methods for Topological Counting and Phase-Center Recovery in Acoustic Inverse Scattering
+
+URL Source: https://arxiv.org/pdf/2606.29678v1
+
+Published Time: Tue, 30 Jun 2026 02:38:31 GMT
+
+Number of Pages: 36
+
+Markdown Content:
+# Fourier–Hankel Moment Methods for Topological Counting and Phase-Center Recovery in Acoustic Inverse Scattering 
+
+Xiaomei Yang ∗ Zhiliang Deng †
+
+Abstract 
+
+We develop a Fourier–Hankel moment framework for extracting topological counting in-formation from full-aperture acoustic far-field data. The method is based on the observation that separated localized components generate distinct phase centers in angular Fourier data. Under the Born approximation, a Bessel–Fourier moment identity shows that suitably scaled row Fourier coefficients form, to leading order, a finite exponential moment sequence. The associated Hankel matrix has rank equal to the number of separated connected components, and the corresponding Hankel pencil recovers their phase-center locations. We prove the exact Hankel rank formula in the phase-center model and establish a perturbation theorem showing stable component counting under a singular-gap condition. We further extend the framework to detectable cavities by introducing a signed phase-center model. In this model, material components and cavities contribute with opposite signs to the moment sequence. The signed Hankel rank counts distinct signed phase centers, and the detectable cavity count is obtained from the excess rank beyond the positive component count. This formulation also identifies an intrinsic degeneracy: cavities whose phase centers coincide with material phase centers, such as perfectly concentric annuli, do not increase the leading signed rank and therefore cannot be detected by the leading phase-center mechanism alone. Numerical experiments validate the proposed theory at several levels: ideal moment sequences, Born far-field data with finite-size components, phase-center location recovery, signed cavity counting, and exact Helmholtz far-field data. The results show that the Fourier–Hankel rank mechanism provides a data-level algebraic approach to component counting and detectable cavity counting, while also making explicit its stability conditions and failure modes. 
+
+Keywords: acoustic inverse scattering; Fourier–Hankel moments; Hankel matrices; Betti number; Prony method 
+
+# 1 Introduction 
+
+The inverse acoustic scattering problem seeks to determine information about an unknown obstacle or inhomogeneity from the waves it scatters. In the full-aperture multistatic setting, the data are far-field patterns measured for pairs of incident and observation directions at one or several frequencies. This problem is a classical topic in inverse scattering theory and has been studied extensively because of its relevance to nondestructive testing, sonar imaging, medical diagnostics, and other wave-based imaging applications; see, for instance, the monographs of Colton and Kress [11] and Kirsch [21]. 
+
+> ∗
+
+School of Mathematics, Southwest Jiaotong University. Email: yangxiaomath@swjtu.edu.cn 
+
+> †
+
+Corresponding author. School of Mathematical Sciences, University of Electronic Science and Technology of China. Email: dengzhl@uestc.edu.cn 
+
+1
+
+> arXiv:2606.29678v1 [math.NA] 29 Jun 2026
+
+Mathematically, acoustic inverse scattering is nonlinear and severely ill-posed: small perturbations of the measured wave field may lead to significant uncertainty in the recovered geometry or material contrast. This has led to a broad range of reconstruction methodologies developed to tackle the inherent nonlinearity and ill-posedness of this inverse problem. These approaches span a rich spectrum, ranging from computationally efficient qualitative techniques to high-fidelity iterative optimization schemes. Among them, sampling-type and qualitative methods—such as the linear sampling, factorization, and probe methods—have gained prominent traction for their ability to fast-localize scatterers or map their geometries without undergoing expensive nonlinear optimization [10 , 7 , 20 , 22 , 18 , 29 ]. This paradigm has been further expanded by direct and extended sampling methods, which offer robust, non-iterative imaging capabilities even under constrained configurations like limited apertures or single-incident waves [ 24 , 26 , 27 , 28 ]. Conversely, when precise boundary profiles or contrast distributions are required, optimization-based framework and Newton-type iterative solvers are typically deployed to minimize data-misfit functionals, leveraging tailored regularization techniques and shape derivatives to stabilize the inversion [ 15 , 16 , 19 , 31 ]. Statistical and Bayesian approaches provide another important framework, in which uncertainty in the unknown scatterer and in the measured data is incorporated into the inverse problem through prior distributions, posterior inference, and uncertainty quantification [ 6 , 8, 25 ]. To bridge the gap between theoretical frameworks and practical engineering, sustained research efforts have long focused on multi-frequency data fusion, limited-aperture constraints, and resolution enhancements [4, 5 , 28 ], substantially elevating the robustness of acoustic scattering measurements in complex environments. The present paper addresses a different but related imaging question. Instead of attempting to reconstruct the full boundary or contrast, we ask whether certain low-dimensional geometric and topological features can be extracted directly from the far-field data. In particular, we focus on the number of separated connected components, the recovery of their dominant phase-center locations, and the counting of detectable cavity phase centers. Such information is discrete or skeleton-like in nature. It may be difficult to infer robustly from a thresholded reconstructed image or from a qualitative indicator alone, especially when components are close, cavities are small, or the data are noisy. This motivates a data-level spectral approach, in which the angular structure of the far-field pattern is transformed into moment sequences whose Hankel ranks and matrix pencils encode the desired counting and localization information. Our approach is closely related to the literature on small scatterers, point-like targets, and subspace imaging. Small-volume asymptotic theory and polarization tensor methods show that localized inhomogeneities leave finite-dimensional signatures in boundary or far-field measurements [1 , 2 ]. MUSIC and related subspace methods exploit the finite-dimensional structure of multistatic response data to locate small or point-like scatterers [ 9, 14 ]. These works indicate that, in suitable regimes, scattering data may contain algebraic structures associated with localized objects. A second related line of work is moment, Prony, and Hankel-type reconstruction. Classical Prony and matrix pencil methods recover finite exponential sums from sampled moments by exploiting annihilating polynomials, Vandermonde factorizations, or Hankel rank conditions [ 17 , 33 , 34 , 30 , 23 ]. Similar algebraic structures also arise in inverse source problems, where point sources or multipoles generate finite-dimensional moment systems [ 3 , 32 ]. More recently, Hankel determinant and contour-counting principles have been used to identify the number of stationary point sources in inverse heat source problems [ 12 , 13 ]. Although these problems differ from inverse acoustic scattering, they suggest a useful principle: if measured data can be transformed into a finite exponential-moment representation, then counting and localization of hidden objects may be possible at the data level. For acoustic inverse scattering, the relevant phase information is contained in the angular dependence of the far-field pattern. Under the Born approximation, the far-field pattern is related 2to the Fourier transform of the scattering contrast. By expanding the multistatic far-field matrix with respect to the observation and incident angles, one obtains Bessel–Fourier moments of the weighted contrast. We show that a suitable low-order row channel of these coefficients, after a Bessel leading-order scaling, has the form of a finite exponential moment sequence in the localized phase-center regime. The associated Hankel matrix then admits a Vandermonde factorization. Consequently, its rank equals the number of separated phase centers, and hence the number of connected components under the separated localized component model. The same moment structure also yields a Hankel-pencil procedure for recovering the component phase-center locations. This should be understood as a skeleton-type recovery of dominant scattering centers, rather than a full boundary reconstruction. We further extend the framework to cavities by introducing a signed phase-center model. In this model, material regions and cavities contribute with opposite signs to the leading moment sequence. The signed Hankel rank counts the number of distinct signed phase centers, while the excess over the positive component count gives the number of detectable cavity phase centers. This distinction is essential: a physical cavity is not always detectable by the leading signed-rank mechanism. For example, in a perfectly concentric annulus, the positive material phase center and the negative cavity phase center coincide, so their leading contributions collapse into a single phase node. Such degenerate cavities require higher-order radial information, additional Fourier–Bessel channels, or multiple-frequency information beyond the leading phase-center model. The contribution of this paper is to develop a Fourier–Hankel moment framework for component counting, phase-center localization, and detectable cavity counting from acoustic far-field data. We first derive a Bessel–Fourier moment identity for the angular Fourier coefficients of the far-field pattern. We then prove an exact Hankel-rank formula for component counting in the localized phase-center model and establish a perturbation theorem showing that the count is stable under a singular-gap condition. We also derive a Hankel-pencil recovery formula for phase-center locations. Finally, we introduce a signed phase-center extension for cavity counting and clarify its detectability condition and degeneracy mechanism. Numerical experiments are designed to match these theoretical claims. We test the algebraic Hankel-rank mechanism on ideal moment sequences, component counting from Born far-field data with finite-size components and noise, phase-center location recovery through the Hankel pencil, signed phase-center cavity counting, and component counting from exact Helmholtz far-field data. The experiments show that the proposed Fourier–Hankel construction captures the theoretical rank mechanism and remains effective beyond the idealized moment model in a range of controlled scattering configurations. The rest of the paper is organized as follows. Section 2 introduces the scattering model, angular Fourier coefficients, and the Fourier–Hankel moment formulation. Section 3 proves the Hankel-rank formula for component counting and the associated stability result. Section 4 develops the signed phase-center extension for detectable cavity counting. Section 5 presents the numerical experiments. Section 6 concludes the paper. 
+
+# 2 Fourier–Hankel moment formulation 
+
+This section introduces the acoustic scattering model and the angular Fourier coefficients used throughout the paper. Our aim here is not to solve the full nonlinear inverse scattering problem, but to identify a moment structure in the far-field data that can be used for component counting. The theoretical derivation is carried out for a penetrable acoustic inhomogeneity under the Born approximation, where the far-field pattern admits a Fourier-transform representation of the contrast. 3For impenetrable obstacles or fully nonlinear scattering models, the same Fourier–Hankel construction may still serve as a data-level spectral descriptor. However, the exact Hankel-rank formula proved below should be understood as a result for the Born-type phase-center model. 
+
+2.1 Scattering model and angular Fourier coefficients 
+
+Let D ⊂ R2 be a bounded inhomogeneity, and let q be a compactly supported contrast with supp q ⊂ D. In what follows, the connected components to be counted are the separated components of the effective contrast support. For an incident plane wave 
+
+ui(x, d ; k) = eikd ·x, d ∈ S1, (1) the total field is 
+
+u(x, d ; k) = ui(x, d ; k) + us(x, d ; k), (2) where us denotes the scattered field and satisfies the Sommerfeld radiation condition. In two dimensions, the scattered field has the far-field asymptotic form 
+
+us(x, d ; k) = eik|x|
+
+|x|1/2
+
+u∞(ˆ x, d ; k) + O(|x|−1) , ˆx = x
+
+|x| , |x| → ∞ . (3) The coefficient u∞(ˆ x, d ; k) is the far-field pattern. For a compactly supported contrast, the far-field pattern admits the representation 
+
+u∞(ˆ x, d ; k) = Ck
+
+Z
+
+> D
+
+e−ikˆx·yq(y)u(y, d ; k) d y, (4) where Ck̸ = 0 is a known dimensional constant determined by the normalization of the two-dimensional Green function. The precise value of Ck is immaterial for the rank analysis, since it only rescales the moment sequence. According to the Born approximation, the total field u(y, d ; k) in (4) is replaced by the incident field eikd ·y. We then obtain 
+
+u∞(ˆ x, d ; k) ≈ Ck
+
+Z
+
+> D
+
+q(y)e−ik(ˆ x−d)·y dy. (5) Equation (5) shows that, in the Born regime, the far-field pattern contains Fourier information of the weighted support qχ D through the scattering vectors k( ˆx − d). This motivates a direct spectral analysis of the far-field data themselves. In particular, we ask whether geometric and topological information of the scatterer, such as component and cavity information, can be inferred from the angular structure of these data. For this purpose, we write the far-field pattern in angular variables. Let θ and φ denote the observation and incident angles, respectively, and set ˆx(θ) = (cos θ, sin θ), d(φ) = (cos φ, sin φ), 0 ≤ θ, φ < 2π. (6) We write 
+
+u∞(θ, φ ; k) := u∞(ˆ x(θ), d (φ); k). (7) 4The continuous angular Fourier coefficients of the full-aperture far-field matrix are then defined by 
+
+amn (k) = 1(2 π)2
+
+Z 2π
+
+> 0
+
+Z 2π
+
+> 0
+
+u∞(θ, φ ; k)e−imθ e−inφ dθ dφ, m, n ∈ Z. (8) In computations, the far-field pattern is available only at finitely many angular directions. For uniform samples, let 
+
+θi = 2πi Nang 
+
+, φj = 2πj Nang 
+
+, i, j = 0 , . . . , N ang − 1. (9) The empirical angular Fourier coefficients are then 
+
+a(Nang ) 
+
+> mn
+
+(k) = 1
+
+N 2ang 
+
+> Nang −1
+
+X
+
+> i,j =0
+
+u∞(θi, φ j ; k)e−imθ i e−inφ j . (10) For simplicity, the same number Nang of observation and incident directions is used. The extension to unequal numbers of observation and incident directions is straightforward. In the subsequent Hankel construction, only finitely many low-order coefficients are retained. We now derive the angular moment identity used in the sequel. In polar coordinates y =(r cos ψ, r sin ψ), and using the same symbol D for the corresponding polar domain, the Born far-field representation (5) becomes 
+
+u∞(θ, φ ; k) ≈ Ck
+
+Z
+
+> D
+
+q(r, ψ )e−ikr cos( θ−ψ)eikr cos( φ−ψ)r dr dψ. (11) Using the Jacobi–Anger expansion 
+
+eit cos ω = X
+
+> ℓ∈Z
+
+iℓJℓ(t)eiℓω (12) and the orthogonality of the Fourier basis on the unit circle, taking the ( m, n ) angular Fourier coefficient of (11) gives the Bessel–Fourier moment identity 
+
+amn (k) = Ck(−i) min
+
+Z
+
+> D
+
+q(r, psi )Jm(kr )Jn(kr )e−i( m+n)ψr dr dψ, m, n ∈ Z. (13) The identity (13) shows that amn (k) is a Bessel–Fourier moment of the weighted contrast qχ D. The radial factors Jm(kr )Jn(kr ) probe the radial distribution of the scattering material, whereas the angular factor e−i( m+n)ψ records angular phase information. This explains why the angular Fourier matrix contains geometric information about the contrast support. The next section reduces this two-index matrix to one-dimensional moment channels and shows how a scaled row channel leads to a Hankel rank formula for component counting. 
+
+2.2 Row moment channel and phase-center reduction 
+
+To construct a Hankel matrix, we reduce the two-index angular Fourier matrix 
+
+A(k) = {amn (k)}m,n ∈Z (14) to a one-dimensional moment sequence. In this paper the exact rank formula is derived from the row channel 
+
+crow  
+
+> p
+
+(k) = ap0(k), p = 0 , 1, . . . . (15) 5This channel takes the p-th Fourier mode in the observation angle and the zeroth Fourier mode in the incident angle. Equivalently, it averages over the incident direction and retains angular oscillations in the observation direction. After a Bessel leading-order scaling, this channel yields a finite exponential moment sequence generated by the phase centers of the localized components. Other one-dimensional projections of the angular Fourier matrix are possible. For example, one may use column coefficients or combine coefficients with the same total angular order. Such channels may be useful for numerical consistency checks or for future multi-channel extensions. They are not used in the exact rank formula proved below. In the leading phase-center model, these additional channels carry the same phase-node information as the row channel and therefore do not by themselves remove degeneracies caused by coincident positive and negative phase centers. For this reason, the theoretical development is stated for the row channel only. We impose a separated localized component model. Assume that 
+
+D =
+
+> Nc
+
+[
+
+> j=1
+
+Dj , Dj = zj + εΩj , 0 < ε ≪ 1, (16) where zj = rj ( cos ψj , sin ψj ) is the center of the j-th component and Ω j is a bounded reference set. The components are assumed to be separated: 
+
+|zi − zj | ≥ d0 > 0, i̸ = j. (17) Then the zeroth Betti number, namely the number of connected components, is 
+
+β0(D) = Nc. (18) Under the Born approximation, the far-field pattern decomposes as 
+
+u∞(ˆ x, d ; k) = CkNcX
+
+> j=1
+
+Z
+
+> Dj
+
+q(y)e−ik(ˆ x−d)·y dy. (19) For y = zj + εξ , the phase factor can be written as 
+
+e−ik(ˆ x−d)·y = e−ik(ˆ x−d)·zj e−ikε (ˆ x−d)·ξ .
+
+Thus, when kε ≪ 1, each localized component contributes, to leading order, a single phase-center term. Define 
+
+Qj =
+
+Z
+
+> Dj
+
+q(y) d y = ε2
+
+Z
+
+> Ωj
+
+q(zj + εξ ) d ξ. (20) Then by (5), we have 
+
+u∞(ˆ x, d ; k) = CkNcX
+
+> j=1
+
+Qj e−ik(ˆ x−d)·zj + Rε(ˆ x, d ; k), (21) where the residual is of relative order O(kε ) under the localized component scaling. Other discrep-ancies, including multiple scattering and non-Born effects, will be absorbed into the perturbation term in the stability analysis. With Rε neglected, the leading phase-center contribution to the row Fourier coefficient takes the form 
+
+a0
+
+> p0
+
+(k) = Ck(−i) pNcX
+
+> j=1
+
+Qj Jp(kr j )J0(kr j )e−ipψ j . (22) 6Here the superscript 0 marks the ideal phase-center contribution. The raw row moment crow  
+
+> p
+
+(k) = ap0(k) is not yet an exponential moment, because (22) contains the order-dependent Bessel factor Jp(kr j ). The purpose of the following scaling is to remove the leading small-argument behavior of Jp. Define 
+
+brow  
+
+> p
+
+(k) = p!
+
+Ck(−i) p
+
+ 2
+
+k
+
+p
+
+crow  
+
+> p
+
+(k) = p!
+
+Ck(−i) p
+
+ 2
+
+k
+
+p
+
+ap0(k). (23) This scaling is chosen so that the leading term of Jp(kr j ) leaves the phase-center dependence in the form rpj e−ipψ j , which is exponential in the moment index p.Indeed, the Taylor expansion 
+
+Jp(t) = 
+
+> ∞
+
+X
+
+> s=0
+
+(−1) s
+
+s!( p + s)! 
+
+ t
+
+2
+
+2s+p
+
+, p = 0 , 1, 2, . . . , (24) can be written by factoring out its leading term as 
+
+Jp(t) = 1
+
+p!
+
+ t
+
+2
+
+p
+
+hp(t), (25) where 
+
+hp(t) = 
+
+> ∞
+
+X
+
+> s=0
+
+(−1) s p!
+
+s!( p + s)! 
+
+ t2
+
+4
+
+s
+
+. (26) The function hp is analytic near t = 0, satisfies hp(0) = 1, and has the local expansion 
+
+hp(t) = 1 − t2
+
+4( p + 1) + O(t4). (27) Consequently, for each fixed Hankel size J, there exists a constant CJ > 0 such that 
+
+|hp(t) − 1| ≤ CJ |t|2, p = 0 , . . . , 2J − 2, (28) whenever |t| is sufficiently small. Applying (25) to (22), the phase-center part of the scaled row moment becomes 
+
+brow ,0 
+
+> p
+
+(k) = 
+
+> Nc
+
+X
+
+> j=1
+
+Qj J0(kr j )rpj e−ipψ j hp(kr j ). (29) Define 
+
+λj = rj e−iψj , αj (k) = Qj J0(kr j ). (30) Then 
+
+brow ,0 
+
+> p
+
+(k) = 
+
+> Nc
+
+X
+
+> j=1
+
+αj (k)λpj hp(kr j ). (31) 7The ideal exponential moment sequence is obtained by retaining only the leading Bessel factor, that is, by replacing hp(kr j ) with 1. We therefore define 
+
+brow  
+
+> p, 0
+
+(k) = 
+
+> Nc
+
+X
+
+> j=1
+
+αj (k)λpj , p = 0 , 1, . . . , 2J − 2. (32) The difference between the Bessel-modulated scaled moment brow ,0 
+
+> p
+
+(k) and the ideal exponential moment brow  
+
+> p, 0
+
+(k) is 
+
+eBes  
+
+> p
+
+(k) = brow ,0 
+
+> p
+
+(k) − brow  
+
+> p, 0
+
+(k) = 
+
+> Nc
+
+X
+
+> j=1
+
+αj (k)λpj
+
+ hp(kr j ) − 1. (33) Hence, for fixed J, if the retained orders p = 0 , . . . , 2J − 2 lie in a low-frequency regime such that 
+
+kR c ≤ ρJ , Rc = max 
+
+> 1≤j≤Nc
+
+rj , (34) with ρJ > 0 sufficiently small, then 
+
+|eBes  
+
+> p
+
+(k)| ≤ CJ k2R2
+
+> cNc
+
+X
+
+> j=1
+
+|αj (k)| | λj |p, p = 0 , . . . , 2J − 2. (35) Here Rc should be understood as the radius of the phase-center cluster with respect to a reference point chosen near the scatterer. The condition (34) is used only to bound the Bessel-modulation residual. It is not part of the exact Hankel rank formula below, which is an algebraic statement for the ideal sequence brow  
+
+> p, 0
+
+(k) in (32). The exact Hankel theorem is therefore applied to the ideal exponential moment sequence brow  
+
+> p, 0
+
+(k), not directly to the raw coefficients ap0(k) or to the Bessel-modulated sequence brow ,0 
+
+> p
+
+(k). 
+
+Remark 1 (Single-incident variant) . The coefficient ap0(k) used above is the zeroth Fourier mode in the incident-angle variable. Thus it corresponds to averaging over incident directions, not to fixing one incident direction. If only one incident plane wave d0 is used and the observation aperture is full, one may instead define 
+
+eap(d0; k) = 12π
+
+Z 2π
+
+> 0
+
+u∞(θ, d 0; k)e−ipθ dθ. (36) 
+
+The same phase-center calculation gives, after the Bessel leading-order scaling, 
+
+ebp(d0; k) = 
+
+> Nc
+
+X
+
+> j=1
+
+Qj eikd 0·zj λpj hp(kr j ). (37) 
+
+Hence the leading term is again a finite exponential moment sequence with the same phase nodes λj .The only change is that the weights become 
+
+eαj (d0; k) = Qj eikd 0·zj (38) 
+
+instead of αj (k) = Qj J0(kr j ). Therefore the Hankel rank mechanism also applies to a single-incident, full-observation-aperture configuration, provided the modified weights are nonzero. Since eikd 0·zj
+
+never vanishes, this condition reduces to Qj̸ = 0 in the ideal phase-center model. 
+
+83 Hankel rank approach for component counting 
+
+We now establish the component-counting principle. In the ideal phase-center model, the scaled row moments form a finite exponential sum, and the associated Hankel matrix admits a Vandermonde factorization. This yields an exact rank formula for the number of separated connected components. We then show that the count is stable under moment perturbations, provided the perturbation is smaller than the leading singular gap of the ideal Hankel matrix. The resulting rank and spectral-gap rules provide a Fourier–Hankel estimate of the zeroth Betti number. The next section extends the same rank mechanism to a signed phase-center model for cavity counting. 
+
+3.1 Exact Hankel formula for component counting 
+
+For fixed k, define the ideal row Hankel matrix 
+
+Hrow  
+
+> J, 0
+
+(k) =  brow 
+
+> r+s, 0
+
+(k)J−1
+
+> r,s =0
+
+. (39) 
+
+Theorem 1 (Exact Hankel formula for the component count) . Assume that 
+
+J ≥ Nc, αj (k)̸ = 0 , λi̸ = λj (i̸ = j). (40) 
+
+Then 
+
+rank Hrow  
+
+> J, 0
+
+(k) = Nc = β0(D). (41) 
+
+Proof. By the finite exponential-sum representation (32) , the Hankel matrix admits the factorization 
+
+Hrow  
+
+> J, 0
+
+(k) = V diag( α1(k), . . . , α Nc (k)) V T , (42) where 
+
+Vrj = λrj , r = 0 , . . . , J − 1, j = 1 , . . . , N c. (43) Since J ≥ Nc and the λj ’s are pairwise distinct, the Vandermonde matrix V has full column rank 
+
+Nc. Since αj (k)̸ = 0, the diagonal factor is nonsingular. Therefore rank Hrow  
+
+> J, 0
+
+(k) = Nc. (44) Finally, because D consists of Nc separated connected components, its zeroth Betti number is 
+
+β0(D) = Nc.
+
+Remark 2 (Nondegeneracy) . The condition αj (k)̸ = 0 means 
+
+Qj J0(kr j )̸ = 0 . (45) 
+
+Thus a component may be invisible in the row channel at a frequency for which J0(kr j ) = 0 . This is one reason why multiple frequencies or multiple moment channels can be useful in practice. 
+
+The singular gap admits the lower bound 
+
+σNc
+
+ Hrow  
+
+> J, 0
+
+(k) ≥ αmin (k)σmin (V )2, αmin (k) = min 
+
+> 1≤j≤Nc
+
+|αj (k)|. (46) Hence the exact count is stable when component strengths are not too small and the phase parameters 
+
+λj are separated enough to keep V well conditioned. 9Remark 3 (Interpretation of the singular gap) . The lower bound (46) separates the algebraic rank formula from its numerical observability. The exact rank identity only requires nonzero weights and distinct phase nodes. In computation, however, the rank can be detected reliably only when the smallest nonzero singular value of the ideal Hankel matrix is not too small. The factor αmin (k)
+
+measures the weakest visible component in the chosen row channel, while σmin (V ) measures the conditioning of the Vandermonde system generated by the phase nodes λj . Hence weak components, Bessel-zero frequencies, or nearly colliding phase centers reduce the singular gap and make the component count more sensitive to perturbations. This is the quantity that appears in the stability condition below. 
+
+3.2 Stable numerical component count 
+
+We next pass from the ideal exponential moments to empirical moments computed from discretized and noisy far-field data. The exact rank formula is algebraic, whereas its numerical use depends on the size of the perturbation of the scaled moment sequence. The key requirement is that this perturbation is smaller than the singular gap of the ideal Hankel matrix. Let bbrow  
+
+> p
+
+(k) be the empirical scaled row moment. We write 
+
+bbrow  
+
+> p
+
+(k) = brow  
+
+> p, 0
+
+(k) + ep(k), p = 0 , . . . , 2J − 2, (47) and assume that max  
+
+> 0≤p≤2J−2
+
+|ep(k)| ≤ ηJ (k). (48) Here brow  
+
+> p, 0
+
+(k) is the ideal exponential moment in (32) . The single error term ep(k) represents the total scaled moment perturbation. It includes the Bessel-modulation residual, the finite-size phase-center residual, angular discretization error, measurement noise, and model mismatch beyond the Born phase-center model. The Bessel scaling also explains why the perturbation depends on the frequency. Let aemp  
+
+> p0
+
+(k)denote the empirical row Fourier coefficient. Then 
+
+bbrow  
+
+> p
+
+(k) = p!
+
+Ck(−i) p
+
+ 2
+
+k
+
+p
+
+aemp  
+
+> p0
+
+(k). (49) Thus any perturbation at the raw Fourier-coefficient level is amplified by the scaling factor 
+
+Sp(k) = p!
+
+|Ck|
+
+ 2
+
+k
+
+p
+
+. (50) Consequently, a sufficient bound for the total moment perturbation may be written as 
+
+ηJ (k) ≤ CJ
+
+ k2R2 
+
+> c
+
++ kε  max 
+
+> 0≤p≤2J−2
+> Nc
+
+X
+
+> j=1
+
+|αj (k)| | λj |p + max  
+
+> 0≤p≤2J−2
+
+Sp(k) aemp  
+
+> p0
+
+(k) − a0
+
+> p0
+
+(k) . (51) The term k2R2 
+
+> c
+
+accounts for the Bessel-modulation residual, the term kε accounts for the phase-center residual, and the last term accounts for raw data, angular discretization, and model errors after the Bessel scaling. Here Rc is measured with respect to a reference point chosen near the scatterer. The exact decomposition of ηJ (k) is not needed for the rank theorem; only the bound (48) is used below. 10 Define the empirical row Hankel matrix 
+
+bHrow  
+
+> J
+
+(k) =  bbrow 
+
+> r+s
+
+(k)J−1
+
+> r,s =0
+
+. (52) Then 
+
+bHrow  
+
+> J
+
+(k) = Hrow  
+
+> J, 0
+
+(k) + EJ , (53) where 
+
+∥EJ ∥2 ≤ ∥ EJ ∥F ≤ Jη J (k). (54) 
+
+Theorem 2 (Stable Fourier–Hankel component count) . Assume the hypotheses of Theorem 1. If 
+
+Jη J (k) < 12 σNc
+
+ Hrow  
+
+> J, 0
+
+(k), (55) 
+
+then 
+
+σNc
+
+  bHrow  
+
+> J
+
+(k) > 12 σNc
+
+ Hrow  
+
+> J, 0
+
+(k), (56) 
+
+and 
+
+σNc+1 
+
+  bHrow  
+
+> J
+
+(k) < 12 σNc
+
+ Hrow  
+
+> J, 0
+
+(k). (57) 
+
+Consequently, for every threshold τabs satisfying 
+
+Jη J (k) < τ abs < σ Nc
+
+ Hrow  
+
+> J, 0
+
+(k) − Jη J (k), (58) 
+
+one has 
+
+rank τabs bHrow  
+
+> J
+
+(k) = Nc = β0(D). (59) 
+
+Proof. By (54), 
+
+bHrow  
+
+> J
+
+(k) − Hrow  
+
+> J, 0
+
+(k) 2 ≤ Jη J (k). (60) Weyl’s singular-value perturbation inequality gives 
+
+σj
+
+  bHrow  
+
+> J
+
+(k) − σj
+
+ Hrow  
+
+> J, 0
+
+(k) ≤ Jη J (k). (61) Since Hrow  
+
+> J, 0
+
+(k) has rank Nc,
+
+σNc+1 
+
+ Hrow  
+
+> J, 0
+
+(k) = 0 . (62) The assumption (55) implies (56) and (57) . If τabs lies in (58) , exactly the first Nc singular values of bHrow  
+
+> J
+
+(k) exceed τabs . Hence rank τabs bHrow  
+
+> J
+
+(k) = Nc. (63) Since Nc = β0(D) in the separated component model, the result follows. 
+
+Remark 4 (Frequency trade-off) . The stability condition (55) displays the frequency trade-off inherent in the scaled moment construction. Smaller frequencies reduce the Bessel-modulation and phase-center residuals in (51) , but they increase the raw-data perturbation through the factor Sp(k)
+
+in (50) . Hence k should not be chosen merely as small as possible. A useful frequency must keep the model residuals small while preserving a detectable singular gap after the noise amplification induced by the scaling. 
+
+11 4 Signed phase-center extension for cavity counting 
+
+The preceding section gives a Fourier–Hankel rank formula for counting separated connected components. We now discuss how the same moment mechanism can be extended to cavities. The basic idea is to represent a multiply connected scatterer as a filled support minus its holes. In the Born regime, this leads to a signed phase-center model: filled components contribute positive phase-center terms, while cavities contribute negative phase-center terms. The resulting signed moment sequence is still a finite exponential sum. Therefore, its Hankel rank counts the total number of positive and negative phase centers. The conclusion in this section is conditional on a signed localized model. It does not claim that arbitrary holes are always detectable from a single row Hankel matrix. In particular, if a negative cavity phase center coincides with a positive material phase center, the two contributions collapse into one effective exponential node. Such degenerate cavities require higher-order radial information, additional moment channels, or multiple frequencies. 
+
+4.1 Signed localized model 
+
+Assume that the scatterer can be represented as a union of filled components with cavities removed: 
+
+D =
+
+
+
+> Nc
+
+[
+
+> j=1
+
+Gj
+
+ \
+
+> Nh
+
+[
+
+> ℓ=1
+
+Bℓ
+
+!
+
+, (64) where Gj are separated filled components and Bℓ are bounded holes contained in the interior of the filled components. We assume that there are no nested holes. In this setting, 
+
+β0(D) = Nc, β1(D) = Nh. (65) The filled components and holes are assumed to be localized: 
+
+Gj = z+ 
+
+> j
+
++ εΩ+ 
+
+> j
+
+, Bℓ = z− 
+
+> ℓ
+
++ εΩ− 
+
+> ℓ
+
+, 0 < ε ≪ 1. (66) Write 
+
+z+ 
+
+> j
+
+= r+ 
+
+> j
+
+(cos ψ+ 
+
+> j
+
+, sin ψ+ 
+
+> j
+
+), z− 
+
+> ℓ
+
+= r− 
+
+> ℓ
+
+(cos ψ− 
+
+> ℓ
+
+, sin ψ− 
+
+> ℓ
+
+). (67) For simplicity, assume that the effective contrast on the filled support can be extended across the holes. Then the Born integral (5) can be written in signed form: 
+
+Z
+
+> D
+
+q(y)e−ik(ˆ x−d)·y dy =
+
+> Nc
+
+X
+
+> j=1
+
+Z
+
+> Gj
+
+q+(y)e−ik(ˆ x−d)·y dy −
+
+> Nh
+
+X
+
+> ℓ=1
+
+Z
+
+> Bℓ
+
+q−(y)e−ik(ˆ x−d)·y dy. (68) Here q+ denotes the material contrast on the filled components, and q− denotes the contrast that would have occupied the cavity region in the filled reference support. For constant contrast, q− is simply the same contrast restricted to the removed hole. Define the positive and negative strengths by 
+
+Q+ 
+
+> j
+
+=
+
+Z
+
+> Gj
+
+q+(y) d y, Q− 
+
+> ℓ
+
+=
+
+Z
+
+> Bℓ
+
+q−(y) d y. (69) 12 Under the signed phase-center approximation, the far-field pattern has the leading form 
+
+u∞(ˆ x, d ; k) = Ck
+
+
+
+> Nc
+
+X
+
+> j=1
+
+Q+ 
+
+> j
+
+e−ik(ˆ x−d)·z+ 
+
+> j
+
+−
+
+> Nh
+
+X
+
+> ℓ=1
+
+Q− 
+
+> ℓ
+
+e−ik(ˆ x−d)·z−
+
+> ℓ
+
+ + Rsgn  
+
+> ε
+
+(ˆ x, d ; k), (70) where the residual contains finite-size phase-center errors and model mismatch. Taking the row angular Fourier coefficient gives 
+
+asgn ,0 
+
+> p0
+
+(k) = Ck(−i) p
+
+
+
+> Nc
+
+X
+
+> j=1
+
+Q+ 
+
+> j
+
+Jp(kr + 
+
+> j
+
+)J0(kr + 
+
+> j
+
+)e−ipψ + 
+
+> j
+
+−
+
+> Nh
+
+X
+
+> ℓ=1
+
+Q− 
+
+> ℓ
+
+Jp(kr − 
+
+> ℓ
+
+)J0(kr − 
+
+> ℓ
+
+)e−ipψ −
+
+> ℓ
+
+ . (71) Applying the same Bessel scaling as in (23), we obtain the signed scaled row moments 
+
+bsgn ,0 
+
+> p
+
+(k) = p!
+
+Ck(−i) p
+
+ 2
+
+k
+
+p
+
+asgn ,0 
+
+> p0
+
+(k). (72) Using (25), this becomes 
+
+bsgn ,0 
+
+> p
+
+(k) = 
+
+> Nc
+
+X
+
+> j=1
+
+α+ 
+
+> j
+
+(k)( λ+ 
+
+> j
+
+)php(kr + 
+
+> j
+
+) −
+
+> Nh
+
+X
+
+> ℓ=1
+
+α− 
+
+> ℓ
+
+(k)( λ− 
+
+> ℓ
+
+)php(kr − 
+
+> ℓ
+
+), (73) where 
+
+λ+ 
+
+> j
+
+= r+ 
+
+> j
+
+e−iψ+ 
+
+> j
+
+, λ− 
+
+> ℓ
+
+= r− 
+
+> ℓ
+
+e−iψ− 
+
+> ℓ
+
+, (74) and 
+
+α+ 
+
+> j
+
+(k) = Q+ 
+
+> j
+
+J0(kr + 
+
+> j
+
+), α− 
+
+> ℓ
+
+(k) = Q− 
+
+> ℓ
+
+J0(kr − 
+
+> ℓ
+
+). (75) In the low-order regime, replacing hp by 1 gives the ideal signed exponential moment sequence 
+
+bsgn  
+
+> p, 0
+
+(k) = 
+
+> Nc
+
+X
+
+> j=1
+
+α+ 
+
+> j
+
+(k)( λ+ 
+
+> j
+
+)p −
+
+> Nh
+
+X
+
+> ℓ=1
+
+α− 
+
+> ℓ
+
+(k)( λ− 
+
+> ℓ
+
+)p, p = 0 , . . . , 2J − 2. (76) Equivalently, after collecting all positive and negative nodes, we may write 
+
+bsgn  
+
+> p, 0
+
+(k) = 
+
+> Ns
+
+X
+
+> ν=1
+
+γν (k)ξpν , Ns = Nc + Nh, (77) where the signed weights γν (k) may be positive, negative, or complex. The sign of the coefficient does not affect the Hankel rank, provided it is nonzero. 
+
+4.2 Exact signed Hankel formula 
+
+For fixed k, define the ideal signed Hankel matrix 
+
+Hsgn  
+
+> J, 0
+
+(k) =  bsgn 
+
+> r+s, 0
+
+(k)J−1
+
+> r,s =0
+
+. (78) 13 Theorem 3 (Signed Hankel formula for cavity counting) . Assume the signed phase-center model 
+
+(77) . Suppose that 
+
+J ≥ Ns, γν (k)̸ = 0 , ξμ̸ = ξν (μ̸ = ν). (79) 
+
+Then 
+
+rank Hsgn  
+
+> J, 0
+
+(k) = Ns = Nc + Nh. (80) 
+
+Consequently, if the component number β0(D) = Nc is known or has been correctly recovered, then 
+
+β1(D) = Nh = rank Hsgn  
+
+> J, 0
+
+(k) − β0(D). (81) 
+
+Proof. By (77), the signed Hankel matrix has the Vandermonde factorization 
+
+Hsgn  
+
+> J, 0
+
+(k) = Vsgn diag( γ1(k), . . . , γ Ns (k)) V T
+
+> sgn
+
+, (82) where (Vsgn )rν = ξrν , r = 0 , . . . , J − 1, ν = 1 , . . . , N s. (83) Since J ≥ Ns and the nodes ξν are pairwise distinct, Vsgn has full column rank Ns. Since all signed weights γν (k) are nonzero, the diagonal factor is nonsingular. Therefore rank Hsgn  
+
+> J, 0
+
+(k) = Ns. (84) The identity (81) follows from Ns = Nc + Nh and β0(D) = Nc, β1(D) = Nh under the signed localized model. 
+
+Remark 5 (What the signed rank counts) . The signed Hankel rank counts the number of distinct signed phase centers, not holes alone. A single signed rank therefore determines β1(D) only after the component number β0(D) has been obtained by an independent component-counting step or by structural prior information. In practice, the component count may be estimated by the ordinary phase-center rank formula when the positive component contribution is dominant, or by a separate multi-frequency component-counting procedure. 
+
+Remark 6 (Degenerate cavities) . The distinct-node condition in (79) is essential. If a negative cavity phase center coincides with a positive material phase center, then their contributions collapse: 
+
+α+(λ)p − α−(λ)p = ( α+ − α−)λp. (85) 
+
+Thus the rank does not increase. A perfectly concentric annulus is a typical degenerate case in the leading signed phase-center model. Detecting such cavities requires higher-order radial information, additional Fourier–Bessel channels, or multiple frequencies. 
+
+Remark 7 (Weak cavities) . Even when the signed nodes are distinct, a cavity may be difficult to detect if its signed strength α− 
+
+> ℓ
+
+(k) is small. In that case the smallest nonzero singular value of Hsgn  
+
+> J, 0
+
+(k) may be close to the perturbation level. This gives a natural resolution limit for cavity counting. 
+
+14 4.3 Stable signed cavity count 
+
+We next state the perturbation analogue of Theorem 3. Let bbsgn  
+
+> p
+
+(k) be empirical signed scaled moments satisfying 
+
+bbsgn  
+
+> p
+
+(k) = bsgn  
+
+> p, 0
+
+(k) + esgn  
+
+> p
+
+(k), p = 0 , . . . , 2J − 2, (86) with max  
+
+> 0≤p≤2J−2
+
+|esgn  
+
+> p
+
+(k)| ≤ ηsgn  
+
+> J
+
+(k). (87) Define 
+
+bHsgn  
+
+> J
+
+(k) =  bbsgn 
+
+> r+s
+
+(k)J−1
+
+> r,s =0
+
+. (88) Then 
+
+bHsgn  
+
+> J
+
+(k) = Hsgn  
+
+> J, 0
+
+(k) + Esgn  
+
+> J
+
+, ∥Esgn  
+
+> J
+
+∥2 ≤ ∥ Esgn  
+
+> J
+
+∥F ≤ Jη sgn  
+
+> J
+
+(k). (89) 
+
+Theorem 4 (Stable signed Hankel cavity count) . Assume the hypotheses of Theorem 3. If 
+
+Jη sgn  
+
+> J
+
+(k) < 12 σNs
+
+ Hsgn  
+
+> J, 0
+
+(k), (90) 
+
+then 
+
+σNs
+
+  bHsgn  
+
+> J
+
+(k) > 12 σNs
+
+ Hsgn  
+
+> J, 0
+
+(k), (91) 
+
+and 
+
+σNs+1 
+
+  bHsgn  
+
+> J
+
+(k) < 12 σNs
+
+ Hsgn  
+
+> J, 0
+
+(k). (92) 
+
+Consequently, for every threshold τsgn satisfying 
+
+Jη sgn  
+
+> J
+
+(k) < τ sgn < σ Ns
+
+ Hsgn  
+
+> J, 0
+
+(k) − Jη sgn  
+
+> J
+
+(k), (93) 
+
+one has 
+
+rank τsgn bHsgn  
+
+> J
+
+(k) = Ns = β0(D) + β1(D). (94) 
+
+If, in addition, bβ0 = β0(D), then 
+
+bβ1 = rank τsgn bHsgn  
+
+> J
+
+(k) − bβ0 = β1(D). (95) 
+
+Proof. By (89), 
+
+bHsgn  
+
+> J
+
+(k) − Hsgn  
+
+> J, 0
+
+(k) 2 ≤ Jη sgn  
+
+> J
+
+(k). (96) Weyl’s singular-value perturbation inequality gives 
+
+σj
+
+  bHsgn  
+
+> J
+
+(k) − σj
+
+ Hsgn  
+
+> J, 0
+
+(k) ≤ Jη sgn  
+
+> J
+
+(k). (97) 15 Since Hsgn  
+
+> J, 0
+
+(k) has rank Ns,
+
+σNs+1 
+
+ Hsgn  
+
+> J, 0
+
+(k) = 0 . (98) The condition (90) gives the two singular-value separation inequalities. If τsgn satisfies (93) , exactly the first Ns singular values of bHsgn  
+
+> J
+
+(k) exceed τsgn . Therefore rank τsgn bHsgn  
+
+> J
+
+(k) = Ns. (99) Subtracting the correctly recovered component number gives (95). 
+
+Remark 8 (Resolution limit for cavity counting) . The stability condition (90) shows that cavity counting is controlled by the smallest nonzero singular value of the signed Hankel matrix. This singular value decreases when a cavity strength is weak, when positive and negative phase centers are close, or when several signed nodes nearly collide. These are intrinsic resolution limits of the signed phase-center approach. 
+
+4.4 Practical signed-rank estimator 
+
+In computations, the signed rank may be estimated from the singular values of bHsgn  
+
+> J
+
+(k). When an estimate of the perturbation level is available, one may use 
+
+bNs = # 
+
+n
+
+j : σj
+
+  bHsgn  
+
+> J
+
+(k) > τ sgn 
+
+o
+
+, τsgn = csgn Jη sgn  
+
+> J
+
+(k), csgn > 1. (100) When the perturbation level is unavailable, a spectral-gap estimator is 
+
+bNs = arg max 
+
+> 1≤j<J
+
+σj
+
+  bHsgn  
+
+> J
+
+(k)
+
+σj+1 
+
+  bHsgn  
+
+> J
+
+(k) + τfloor 
+
+, (101) where τfloor ≥ 0 is a small numerical floor. Given a component estimate bβ0, the signed-rank cavity estimate is 
+
+bβ1 = max { bNs − bβ0, 0}. (102) This estimator should be used with the nondegeneracy qualifications above: it detects cavities that generate distinct and sufficiently strong signed phase centers. 
+
+4.5 Recovery of phase centers and signed strengths 
+
+The Hankel rank determines the number of phase centers. Once this number has been estimated, the same moment sequence can also be used to recover the phase center locations and their signed strengths. This gives a coarse geometric representation of the scatterer, not merely its Betti numbers. We first describe the ideal component case. Suppose that 
+
+brow  
+
+> p, 0
+
+(k) = 
+
+> Nc
+
+X
+
+> j=1
+
+αj (k)λpj , p = 0 , . . . , 2Nc − 1, (103) where the nodes λj are pairwise distinct and the weights αj (k) are nonzero. Define the two Nc × Nc
+
+Hankel matrices 
+
+H0 =  brow 
+
+> r+s, 0
+
+(k)Nc−1 
+
+> r,s =0
+
+, H1 =  brow 
+
+> r+s+1 ,0
+
+(k)Nc−1 
+
+> r,s =0
+
+. (104) 16 Then 
+
+H0 = V diag( α1(k), . . . , α Nc (k)) V T , H1 = V diag( α1(k)λ1, . . . , α Nc (k)λNc )V T , (105) where Vrj = λrj , r = 0 , . . . , N c − 1. Hence the generalized eigenvalues of the pencil 
+
+H1x = λH 0x (106) are precisely the phase nodes λ1, . . . , λ Nc .Indeed, for xj = V −T ej , one has 
+
+H1xj = λj H0xj . (107) Therefore, after the component number has been recovered, the phase centers can be obtained from the eigenvalues of the shifted Hankel pencil. Since 
+
+λj = rj e−iψj = xj − iyj , (108) the physical center of the j-th component is recovered as 
+
+zj = ( xj , y j ) =   Re λj , − Im λj
+
+. (109) Once the nodes have been recovered, the weights are obtained by solving the Vandermonde system 
+
+brow  
+
+> p, 0
+
+(k) = 
+
+> Nc
+
+X
+
+> j=1
+
+αj (k)λpj , p = 0 , . . . , N c − 1. (110) For the row-averaged channel, 
+
+αj (k) = Qj J0(kr j ). (111) Therefore, if J0(kr j )̸ = 0, the component strength is estimated by 
+
+Qj = αj (k)
+
+J0(k|λj |) . (112) In the low-frequency regime, J0(k|λj |) ≈ 1, so that αj (k) is already an approximation of the total contrast strength Qj .The same construction applies to the signed moment sequence 
+
+bsgn  
+
+> p, 0
+
+(k) = 
+
+> Ns
+
+X
+
+> ν=1
+
+γν (k)ξpν , Ns = Nc + Nh. (113) After estimating Ns, we form the shifted signed Hankel pair 
+
+Hsgn 0 =  bsgn 
+
+> r+s, 0
+
+(k)Ns−1
+
+> r,s =0
+
+, Hsgn 1 =  bsgn 
+
+> r+s+1 ,0
+
+(k)Ns−1
+
+> r,s =0
+
+. (114) The generalized eigenvalues of 
+
+Hsgn 1 x = ξH sgn 0 x (115) 17 are the signed phase nodes ξν . The corresponding signed phase-center locations are 
+
+zsgn  
+
+> ν
+
+=   Re ξν , − Im ξν
+
+. (116) The signed weights γν (k) are then obtained from the Vandermonde system 
+
+bsgn  
+
+> p, 0
+
+(k) = 
+
+> Ns
+
+X
+
+> ν=1
+
+γν (k)ξpν , p = 0 , . . . , N s − 1. (117) When the contrast is real and sign-definite on the filled support, and when the frequency is chosen so that J0(k|ξν |) does not change sign over the relevant region, the signs of the recovered weights classify positive material centers and negative cavity centers. In the simplest positive-contrast case, one expects 
+
+γν (k) > 0 for filled material phase centers , γν (k) < 0 for cavity phase centers . (118) Thus one may estimate 
+
+bβ0 = # {ν : Re bγν > 0}, bβ1 = # {ν : Re bγν < 0}, (119) provided the recovered weights are sufficiently separated from zero. This gives a signed phase-center skeleton of the form 
+
+(bz+ 
+
+> j
+
+, bQ+ 
+
+> j
+
+) bβ0 
+
+> j=1
+
+and (bz− 
+
+> ℓ
+
+, bQ− 
+
+> ℓ
+
+) bβ1
+
+> ℓ=1
+
+. (120) This skeleton is a coarse geometric descriptor of the scatterer. It should not be interpreted as a full boundary reconstruction, but it provides locations, signed strengths, and topological counts directly from the Fourier–Hankel moments. In noisy computations, the square pencils above can be replaced by standard matrix-pencil or ESPRIT-type implementations using larger rectangular Hankel matrices. The stability of the recovered centers depends on the same factors that control the rank: separation of the phase nodes, nonzero weights, and the singular gap of the underlying Hankel matrices. 
+
+Corollary 1 (Ideal recovery of component phase centers) . Under the hypotheses of Theorem 1, assume that the component number Nc is known. Then the phase nodes λ1, . . . , λ Nc are the generalized eigenvalues of the Hankel pencil (106) . Consequently, the component phase-center locations are recovered by 
+
+zj =   Re λj , − Im λj
+
+, j = 1 , . . . , N c. (121) 
+
+If, in addition, J0(k|λj |)̸ = 0 , then the component strengths are recovered from (112) .
+
+Corollary 2 (Ideal recovery of signed material and cavity phase centers) . Under the hypotheses of Theorem 3, assume that Ns is known. Then the distinct signed phase nodes ξ1, . . . , ξ Ns are the generalized eigenvalues of the signed Hankel pencil (115) . The corresponding signed phase-center locations are 
+
+zsgn  
+
+> ν
+
+=   Re ξν , − Im ξν
+
+, ν = 1 , . . . , N s. (122) 
+
+The signed strengths γν (k) are recovered by solving (117) . If the contrast is real and sign-definite on the filled support, and if the recovered signed weights are separated from zero, then positive weights are associated with material phase centers and negative weights with cavity phase centers. Thus the recovered signed skeleton can be separated into 
+
+{(bz+ 
+
+> j
+
+, bQ+ 
+
+> j
+
+)} and {(bz− 
+
+> ℓ
+
+, bQ− 
+
+> ℓ
+
+)}. (123) 
+
+This conclusion requires the signed nodes to be distinct. If a cavity phase center coincides with a material phase center, the corresponding contributions collapse into a single effective node and the cavity center cannot be separated from the leading signed Hankel data. 
+
+18 5 Numerical experiments 
+
+5.1 Experiment 1: algebraic Hankel rank validation 
+
+We first test the algebraic core of the Fourier–Hankel rank mechanism without solving any scattering problem. The purpose is to verify that the rank estimator correctly identifies the number of exponential nodes when the moment sequence has the ideal form 
+
+bp =
+
+> Nc
+
+X
+
+> j=1
+
+αj λpj , p = 0 , . . . , 2J − 2. (124) The corresponding Hankel matrix is 
+
+HJ =  br+s
+
+J−1
+
+> r,s =0
+
+. (125) According to the Vandermonde factorization proved above, one has rank HJ = Nc (126) provided that J ≥ Nc, the weights αj are nonzero, and the nodes λj are pairwise distinct. In the experiment, the nodes λj are randomly sampled in a disk and kept separated by a prescribed minimum distance. The complex weights αj are sampled with moderate dynamic range. To test robustness, we add relative complex moment noise: 
+
+bbp = bp + δ∥b∥2
+
+ξp
+
+∥ξ∥2
+
+, p = 0 , . . . , 2J − 2, (127) where ξp are independent complex Gaussian samples and δ is the relative moment noise level. For each pair ( Nc, δ ), we repeat the experiment over 300 independent trials. The rank is estimated by the singular-gap rule 
+
+bNc = arg max 
+
+> 1≤j<J
+
+σj ( bHJ )
+
+σj+1 ( bHJ ) + τfloor 
+
+, (128) where τfloor is a small numerical floor. Table 1 reports the recovery accuracy. The rank is recovered exactly for all tested component numbers when the relative moment noise is at most 10 −8. At higher noise levels, the recovery accuracy decreases, and the degradation becomes more pronounced as Nc increases. This behavior is consistent with the singular-gap condition in Theorem 2: larger values of Nc generally lead to more ill-conditioned Vandermonde factors and smaller rank-revealing gaps. Table 1: Rank recovery accuracy of the singular-gap estimator in the algebraic Hankel experiment. 
+
+Nc 0 10 −12 10 −10 10 −8 10 −6 10 −4 10 −2
+
+1 1.000 1.000 1.000 1.000 1.000 1.000 1.000 2 1.000 1.000 1.000 1.000 1.000 0.997 0.877 3 1.000 1.000 1.000 1.000 1.000 0.963 0.613 4 1.000 1.000 1.000 1.000 0.997 0.920 0.300 5 1.000 1.000 1.000 1.000 0.977 0.780 0.123 19 Figure 1: Algebraic Hankel rank recovery accuracy under relative moment noise. The estimator is the singular-gap rule (128). Figure 1 gives the same information graphically. The curves show a clear noise-dependent transition: the algebraic rank structure is robust under small perturbations, while high-order cases become more sensitive once the noise level approaches the singular gap. The heatmap in Figure 2 further illustrates the same phenomenon. The stable region covers all tested values of Nc at low noise, while the failure region first appears for larger Nc and larger noise. This agrees with the theoretical dependence on the smallest nonzero singular value of the ideal Hankel matrix. Finally, Figure 3 shows representative normalized singular values for the case Nc = 3. In the noiseless case, the first three singular values are nonzero and the remaining singular values are at machine precision. As noise increases, the tail singular values are lifted, but the gap between σ3 and 
+
+σ4 remains visible until the noise level becomes large. This is precisely the rank-revealing structure used by the estimator. 
+
+5.2 Experiment 2: Fourier–Hankel counting from Born far-field data 
+
+The previous experiment verified the algebraic Hankel rank mechanism directly on finite exponential moment sequences. In this experiment, we test the same mechanism on synthetic Born far-field data. The purpose is to examine whether the scaled row moment construction remains effective when the moments are not given explicitly but are computed from angular Fourier coefficients of the far-field pattern. We generate scatterers consisting of Nc = 1 , 2, 3, 4 separated localized components. For each configuration, the Born far-field data are computed from 
+
+u∞(ˆ x, d ; k) = Ck
+
+Z
+
+> D
+
+q(y)e−ik(ˆ x−d)·y dy. (129) The empirical row coefficients aemp  
+
+> p0
+
+(k) are obtained from the full-aperture angular data, and the 20 Figure 2: Rank recovery accuracy as a function of the true component number and relative moment noise. 
+
+Figure 3: Representative normalized singular values for Nc = 3 under different relative moment noise levels. 21 scaled row moments are formed as 
+
+bbrow  
+
+> p
+
+(k) = p!
+
+Ck(−i) p
+
+ 2
+
+k
+
+p
+
+aemp  
+
+> p0
+
+(k), p = 0 , 1, . . . , 2J − 2. (130) The Hankel matrix 
+
+bHrow  
+
+> J
+
+(k) =  bbrow 
+
+> r+s
+
+(k)J−1 
+
+> r,s =0
+
+(131) is then constructed. We estimate the component number by the threshold rank 
+
+cNc = # 
+
+(
+
+ℓ : σℓ( bHrow  
+
+> J
+
+)
+
+σ1( bHrow  
+
+> J
+
+) > τ rel 
+
+)
+
+, (132) where τrel is a fixed relative singular-value threshold. For comparison, we also record the count obtained from a largest-gap rule applied to the normalized singular values. The latter is used only as a numerical benchmark; the theoretical stability result in Theorem 2 corresponds to the threshold-rank mechanism. Figure 4 reports the component-counting accuracy over different true values of Nc and different relative far-field noise levels. The Fourier–Hankel estimator accurately recovers the component number in the low-noise regime. In particular, for exact data and for sufficiently small far-field perturbations, the recovered rank agrees with the true value of Nc. When the far-field noise becomes larger, the accuracy deteriorates. This is consistent with the stability condition in Theorem 2: after Bessel leading-order scaling, perturbations in the raw Fourier coefficients are amplified by the factor p!(2 /k )p, and the rank can no longer be separated once the induced Hankel perturbation is comparable with the singular gap. The same phenomenon is displayed in Figure 5, where the accuracy is plotted as a function of the relative far-field noise level for each Nc. The curves show a clear transition from the stable counting regime to the unstable regime. The high-noise behavior should not be interpreted as a reliable recovery phenomenon, since in that regime the numerical rank estimator may become dominated by noise-induced singular values or may collapse to a low-rank output. We next examine the effect of finite component size. The exact rank theorem is derived from the localized phase-center model, where each component is represented by one dominant phase center. For components of positive radius, finite-size effects generate residual terms beyond the leading exponential moment sequence. Figure 6 shows the counting accuracy as the component radius ε
+
+varies. In the tested range, the threshold-rank estimator remains accurate. This indicates that, for these configurations, the finite-size residual is still smaller than the relevant Hankel singular gap. Thus the phase-center approximation is sufficiently accurate for stable component counting in this regime. To explain the rank recovery more directly, Figure 7 plots representative normalized singular values of the Hankel matrix for the case Nc = 3. In the exact or low-noise regime, the first three singular values are separated from the remaining singular values, producing a visible rank gap after index 3. As the far-field noise increases, the tail singular values are lifted, and the gap becomes less distinguishable. This confirms the mechanism behind Theorem 2: the component number can be recovered when the perturbation does not close the gap between σNc and the noise-dominated tail. Finally, Figure 8 compares the threshold-rank rule with a largest-gap rule. The threshold-rank rule is directly tied to the perturbation theorem, because it counts the singular values above a prescribed noise-tolerance level. The largest-gap rule is more heuristic: it can work when the singular values have a pronounced spectral gap, but it may be less stable when the tail singular values 22 Figure 4: Experiment 2: threshold-rank accuracy for Fourier–Hankel component counting from synthetic Born far-field data. The horizontal axis gives the relative far-field noise level, and the vertical axis gives the true number of connected components. The method is accurate in the low-noise regime and loses stability when the scaled moment perturbation becomes comparable with the Hankel singular gap. 
+
+Figure 5: Experiment 2: component-counting accuracy versus relative far-field noise. The Fourier– Hankel rank estimator remains stable for sufficiently small far-field noise. The loss of accuracy at larger noise levels illustrates the perturbation mechanism predicted by the singular-gap condition. 23 Figure 6: Experiment 2: effect of finite component size. The horizontal axis is the component radius ε. The observed stability indicates that the finite-size residual remains below the singular-gap tolerance in the tested parameter range. 
+
+Figure 7: Experiment 2: representative normalized Hankel singular values for Nc = 3. The vertical dashed line marks the expected transition after the third singular value, and the horizontal dotted line indicates the relative threshold τrel . The separation between the leading and tail singular values explains the success of the threshold-rank estimator in the low-noise regime. 24 Figure 8: Experiment 2: comparison between the threshold-rank estimator and the largest-gap estimator. The threshold-rank rule is consistent with the singular-gap perturbation theory, whereas the largest-gap rule is used only as a numerical reference. are gradually lifted by noise or when the leading singular values decay unevenly. The comparison supports the use of the threshold-rank estimator as the default Fourier–Hankel counting rule. Overall, Experiment 2 confirms that the Fourier–Hankel moment construction remains effective beyond the ideal algebraic moment setting. For synthetic Born far-field data, the method recovers the number of localized connected components whenever the finite-size residual and the scaled far-field noise are small relative to the Hankel singular gap. The observed failure at larger noise levels is therefore not a contradiction of the rank formula, but a manifestation of the perturbation bound and the noise amplification caused by the Bessel leading-order scaling. 
+
+5.3 Experiment 3: recovery of phase-center locations 
+
+The preceding experiments verify the use of the Fourier–Hankel matrix for component counting. We next test whether the same moment structure can also recover the component phase-center locations. This experiment is designed to support Corollary 1. In the ideal phase-center model, once the number of components Nc is known, the phase nodes λj are recovered from a Hankel pencil or, equivalently, from a Prony annihilating polynomial. The physical phase-center locations are then given by 
+
+zj = (Re λj , − Im λj ), j = 1 , . . . , N c. (133) We generated synthetic Born far-field data for scatterers consisting of Nc = 1 , 2, 3, 4 small disk components. The component centers were randomly sampled in a bounded square subject to a minimum separation condition. For each configuration, the row Fourier coefficients ap0 were computed from full-aperture far-field data, the scaled Fourier–Hankel moments were formed, and the phase nodes were recovered by a Prony linear-prediction system. The estimated centers were 25 matched to the true centers by the Hungarian assignment algorithm. A trial was counted as successful if the maximum matched center error was below a prescribed tolerance εloc = 0 .08. Figure 9 reports the location-recovery success rate under different far-field noise levels. The method is accurate in the low-noise regime. For Nc = 1 and Nc = 2, the success rate remains essentially one over the tested noise range. For Nc = 3, the recovery remains stable up to moderate noise and starts to deteriorate only at higher noise levels. For Nc = 4, the method is still reliable for very small noise, but the success rate drops rapidly once the noise level reaches the range where the Prony root recovery becomes ill-conditioned. 
+
+Figure 9: Experiment 3: success rate of phase-center location recovery. A trial is declared successful when the maximum matched center error is below εloc = 0 .08. Figure 10 shows the distribution of the maximum matched center error at a representative low-noise level δ = 10 −12 . All tested component numbers have errors well below the success tolerance. The spread increases with Nc, which is consistent with the increasing ill-conditioning of the Vandermonde and Prony systems as more phase nodes are recovered from a fixed number of low-order moments. A representative recovery result for Nc = 4 is shown in Figure 11. The recovered phase centers closely match the true component centers. This confirms that the Fourier–Hankel moments contain not only counting information but also quantitative geometric information about the locations of the dominant phase centers. These results also reveal a limitation. Phase-center recovery is more sensitive to noise than rank-based component counting. The rank test only requires separation between the significant and insignificant singular values of the Hankel matrix, whereas location recovery requires solving a nonlinear root-finding problem for the Prony polynomial. Consequently, once the moment perturbation becomes comparable to the singular gap, a small perturbation may produce large errors in the recovered roots. This explains the rapid performance degradation for larger Nc and higher noise levels. 26 Figure 10: Experiment 3: distribution of the maximum matched center error at δ = 10 −12 . The dashed horizontal line indicates the success tolerance εloc = 0 .08. 
+
+Figure 11: Experiment 3: representative phase-center recovery for Nc = 4. Blue circles denote true centers, and orange crosses denote recovered centers. 27 5.4 Experiment 4: signed phase-center counting of cavities 
+
+This experiment tests the signed phase-center mechanism for cavity counting. According to the signed model, a material component contributes a positive phase-center term, while a cavity contributes a negative phase-center term. Thus the signed moment sequence has the form 
+
+bsgn  
+
+> p
+
+=
+
+> N+
+
+X
+
+> j=1
+
+αj λpj −
+
+> N−
+
+X
+
+> ℓ=1
+
+βℓμpℓ , p = 0 , 1, . . . , 2J − 2. (134) If all positive and negative phase nodes are distinct and all signed weights are nonzero, the signed Hankel rank is 
+
+Ns = N+ + N−. (135) When the number of connected components Nc = N+ is known or estimated from the positive component-counting step, the detectable cavity number is estimated by 
+
+bh = bNs − bNc. (136) We consider seven representative configurations: a disk without a hole, an off-center annulus, one component with two off-center holes, one component with three off-center holes, two components with two holes, a concentric annulus, and a nearly concentric annulus. The concentric annulus is included as a degenerate case, because the positive material phase center and the negative cavity phase center coincide in the leading signed phase-center model. In this case the signed rank does not increase, even though the physical domain contains a hole. For each configuration, we generate the exact signed moment sequence and add relative complex moment noise with levels 
+
+δ ∈ { 0, 10 −14 , 10 −12 , 10 −10 , 10 −8, 10 −7, 10 −6, 10 −5}.
+
+For each noise level, 400 independent trials are performed. The signed rank is estimated from the singular values of the signed Hankel matrix using a noise-aware relative threshold. We report two accuracies. The first is the physical hole-count accuracy, which compares bh with the true geometric number of holes. The second is the detectable signed-rank accuracy, which compares bh with the number of holes detectable by distinct signed phase nodes. Figure 12 shows the detectable signed-rank hole-count accuracy. The method recovers the detectable cavity count almost perfectly for all tested configurations and all moderate noise levels. The only visible failure occurs for the three-hole configuration at the largest noise level δ = 10 −5,where the weakest signed singular gap is lost. Figure 13 reports the physical hole-count accuracy. The result is identical to the detectable accuracy for all nondegenerate cases. The only systematic discrepancy occurs for the concentric annulus. This is expected: the physical domain has one hole, but the positive and negative phase centers coincide, so the leading signed phase-center model has only one detectable node. Hence the signed Hankel rank cannot distinguish a perfectly concentric annulus from a disk with modified signed strength. The distinction between physical and detectable cavities is summarized in Figure 14. For the concentric annulus, the physical hole-count accuracy is zero, whereas the detectable signed-rank accuracy is one. This confirms that the failure is not numerical instability but a structural degeneracy of the leading signed phase-center representation. 28 Figure 12: Experiment 4: detectable signed-rank hole-count accuracy under relative signed-moment noise. 
+
+Figure 13: Experiment 4: physical hole-count accuracy. The concentric annulus is a degenerate case for the leading signed phase-center model. 29 Figure 14: Experiment 4: comparison between physical hole-count accuracy and detectable signed-rank accuracy at zero noise. Finally, Figure 15 displays representative normalized singular values of the signed Hankel matrices. The nondegenerate off-center annulus and the two-hole case exhibit clear rank transitions corresponding to their signed phase-node counts. The concentric annulus has only one effective singular value, reflecting the collapse of the positive and negative nodes into a single signed node. The nearly concentric annulus remains detectable in the noise-free model, but its stability depends on the singular gap and is therefore more sensitive to perturbations when the positive and negative phase centers become closer. These results support the signed Fourier–Hankel interpretation of cavity counting. The method does not claim to detect every geometric hole unconditionally. Rather, it detects holes that generate distinct negative phase centers in the leading signed phase-center model. Degenerate cavities, such as perfectly concentric annuli, require additional radial information, higher-order Fourier–Bessel channels, or multiple frequencies. 
+
+5.5 Exact Helmholtz validation beyond the Born model 
+
+The preceding experiments were based on algebraic moments or Born-type far-field data. We now test whether the Fourier–Hankel rank mechanism remains observable for exact Helmholtz scattering data. To this end, we consider multiple sound-soft circular obstacles in two dimensions and compute the full-aperture multistatic far-field matrix by a multipole expansion. The data therefore include finite-size effects and multiple scattering between different components, and are no longer generated by the ideal phase-center model. For each value of Nc = 1 , 2, 3, 4, we generate Nc well-separated sound-soft disks of radius 0 .04. The wave number is fixed at k = 1 .6. The far-field matrix is sampled on a uniform 96 × 96 grid of observation and incident directions. From the computed far-field matrix we form the row Fourier–Hankel moments and construct a 5 × 5 Hankel matrix. The component number is estimated by the relative threshold rule 
+
+bNc = # {j : σj ( bHJ )/σ 1( bHJ ) > τ rel }, τrel = 10 −2.
+
+30 Figure 15: Experiment 4: representative normalized singular values of signed Hankel matrices. Degenerate and nearly degenerate cavities are reflected in the signed singular spectrum. Complex Gaussian noise is added to the far-field matrix at relative levels 
+
+δ = 0 , 10 −14 , 10 −12 , 10 −10 , 10 −8, 10 −7, 10 −6, 10 −5.
+
+For each configuration and each noise level, the experiment is repeated over random rotations of the component configuration. Figure 16 reports the component-counting accuracy. The threshold-rank estimator recovers the correct number of components with essentially perfect accuracy for all tested component numbers when δ ≤ 10 −6. Accuracy deteriorates only at the highest noise level δ = 10 −5, where the noise floor begins to lift the small singular values above the fixed threshold. This confirms that the Fourier–Hankel rank signature is not merely an artifact of the Born approximation, but remains visible in exact Helmholtz scattering data for localized separated components. The corresponding accuracy heatmap in Figure 17 gives the same conclusion. For δ ≤ 10 −6, the method correctly recovers Nc = 1 , 2, 3, 4 in all trials. At δ = 10 −5, the performance decreases for some smaller component counts, reflecting over-estimation caused by noise-amplified small singular values. We also compare the fixed threshold-rank estimator with a largest-gap rank estimator. As shown in Figure 18, the threshold rule is more robust. The largest-gap estimator can select an incorrect gap, especially when the singular values decay gradually rather than exhibiting a single dominant jump. For this reason, the fixed relative threshold rule is used as the main counting rule in all subsequent experiments. Finally, Figure 19 displays representative normalized singular values for the case Nc = 3. The first three singular values remain above the threshold τrel = 10 −2, whereas the fourth singular value lies below the threshold for noise levels up to approximately 10 −6. This clear spectral separation explains the observed stability of the rank estimator. 31 Figure 16: Experiment 5: Fourier–Hankel component counting from exact Helmholtz far-field data. The threshold-rank estimator is stable up to relative far-field noise of order 10 −6.
+
+Figure 17: Experiment 5: accuracy heatmap for exact Helmholtz far-field data. The threshold-rank rule remains reliable except at the largest tested noise level. 32 Figure 18: Experiment 5: comparison between the threshold-rank estimator and the largest-gap estimator. The fixed relative threshold gives more stable component-count recovery. 
+
+Figure 19: Experiment 5: representative normalized singular values for Nc = 3. The vertical dashed line marks the true rank boundary, and the horizontal dotted line marks the threshold τrel = 10 −2.33 6 Conclusions 
+
+This paper developed a Fourier–Hankel moment framework for extracting topological counting information and phase-center locations from acoustic far-field data. The starting point is the angular spectral structure of the multistatic far-field pattern. Under the Born approximation, the Bessel–Fourier moment identity shows that the angular Fourier coefficients are moments of the weighted scattering support. For separated localized components, a Bessel leading-order scaling of the row moment channel yields, to leading order, a finite exponential moment sequence. The corresponding Hankel matrix admits a Vandermonde factorization, and its rank equals the number of separated phase centers. This gives an algebraic component-counting mechanism directly at the data level, rather than through thresholding a reconstructed image. The exact Hankel rank formula was proved for the ideal phase-center moment sequence, and a perturbation result was established for empirical moments. The stability theorem shows that the numerical rank recovers the component count when the scaled moment perturbation is smaller than the singular gap of the ideal Hankel matrix. This condition also clarifies the main sources of instability: weak component strengths, nearly colliding phase nodes, Bessel-zero frequencies, finite-size residuals, discretization errors, measurement noise, and model mismatch beyond the Born phase-center model. The analysis further explains the frequency trade-off in the scaling: lower frequencies reduce the Bessel-modulation residual, but they also amplify high-order coefficient errors through the factor p!(2 /k )p.Beyond component counting, the same moment structure gives phase-center location recovery through a Hankel pencil. This provides a skeleton-type geometric reconstruction of the dominant scattering components. The paper also introduced a signed phase-center extension for cavity counting. In this model, material components and cavities contribute with opposite signs to the leading moment sequence. The signed Hankel rank counts distinct signed phase centers, and the excess over the positive component count gives the number of detectable cavity phase centers. This formulation identifies an intrinsic detectability limit: a physical cavity whose phase center coincides with a material phase center, as in a perfectly concentric annulus, does not increase the leading signed rank and therefore cannot be detected by this leading phase-center mechanism alone. The numerical experiments support the theoretical conclusions. The algebraic rank mechanism was first verified on ideal exponential moment sequences. The method was then tested on Born far-field data with finite-size components and noise, where the observed behavior matched the singular-gap stability prediction. Phase-center location recovery was demonstrated through the Hankel-pencil procedure, while the signed phase-center experiments confirmed the distinction between physical cavities and detectable signed-rank cavities. Finally, simulations with exact Helmholtz far-field data for sound-soft disks showed that the Fourier–Hankel rank signature persists beyond the Born data-generation model for localized separated scatterers. The proposed method should therefore be viewed as a data-level algebraic tool for topological counting and phase-center recovery. It is not intended to replace full shape reconstruction methods, nor does it claim unconditional recovery of all geometric cavities. Its strength lies in identifying rank-revealing moment structures that encode component and detectable cavity information directly from far-field data. One limitation remains intrinsic to the leading signed phase-center model. Degenerate cavities whose phase centers coincide with material phase centers do not generate additional signed phase nodes and therefore do not increase the signed Hankel rank. A perfectly concentric annulus is the canonical example: although it contains a physical cavity, its leading positive and negative phase-center contributions collapse into a single node. Detecting such cavities requires information beyond the leading phase-center term, for example higher-order radial Fourier–Bessel information or multi-frequency signatures. Understanding how to incorporate this additional radial information 34 into a stable Hankel-type counting framework is a natural direction for future work. 
+
+# References 
+
+[1] H. Ammari and H. Kang. Reconstruction of Small Inhomogeneities from Boundary Measure-ments . Springer, 2004. [2] H. Ammari and H. Kang. Polarization and Moment Tensors With Applications to Inverse Problems and Effective Medium Theory . Springer, 2007. [3] A. EI Badia and T. Ha-Duong. An inverse source problem in potential analysis. Inverse Problems , 16(3):651, 2000. [4] G. Bao, P. Li, J. Lin, and F. Triki. Inverse scattering problems with multi-frequencies. Inverse Problems , 31(9):093001, 2015. [5] G. Bao and J. Liu. Numerical solution of inverse scattering problems with multi-experimental limited aperture data. SIAM Journal on Scientific Computing , 25(3):1102–1117, 2003. [6] T. Bui-Thanh and O. Ghattas. An analysis of infinite dimensional Bayesian inverse shape acoustic scattering and its numerical approximation. SIAM/ASA Journal on Uncertainty Quantification , 2(1):203–222, 2014. [7] F. Cakoni and D. Colton. A Qualitative Approach to Inverse Scattering Theory . Springer New York. [8] A. Carpio, S. Iakunin, and G. Stadler. Bayesian approach to inverse scattering with topological priors. Inverse Problems , 36(10):105001, 2020. [9] M. Cheney. The linear sampling method and the music algorithm. Inverse Problems , 17:591–595, 2001. [10] D. Colton and A. Kirsch. A simple method for solving inverse scattering problems in the resonance region. Inverse Problems , 12(4):383–393, 1996. [11] D. Colton and R. Kress. Inverse Acoustic and Electromagnetic Scattering Theory . Springer, 4 edition, 2019. [12] Z. Deng, A. Qian, and X. Yang. A Hankel determinant zero-order principle for source counting in an inverse heat point-source problem. https://arxiv.org/abs/2606.15065 , 2026. [13] Z. Deng, X. Yang, and A. Qian. A moment-Hankel rank method for identifying the number of point sources in the heat equation. https://arxiv.org/abs/2606.21815 , 2026. [14] A. J. Devaney. Super-resolution processing of multi-static data using time reversal and MUSIC. Preprint, Northeastern University, 2000. [15] S. Gutman and M. Klibanov. Regularized quasi-Newton method for inverse scattering problems. 
+
+Mathematical and Computer Modelling , 18(1):5–31, 1993. [16] T. Hohage. Convergence rates of a regularized Newton method in sound-hard inverse scattering. 
+
+SIAM Journal on Numerical Analysis , 36(1), 1998. 35 [17] Y. Hua and T. K. Sarkar. Matrix pencil method for estimating parameters of exponentially damped/undamped sinusoids in noise. IEEE Transactions on Acoustics, Speech, and Signal Processing , 38(5):814–824, 1990. [18] M. Ikehata. Reconstruction of obstacle from boundary measurements. Wave Motion , 30:205–223, 1999. [19] A. Kirsch. The domain derivative and two applications in inverse scattering theory. Inverse Problems , 9(1):81, 1993. [20] A. Kirsch. Characterization of the shape of a scattering obstacle using the spectral data of the far field operator. Inverse Problems , 14(6):1489–1512, 1998. [21] A. Kirsch. An Introduction to the Mathematical Theory of Inverse Problems , volume 120. Springer, 2011. [22] A. Kirsch and N. Grinberg. The Factorization Method for Inverse Problems . Oxford University Press, Oxford, 2008. [23] S. Kunis, H. M. M¨ oller, and U. von der Ohe. Prony’s method on the sphere. SMAI Journal of Computational Mathematics , S5:87–97, 2019. [24] J. Z. Li and J. Zou. A direct sampling method for inverse scattering using far-field data. Inverse Problems and Imaging , 7(3):757–775, 2013. [25] Z. Li, Z. Deng, and J. Sun. Extended-sampling-Bayesian method for limited aperture inverse scattering problems. SIAM Journal on Imaging Sciences , 13(1):422–444, 2020. [26] J. Liu, X. Liu, and J. Sun. Extended sampling method for inverse elastic scattering problems using one incident wave. SIAM Journal on Imaging Sciences , 12(2):874–892, 2019. [27] J. Liu and J. Sun. Extended sampling method in inverse scattering. Inverse problems ,34(8):085007, 2018. [28] X. Liu and J. Sun. Data recovery in inverse scattering: From limited-aperture to full-aperture. 
+
+Journal of Computational Physics , 386:350–364, 2019. [29] G. Nakamura, S. Saitoh, J. Seo, and M Yamamoto. The probe method and its applications Inverse Problems and Related Topics , volume 419 of Research Notes in Mathematics . London: CRC Press, 2000. [30] T. Peter and G. Plonka. A generalized Prony method for reconstruction of sparse sums of eigenfunctions of linear operators. Inverse Problems , 29(2):025001, 2013. [31] R. Potthast. On the convergence of a new Newton-type method in inverse scattering. Inverse Problems , 17(5):1419, 2001. [32] R. Potthast. Point Sources and Multipoles in Inverse Scattering Theory . Chapman and Hall/CRC, New York, 2001. [33] D. Potts and M. Tasche. Parameter estimation for exponential sums by approximate prony method. Signal Processing , 90(5):1631–1642, 2010. [34] D. Potts and M. Tasche. Parameter estimation for multivariate exponential sums. Electronic Transactions on Numerical Analysis , 40:204–224, 2013. 36

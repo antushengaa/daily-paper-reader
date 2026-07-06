@@ -1,0 +1,3260 @@
+Title: 2025.12.31.697206v2.full.pdf
+
+URL Source: https://www.biorxiv.org/content/10.64898/2025.12.31.697206v2.full.pdf
+
+Published Time: Mon, 06 Jul 2026 13:00:16 GMT
+
+Number of Pages: 44
+
+Markdown Content:
+Modeling echolocation as an active pursuit of information via infotaxis 
+
+Wu-Jung Lee, 1, a) John R. Buck, 2 and Peter L. Tyack 3, b) 1) Applied Physics Laboratory, University of Washington, Seattle, WA 98105, USA 
+
+> 2)
+
+Department of Electrical and Computing Engineering, University of Massachusetts Dartmouth, Dartmouth, MA 02747, USA 
+
+> 3)
+
+School of Biology, University of St. Andrews, St. Andrews, Fife, KY16 8LB, UK 
+
+Echolocation is a closed-loop active sensing modality in which animals not only choose how 1
+
+they move to acquire information, but also actively modulate incoming sensory (echo) in-2
+
+formation by shaping the acoustic signals they emit to probe the environment. While many 3
+
+models describe how echolocating animals react to prior echoes by adjusting subsequent 4
+
+behavior, few explicitly model how they cognitively reason about information embedded 5
+
+in echoes when determining future actions. Here, we extend “infotaxis,” an information-6
+
+greedy algorithm originally developed for olfactory search, to sonar sensing by formulating 7
+
+an echolocating agent searching for a single target under sensory uncertainty characterized 8
+
+by probabilities of miss and false alarm. Through analytical and computational analyses, 9
+
+we show that the characteristic exploration-exploitation balance of infotaxis also emerges 10 
+
+in echolocation, and that the efficiency and reliability of infotaxis search depend strongly 11 
+
+on sensory information quality. Compared with a maximum a posteriori agent that always 12 
+
+directs the beam to the most probable target location, the infotaxis agent consistently 13 
+
+completes searches with fewer pings and greater robustness to sensory uncertainty. These 14 
+
+results highlight information as a powerful concept for understanding active sensing and 15 
+
+developing models for sonar-guided autonomy in both biological and engineered systems. 16 
+
+> a)
+
+leewj@uw.edu 
+
+> b)
+
+Also at: Biology Department, Woods Hole Oceanographic Institution, Woods Hole, MA 02543, USA. 
+
+1
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+I. INTRODUCTION 17 
+
+Echolocation is a sensory modality in which echolocators emit acoustic signals and extract infor-18 
+
+mation from the returning echoes to understand their surroundings. Bats and toothed whales are 19 
+
+two prominent animal groups that have evolved specialized anatomical structures and neurophys-20 
+
+iological mechanisms to employ echolocation as their primary sensing modality to navigate and 21 
+
+forage (Surlykke et al. , 2014). Echolocation is a closed-loop feedback system, where the echoloca-22 
+
+tor adjusts its outgoing signals and movements based on information derived from previous echo 23 
+
+returns under the behavioral goal (Fig. 1A). Echolocation is an “active” sensing modality, both 24 
+
+in the narrow sense that the echolocator actively transmits acoustic energy to interrogate the en-25 
+
+vironment and in the broad sense that the echolocator actively changes the configuration of its 26 
+
+sensing apparatus (e.g. ears), location (e.g., body position with respect to a target), and cognitive 27 
+
+strategies (e.g., attention modulation of the incoming echo-acoustic scene) to acquire information 28 
+
+(Moss et al. , 2023; Zweifel and Hartmann, 2020). 29 
+
+Decades of research in both laboratory and field settings have revealed how bats and toothed 30 
+
+whales adapt echolocation behaviors to better solve problems as the task and environment change 31 
+
+(Moss et al. , 2023). For example, bats modulate pulse duration and inter-pulse intervals according 32 
+
+to their attended range and clutter around the target (e.g., Aytekin et al. , 2010; Falk et al. ,33 
+
+2014; Wilkinson et al. , 2025), adjust flight trajectory and call emission patterns in response to 34 
+
+environmental clutter (e.g., Ding et al. , 2023; Taub and Yovel, 2020; Wheeler et al. , 2016), and 35 
+
+alter the spatial coverage of sonar transmissions in a task-dependent manner, broadening the beam 36 
+
+to ensure successful prey interception and narrowing the beam to assist with localization and 37 
+
+landing (e.g., Eitan et al. , 2022; Matsuta et al. , 2013). Similarly, toothed whales modify click 38 
+
+amplitude and inter-click intervals depending on the target range and environmental reverberation 39 
+
+(e.g., Christman et al. , 2024; Johnson et al. , 2004; Ladegaard and Madsen, 2019; Wisniewska et al. ,40 
+
+2012), switch from emitting single clicks to packets of clicks to detect distant targets (Finneran, 41 
+
+2013; Ladegaard et al. , 2019), employ highly directional sonar beams to discriminate closely spaced 42 
+
+objects (Malinka et al. , 2021), broaden the beam to ensure successful prey interception (Wisniewska 43 
+
+et al. , 2015), and adjust their movement trajectories depending on echo ambiguity (Lee et al. , 2025). 44 
+
+Many theoretical models have been developed to describe adaptive changes in acoustic and 45 
+
+movement behavior during echolocation. Hand-crafted analytical models have been proposed to 46 
+
+describe bats’ movements and sonar parameter adjustments during prey tracking and interception 47 
+
+(e.g., Aihara et al. , 2013; Fujioka et al. , 2016; Ghose et al. , 2006; Ghose and Moss, 2006; Mansour 48 
+
+et al. , 2019; Nguyen et al. , 2021; Nishiumi et al. , 2024; Salles et al. , 2020; Sumiya et al. , 2017). 49 
+
+Many studies further integrated auditory perceptual cues from echoes together with spatial infor-50 
+
+mation derived from both the bat’s self-motion and/or the coordinated movement of its sensing 51 
+
+2
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation Understanding 
+
+of world 
+
+Echo 
+
+Echolocation 
+
+and movement 
+
+behavior 
+
+Information 
+
+from echo 
+
+Decision rules 
+
+Sound scattering 
+
+and propagation 
+
+Auditory scene 
+
+analysis 
+
+Incorporate 
+
+information 
+
+Internal model of 
+
+search space 
+
+Beam aim and 
+
+beam coverage 
+
+Target or 
+
+no target 
+
+Bayesian 
+
+update  Infotaxis 
+
+rule 
+
+Randomized 
+
+Likelihood  ⊗
+
+target detection generation 
+
+## A
+
+## B
+
+FIG. 1: Echolocation as a form of active sensing. (A) An echolocating agent probes its surroundings by emitting sound and extracting information from the echoes to update its understanding of the world. (B) The active sensing echolocation feedback modeled in this paper. The agent uses the infotaxis rule to determine the next beam aim and beam coverage to locate a target in the search space. New echo information is incorporated into the agent’s internal model of the search space through a likelihood function via Bayesian updates. apparatus to model obstacle avoidance (Vanderelst et al. , 2015), prey capture (Vanderelst and 52 
+
+Peremans, 2018), global map construction via repeated flights over acoustical landmarks (Van-53 
+
+derelst and Peremans, 2017), and the coordinated movement of foraging pairs of bats (Giuggioli 54 
+
+et al. , 2015). In parallel, information theoretic approaches examined how echolocating animals may 55 
+
+exploit frequency-dependent receiving beampatterns and ear motion to enhance echo detection and 56 
+
+localization (reviewed in M¨ uller et al. , 2017), or to improve localization accuracy by directing sonar 57 
+
+beams off-axis (Arditi et al. , 2015; Kloepper et al. , 2018; Yovel et al. , 2010). More recently, rein-58 
+
+forcement learning and neural network-based approaches were applied to model how bats partition 59 
+
+resources in the wild (Goldshtein et al. , 2020), adjust decision strategy according to environmental 60 
+
+dynamics (Naamani et al. , 2023), avoid obstacles while pursuing food items in computational simu-61 
+
+lations (Mohan and Vanderelst, 2020; Nguyen and Vanderelst, 2022, 2025), and negotiate obstacles 62 
+
+under species-specific constraints in laboratory experiments (Teshima et al. , 2025). 63 
+
+Despite substantial progress, a clear gap persists between existing modeling approaches and the 64 
+
+interpretation of behaviors observed in echolocation experiments. In many models, the echoloca-65 
+
+tor’s behavior is governed by a fixed set of movement and sonar parameter tuning rules that respond 66 
+
+3
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation directly to sensory stimuli, including echoes from prey, environment features, or conspecific calls. 67 
+
+These models emphasize the reactive aspects of sensorimotor adjustments in echolocation. The 68 
+
+cognitive dimensions of echolocation, where the animal actively reasons about the echo-acoustic 69 
+
+scene and determines its next set of actions after integrating information from prior echo returns 70 
+
+(Fig. 1A), remain under-explored, even though such cognitive reasoning is often invoked when in-71 
+
+terpreting behavioral data. For example, variations in pulse duration and inter-pulse intervals in 72 
+
+bats, as well as adjustments of inter-click intervals in toothed whales, are commonly interpreted as 73 
+
+evidence that these animals modulate their acoustic attention or field of view in complex environ-74 
+
+ments. While recent deep reinforcement learning (RL) models have begun to address this gap by 75 
+
+introducing explicit cognitive architectures to enable agents to learn actionable policies from echo 76 
+
+returns and rewards, the interpretability of such models remains challenging (Glanois et al. , 2024). 77 
+
+As new discoveries continue to underscore the remarkable flexibility of animal echolocation behav-78 
+
+ior, there is a growing need for modeling frameworks that integrate the physical and physiological 79 
+
+properties of these biological sonar systems with the associated sensory and cognitive processes to 80 
+
+yield mechanistic insights into adaptive sonar-guided actions. 81 
+
+“Infotaxis” has been an influential model for describing the search for odor sources in turbulent 82 
+
+environments (Vergassola et al. , 2007), in which the agent updates an internal “world” model of 83 
+
+probable source locations through a sensory model that encodes the likelihood of odor detection 84 
+
+within and around a plume. The agent then chooses its next movement by maximizing the ex-85 
+
+pected information gain at each step. While the observable behavior (agent movement following 86 
+
+odor detection) appears similar to reactive sensorimotor models, infotaxis explicitly incorporates 87 
+
+cognitive reasoning by specifying how sensory information should be used to update the internal 88 
+
+world model and select the next action, providing an interpretable bridge between behavioral ob-89 
+
+servations and model parameterization. This information-based formulation has been extended to 90 
+
+a variety of odor sensing scenarios, including multi-agent schemes (Hajieghrary et al. , 2016; Karpas 91 
+
+et al. , 2017; Masson et al. , 2009). The infotaxis model behavior has also been compared to the 92 
+
+behaviors of worms, flies, mosquitoes, and moths in laboratory experiments (e.g., Calhoun et al. ,93 
+
+2014; Hernandez-Reyes et al. , 2021; Pang et al. , 2018). In vision, similar information-based models 94 
+
+have been proposed to model eye movements (saccades) during search and categorization tasks and 95 
+
+compared with experimental data through summary statistics and on a fixation-by-fixation basis 96 
+
+(Jang et al. , 2021; Najemnik and Geisler, 2005, 2009; Yang et al. , 2016). Theoretical analyses and 97 
+
+simulations have also been used to examine the efficiency and reliability of these algorithms under 98 
+
+realistic biological constraints, such as the energetic cost of movement (Chen et al. , 2020; Loisy 99 
+
+and Eloy, 2022). 100 
+
+Here, we built upon these models to frame echolocation as an active pursuit of information, 101 
+
+extending the infotaxis algorithm to an active sensing modality that shares both similarities and 102 
+
+4
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation differences with olfaction and vision. Similar to olfaction and vision, echolocation is a remote 103 
+
+sensing modality in which information can be acquired from a distance. However, in olfaction 104 
+
+and vision, even though the animals have control over their sensors [e.g., antenna movements 105 
+
+and eye fixations (Claverie et al. , 2023; K¨ ummerer and Bethge, 2023)] to achieve better sampling 106 
+
+and accentuate specific features in the incoming signals, they do not have control over the odor 107 
+
+molecules or the light spectrum they receive. In contrast, echolocating animals exert active and 108 
+
+direct control over the spectral, temporal, and directional characteristics of the transmitted signal, 109 
+
+allowing them a greater capability to selectively sample and emphasize environmental or target 110 
+
+features most relevant to its behavioral goals. 111 
+
+We first developed a general Bayesian framework for echolocation that incorporates detection 112 
+
+parameters specific to active sonar sensing. We then formulated a detailed model of an echolocating 113 
+
+agent searching for a single target by steering a narrow sonar beam within a finite frontal search 114 
+
+space. An important contribution of this paper is that our sensing model used a binary hypothesis 115 
+
+test for echolocation-based target detection with sensory uncertainty captured by the probabilities 116 
+
+of miss ( PM ) and false alarm ( PF A ), which are important intrinsic characteristics of sonar systems 117 
+
+(Van Trees, 1968). This differs from the Poisson point process detection model in the original in-118 
+
+fotaxis paper, where detection probabilities were based on plume concentrations (Vergassola et al. ,119 
+
+2007). Despite its simplicity, this modeling scenario generated a variety of search behaviors, which 120 
+
+demonstrate that the characteristic infotaxis balance between exploration and exploitation in fol-121 
+
+lowing odor plumes also emerges in echolocation, and that the search trajectories and performance 122 
+
+depend fundamentally on sensory information quality. Simulations further showed that infotaxis 123 
+
+is more reliable and efficient compared with the maximum a posteriori (MAP) rule, under which 124 
+
+the agent always directs its sonar beam to the most probable target locations. 125 
+
+The remainder of this paper is organized as follows. Sec. II presents the general formulation 126 
+
+of the echolocation infotaxis framework, a detailed formulation of the infotaxis and MAP agents 127 
+
+in a single target search scenario, and the corresponding computational implementation. Sec. III 128 
+
+describes typical search dynamics of the infotaxis agent, including how entropy decreases as the 129 
+
+agent explores the search space, how sensory uncertainty influences infotaxis selection of beam 130 
+
+aim and beam footprint size, as well as comparisons of how infotaxis and MAP searches perform. 131 
+
+Finally, Sec. IV discusses the broader implications of our results, potential extensions of the model, 132 
+
+and its relevance to both biological and engineered sonar systems. 133 
+
+5
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+II. METHODS 134 
+
+A. General formulation of infotaxis in echolocation 135 
+
+In the infotaxis framework, we use probabilistic representations for quantities in typical echolo-136 
+
+cation tasks, including target search and discrimination. In a target search task, let K be a random 137 
+
+variable representing the target location in the search space A, P (n) 
+
+> K
+
+(k) describes the echolocat-138 
+
+ing agent’s understanding of the search scene after the nth echolocation transmission (or the nth 139 
+
+“ping”) as a probabilistic distribution over all possible target locations. Similarly, in a target dis-140 
+
+crimination task, let K be a random variable representing the target identity among all possible 141 
+
+categories A, P (n) 
+
+> K
+
+(k) describes the agent’s belief about target identity after the nth ping. In both 142 
+
+scenarios, P (n) 
+
+> K
+
+(k) encapsulates the agent’s knowledge about the target—whether its location or 143 
+
+identity—given all prior echo observations (evidence) from the first to the nth transmission. 144 
+
+In addition, we define S as the set of actions available to the echolocating agent before or during 145 
+
+the next ping, including both acoustic and movement parameters, such as sonar beam direction and 146 
+
+beamwidth, spectral and temporal content of the emitted signal, subsequent body location and head 147 
+
+orientation, to name a few. Similarly, we define X as the set of echo measurements (features) the 148 
+
+agent receives from the previous ping. These features are typically multidimensional, encompassing 149 
+
+temporal, spectral, and statistical properties of the echoes that vary depending on the relative 150 
+
+position between the echolocating agent and the target, as well as the acoustic characteristics of 151 
+
+the environment. 152 
+
+The echolocating agent’s belief of the target location or target identity is iteratively updated 153 
+
+using Bayes’ rule upon receiving an echo observation from the last transmission 154 
+
+P (n+1)  
+
+> K
+
+(k) = P (n) 
+
+> K
+
+(k) L(k|x; s)
+
+P 
+
+> k∈A
+
+P (n) 
+
+> K
+
+(k) L(k|x; s) ∝ L (k|x; s) P (n) 
+
+> K
+
+(k), (1) where L is the likelihood function, representing the probability of receiving an echo observation 155 
+
+with features X = x given a set of actions S = s, when the target is at location k or the target 156 
+
+identity is in category k,157 
+
+L(k|x; s) = P (X = x|K = k; S = s). (2) The likelihood function provides a convenient entry point for incorporating the auditory perceptual 158 
+
+capabilities of echolocating animals, such as temporal and spectral resolution and directional hear-159 
+
+ing ambiguity, into the model. These capabilities are typically characterized through behavioral 160 
+
+and neurophysiological experiments (e.g., Branstetter et al. , 2022; Mulsow et al. , 2024; Nachtigall 161 
+
+et al. , 2000) and can be represented as probabilistic quantities to allow flexible parameterization 162 
+
+of sensory and environmental noise influences. 163 
+
+6
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation Under infotaxis, the echolocating agent determines its next set of actions by maximizing the 164 
+
+expected reduction of uncertainty about the key task-related variable K (target location or target 165 
+
+identity) after receiving echoes from the next transmission (Fig. 1B). Note this expectation is taken 166 
+
+over the agent’s belief after the update, not the unknown true probability. Using the Shannon 167 
+
+information entropy as a measure of uncertainty (Shannon, 1948), the amount of information 168 
+
+contained in the received echo can be quantified by the mutual information between the current 169 
+
+and the updated distributions of K,170 
+
+Is(K; x) = H(K) − Hs(K|x), (3) where H(K) is the entropy of the current distribution P (n) 
+
+> K
+
+(k) and Hs(K | x) is the entropy of the 171 
+
+updated distribution PK|X;s(k|x; s) given action s and echo observation x,172 
+
+Hs(K|x) = − X
+
+> k
+
+PK|X;s(k|x; s) log 2 PK|X;s(k|x; s). (4) Since the echo observation is not known a priori , the echolocating agent operates based on the 173 
+
+expected uncertainty over all possible echo observations, 174 
+
+EX [Hs(K)] = X
+
+> x
+
+PX|s(x|s) Hs(K|x), (5) and selects the next set of action s that minimizes this expected uncertainty: 175 
+
+ˆs = arg min 
+
+> s
+
+EX [Hs(K)] . (6) Eq. 6 follows directly from Eq. 3, since maximizing the mutual information is equivalent to mini-176 
+
+mizing the expected uncertainty of the distribution. 177 
+
+While the above formulation is general, in the following sections we focus our development in 178 
+
+the context of echolocation-based target search. 179 
+
+B. Infotaxis search for a single target 180 
+
+Building on the general formulation above, in this section we develop detailed model of an 181 
+
+echolocating infotaxis agent searching for a single target in a discrete, two-dimensional search 182 
+
+space A consisting of NA cells (Fig. 2). This setup conceptually represents an experiment in which 183 
+
+an echolocating animal searches for a target on a vertical “screen,” onto which its sonar beam 184 
+
+projects a finite footprint. The geometry assumes that the main response axis of the sonar beam 185 
+
+is perpendicular to the screen or plane being searched. 186 
+
+We assume that the echolocating agent can control the beam aim and the size of the beam foot-187 
+
+print, but lacks sufficient directional hearing capabilities to determine where within the footprint a 188 
+
+7
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation Target probability 
+
+> No
+> detection
+> Beam footprint
+> 1 target in
+> search space
+> Beam aim
+> Target
+> detection
+> No
+> detection
+> Estimated entropy
+
+A B
+
+> Target
+> detection
+
+FIG. 2: Setup of the echolocation infotaxis model for single target search. Probability distribution of target location P (n) 
+
+> K
+
+(k) (A) and expected entropy EX [Hs] (B) in the beginning of a search (top), after receiving a target detection (lower left), and after not receiving a detection (lower right). PM = PF A = 0 .005 in this example. target echo originates. We further assume that auditory scene analysis—the process through which 189 
+
+complex sound mixtures are segregated and organized (Bregman, 1990)—and target detection oc-190 
+
+cur automatically, such that the agent receives a binary outcome: a target detection ( X = 1) or 191 
+
+no target detection ( X = 0) (Fig. 1B). Consecutive echo observations are assumed independent 192 
+
+across pings given the candidate target location and sensing action. In addition, the agent’s target 193 
+
+detection is subject to uncertainty arising from sensory and environmental noises. This uncer-194 
+
+tainty is characterized by the probability of miss, PM , and the probability of false alarm, PF A .195 
+
+For results presented in the main text of this paper, we use constant and independent PM and 196 
+
+PF A across cells within the beam to focus our analysis on intrinsic properties of the echolocation 197 
+
+infotaxis model. In general, PM and PF A can vary across locations within the beam footprint and 198 
+
+search space to incorporate the effects of variable signal-to-noise ratio (SNR) due to the directional 199 
+
+transmission beampattern and hearing sensitivity, as well as noise interference or environmental 200 
+
+clutter. We present preliminary results from beampattern-modulated PM and PF A in Supple-201 
+
+mental Information Text S1, and note that alternative false alarm models that capture spatially 202 
+
+correlated structures given specific sonar system characteristics and the sensing environment could 203 
+
+be incorporated in future extensions. 204 
+
+Let s = [ θB NB ]⊤ denote the echolocation action, where θB is the beam aim (beam axis) and 205 
+
+NB is the beam footprint size in cells. Let Bs be the set of cells covered by the beam footprint. 206 
+
+When a target detection occurs, the likelihood is 207 
+
+8
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+L(k|X = 1; S = s) = P (X = 1 |K = k; S = s)= P (X = 1 |k ∈ B s)P (k ∈ B s) + P (X = 1 |k / ∈ B s)P (k / ∈ B s).
+
+(7) When no target detection occurs, the likelihood is 208 
+
+L(k|X = 0; S = s) = P (X = 0 |k ∈ B s)P (k ∈ B s) + P (X = 0 |k / ∈ B s)P (k / ∈ B s). (8) For a given beam footprint, whether or not a particular cell is covered is deterministic. Therefore, 209 
+
+P (k ∈ B s) = 1 when cell k is within the beam and P (k ∈ B s) = 0 when cell k is outside of the 210 
+
+beam. 211 
+
+Deriving the likelihood functions in terms of the model parameters is simplest for the case when 212 
+
+no detection occurs ( X = 0). First consider the case where the cell to be updated k is within the 213 
+
+beam footprint: 214 
+
+L(k|X = 0; S = s) = P (X = 0 |K = k, k ∈ B s)= P (k misses detection) ∩ P (all other cells in the beam do not false alarm) = PM
+
+Y
+
+> κ∈B s\k
+
+(1 − PF A ) = PM (1 − PF A )NB −1 for constant PF A (9) where the set subtraction operation Bs \ k denotes the set of cells within the beam footprint except 215 
+
+for the cell k currently being updated. For cells outside the beam when no detection occurs, 216 
+
+L(k|X = 0; S = s) = P (X = 0 |K = k, k / ∈ B s)= P (no cells within beam create false alarms) = Y
+
+> κ∈B s
+
+(1 − PF A )= (1 − PF A )NB for constant PF A 
+
+≈ 1 − NB PF A for small PF A 
+
+(10) The last step follows from applying the binomial approximation (1 + y)a ≈ 1 + ay for small y.217 
+
+The complementary cases when there is a target detection ( X = 1) follow directly. When the 218 
+
+cells being updated are within the beam, 219 
+
+L(k|X = 1; S = s) = P (X = 1 |K = k, k ∈ B s)= 1 − P (X = 0 |K = k, k ∈ B s)= 1 − PM (1 − PF A )NB −1 for constant PF A 
+
+(11) Similarly, for cells outside the beam 220 
+
+L(k|X = 1; S = s) = P (X = 1 |K = k, k / ∈ B s)= 1 − P (X = 0 |K = k, k / ∈ B s)= 1 − (1 − PF A )NB for constant PF A 
+
+≈ NB PF A for small PF A 
+
+(12) 9
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation Note the binomial approximation is only used to obtain simplified expressions to aid analytical 221 
+
+interpretation. The approximate expressions are not used in the values presented in Sec. III, which 222 
+
+are computed from the exact expressions. 223 
+
+Under the infotaxis rule, to determine the next action, we evaluate the expected uncertainty, 224 
+
+EX [Hs(K)] (Eq. 5) by computing the conditional entropy Hs(K|x) (Eq. 4) and the probability of 225 
+
+receiving an echo observation X given action s,226 
+
+PX|s(X|s) = X
+
+> k∈A
+
+PX|s;K (X|s; k)P (n) 
+
+> K
+
+(k)= X
+
+> k∈B s
+
+PX|s;K (X|s; k)P (n) 
+
+> K
+
+(k) + X
+
+> k / ∈B s
+
+PX|s;K (X|s; k)P (n) 
+
+> K
+
+(k)(13) where P (n) 
+
+> K
+
+(k) is the agent’s belief of the probability distribution of the target location after ping 227 
+
+n, and PX|s;K (X|s; k) is the probability of receiving echo X after action s with the target located 228 
+
+in cell k, which is identical to the likelihood (Eq. 7-8). Here, 229 
+
+PX|s(X = 1 |s) = X
+
+> k∈B s
+
+PK (k)1 − PM
+
+Y
+
+> κ∈B s\k
+
+1 − PF A 
+
+
+
++ X
+
+> k / ∈B s
+
+PK (k)1 − Y
+
+> κ∈B s
+
+1 − PF A 
+
+ (14) and 230 
+
+PX|s(X = 0 |s) = 1 − PX|s(X = 1 |s). (15) 
+
+C. Maximum a posteriori (MAP) search for a single target 231 
+
+To gain comparative insights into the properties of echolocation infotaxis, we examine the 232 
+
+behavior of another echolocating agent employing a simple MAP rule to select its next beam aim 233 
+
+from cell(s) with the highest target probability in the search space: 234 
+
+ˆs = arg max 
+
+> k
+
+P (n) 
+
+> K
+
+(k). (16) Here, s is a scalar, because the MAP does not provide a mechanism to include beam footprint 235 
+
+size as a decision variable (i.e., the beam footprint is always fixed within a search). This action 236 
+
+selection rule is based solely on the latest probability distribution of target location and, unlike 237 
+
+infotaxis, does not account for sensory uncertainty or ambiguity of target location within the beam 238 
+
+footprint. Therefore, the beam footprint size is fixed in all infotaxis and MAP comparisons in this 239 
+
+paper. Apart from the action selection rule, all other aspects of MAP search are identical to those 240 
+
+of infotaxis, including the stopping condition (see next section). 241 
+
+In this work, we use the MAP strategy as a simple belief-based exploitation baseline, as it has 242 
+
+been employed to model eye fixation selection or visual search both as a comparison baseline and 243 
+
+10 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation as an element of more sophisticated models (e.g., Bujia et al. , 2022; Hoppe and Rothkopf, 2019; 244 
+
+Najemnik and Geisler, 2005, 2008). 245 
+
+D. Computational implementation 246 
+
+We developed a computational implementation of the single target search scenario described 247 
+
+above to systematically examine how an echolocating agent behaves given different action selection 248 
+
+rules and search parameters, including sensory uncertainty PM and PF A , beam footprint size NB ,249 
+
+search space size NA, and their relative proportion α = NB /N A. Computationally, the search 250 
+
+space is a finite two-dimensional area represented using a hexagonal grid system (Fig. 2) defined 251 
+
+with radius rA, and the echolocation beam footprint is a circular region with radius rB centered 252 
+
+on the beam aim θB . Therefore, in figure annotations, rA and rB are used in place of NA and NB ,253 
+
+respectively. A hexagonal grid is used, because in this geometry all cells along a rim at a given 254 
+
+radius are equidistant from the center beam aim, whereas in rectangular grids, the distances would 255 
+
+vary depending on whether the outer cells lie along an edge or at a corner. Under the hexagonal 256 
+
+grid setup, the number of cells covered in the area within a given radius r is N = 1 + 3 r(r + 1). 257 
+
+The agent can operate under either the infotaxis or MAP rules. Under the infotaxis rule (Eq. 6), 258 
+
+the agent selects both the next beam aim and beam footprint radius, whereas under the MAP rule 259 
+
+(Eq. 16) the agent selects only the next beam aim. Two sets of PM and PF A values are defined: one 260 
+
+represents the agent’s internal model of sensory uncertainty ( P AM and P AF A ), and the other specifies 261 
+
+the true values for the sensor in the search space ( P TM and P TF A ). This setup allows investigation 262 
+
+of how model performance varies when the agent’s models differ from true sensory statistics. 263 
+
+By default, the infotaxis model randomly selects the next beam aim from cells with the small-264 
+
+est expected entropy across the entire search space, whereas the MAP model randomly selects the 265 
+
+next beam aim from cells with the highest posterior probability. This selection can be optionally 266 
+
+restricted to only cells within a user-defined radius from the current beam aim to make the beam 267 
+
+aim trajectory more realistic (smoother). All simulations presented in the main text were gener-268 
+
+ated without beam movement restriction. See Fig. S1 for search examples generated with beam 269 
+
+movement restriction. 270 
+
+The agent terminates the search when one of two conditions is met: (1) the maximum posterior 271 
+
+probability for any cell to contain the target Pmax = max  
+
+> k
+
+P (n) 
+
+> K
+
+(k) exceeds an arbitrary threshold 272 
+
+pth = 0 .95; or (2) the change of Pmax across three consecutive pings is smaller than 10 −5, indicating 273 
+
+convergence. A search is deemed successful if, upon termination, the cell with the highest posterior 274 
+
+probability coincides with the true target location. Search performance is characterized primarily 275 
+
+by the success rate and the number of pings required to complete a search, as well as Pmax , entropy, 276 
+
+11 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation and the cumulative beam aim path length at the end of the search. These metrics are compared 277 
+
+over 1000 randomized simulations, in which the true target location is randomly assigned for each 278 
+
+run. The distributions of a given metric under any two model parameterizations are compared 279 
+
+using the Mann-Whitney U tests (Conover, 1999). Although the search space size can be specified 280 
+
+arbitrarily, rA = 5 is used in most figures for clarity and ease of interpretation. Note that the 281 
+
+specific values chosen for pth and Pmax convergence threshold do not influence the observed search 282 
+
+performance trends (see Sec. III A 3). 283 
+
+The echolocation infotaxis search procedure is summarized in Algorithm 1. 284 
+
+Algorithm 1: Echolocation infotaxis search. 
+
+Input: Initial target location distribution P (0)  
+
+> K
+
+(k) over all cells k; candidate actions s; sensory uncertainty parameters PM and PF A ; stopping criteria. 
+
+Initialization: 
+
+Set ping index n ← 0; Initialize posterior distribution P (0)  
+
+> K
+
+(k); 
+
+while stopping criteria are not satisfied do 
+
+Evaluate the expected posterior entropy EX [Hs(K)] for all candidate actions s (Eq. 5) ; Select the next action s(n+1) = arg min s EX [Hs(K)] (Eq. 6) ; Emit an echolocation ping and receive observation X(n+1) ∈ { 0, 1};Evaluate likelihoods for all target locations k (Eq. 7 or 8) ; Update the posterior distribution P (n+1)  
+
+> K
+
+(k) = P (n+1)  
+
+> K|X, s
+
+(k | X(n+1) , s(n+1) ) (Eq. 1) ; Update ping index: n ← n + 1; 
+
+end Output: Estimated target location ˆk = arg max k P (n) 
+
+> K
+
+(k)
+
+III. RESULTS 287 
+
+Computational simulations of an active infotaxis agent performing single target search revealed 288 
+
+a rich set of behaviors that provide insights into the properties of infotaxis in echolocation. In the 289 
+
+following sections, we describe the general search dynamics, explore specific features of the search 290 
+
+behavior, and compare the performance of infotaxis and MAP search through simulations. 291 
+
+12 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+A. Infotaxis search behavior 292 
+
+1. Typical search dynamics 293 
+
+Given a fixed beam footprint size and moderate PF A , the infotaxis agent randomly selects beam 294 
+
+aims from interior cells of a search space at the beginning of a search (Fig. 3A, ping 0). When 295 
+
+the search space is moderately large relative to the beam footprint, the agent typically does not 296 
+
+receive a target detection during the first few pings and would update the probability distribution 297 
+
+of target location by placing higher probability in previously unexplored cells (Fig. 3A, pings 1-7). 298 
+
+This iterative process continues until a target detection occurs, which sharply alters the distribution 299 
+
+of target probability across the search space (Fig. 3A, ping 8). The agent now concentrates its 300 
+
+search within and around the footprint of the ping that yielded the detection, directing subsequent 301 
+
+beam footprints to overlap maximally with the region of high target probability (Fig. 3A, pings 302 
+
+9-11) to further narrow down the target location. The search terminates once the target probability 303 
+
+of a single cell exceeds the stopping threshold pth (Fig. 3F). 304 
+
+In such a typical search sequence, the initial stage before any target detection represents the 305 
+
+“exploration” phase, during which the agent surveys the search space to identify a probable target 306 
+
+area. Once a detection occurs, the search transitions into the “exploitation” phase, where the 307 
+
+agent prioritizes refining the already identified highly probable target region. As in the classic 308 
+
+odor source tracking scenario (Vergassola et al. , 2007), an echolocating infotaxis agent naturally 309 
+
+balances exploration and exploitation while maximizing the information gain at each ping. 310 
+
+The initial search behavior changes dramatically when the relative beam footprint coverage α311 
+
+is large or when PF A is high. Under these conditions, the agent exhibits a distinct boundary- or 312 
+
+corner-seeking behavior, often directing its beam toward the edges of the search space (Fig. S2). 313 
+
+This occurs because such beam aims reduce the number of cells covered within the footprint, as 314 
+
+part of the beam extends outside the search space. This effectively lowers the collective probability 315 
+
+of false alarm from its value if the beam aim was in the middle of the grid ( ≈ NB PF A , see Eq. 12), 316 
+
+allowing the agent to be more confident about any target detection. 317 
+
+2. Adjustment of beam footprint size 318 
+
+Given choices of beam footprint sizes, the infotaxis agent automatically switches between larger 319 
+
+and smaller beam coverages to balance between exploration and exploitation (Fig. 3B-3C and 3G-320 
+
+3H). Under moderate PF A , the agent consistently starts the search with the largest beam footprint 321 
+
+to survey the search space for the target (Fig. 3B and 3G, rB = 2 for ping 0-6; Fig. 3C and 3H, 322 
+
+rB = 3 for ping 0-3). Once a target detection occurs, the agent immediately switches to a smaller 323 
+
+13 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation A CB
+
+> F HG
+> No error  2 beam footprint sizes  3 beam footprint sizes  ED
+> JI
+> False alarm  Miss
+> FIG. 3:  Search dynamics of an echolocating infotaxis agent.  (A-E) Posterior distribution of target location (left column) and expected entropy (right column) after receiving echo observation of selected pings in representative searches. Panels A-C show searches with no detection errors with  rB = 1,  rB = {1, 2}, and  rB = {1, 2, 3}. Panels D and E show searches with a false alarm and a miss early in the search, respectively. Red lines: beam aim trajectory over five pings, including the upcoming ping. Yellow shade: next beam footprint. Circle ( ◦): true target location. Cross ( ×): next beam aim. Plus (+): previous beam aim. Color represents a relative scale in the value range spanned in the search space. Under infotaxis, only the relative scale matters because the agent selects the next set of actions that gives the lowest expected entropy among all choices. Asterisk (*) in the ping number annotation indicates a false alarm or a miss. (F-J) Variation of maximum target probability in the search space ( Pmax ) and entropy across successive pings, annotated with events occurring at specific pings. Each search terminates when  Pmax  ≥ pth  = 0 .95. See Table S1 for all search parameter values, and Videos S1-S5 for the full sequences.
+
+14 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation beam footprint, trying to narrow down the target location within the highly probable target area. 324 
+
+The agent’s response depends on the available beam size options. When given two choices, it 325 
+
+switches to the smaller footprint (Fig. 3B, rB = 1 for ping 7). When given three choices, it first 326 
+
+switches to the intermediate size and then to the smallest once most of the area covered by the 327 
+
+ping yielding the first target detection has been explored (Fig. 3C, rB = 2 and rB = 1 for ping 5 328 
+
+and 7, respectively). 329 
+
+The observed changes of beam footprint size are intuitive: A smaller footprint is more efficient in 330 
+
+precisely locating the target within the confined high-probability area covered by the ping yielding 331 
+
+a target detection. However, if this area is moderately large, selecting an intermediate beam size 332 
+
+provides a better balance between exploration and exploitation for refining the target location. 333 
+
+In addition, changes of beam footprint size are not unidirectional. In the case with two available 334 
+
+beam sizes, once the agent recovers from a false alarm using several pings with the smaller footprint 335 
+
+(Fig. 3B and 3G, ping 8-11), it switches back to the larger beam footprint to restart exploring the 336 
+
+search space (Fig. 3B and 3G, ping 12). 337 
+
+3. Impacts of sensory uncertainty 338 
+
+When misses or false alarms occur, the infotaxis agent recovers from these sensory errors in 339 
+
+distinctive ways that impact the search efficiency. Following a false alarm ( X = 1 despite the 340 
+
+target being outside the footprint), the agent directs the next few pings to sequentially investigate 341 
+
+cells covered by the beam footprint yielding the erroneous detection, and efficiently rules out the 342 
+
+possibility that the target is located withing these cells (Fig. 3D, ping 4-6). It follows intuitively 343 
+
+that the recovery time after a false alarm depends on the size of the beam footprint. Because a 344 
+
+target detection—whether true or spurious—causes a sharp contraction of highly probable target 345 
+
+region, followed by a gradual redistribution of target probability, a false alarm appears as a distinct 346 
+
+“dip” in the actual entropy curve of a search (Fig. 3I, between ping 2-6). 347 
+
+In contrast, the infotaxis agent is affected more severely by a miss, often for a longer duration. 348 
+
+When a miss occurs ( X = 0 despite the target being within the beam footprint), the agent assigns 349 
+
+low target probability to the cells covered by the beam and moves away from the area, as revisiting 350 
+
+it is deemed less informative (Fig. 3E, ping 3, low expected entropy around the beam footprint). 351 
+
+The agent typically revisits the missed region only after all other parts of the search space have been 352 
+
+explored without success (Fig. 3E, pings 4-19). Therefore, when a miss occurs early in a search, the 353 
+
+resulting entropy curve resembles that of searches with a long exploration phase (Fig. 3J). Once 354 
+
+the agent realizes that a miss has occurred after failing to detect the target elsewhere, the entropy 355 
+
+rises abruptly to the level observed before the miss, reflecting renewed uncertainty and resumption 356 
+
+15 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation A B
+
+C D
+
+FIG. 4: Performance comparison of infotaxis and MAP searches. Success rate (top) and number of echolocation pings required (bottom) to locate the target for infotaxis (green on the left) and MAP (orange on the right) searches under different parameter combinations. The infotaxis agent consistently outperforms the MAP agent, achieving a higher success rate with fewer pings. The numbers of successful runs are indicated in the parentheses. A search is successful when the cell with the highest posterior probability at search termination coincides with the true target location. rA and rB denote the radii of the search space and the beam footprint, respectively, and α is the relative size of the beam footprint to the search space. The reported p-values are from Mann-Whitney U tests under the alternative hypothesis that the infotaxis search requires fewer pings to complete than the MAP search. Note that the beam footprint radius rB is fixed for both the infotaxis and MAP agents. See Sec. II D for definitions of all quantities and details on the stopping condition. of exploration (Fig. 3E and 3J, ping 19; Fig. S3B and S3D, ping 24). When a miss occurs later in a 357 
+
+search, after the high-probability target region has already become spatially confined, it produces 358 
+
+only a transient rise in the entropy curve (Fig. S3A and S3C). 359 
+
+16 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation A B
+
+C D
+
+FIG. 5: Impacts on infotaxis search performance when the agent underestimates sensory uncertainty. Success rate (top) and number of pings required (bottom) to locate the target when the agent’s assumed PM and PF A match (green on the left) or mismatch (purple on the right) the true values. Here, the agent assumes P AM = P AF A = 0 .001, but the true values 
+
+P TM = P TF A vary across a range of values indicated on the top of each panel. The number of successful runs are indicated in the parentheses. A search is successful when the cell with the highest posterior probability at search termination coincides with the true target location. Note that the success rate drops sharply as the mismatch increases, even though the searches may terminate earlier. The reported p-values are from Mann-Whitney U tests under the alternative hypothesis that the number of pings required to locate the target are the same. See Sec. II D for definitions of all quantities and details on the stopping condition. Overall, infotaxis search performance degrades with increasing PM and PF A , with decreasing 360 
+
+success rate and increasing number of pings required to complete a search (Fig. 4 and S4). For 361 
+
+instance, when rA = 5 and rB = 1 (Fig. 4A), the median number of pings required to complete a 362 
+
+search increases from 10 to 20 as PM and PF A rise from 0.001 to 0.05. Under the same conditions 363 
+
+but with a larger beam ( rB = 2; Fig. 4B), the median increases from 7 to 29. Comparisons between 364 
+
+17 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation A B
+
+C D
+
+FIG. 6: Impacts on infotaxis search performance when the agent overestimates sensory uncertainty. All plot and annotation details are identical to those in Fig. 5, except for here the true sensory statistics are fixed at P TM = P TF A = 0 .001 but the agent’s assumed 
+
+P AM = P AF A varies across each panel. Both the number of pings required to locate the target and the success rate increase with increasing mismatch, as the agent becomes more cautious. simulations with both PM and PF A elevated and those with only PF A elevated (Fig. 4 vs. Fig. S5) 365 
+
+indicate that the reduced efficiency primarily stems from the need to mitigate false alarms. In 366 
+
+contrast, comparisons with simulations with only PM elevated (Fig. 4 vs. Fig. S6) show that 367 
+
+high PM mainly increases the number of outlier searches that require exceptionally many pings to 368 
+
+complete, likely due to misses occurring early in the search. In addition, across the range of PM369 
+
+and PF A investigated, the maximum posterior at the end of the search remains high (Fig. S7), 370 
+
+and the entropy of the posterior increases only slightly with higher sensory uncertainty (Fig. S8). 371 
+
+Interestingly, the cumulative beam aim path length until search termination remains stable when 372 
+
+rB = 1, but increases substantially when rB = 2 and sensory uncertainty is high (Fig. S9). This 373 
+
+18 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation is likely due to the extra pings needed to narrow down the target location within a larger beam 374 
+
+footprint, which can be further lengthened if false alarms or misses occur. 375 
+
+When the infotaxis agent’s assumed sensory uncertainty ( P AM and P AF A ) does not match the true 376 
+
+sensory statistics of the search space ( P TM and P TF A ), its search performance declines in different 377 
+
+ways depending on whether sensory uncertainty is overestimated or underestimated. When the 378 
+
+agent underestimates the sensory uncertainty, the localization success rate declines sharply as the 379 
+
+mismatch widens (Fig. 5, purple bars on all top panels). Detailed investigation revealed that 380 
+
+the agent often mistakenly takes repeated false alarms as true detections because of the assumed 381 
+
+lower sensory uncertainty, causing it to prematurely terminate the search at an incorrect target 382 
+
+location (Fig. S10). Paradoxically, the number of pings required to complete a search decreases 383 
+
+with increasing mismatch (Fig. 5, purple histograms on all bottom panels). This is because when 384 
+
+the agent happens to encounter the target, its underestimated sensory uncertainty causes the target 385 
+
+probability distribution to converge much faster than under the true (higher) sensory uncertainty. 386 
+
+Across the range of sensory uncertainty investigated, Pmax and entropy at the end of the search are 387 
+
+mostly comparable between the matched and underestimated cases for successful runs (Fig. S11-388 
+
+S12). The cumulative beam aim path length decreases with increasing true sensory uncertainty for 389 
+
+the underestimated cases (Fig. S13). However, note the rapidly dropping success rate. 390 
+
+When the agent overestimates sensory uncertainty, both the localization success rate and the 391 
+
+number of pings required to complete a search increase (Fig. 6, purple bars and histograms on all 392 
+
+top and bottom panels). This is intuitive, as with higher P AM and P AF A each observation produces a 393 
+
+smaller update to PK (k), which lengthens the search. Due to the slower posterior updates in these 394 
+
+cases, while Pmax at the end of the search remains high, the values are lower than those in the 395 
+
+matched case (Fig. S14), with correspondingly higher entropy (Fig. S15). Note that these slightly 396 
+
+higher entropy values are still much lower than those under most of the MAP searches (Fig. S8). 397 
+
+The cumulative beam aim path length is higher with higher assumed sensory statistics and when 398 
+
+rB = 2 (Fig. S16), due to the extra pings needed to narrow down the target location within a 399 
+
+larger beam footprint, especially when false alarms and misses are more likely to occur. 400 
+
+B. Entropy decreases in the exploration phase 401 
+
+During the exploration phase before the first target detection, the scene entropy decreases 402 
+
+monotonically as the infotaxis agent rules out regions not containing the target (Fig. 3F, ping 1-7). 403 
+
+Intuitively, the beam footprint size relative to the search space ( α) and sensory uncertainty ( PM404 
+
+and PF A ) would influence this update. Below, we explore the connection between these parameters 405 
+
+and the trend of entropy decrease up until the first target detection X = 1. 406 
+
+19 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation Assume PK (k) is uniform over the search space in the beginning of a search, and let Bsn denote 407 
+
+the set of cells covered by the beam footprint of the nth ping. Using Eq. 1, the updated scene after 408 
+
+observing X = 0 with ping n + 1 is 409 
+
+P (n+1)  
+
+> K
+
+(k) = P (n) 
+
+> K
+
+(k) L(k|X = 0) 
+
+C(n+1) 
+
+> X=0
+
+, (17) where L(k|X = 0) is Eq. 9 or Eq. 10 depending on if cell k lies within Bs1 , and C(n+1)  
+
+> X=0
+
+is the 410 
+
+normalization factor determined by all values in the updated map P (n+1)  
+
+> K
+
+(k)411 
+
+C(n+1)  
+
+> X=0
+
+= X
+
+> k∈A
+
+P (n) 
+
+> K
+
+(k) L(k|X = 0) . (18) After ping 1, when no target is detected, 412 
+
+C(1)  
+
+> X=0
+
+= X
+
+> k∈B s1
+
+P (0)  
+
+> K
+
+(k) L(k|X = 0) + X
+
+> k / ∈B s1
+
+P (0)  
+
+> K
+
+(k) L(k|X = 0) = αN A P (0)  
+
+> K
+
+(k)PM
+
+Y 
+
+> κ∈B s1\k
+
+(1 − PF A ) + (1 − α)NA P (0)  
+
+> K
+
+(k) Y
+
+> κ∈B s1
+
+(1 − PF A )= P (0)  
+
+> K
+
+(k)αN APM + NA(1 − α)(1 − PF A )(1 − PF A )NB −1.
+
+(19) Recall that α = NB /N A represents the relative size of the beam footprint to the search space. 413 
+
+Substituting Eqs. 9 and 10 for the likelihood in the numerator of Eq. 17 makes it clear that the 414 
+
+(1 − PF A )NB −1 in C(1)  
+
+> X=0
+
+cancels in both cases, leaving 415 
+
+P (1)  
+
+> K
+
+(k) = 
+
+
+
+PM
+
+αN APM + NA(1 − α)(1 − PF A ) , k ∈ B s1
+
+1 − PF A 
+
+αN APM + NA(1 − α)(1 − PF A ) , otherwise. (20) Using the approximation 11−y ≈ 1 + y, where y = −α 
+
+> 1−αPM
+> 1−PF A
+
+, we find 416 
+
+1
+
+αN APM + NA(1 − α)(1 − PF A ) = 1
+
+NA(1 − α)(1 − PF A )11 − −α
+
+> 1−αPM
+> 1−PF A
+
+≈ 1
+
+NA(1 − α)(1 − PF A )
+
+h
+
+1 − α
+
+1 − αPM
+
+1 − PF A 
+
+i (21) and obtain 417 
+
+P (1)  
+
+> K
+
+(k) ≈
+
+
+
+1
+
+NA(1 − α)
+
+PM
+
+1 − PF A 
+
+h
+
+1 − α
+
+1 − αPM
+
+1 − PF A 
+
+i
+
+, k ∈ B s1
+
+1
+
+NA(1 − α)
+
+h
+
+1 − α
+
+1 − αPM
+
+1 − PF A 
+
+i
+
+, otherwise. (22) Here, cells within Bs1 are updated with low target probabilities, especially when PM is low. In fact, 418 
+
+when PM → 0, the probability of target is uniform across the unobserved cells at 1 
+
+> NA(1 −α)
+
+= 1 
+
+> NA−NB
+
+.419 
+
+Intuitively, since the agent has already gathered information about cells covered by the beam 420 
+
+20 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation footprint, the next beam aim would be directed such that the new footprint does not overlap with 421 
+
+the previous one (Fig. 7A). Therefore, 422 
+
+C(2)  
+
+> X=0
+
+= X
+
+> k∈B s2
+
+P (1)  
+
+> K
+
+(k)L(k|X = 0) + X
+
+> k∈B s1
+
+P (1)  
+
+> K
+
+(k)L(k|X = 0) + X  
+
+> k / ∈(Bs1∪B s2)
+
+P (1)  
+
+> K
+
+(k)L(k|X = 0) = (1 − PF A )NB −1×
+
+h
+
+PM
+
+X
+
+> k∈B s2
+
+P (1)  
+
+> K
+
+(k) + (1 − PF A ) X
+
+> k∈B s1
+
+P (1)  
+
+> K
+
+(k) + (1 − PF A ) X  
+
+> k / ∈(Bs1∪B s2)
+
+P (1)  
+
+> K
+
+(k)
+
+i (23) Again, the (1 − PF A )NB −1 terms in the likelihood and normalization terms of Eq. 17 cancel, and 423 
+
+using the same approximation in Eq. 21, we obtain 424 
+
+P (2)  
+
+> K
+
+(k) ≈
+
+
+
+1
+
+NA(1 − 2α)
+
+PM
+
+1 − PF A 
+
+h
+
+1 − 2α
+
+1 − 2αPM
+
+1 − PF A 
+
+i
+
+, k ∈ B s1 ∪ B s2
+
+1
+
+NA(1 − 2α)
+
+h
+
+1 − 2α
+
+1 − 2αPM
+
+1 − PF A 
+
+i
+
+, otherwise. (24) Following the same reasoning, when no target is detected, the agent progressively samples 425 
+
+unvisited regions of the search space, moving the beam in a manner that maximizes coverage while 426 
+
+minimizing redundant sampling of previously interrogated areas (Fig. 7A). We find that, 427 
+
+P (n) 
+
+> K
+
+(k) ≈
+
+
+
+1
+
+NA(1 − nα )
+
+PM
+
+1 − PF A 
+
+h
+
+1 − nα 
+
+1 − nα PM
+
+1 − PF A 
+
+i
+
+, k ∈
+
+> n
+
+[
+
+> m=1
+
+Bsm
+
+1
+
+NA(1 − nα )
+
+h
+
+1 − nα 
+
+1 − nα PM
+
+1 − PF A 
+
+i
+
+, otherwise. (25) This approximated form of P (n) 
+
+> K
+
+(k) is intuitive: In the limit PM → 0, when no target detection is 428 
+
+received across multiple pings, the probability of target present in cells covered by all preceding 429 
+
+non-overlapping beam footprints would be redistributed to unexplored cells in the search space: 430 
+
+lim   
+
+> PM→0
+
+P (n) 
+
+> K
+
+(k) ≈
+
+
+
+0, k ∈
+
+> n
+
+[
+
+> m=1
+
+Bsm
+
+1
+
+NA(1 − nα ) = 1
+
+NA − nN B
+
+, otherwise. (26) The accuracy of these approximations deteriorates with increasing α and PM , as the approximation 431 
+
+in Eq. 21 becomes less valid. 432 
+
+When both PM and α are small, let β = nα  
+
+> 1−nα PM
+> 1−PF A
+
+, we can then show that the entropy after 433 
+
+the nth ping, 434 
+
+H(n) = (1 − β2)
+
+h
+
+log 2 NA(1 − nα ) − log 2(1 − β)
+
+i
+
+− β(1 − β) log 2
+
+PM
+
+1 − PF A 
+
+≈ log 2 NA + log 2(1 − nα ).
+
+(27) Using log 2 y = ln y/ ln 2 and ln(1 − y) ≈ − y, we obtain the approximate slope of entropy decrease 435 
+
+21 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation A
+
+B
+
+FIG. 7: Entropy variation during infotaxis searches. (A) Effects of consecutive non-overlapping pings with no target detection ( X = 0) on the probability distribution of target location (left) and expected entropy (right). See Fig. 3 caption for definitions of all symbols. 
+
+PM = PF A = 0 .005 in this example. (B) The slope of entropy decrease varies systematically depending on the relative size of the beam footprint to the search space ( α). Lines with markers show actual entropy decrease from simulations, and lines without markers show the analytical approximation (Eq. 28). Numbers in the parenthesis indicate the search space radius rA. The beam footprint radius is fixed at rB = 1. See Table S1 for all search parameter values. over consecutive pings, 436 
+
+∆H = H(n+1) − H(n) ≈ [−(1 − (n + 1) α) + (1 − nα )] / ln 2 = −α/ ln 2 . (28) A detailed derivation of the above is provided in Supplemental Information Text S2. 437 
+
+Eqs. 25-28 suggest that the rate at which entropy decreases before the first target detection 438 
+
+depends strongly on α, as shown in Fig. 7B. Notably, the actual trajectory of entropy decrease 439 
+
+deviates from the analytical approximate when α is large, both because the approximation becomes 440 
+
+less accurate and because as the number of pings increases, subsequent beam footprints would either 441 
+
+lie partially outside of the search space or overlap with previous footprints due to the finite search 442 
+
+space, which can be observed in Fig. 7A. 443 
+
+22 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+C. Beam aim selection after the first target detection 444 
+
+An interesting observation from the simulations is that once a target detection occurs, the agent 445 
+
+may either repeats aiming its beam at the same center cell or shift the beam aim to a neighboring 446 
+
+cell such that the new beam footprint partially overlaps with the previous one (Fig. 8A). Repeating 447 
+
+the same beam aim serves as a confirmation: if the subsequent ping does not yield another detection, 448 
+
+the previous detection was likely a false alarm; if it does, the target is likely located within this 449 
+
+beam footprint. Alternatively, shifting the beam aim to a neighboring cell allows the agent to 450 
+
+further narrow down the target location: if the next ping yields a detection, the target is likely 451 
+
+located within the intersection of both beam footprints; if no detection occurs on the second ping, 452 
+
+the target is likely within the cells of the first footprint not shared with the second. 453 
+
+To better understand the parameters that drive this decision, we derive P f(2)  
+
+> K|X
+
+(k|X) and 454 
+
+PX|s(X|s), the key quantities that determine the expected entropy EX [Hs(K)] after the first 455 
+
+target detection, when the agent needs to decide whether to repeat the same beam aim or to shift 456 
+
+the beam aim to a neighboring cell. The tilde f(·) in the superscripts distinguishes this “local” ping 457 
+
+indexing, which starts from the first target detection, from the “global” ping sequence of the entire 458 
+
+search. 459 
+
+To reduce clutter and preserve the flow in the main text, the full derivations are presented in 460 
+
+Supplemental Information Text S3 and only the main derivation steps and results are summarized 461 
+
+below: The derivation begins with the target location distribution P f(1)  
+
+> K
+
+(k) after receiving the 462 
+
+first target detection (Text S3A). We then derive the updated target location distribution P f(2)  
+
+> K
+
+(k)463 
+
+after the immediately subsequent ping for two cases: when the agent repeats the same beam aim 464 
+
+(Text S3B) and when it shifts the beam aim to a neighboring cell (Text S3C). These posterior 465 
+
+distributions are then used to derive PX|s(X|s). 466 
+
+When the agent repeats the same beam aim ( Bs2 = Bs1 ), the normalization factors (see Eq. 17) 467 
+
+of the updated target probability map P f(2)  
+
+> K
+
+(k) with echo observation X = 0 and X = 1 are 468 
+
+C f(2)  
+
+> X=1
+
+= γ2/γ 1 and C f(2)  
+
+> X=0
+
+= ( γ1 − γ2)/γ 1, respectively, (29) where 469 
+
+γ1 = α(1 − PM ) + (1 − α)αN APF A , (30) 
+
+> 470
+
+γ2 = α(1 − PM )2 + (1 − α)( αN APF A )2, (31) 
+
+> 471
+
+γ′ 
+
+> 2
+
+= α12 (1 − PM )2 + 2( α − α12 )αN APF A (1 − PM ) + (1 − 2α + α12 )( αN APF A )2, (32) in which α12 denotes the proportion of the overlapping area between the first and the second beam 472 
+
+footprints relative to the entire search space. 473 
+
+Using Eq. 1 and the binomial approximation (1 + y)α ≈ 1 + αy , we obtain 474 
+
+23 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+P f(2)  
+
+> K|X
+
+(k|X = 1) = 
+
+
+
+1
+
+NA
+
+(1 − PM )2
+
+γ2
+
+, k ∈ B s2
+
+1
+
+NA
+
+(αN APF A )2
+
+γ2
+
+, otherwise (33) or 475 
+
+P f(2)  
+
+> K|X
+
+(k|X = 0) = 
+
+
+
+1
+
+NA
+
+PM (1 − PM )
+
+γ1 − γ2
+
+, k ∈ B s2
+
+1
+
+NA
+
+αN APF A (1 − αN APF A )
+
+γ1 − γ2
+
+, otherwise (34) depending on whether a target detection occurs after the subsequent ping. The resulting probability 476 
+
+of receiving a target detection in the subsequent ping is 477 
+
+PX|s(X = 1 |s) = γ2/γ 1. (35) When the agent shifts the next beam aim to a neighboring cell ( Bs2̸ = Bs1 ), 478 
+
+C f(2)  
+
+> X=1
+
+= γ′
+
+> 2
+
+/γ 1 and C f(2)  
+
+> X=0
+
+= ( γ1 − γ′
+
+> 2
+
+)/γ 1. (36) The updated target probability distribution is 479 
+
+P f(2)  
+
+> K|X
+
+(k|X = 1) = 
+
+
+
+1
+
+NA
+
+(1 − PM )2
+
+γ′
+
+> 2
+
+, k ∈ B s1
+
+1
+
+NA
+
+αN APF A (1 − PM )
+
+γ′
+
+> 2
+
+, k in only Bs1 or Bs2
+
+1
+
+NA
+
+(αN APF A )2
+
+γ′
+
+> 2
+
+, otherwise (37) or 480 
+
+P f(2)  
+
+> K|X
+
+(k|X = 0) = 
+
+
+
+1
+
+NA
+
+PM (1 − PM )
+
+γ1 − γ′
+
+> 2
+
+, k ∈ B s1 and k ∈ B s2
+
+1
+
+NA
+
+(1 − PM )(1 − αN APF A )
+
+γ1 − γ′
+
+> 2
+
+, k ∈ B s1 and k / ∈ B s2
+
+1
+
+NA
+
+αN APF A PM
+
+γ1 − γ′
+
+> 2
+
+, k / ∈ B s1 and k ∈ B s2
+
+1
+
+NA
+
+αN APF A (1 − αN APF A )
+
+γ1 − γ′
+
+> 2
+
+, otherwise (38) depending on if a target detection occurs after the subsequent ping. The probability of detecting 481 
+
+a target in the subsequent ping is 482 
+
+PX|s(X = 1 |s) = γ′
+
+> 2
+
+/γ 1. (39) The expected entropy after the subsequent ping, EX [Hs(K)], can be evaluated from PX|s(X|s)483 
+
+and Hs(K|X) via Eqs. 4-5, where Hs(K|X) can be obtained from the updated target probability 484 
+
+distribution P f(2)  
+
+> K|X
+
+(k|X = x). Examination of these quantities reveals that changes in PF A , through 485 
+
+the term αN APF A , influence the probability of detecting a target, and thus the expected entropy, 486 
+
+24 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation far more strongly than changes in PM . Specifically, 1 − PM and (1 − PM )2 vary only slightly with 487 
+
+varying PM , but αN APF A and ( αN APF A )2 vary strongly with varying PF A as well as changes of 488 
+
+α and NA. As an example, Table I shows that a tenfold increase in PF A substantially alters all 489 
+
+quantities contributing to EX [Hs(K)], whereas a comparable change in PM produces only minor 490 
+
+effects. 491 
+
+TABLE I: Influence of PM and PF A on quantities contributing to the expected scene entropy EX [Hs(K)] . PX|s(·| s) and Hs(K|· ) are the probability of receiving echo outcome X
+
+from the next transmission and the entropy of the updated scene given the next beam configuration s. “Current Cell” indicates the scenario when the next beam aim remains in the same cell. “Neighboring Cell” indicates the scenario when the next beam aim shifts to a neighboring cell. The calculation here is based on the setup shown in Fig. 2 in which NA = 91 and NB = 7, resulting in α = 0 .077. All values are computed from the exact expressions numerically rather than using approximate analytical expressions. 
+
+PM PF A PX|s(X = 1 |s) PX|s(X = 0 |s) Hs(K|X = 1) Hs(K|X = 0) Htotal 
+
+Current Cell 0.001 0.001 0.922 0.078 2.817 6.443 3.099 0.01 0.001 0.913 0.087 2.817 6.500 3.137 
+
+0.001 0.01 0.575 0.425 3.317 6.402 4.629 
+
+Neighboring Cell 0.001 0.001 0.533 0.467 2.105 2.985 2.516 0.01 0.001 0.528 0.472 2.106 3.060 2.557 
+
+0.001 0.01 0.374 0.626 3.236 5.631 4.736 
+
+Through αN APF A , the combined factor αN A (= NB , the beam footprint size) controls the 492 
+
+overall trend of expected entropy changes, whereas changes in PF A produce more gradual variations. 493 
+
+Specifically, the smallest increment of the beam footprint radius from rB = 1 to rB = 2 nearly 494 
+
+triples NB from 7 to 19, while a large change in background noise would be needed to triple PF A .495 
+
+In Fig. 8B-C, the expected entropy curves for repeating the same beam aim (solid lines) vs shifting 496 
+
+it to a neighboring cell (dashed lines) cross over at different PF A values for two beam footprint 497 
+
+sizes. Changes in beam footprint size cause categorical shifts in these curves and, consequently, 498 
+
+alter the crossover points. For a given beam footprint, increasing PF A causes the infotaxis strategy 499 
+
+to switch from shifting beam aim to a neighboring cell (lower expected entropy for dashed lines) to 500 
+
+repeating the current aim (lower expected entropy for solid lines). This pattern is intuitive: when 501 
+
+PF A is low, the agent is confident that a detection reflects the true target and continues to refine 502 
+
+25 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation A
+
+B
+
+C
+
+D
+
+FIG. 8: Selection of the next beam aim following a target detection. (A) Expected entropy after detecting a target echo. The agent may choose to move the beam aim to a neighboring cell (left; PF A = 0 .001) or repeat the current beam aim (right; PF A = 0 .02). Plus (+): previous beam aim. (B-C) Changes in expected entropy for shifting the beam aim to a neighboring cell (dashed line) vs. repeating the current beam aim (solid lines) as a function of 
+
+PF A for two beam footprint radii across a range of search space sizes. (D) Values of PF A at which the agent switches from shifting the next beam aim to a neighboring cell to repeating the current beam aim, plotted as a function of α. All values and curves shown are computed from the exact expressions numerically rather than using approximate analytical expressions. See Sec. II D for definitions of all quantities. 26 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation its location; whereas when PF A is high, verifying the detection by repeating the same aim becomes 503 
+
+the safer choice. 504 
+
+For a fixed search space size NA (same rA in Fig. 8D), the expected entropy curves cross over 505 
+
+at higher PF A when the relative beam footprint size α is larger (larger rB ). This is because when a 506 
+
+larger portion of the search space is covered by the beam, the agent is more confident that the target 507 
+
+lies within the footprint and can proceed to localize it more precisely. Given the same α, however, 508 
+
+the larger the search space (higher rA in Fig. 8D), the lower the crossover PF A values. This is 509 
+
+because the larger the absolute beam footprint (number of cells covered), the higher the probability 510 
+
+that any one of the covered cells would produce a false alarm, making it more advantageous for 511 
+
+the agent to repeat the same aim to verify target presence. 512 
+
+Taken together, these findings show that PF A is a key factor influencing the balance between 513 
+
+exploration and exploitation under infotaxis in echolocation. This sensitivity underscores how prob-514 
+
+abilistic representations of sensory uncertainty directly shape the agent’s adaptive search strategies. 515 
+
+D. Comparison between infotaxis and MAP searches 516 
+
+An infotaxis agent selects the next beam aim by maximizing the expected information gain. In 517 
+
+contrast, a MAP agent bases its choice solely on P (n) 
+
+> K
+
+(k) (Eq. 16), which summarizes information 518 
+
+from all previous echoes. While straightforward to implement, this simple decision rule leads to less 519 
+
+effective and less efficient searches: MAP searches often fail to converge to a single cell containing 520 
+
+the target (Fig. 9 and Fig. 4, orange bars on all top panels) and, when successful, generally require 521 
+
+more pings to complete (Fig. 4, orange histograms on all bottom panels). Below we discuss specific 522 
+
+features of MAP search behavior that give rise to these differences. 523 
+
+During the exploration phase prior to the first detection, the MAP agent selects the next beam 524 
+
+aim from all unexplored cells, including cells immediately adjacent to those already covered by 525 
+
+previous pings (e.g., Fig. 9A, ping 6). An infotaxis agent would avoid such choices under moderate 526 
+
+PF A , as partially overlapping the new beam footprint with previously explored regions yields less 527 
+
+new information. 528 
+
+27 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation A B
+
+## C
+
+FIG. 9: Search dynamics of an echolocating MAP agent. (A) Posterior distribution of target location after receiving echo observations from selected pings. Color represents a relative scale in the value range spanned within the search space. Under MAP, only the relative scale matters because the agent selects the next beam aim from the cells containing the highest posterior probability of target. See Fig. 3 caption for definitions of all symbols, Table S1 for all search parameter values, and Video S6 for the full sequence. (B) Variation of maximum target probability in the search space ( Pmax ) and entropy across successive pings. In this search, the MAP agent failed to identify a single cell containing the target, and instead converged to three equally probable candidate cells at the end. (C) Distributions of Pmax and entropy at the end of the search for infotaxis and MAP agents for a range of sensory uncertainty. For the MAP agent, the ending Pmax and entropy depends strongly on the beam footprint size. Note that the beam footprint radius rB is fixed for both the infotaxis and MAP agents, and the search space radius 
+
+rA = 5. See Sec. II D for definitions of all quantities and details on the stopping condition. Once a target detection occurs, the MAP agent consistently selects the next beam aim among 529 
+
+cells within the region of highest target probability, which are cells covered by the ping yielding the 530 
+
+detection but not yet covered by earlier pings (Fig. 9A, ping 12 onward). In contrast, the infotaxis 531 
+
+agent may aim outside this region, moving the beam footprint to further narrow down the target 532 
+
+location (Fig. 3A, ping 9 onward). As a result, the MAP agent may not be able to identify where 533 
+
+the target is not located within the high probability region and get “stuck” with several equally 534 
+
+28 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation probable candidate cells (Fig. 9A, ping 14 onward), rendering the search unsuccessful. The larger 535 
+
+the beam footprint, the more severe this problem. When such scenario arises, Pmax is typically 536 
+
+much lower than 1 (Fig. 9C top panel and Fig. S7), with the entropy being correspondingly higher 537 
+
+than those of successful searches (Fig. 9C bottom panel and Fig. S8). 538 
+
+In the face of sensory errors, while both false alarms and misses increase the number of pings 539 
+
+required to complete a search, infotaxis consistently outperforms MAP, with the performance gap 540 
+
+widening with increasing PM and PF A and increasing beam footprint size (Fig. 4). When rA = 5 541 
+
+and rB = 1 (Fig. 4A), the median number of pings rises from 10 vs. 13.5 at PM = PF A = 0 .001 542 
+
+to 20 vs. 32 pings at PM = PF A = 0 .05 for the infotaxis and MAP agents, respectively. When the 543 
+
+search space is larger ( rA = 10, rB = 1; Fig. 4C), the median increases from 28 vs. 33 pings at 544 
+
+PM = PF A = 0 .001 to 50 vs. 72 pings at PM = PF A = 0 .05. 545 
+
+When a false alarm occurs, the MAP agent may occasionally select a subsequent beam aim 546 
+
+whose footprint substantially overlaps with that of the false alarm, but such selections are random, 547 
+
+and their likelihood decreases as the beam footprint increases. In contrast, the infotaxis agent 548 
+
+would systematically revisit and rule out the false alarm region within a few pings (Fig. 3D and 549 
+
+I). When a miss occurs, even though both the MAP and infotaxis agents must explore the entire 550 
+
+search space before recovering from the error, the infotaxis agent accomplishes this exploration 551 
+
+more efficiently under its information-guided strategy. 552 
+
+When the agent underestimates or overestimates the sensory uncertainty, MAP remains less 553 
+
+robust and less efficient than infotaxis (Fig. S17 and S18), despite both agents experiencing similar 554 
+
+performance degradation. This difference is likely due to the MAP agent’s inherent inefficiency 555 
+
+in beam aim selection and its frequent inability to further refine the target location once multiple 556 
+
+candidate cells remain, as discussed above. 557 
+
+However, because infotaxis requires evaluating the expected information gain for all possible 558 
+
+subsequent action choices, its decision making process is substantially more computationally de-559 
+
+manding than that of MAP (Fig. S19). Our simulations further showed that this speed difference 560 
+
+widens with increasing search space size, as both the number of possible beam aim locations and 561 
+
+the computations required to evaluate Eq. 5 scale with the search space. 562 
+
+IV. DISCUSSION 563 
+
+In this paper, we extended infotaxis, a cognitive Bayesian modeling framework, to echolocation, 564 
+
+an active sensing modality in which the agent actively moves and emits sound to acquire new infor-565 
+
+mation from echoes (Fig. 1). Through theoretical formulation and computational simulations, we 566 
+
+examined how the target search behavior of an echolocating infotaxis agent varies with important 567 
+
+29 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation sonar system characteristics, including beam aim, beam coverage, and sensory uncertainty in the 568 
+
+form of probabilities of miss and false alarm in target detection. Despite the simplicity of the 569 
+
+setup, the infotaxis algorithm produced a rich repertoire of adaptive behaviors across parameter 570 
+
+combinations, revealing how decision rules interact with sonar system properties to shape search 571 
+
+strategies and performance. 572 
+
+Our results show that the characteristic infotaxis balance between exploration and exploita-573 
+
+tion observed in olfactory sensing also emerges under echolocation. In olfactory search, the agent 574 
+
+chooses between moving to a neighboring location or remaining stationary to maximize the ex-575 
+
+pected reduction in entropy of the search scene (Vergassola et al. , 2007). In echolocation search, 576 
+
+the agent chooses where to aim its sonar beam, either revisiting cells already covered by previ-577 
+
+ous pings or exploring a previously unobserved area, and can select among different sonar beam 578 
+
+footprint sizes (Sec. II B). This trade-off is evident when considering agent behavior under sensory 579 
+
+uncertainty: Directing the beam to cover previously unobserved cells allows the agent to rapidly 580 
+
+identify a probable target region, but slows detection if the target was missed in earlier echo returns; 581 
+
+repeating the same beam aim allows the agent to confirm the validity of a target detection, but 582 
+
+does not improve localization (Fig. 3A, 3D, 3E and Fig. 8). Similarly, using a large beam footprint 583 
+
+enables quick survey of the search space, but provides limited information on the precise target 584 
+
+location (Fig. 3B-3C). Importantly, accumulation of evidence remains a fundamental property of 585 
+
+the echolocation infotaxis model, in which the binary hypothesis test observation model gives rise 586 
+
+to a spatially graded information landscape that supports the exploration-exploitation trade-off. 587 
+
+Indeed, the posterior distribution of target location continues to update even under consecutive 588 
+
+pings with the same beam aim, a scenario analogous to the agent remaining stationary in olfactory 589 
+
+sensing. 590 
+
+Our analytical and simulation results also show that the probabilities of false alarm and miss 591 
+
+influence the infotaxis agent behavior in distinct ways. In the single target search context, PF A has 592 
+
+a much stronger impact on action selection than PM . When PF A is high, the uncertainty about 593 
+
+whether a detection is true drives the infotaxis agent to repeat the same beam aim after receiving a 594 
+
+detection (Fig. 8) and to favor beam positions that cover fewer cells (Fig. S2), thereby minimizing 595 
+
+the likelihood of false alarms. This is because even though PF A is defined for each individual cell, 596 
+
+the agent experiences a combined effective false alarm rate from all cells covered within the beam 597 
+
+footprint (see Eq. 11-12). However, the cost of misses in overall search length is far greater than 598 
+
+the cost of false alarms: The infotaxis agent can recover from false alarms efficiently within a few 599 
+
+pings (Fig. 3D and 3I) but cannot recognize a miss until it has explored all other cells in the search 600 
+
+space (Fig. 3E and 3J). These differences mirror real-world sonar operational consequences, where 601 
+
+false alarms prompt immediate actions and missed detections often incur substantially higher costs 602 
+
+(Urick, 1983). 603 
+
+30 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation Therefore, the search efficiency decreases as PF A and PM increase (Fig. 4, green histograms 604 
+
+on all bottom panels), with false alarms causing the median ping number to increase, and misses, 605 
+
+especially those early in a search, resulting in much higher ping numbers due to the slow recovery 606 
+
+(Fig. 3E and 3J, Fig. S3B and S3D). Our simulations further showed that when the agent under-607 
+
+estimates the sensory uncertainty, search success rate drops rapidly (Fig. 5), with the agent often 608 
+
+terminating the search prematurely at an incorrect target location (Fig. S10). On the other hand, 609 
+
+when the agent overestimates the sensory uncertainty, while the success rate increases, the number 610 
+
+of pings required to complete a search also increases (Fig. 6). Together, these results deliver an 611 
+
+important message that the efficiency and reliability of infotaxis ultimately depends on the quality 612 
+
+of sensory information. As the quality degrades, performance declines accordingly. 613 
+
+The information-based nature of infotaxis becomes particularly apparent when compared with 614 
+
+MAP searches. Although both agents account for sensory uncertainty when updating their internal 615 
+
+world model (Eq. 1), only the infotaxis agent considers this uncertainty when selecting the next 616 
+
+set of actions. PM and PF A are explicitly incorporated in the infotaxis decision making process 617 
+
+(Eq. 6), whereas the MAP agent simply treats the most probable target region as true (Eq. 16). 618 
+
+This difference is also reflected in computational time: The infotaxis agent takes longer to make 619 
+
+deliberative decisions than the MAP agent’s reflexive ones (Fig. S19). However, in both biological 620 
+
+and engineered systems, neural or computational decision making typically occurs on a millisecond 621 
+
+timescale, which is orders of magnitude faster than the execution of motor actions such as beam 622 
+
+steering, head turning, or locomotion (Ridgway et al. , 2014; T¨ ollner et al. , 2012). Thus, the longer 623 
+
+deliberation time under infotaxis would have negligible impact on overall operational efficiency. 624 
+
+Instead, the infotaxis agent is behaviorally more efficient and reliable, consistently completing 625 
+
+searches with fewer pings at the correct target location (Fig. 4). 626 
+
+The Bayesian probabilistic framework underlying infotaxis provides a principled avenue to di-627 
+
+rectly integrate sensory and motor capabilities derived from behavioral or neurophysiological exper-628 
+
+iments into a cognitive model that makes information-based decisions (Fig. 1B). This integration 629 
+
+operates through two key components: the likelihood function and the motor action. The likelihood 630 
+
+function defines how the agent interprets echoes given the task goal and the quality of sensory evi-631 
+
+dence, providing a natural entry point for injecting experimental knowledge into the model. For ex-632 
+
+ample, although echoes can be represented by multidimensional temporal, spectral, and statistical 633 
+
+features, how an echolocating agent perceives and uses these features is highly context-dependent. 634 
+
+An agent may attend to fine spectral cues tied to position within the beam when localizing a target 635 
+
+(Arditi et al. , 2015; Kloepper et al. , 2018; M¨ uller et al. , 2017), but emphasize broad spectral pat-636 
+
+terns when classifying targets (Accomando et al. , 2020, 2022). Echo interpretation is also shaped 637 
+
+by environmental noise and prior experience of the experimental subject. The Bayesian framework 638 
+
+in infotaxis allows these factors to be incorporated into task-, environment-, and even individual-639 
+
+31 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation dependent likelihood functions for more realistic modeling of echolocation behavior. However, we 640 
+
+note that successive echo observations are assumed independent in the likelihood functions used 641 
+
+here (Sec. II B). In realistic echolocation scenarios, consecutive echoes may be temporally correlated 642 
+
+because the acoustic scene often changes gradually across pings, and because auditory processing 643 
+
+may integrate information over time. Such correlations would reduce the effective information gain 644 
+
+from each ping and slow the posterior updates. Therefore, a temporally correlated observation 645 
+
+model that incorporates recent echo history, either empirically or through physics-based models, 646 
+
+will be important for using the infotaxis model to interpret experimental data. 647 
+
+Motor actions define the space of behavioral choices available to an agent to achieve its task 648 
+
+goal. These actions correspond to measurable observables in behavioral experiments, and thus form 649 
+
+a crucial bridge between model and data. In echolocation, motor actions include adjustments to 650 
+
+acoustic parameters, such as the spectral and temporal characteristics of the emitted echolocation 651 
+
+signals, and to movement parameters, including conformational changes of the sound production 652 
+
+and reception apparatus [e.g., shape adjustments of the mouth, noseleaf, ears (bats), melon, and the 653 
+
+associated air sacs (toothed whales)], rotational movements (e.g., head turning, body reorientation), 654 
+
+and locomotion (Moss et al. , 2023). These adjustments are often coupled and can be constrained 655 
+
+by physical and physiological limitations to ensure modeled behavioral outputs remain biologically 656 
+
+realistic. 657 
+
+Infotaxis provides a versatile framework for interpreting experimentally observed echolocation 658 
+
+behaviors, inferring the underlying cognitive processes, and generating testable hypotheses for 659 
+
+further model refinement. By systematically varying model parameters, simulated motor action 660 
+
+sequences can be quantitatively compared with experimental data either via summary statistics or 661 
+
+on a ping-by-ping basis (Calhoun et al. , 2014; Najemnik and Geisler, 2009; Pang et al. , 2018; Yang 662 
+
+et al. , 2016). Changes in model parameterization can also enable numerical experiments to inform 663 
+
+the design of behavioral experiments. For example, our simulations showed that the infotaxis 664 
+
+agent selects an increasingly small beam footprint to precisely locate the target in the search 665 
+
+space (Fig. 3B-3C and 3G-3H). This progressive narrowing of the beam mirrors how the projected 666 
+
+beam footprint would change for an echolocator approaching a target screen while maintaining a 667 
+
+constant beamwidth, and is reminiscent of the narrower beamwidths bats use to precisely locate 668 
+
+a landing platform (Eitan et al. , 2022). However, bats and toothed whales typically broaden 669 
+
+their sonar beams just before intercepting mobile prey, likely to keep the prey within the sensing 670 
+
+volume in case of evasive maneuvers (e.g., Matsuta et al. , 2013; Wisniewska et al. , 2015). While 671 
+
+it is unclear how echolocating animals hunting for stationary prey adjust their beam aim and 672 
+
+beamwidth at fine scale (Geipel et al. , 2019), would incorporating potential target motion into 673 
+
+the model alter the infotaxis choices? Beyond sensory control, the cost of movement has also 674 
+
+been proposed as a factor that balances information gain in shaping animal trajectories during 675 
+
+32 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation tracking and localization tasks (Chen et al. , 2020; Liu et al. , 2024; Loisy and Eloy, 2022). Paired 676 
+
+numerical and behavioral experiments could test whether similar trade-offs occur in echolocation, 677 
+
+a distal sensing modality in which adjustments of beam aim, beam coverage, and transmission 678 
+
+rate likely incur lower energetic costs than in proximal sensing modalities such as tactile sensing, 679 
+
+and electrolocation, which has a substantially smaller sensing volume than echolocation (Nelson 680 
+
+and MacIver, 2006). In our simulations, restricting beam movements without explicitly including 681 
+
+movement cost in the decision rule had minimal effect on search efficiency (Fig. S1). 682 
+
+Even though we were not able to identify existing behavioral datasets suitable for direct com-683 
+
+parison with the single target search model presented here, we have conducted controlled robotic 684 
+
+experiments showing successful infotaxis-based sonar target localization in a one-dimensional search 685 
+
+space under varying beamwidth conditions (Mboya et al. ) and mismatched sensory uncertainty 686 
+
+(Mudassir et al. ). These studies provide initial validation of echolocation infotaxis on a robotic 687 
+
+platform and motivate future tests using animal behavioral experiments. Such model-data compar-688 
+
+isons will require mapping the abstract model parameters presented here to specific experimental 689 
+
+contexts. For example, beam footprint size is species-specific and often varies dynamically depend-690 
+
+ing on task priorities (e.g., Jensen et al. , 2015; Motoi et al. , 2017), whereas sensory uncertainty is 691 
+
+further tied to intrinsic target scattering properties, which influence the animal’s ability to detect 692 
+
+or discriminate targets (e.g., Wei et al. , 2021). 693 
+
+The echolocation infotaxis model presented in this paper differs in setup and objectives from 694 
+
+deep RL models of echolocating bats (Mohan and Vanderelst, 2020; Nguyen and Vanderelst, 2022, 695 
+
+2025), which capture similar cognitive and sensorimotor aspects of decision making in echolocation. 696 
+
+To investigate intrinsic properties of infotaxis search in echolocation, our model is intentionally ab-697 
+
+stract: the complexity and uncertainty of auditory scene analysis and target echo detection are 698 
+
+encapsulated by PM and PF A , whose influence on action selection can be explicitly traced. This 699 
+
+simplified observation model was chosen deliberately to create a tractable framework in which the 700 
+
+resulting decision behavior could be analyzed analytically and computationally. In contrast, the 701 
+
+deep RL models operate directly on simulated echo time series and learn action policies through 702 
+
+trial-and-error to maximize cumulative reward. The infotaxis agent maintains an explicit proba-703 
+
+bilistic world model tied to the task goal (e.g., a distribution over target location in search tasks or 704 
+
+target category in discrimination tasks), whereas in RL-based approaches, task-relevant informa-705 
+
+tion is encoded within learned policy or value representations. Both infotaxis and RL approaches 706 
+
+generally require reformulation when the task context changes. RL approaches typically require 707 
+
+retraining after such reformulation, whereas infotaxis action selection is determined directly from 708 
+
+the probabilistic model and objective function. Selecting actions in infotaxis can also become com-709 
+
+putationally expensive when the motor action space is large, as each decision involves evaluating 710 
+
+the expected entropy over all possible action combinations. In comparison, although RL train-711 
+
+33 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation ing can be time- and resource-intensive, once trained, action selection is computationally efficient. 712 
+
+Taken together, these differences highlight different trade-offs: infotaxis provides a directly analyz-713 
+
+able probabilistic formulation of action selection, while RL enables rapid action selection through 714 
+
+learned policies. We postulate that training a surrogate neural network model to approximate 715 
+
+infotaxis action selection could substantially reduce its run-time computational cost. The demon-716 
+
+strated success of neural networks in capturing structured internal control during bat navigation 717 
+
+(Teshima et al. , 2025) supports the feasibility of this hybrid approach. 718 
+
+In summary, we developed an infotaxis model for echolocation that integrates sensory uncer-719 
+
+tainty, motor action, and information-based reasoning in a single interpretable framework. Im-720 
+
+plemented in a simple target search scenario, the cognitive infotaxis agent proved more reliable 721 
+
+and efficient than a reflexive MAP agent, though its performance declined as sensory informa-722 
+
+tion degraded. This work lays the foundation for extending infotaxis modeling to more complex 723 
+
+echolocation and active sonar contexts, such as multi-target search among clutter. More broadly, 724 
+
+by incorporating experimentally derived sensorimotor capabilities into a cognitive model, infotaxis 725 
+
+can provide interpretable linkages between behavioral observables, sensory mechanisms, and deci-726 
+
+sion making processes. We propose that infotaxis offers a powerful framework for iterative model 727 
+
+refinement and experimental testing that can help model and understand sonar-guided autonomy 728 
+
+in natural and engineered systems. 729 
+
+ACKNOWLEDGMENTS 730 
+
+This work was supported by the U.S. Office of Naval Research (ONR) Multidisciplinary Univer-731 
+
+sity Research Initiatives (MURI) Program Grant Nos. N00014-18-1-2069, N00014-20-1-2709, and 732 
+
+N00014-23-12065. 733 
+
+AUTHOR CONTRIBUTIONS 734 
+
+W.-J.L.: Conceptualization, Formal Analysis, Funding Acquisition, Investigation, Methodology, 735 
+
+Project administration, Resources, Software, Visualization, Writing – Original Draft Preparation, 736 
+
+Writing – Review & Editing. J.R.B.: Funding Acquisition, Investigation, Methodology, Project 737 
+
+administration, Visualization, Writing – Review & Editing. P.L.T.: Funding Acquisition, Project 738 
+
+administration, Writing – Review & Editing. 739 
+
+34 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+DATA AVAILABILITY 740 
+
+All code and scripts for the model, simulation, and figure generation are available in the GitHub 741 
+
+repository: https://github.com/uw-echospace/infotaxis-search-single-target. 742 
+
+APPENDIX A: SYMBOLS 743 
+
+Bs Set of cells covered by the beam footprint 
+
+EX [Hs(K)] Expected entropy after action s and observation XH(K) Entropy of the posterior of target location 
+
+Hs(K|X) Entropy of the posterior of target location after action s and observation XK Random variable representing target location 
+
+k Specific candidate target location (cell) 
+
+L Likelihood 
+
+NA Number of cells in the search space 
+
+NB Number of cells covered by the beam footprint 
+
+PF A Probability of false alarm 
+
+P (n) 
+
+> K
+
+(k) Posterior probability of target location after ping nPM Probability of miss 
+
+Pmax Maximum posterior probability of target location (= max  
+
+> k
+
+P (n) 
+
+> K
+
+(k) ) 
+
+pth Search termination threshold for Pmax 
+
+rA Radius of the search space 
+
+rB Radius of the beam footprint 
+
+s Agent action; consisting of beam aim and beam footprint size in single target search 
+
+X Echo observation ( X = 1 detection, X = 0 no detection) 
+
+α Relative proportion of the beam footprint within the search space (= NB /N A)
+
+θB Beam aim 
+
+> 744
+
+35 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+References 745 746 
+
+Accomando, A. W., Mulsow, J., Houser, D. S., and Finneran, J. J. ( 2020 ). “Classification of 747 
+
+biosonar target echoes based on coarse and fine spectral features in the bottlenose dolphin ( Tur-748 
+
+siops truncatus ),” The Journal of the Acoustical Society of America 148 (3), 1642–1646, doi: 749 
+
+mu10.1121/10.0001976 .750 
+
+Accomando, A. W., Mulsow, J., Houser, D. S., and Finneran, J. J. ( 2022 ). “Classification of 751 
+
+simulated complex echoes based on highlight time separation in the bottlenose dolphin ( Tursiops 752 
+
+truncatus ),” The Journal of the Acoustical Society of America 152 (3), 1795–1803, doi: mu10. 753 
+
+1121/10.0014114 .754 
+
+Aihara, I., Fujioka, E., and Hiryu, S. ( 2013 ). “Qualitative and quantitative analyses of the echolo-755 
+
+cation strategies of bats on the basis of mathematical modelling and laboratory experiments.,” 756 
+
+PLOS One 8(7), e68635, doi: mu10.1371/journal.pone.0068635 .757 
+
+Arditi, G., Weiss, A. J., and Yovel, Y. ( 2015 ). “Object localization using a biosonar beam: How 758 
+
+opening your mouth improves localization.,” Royal Society Open Science 2(8), 150225, doi: mu10. 759 
+
+1098/rsos.150225 .760 
+
+Aytekin, M., Mao, B., and Moss, C. F. ( 2010 ). “Spatial perception and adaptive sonar behavior,” 761 
+
+The Journal of the Acoustical Society of America 128 (6), 3788–3798, doi: mu10.1121/1.3504707 .762 
+
+Branstetter, B. K., Brietenstein, R., Goya, G., Tormey, M., Wu, T., and Finneran, J. J. ( 2022 ). 763 
+
+“Spatial acuity of the bottlenose dolphin ( Tursiops truncatus ) biosonar system with a bat and 764 
+
+human comparison,” The Journal of the Acoustical Society of America 151 (6), 3847–3857, doi: 765 
+
+mu10.1121/10.0011676 .766 
+
+Bregman, A. S. ( 1990 ). Auditory scene analysis: the perceptual organization of sound (MIT Press). 767 
+
+Bujia, G., Sclar, M., Vita, S., Solovey, G., and Kamienkowski, J. E. ( 2022 ). “Modeling human 768 
+
+visual search in natural scenes: A combined bayesian searcher and saliency map approach,” 769 
+
+Frontiers in Systems Neuroscience 16 , doi: mu10.3389/fnsys.2022.882315 .770 
+
+Calhoun, A. J., Chalasani, S. H., and Sharpee, T. O. ( 2014 ). “Maximally informative foraging by 771 
+
+Caenorhabditis elegans ,” eLife 3, e04220, doi: mu10.7554/eLife.04220 .772 
+
+Chen, C., Murphey, T. D., and MacIver, M. A. ( 2020 ). “Tuning movement for sensing in an 773 
+
+uncertain world,” eLife 9, e52371, doi: mu10.7554/eLife.52371 .774 
+
+Christman, K. A., Finneran, J. J., Mulsow, J., Houser, D. S., and Gentner, T. Q. ( 2024 ). “The 775 
+
+effects of range and echo-phase on range resolution in bottlenose dolphins ( Tursiops truncatus )776 
+
+performing a successive comparison task,” The Journal of the Acoustical Society of America 777 
+
+155 (1), 274–283, doi: mu10.1121/10.0024342 .778 
+
+36 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation Claverie, N., Buvat, P., and Casas, J. ( 2023 ). “Active sensing in bees through antennal movements 779 
+
+is independent of odor molecule,” Integrative and Comparative Biology 63 (2), 315–331, doi: 780 
+
+mu10.1093/icb/icad010 .781 
+
+Conover, W. J. ( 1999 ). Practical Nonparametric Statistics (Wiley, New York, NY Weinheim). 782 
+
+Ding, J., Zhang, Y., Han, F., Jiang, T., Feng, J., Lin, A., and Liu, Y. ( 2023 ). “Adaptive temporal 783 
+
+patterns of echolocation and flight behaviors used to fly through varied-sized windows by 2 species 784 
+
+of high duty cycle bats,” Current Zoology 69 (1), 32–40, doi: mu10.1093/cz/zoac018 .785 
+
+Eitan, O., Taub, M., Boonman, A., Zviran, A., Tourbabin, V., Weiss, A. J., and Yovel, Y. ( 2022 ). 786 
+
+“Echolocating bats rapidly adjust their mouth gape to control spatial acquisition when scanning 787 
+
+a target,” BMC Biology 20 (1), 282, doi: mu10.1186/s12915-022-01487-w .788 
+
+Falk, B., Jakobsen, L., Surlykke, A., and Moss, C. F. ( 2014 ). “Bats coordinate sonar and flight 789 
+
+behavior as they forage in open and cluttered environments,” Journal of Experimental Biology 790 
+
+217 (24), 4356–4364, doi: mu10.1242/jeb.114132 .791 
+
+Finneran, J. J. ( 2013 ). “Dolphin “packet”’ use during long-range echolocation tasks,” The Journal 792 
+
+of the Acoustical Society of America 133 (3), 1796–1810, doi: mu10.1121/1.4788997 .793 
+
+Fujioka, E., Aihara, I., Sumiya, M., Aihara, K., and Hiryu, S. ( 2016 ). “Echolocating bats use 794 
+
+future-target information for optimal foraging,” Proceedings of the National Academy of Sciences 795 
+
+113 (17), 201515091, doi: mu10.1073/pnas.1515091113 .796 
+
+Geipel, I., Steckel, J., Tschapka, M., Vanderelst, D., Schnitzler, H.-U., Kalko, E. K. V., Peremans, 797 
+
+H., and Simon, R. ( 2019 ). “Bats actively use leaves as specular reflectors to detect acoustically 798 
+
+camouflaged prey,” Current Biology 29 (16), 2731–2736.e3, doi: mu10.1016/j.cub.2019.06.076 .799 
+
+Ghose, K., Horiuchi, T. K., Krishnaprasad, P. S., and Moss, C. F. ( 2006 ). “Echolocating bats use 800 
+
+a nearly time-optimal strategy to intercept prey,” PLOS Biology 4(5), e108, doi: mu10.1371/ 801 
+
+journal.pbio.0040108 .802 
+
+Ghose, K., and Moss, C. F. ( 2006 ). “Steering by hearing: A bat’s acoustic gaze is linked to its flight 803 
+
+motor output by a delayed, adaptive linear law,” The Journal of Neuroscience 26 (6), 1704–1710, 804 
+
+doi: mu10.1523/JNEUROSCI.4315-05.2006 .805 
+
+Giuggioli, L., McKetterick, T. J., and Holderied, M. ( 2015 ). “Delayed response and biosonar per-806 
+
+ception explain movement coordination in trawling bats,” PLOS Computational Biology 11 (3), 807 
+
+e1004089, doi: mu10.1371/journal.pcbi.1004089 .808 
+
+Glanois, C., Weng, P., Zimmer, M., Li, D., Yang, T., Hao, J., and Liu, W. ( 2024 ). “A survey on 809 
+
+interpretable reinforcement learning,” Machine Learning 113 (8), 5847–5890, doi: mu10.1007/ 810 
+
+s10994-024-06543-w .811 
+
+Goldshtein, A., Handel, M., Eitan, O., Bonstein, A., Shaler, T., Collet, S., Greif, S., Medell´ ın, 812 
+
+R. A., Emek, Y., Korman, A., and Yovel, Y. ( 2020 ). “Reinforcement learning rnables resource 813 
+
+partitioning in foraging bats,” Current Biology 30 (20), 4096–4102.e6, doi: mu10.1016/j.cub. 814 
+
+37 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+2020.07.079 .815 
+
+Hajieghrary, H., Hsieh, M. A., and Schwartz, I. B. ( 2016 ). “Multi-agent search for source lo-816 
+
+calization in a turbulent medium,” Physics Letters A 380 (20), 1698–1705, doi: mu10.1016/j. 817 
+
+physleta.2016.03.013 .818 
+
+Hernandez-Reyes, C. A., Fukushima, S., Shigaki, S., Kurabayashi, D., Sakurai, T., Kanzaki, R., 819 
+
+and Sezutsu, H. ( 2021 ). “Identification of exploration and exploitation balance in the silkmoth 820 
+
+olfactory search behavior by information-theoretic modeling,” Frontiers in Computational Neu-821 
+
+roscience 15 , doi: mu10.3389/fncom.2021.629380 .822 
+
+Hoppe, D., and Rothkopf, C. A. ( 2019 ). “Multi-step planning of eye movements in visual search,” 823 
+
+Scientific Reports 9(1), 144, doi: mu10.1038/s41598-018-37536-0 .824 
+
+Jang, A. I., Sharma, R., and Drugowitsch, J. ( 2021 ). “Optimal policy for attention-modulated 825 
+
+decisions explains human fixation behavior,” eLife 10 , e63436, doi: mu10.7554/eLife.63436 .826 
+
+Jensen, F. H., Wahlberg, M., Beedholm, K., Johnson, M. P., Soto, N. A., and Madsen, P. T. 827 
+
+(2015 ). “Single-click beam patterns suggest dynamic changes to the field of view of echolocating 828 
+
+Atlantic spotted dolphins ( Stenella frontalis ) in the wild,” Journal of Experimental Biology 218 ,829 
+
+1314–1324, doi: mu10.1242/jeb.116285 .830 
+
+Johnson, M., Madsen, P. T., Zimmer, W. M., Aguilar de Soto, N., and Tyack, P. L. ( 2004 ). 831 
+
+“Beaked whales echolocate on prey,” Proceedings of the Royal Society of London. Series B: 832 
+
+Biological Sciences 271 (suppl 6), S383–S386. 833 
+
+Karpas, E. D., Shklarsh, A., and Schneidman, E. ( 2017 ). “Information socialtaxis and efficient 834 
+
+collective behavior emerging in groups of information-seeking agents,” Proceedings of the National 835 
+
+Academy of Sciences 114 (22), 5589–5594. 836 
+
+Kloepper, L. N., Buck, J. R., Liu, Y., and Nachtigall, P. E. ( 2018 ). “Off-axis targets maximize 837 
+
+bearing Fisher Information in broadband active sonar,” The Journal of the Acoustical Society of 838 
+
+America 143 (1), EL43–EL48, doi: mu10.1121/1.5021709 .839 
+
+K¨ ummerer, M., and Bethge, M. ( 2023 ). “Predicting visual fixations,” Annual Review of Vision 840 
+
+Science 9(9), 269–291, doi: mu10.1146/annurev-vision-120822-072528 .841 
+
+Ladegaard, M., and Madsen, P. T. ( 2019 ). “Context-dependent biosonar adjustments during active 842 
+
+target approaches in echolocating harbour porpoises,” Journal of Experimental Biology 222 (16), 843 
+
+jeb206169, doi: mu10.1242/jeb.206169 .844 
+
+Ladegaard, M., Mulsow, J., Houser, D. S., Jensen, F. H., Johnson, M., Madsen, P. T., and Finneran, 845 
+
+J. J. ( 2019 ). “Dolphin echolocation behaviour during active long-range target approaches,” Jour-846 
+
+nal of Experimental Biology 222 (2), jeb189217, doi: mu10.1242/jeb.189217 .847 
+
+Lee, W.-J., Ladegaard, M., Schalles, M. D., Buck, J. R., Beedholm, K., Madsen, P. T., and Tyack, 848 
+
+P. L. ( 2025 ). “Movement trajectories reflect active information acquisition by an echolocating 849 
+
+porpoise in a target discrimination task,” The Journal of the Acoustical Society of America 850 
+
+38 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+158 (1), 173–185, doi: mu10.1121/10.0037038 .851 
+
+Liu, S., Zhang, Y., and Fan, S. ( 2024 ). “Adaptive space-aware infotaxis II as a strategy for odor 852 
+
+source localization,” Entropy 26 (4), doi: mu10.3390/e26040302 .853 
+
+Loisy, A., and Eloy, C. ( 2022 ). “Searching for a source without gradients: How good is infotaxis 854 
+
+and how to beat it,” Proceedings of the Royal Society A: Mathematical, Physical and Engineering 855 
+
+Sciences 478 (2262), 20220118, doi: mu10.1098/rspa.2022.0118 .856 
+
+Malinka, C. E., Rojano-Do˜ nate, L., and Madsen, P. T. ( 2021 ). “Directional biosonar beams allow 857 
+
+echolocating harbour porpoises to actively discriminate and intercept closely spaced targets,” 858 
+
+Journal of Experimental Biology 224 (16), jeb242779, doi: mu10.1242/jeb.242779 .859 
+
+Mansour, C. B., Koreman, E., Steckel, J., Peremans, H., and Vanderelst, D. ( 2019 ). “Avoidance of 860 
+
+non-localizable obstacles in echolocating bats: A robotic model,” PLOS Computational Biology 861 
+
+15 (12), e1007550, doi: mu10.1371/journal.pcbi.1007550 .862 
+
+Masson, J.-B., Bechet, M. B., and Vergassola, M. ( 2009 ). “Chasing information to search in 863 
+
+random environments,” Journal of Physics A: Mathematical and Theoretical 42 (43), 434009, 864 
+
+doi: mu10.1088/1751-8113/42/43/434009 .865 
+
+Matsuta, N., Hiryu, S., Fujioka, E., Yamada, Y., Riquimaroux, H., and Watanabe, Y. ( 2013 ). 866 
+
+“Adaptive beam-width control of echolocation sounds by CF-FM bats, Rhinolophus ferrume-867 
+
+quinum nippon , during prey-capture flight,” The Journal of experimental biology 216 , 1210–1218, 868 
+
+doi: mu10.1242/jeb.081398 .869 
+
+Mboya, M., Buck, J. R., and Lee, W. “Estimating the performance of infotaxis search strategy 870 
+
+given change in beamwidth of sensor,” Under review . 871 
+
+Mohan, A. V., and Vanderelst, D. ( 2020 ). “Training a simulated bat: Modeling sonar-based ob-872 
+
+stacle avoidance using deep-reinforcement learning,” in 2020 IEEE Symposium Series on Com-873 
+
+putational Intelligence (SSCI) , pp. 2241–2249, doi: mu10.1109/SSCI47803.2020.9308555 .874 
+
+Moss, C. F., Ortiz, S. T., and Wahlberg, M. ( 2023 ). “Adaptive echolocation behavior of bats and 875 
+
+toothed whales in dynamic soundscapes,” Journal of Experimental Biology 226 (9), jeb245450, 876 
+
+doi: mu10.1242/jeb.245450 .877 
+
+Motoi, K., Sumiya, M., Fujioka, E., and Hiryu, S. ( 2017 ). “Three-dimensional sonar beam-width 878 
+
+expansion by japanese house bats ( Pipistrellus abramus ) during natural foraging,” The Journal 879 
+
+of the Acoustical Society of America 141 (5), EL439–EL444, doi: mu10.1121/1.4981934 .880 
+
+Mudassir, M., Buck, J. R., and Lee, W. “Comparing the robustness to parameter mismatch of 881 
+
+infotaxis and MAP search strategies,” Under review . 882 
+
+Mulsow, J., Accomando, A. W., Christman, K. A., Houser, D. S., and Finneran, J. J. ( 2024 ). 883 
+
+“Discrimination of double-click synthetic echoes by bottlenose dolphins: Effects of inter-highlight 884 
+
+interval and phase,” The Journal of the Acoustical Society of America 156 (3), 1973–1984, doi: 885 
+
+mu10.1121/10.0028812 .886 
+
+39 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation M¨ uller, R., Gupta, A. K., Zhu, H., Pannala, M., Gillani, U. S., Fu, Y., Caspers, P., and Buck, J. R. 887 
+
+(2017 ). “Dynamic substrate for the physical encoding of sensory information in bat biosonar,” 888 
+
+Physical Review Letters 118 (15), 158102, doi: mu10.1103/PhysRevLett.118.158102 .889 
+
+Naamani, G., Shahar, N., Ger, Y., and Yovel, Y. ( 2023 ). “Fruit bats adjust their decision-890 
+
+making process according to environmental dynamics,” BMC Biology 21 (1), 278, doi: mu10. 891 
+
+1186/s12915-023-01774-0 .892 
+
+Nachtigall, P. E., Lemonds, D. W., and Roitblat, H. L. ( 2000 ). “Psychoacoustic studies of dolphin 893 
+
+and whale hearing,” in Hearing by Whales and Dolphins , edited by W. W. L. Au, R. R. Fay, and 894 
+
+A. N. Popper (Springer, New York, NY), pp. 330–363, doi: mu10.1007/978-1-4612-1150-1_8 .895 
+
+Najemnik, J., and Geisler, W. S. ( 2005 ). “Optimal eye movement strategies in visual search,” 896 
+
+Nature 434 (7031), 387–391, doi: mu10.1038/nature03390 .897 
+
+Najemnik, J., and Geisler, W. S. ( 2008 ). “Eye movement statistics in humans are consistent with 898 
+
+an optimal search strategy,” Journal of vision 8(3), 401–414, doi: mu10.1167/8.3.4 .899 
+
+Najemnik, J., and Geisler, W. S. ( 2009 ). “Simple summation rule for optimal fixation selection in 900 
+
+visual search,” Vision Research 49 (10), 1286–1294, doi: mu10.1016/j.visres.2008.12.005 .901 
+
+Nelson, M. E., and MacIver, M. a. ( 2006 ). “Sensory acquisition in active sensing systems,” Journal 902 
+
+of comparative physiology. A, Neuroethology, sensory, neural, and behavioral physiology 192 (6), 903 
+
+573–86, doi: mu10.1007/s00359-006-0099-4 .904 
+
+Nguyen, T., Vanderelst, D., and Peremans, H. ( 2021 ). “Sensorimotor behavior under informational 905 
+
+constraints: a robotic model of prey localization in the bat Micronycteris microtis ,” in ALIFE 906 
+
+2021: The 2021 Conference on Artificial Life , doi: mu10.1162/isal_a_00374 .907 
+
+Nguyen, T. H., and Vanderelst, D. ( 2022 ). “Toward behavior-based models of bat echolocation,” in 908 
+
+2022 IEEE Symposium Series on Computational Intelligence (SSCI) , pp. 1529–1536, doi: mu10. 909 
+
+1109/SSCI51031.2022.10022100 .910 
+
+Nguyen, T. H., and Vanderelst, D. ( 2025 ). “A behavior-based model of foraging nectarivorous 911 
+
+echolocating bats,” in From Animals to Animats 17 , edited by O. Brock and J. Krichmar, Springer 912 
+
+Nature Switzerland, pp. 51–62, doi: mu10.1007/978-3-031-71533-4_4 .913 
+
+Nishiumi, N., Fujioka, E., and Hiryu, S. ( 2024 ). “Bats integrate multiple echolocation and flight 914 
+
+tactics to track prey,” Current Biology 34 (13), 2948–2956.e6, doi: mu10.1016/j.cub.2024.05. 915 
+
+062 .916 
+
+Pang, R., Breugel, F. v., Dickinson, M., Riffell, J. A., and Fairhall, A. ( 2018 ). “History dependence 917 
+
+in insect flight decisions during odor tracking,” PLOS Computational Biology 14 (2), e1005969, 918 
+
+doi: mu10.1371/journal.pcbi.1005969 .919 
+
+Ridgway, S. H., Moore, P. W., Carder, D. A., and Romano, T. A. ( 2014 ). “Forward shift of feeding 920 
+
+buzz components of dolphins and belugas during associative learning reveals a likely connection 921 
+
+to reward expectation, pleasure and brain dopamine activation,” Journal of Experimental Biology 922 
+
+40 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+217 (16), 2910–2919, doi: mu10.1242/jeb.100511 .923 
+
+Salles, A., Diebold, C. A., and Moss, C. F. ( 2020 ). “Echolocating bats accumulate information 924 
+
+from acoustic snapshots to predict auditory object motion,” Proceedings of the National Academy 925 
+
+of Sciences 117 (46), 29229–29238, doi: mu10.1073/pnas.2011719117 .926 
+
+Shannon, C. E. ( 1948 ). “A mathematical theory of communication,” The Bell System Technical 927 
+
+Journal 27 , 379–423, doi: mu10.1145/584091.584093 .928 
+
+Sumiya, M., Fujioka, E., Motoi, K., Kondo, M., and Hiryu, S. ( 2017 ). “Coordinated control of 929 
+
+acoustical field of view and flight in three-dimensional space for consecutive capture by echolocat-930 
+
+ing bats during natural foraging,” PLOS One 12 (1), e0169995, doi: mu10.1371/journal.pone. 931 
+
+0169995 .932 
+
+Surlykke, A., Nachtigall, P. E., Popper, A. N., and Fay, R. R., eds. ( 2014 ). Biosonar , 51 (Springer-933 
+
+Verlag New York). 934 
+
+Taub, M., and Yovel, Y. ( 2020 ). “Segregating signal from noise through movement in echolocating 935 
+
+bats,” Scientific Reports 10 (1), 382, doi: mu10.1038/s41598-019-57346-2 .936 
+
+Teshima, Y., Genda, S., Aoki, Y., Fujisawa, M., Hiryu, S., and Fujii, K. ( 2025 ). “Flight trajectory 937 
+
+modeling reveals species-specific obstacle avoidance policies in echolocating bats,” bioRxiv doi: 938 
+
+mu10.1101/2025.06.13.659477 .939 
+
+T¨ ollner, T., Rangelov, D., and M¨ uller, H. J. ( 2012 ). “How the speed of motor-response decisions, 940 
+
+but not focal-attentional selection, differs as a function of task set and target prevalence,” Pro-941 
+
+ceedings of the National Academy of Sciences 109 (28), E1990–E1999, doi: mu10.1073/pnas. 942 
+
+1206382109 .943 
+
+Urick, R. J. ( 1983 ). Principles of underwater sound (McGraw-Hill, New York). 944 
+
+Van Trees, H. L. ( 1968 ). Detection, estimation, and modulation theory (John Wiley, New York). 945 
+
+Vanderelst, D., Holderied, M. W., and Peremans, H. ( 2015 ). “Sensorimotor model of obstacle 946 
+
+avoidance in echolocating bats,” PLOS Computational Biology 11 (10), e1004484, doi: mu10. 947 
+
+1371/journal.pcbi.1004484 .948 
+
+Vanderelst, D., and Peremans, H. ( 2017 ). “A computational model of mapping in echolocating 949 
+
+bats,” Animal Behaviour 131 , 73–88, doi: mu10.1016/j.anbehav.2017.06.009 .950 
+
+Vanderelst, D., and Peremans, H. ( 2018 ). “Modeling bat prey capture in echolocating bats: The 951 
+
+feasibility of reactive pursuit,” Journal of Theoretical Biology 456 , 305–314, doi: mu10.1016/J. 952 
+
+JTBI.2018.07.027 .953 
+
+Vergassola, M., Villermaux, E., and Shraiman, B. I. ( 2007 ). “‘Infotaxis’ as a strategy for searching 954 
+
+without gradients,” Nature 445 (7126), 406–409, doi: mu10.1038/nature05464 .955 
+
+Wei, C., Hoffmann-Kuhnt, M., Au, W. W. L., Ho, A. Z. H., Matrai, E., Feng, W., Ket-956 
+
+ten, D. R., and Zhang, Y. ( 2021 ). “Possible limitations of dolphin echolocation: A simula-957 
+
+tion study based on a cross-modal matching experiment,” Scientific Reports 11 (1), 6689, doi: 958 
+
+41 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+mu10.1038/s41598-021-85063-2 .959 
+
+Wheeler, A. R., Fulton, K. A., Gaudette, J. E., Simmons, R. A., Matsuo, I., and Simmons, J. A. 960 
+
+(2016 ). “Echolocating big brown bats, Eptesicus fuscus , modulate pulse intervals to overcome 961 
+
+range ambiguity in cluttered surroundings,” Frontiers in Behavioral Neuroscience 10 , doi: mu10. 962 
+
+3389/fnbeh.2016.00125 .963 
+
+Wilkinson, M. G. T., Wang, X. Y., Cowan, N. J., and Moss, C. F. ( 2025 ). “Echolocating bats 964 
+
+adjust sonar call features and head/ear position as they track moving targets in the presence of 965 
+
+clutter,” The Journal of the Acoustical Society of America 157 (3), 2236–2247, doi: mu10.1121/ 966 
+
+10.0036252 .967 
+
+Wisniewska, D. M., Johnson, M., Beedholm, K., Wahlberg, M., and Madsen, P. T. ( 2012 ). “Acous-968 
+
+tic gaze adjustments during active target selection in echolocating porpoises.,” The Journal of 969 
+
+Experimental Biology 215 , 4358–4373, doi: mu10.1242/jeb.074013 .970 
+
+Wisniewska, D. M., Ratcliffe, J. M., Beedholm, K., Christensen, C. B., Johnson, M., Koblitz, J. C., 971 
+
+Wahlberg, M., and Madsen, P. T. ( 2015 ). “Range-dependent flexibility in the acoustic field of 972 
+
+view of echolocating porpoises ( Phocoena phocoena ),” eLife 4, e05651, doi: mu10.7554/eLife. 973 
+
+05651 .974 
+
+Yang, S. C. H., Wolpert, D. M., and Lengyel, M. ( 2016 ). “Theoretical perspectives on active 975 
+
+sensing,” Current Opinion in Behavioral Sciences 11 , 100–108, doi: mu10.1016/j.cobeha.2016. 976 
+
+06.009 .977 
+
+Yovel, Y., Falk, B., Moss, C. F., Ulanovsky, N., and Ulanovsky ( 2010 ). “Optimal localization by 978 
+
+pointing off axis,” Science 327 (5966), 701–704, doi: mu10.1126/science.1183310 .979 
+
+Zweifel, N. O., and Hartmann, M. J. Z. ( 2020 ). “Defining “active sensing” through an analysis 980 
+
+of sensing energetics: homeoactive and alloactive sensing,” Journal of Neurophysiology 124 (1), 981 
+
+40–48, doi: mu10.1152/jn.00608.2019 .982 
+
+42 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+List of Supporting Information Files 983 
+
+Supplemental Text ( supplemental text.pdf )984 
+
+Text S1: Single target search with beampattern-modulated PM and PF A .985 
+
+Text S2: Detailed derivation for entropy decrease in exploration phase. 986 
+
+Text S3: Detailed derivation for quantities related to beam aim selection after the first target 987 
+
+detection. 988 
+
+Supplemental Figures ( supplemental figures.pdf )989 
+
+Fig. S1: Infotaxis search with beam aim movement restriction. 990 
+
+Fig. S2: Expected entropy at the beginning of a search. 991 
+
+Fig. S3: Example infotaxis searches with one miss and one false alarm. 992 
+
+Fig. S4: Performance of infotaxis and MAP searches with the stopping condition: (1) pth = 0 .99 993 
+
+or (2) the change of Pmax across three consecutive pings is smaller than 10 −5.994 
+
+Fig. S5: Comparison of infotaxis and MAP searches with varying PF A while fixing PM = 0. 995 
+
+Fig. S6: Comparison of infotaxis and MAP searches with varying PM while fixing PF A = 0. 996 
+
+Fig. S7: Comparison of the distributions of Pmax at the end of the search for infotaxis and MAP. 997 
+
+Fig. S8: Comparison of the distributions of entropy H[K] at the end of the search for infotaxis 998 
+
+and MAP. 999 
+
+Fig. S9: Comparison of the distributions of cumulative beam aim path length until the end of 1000 
+
+the search for infotaxis and MAP. 1001 
+
+Fig. S10: An example infotaxis search in which the agent underestimates the sensory uncertainty. 1002 
+
+Fig. S11: Comparison of the distributions of Pmax at the end of the search when the infotaxis 1003 
+
+agent underestimates the sensory uncertainty. 1004 
+
+Fig. S12: Comparison of the distributions of entropy H[K] at the end of the search when the 1005 
+
+infotaxis agent underestimates the sensory uncertainty. 1006 
+
+Fig. S13: Comparison of the distributions of cumulative beam aim path length until the end of 1007 
+
+the search when the infotaxis agent underestimates the sensory uncertainty. 1008 
+
+Fig. S14: Comparison of the distributions of Pmax at the end of the search when the infotaxis 1009 
+
+agent overestimates the sensory uncertainty. 1010 
+
+Fig. S15: Distribution of entropy H[K] at the end of the search when the infotaxis agent overes-1011 
+
+timates sensory uncertainty. 1012 
+
+Fig. S16: Comparison of the distributions of cumulative beam aim path length until the end of 1013 
+
+the search when the infotaxis agent overestimates sensory uncertainty. 1014 
+
+43 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 30, 2026. ;https://doi.org/10.64898/2025.12.31.697206 doi: bioRxiv preprint
+
+Infotaxis in echolocation 
+
+Fig. S17: Performance comparison of infotaxis and MAP searches when the agent’s assumed 1015 
+
+sensory uncertainty ( P AM = P AF A ) is lower than the true sensory statistics ( P TM = P TF A ). 1016 
+
+Fig. S18: Performance comparison of infotaxis and MAP searches when the agent’s assumed 1017 
+
+sensory uncertainty ( P AM = P AF A ) is higher than the true sensory statistics ( P TM = P TF A ). 1018 
+
+Fig. S19: Comparison of computation time for infotaxis and MAP searches. 1019 
+
+Fig. S20: Effects of using beampattern-modulated PM and PF A on infotaxis search. 1020 
+
+Fig. S21: Effects of using beampattern-modulated PM and PF A on MAP search. 1021 
+
+Supplemental Tables ( supplemental tables.pdf )1022 
+
+Table S1: Model parameters used for all main text figures. When P TM and P TF A are not noted 1023 
+
+separately, they share the same values as P AM and P AM .1024 
+
+Table S2: Model parameters used for all supplemental figures. When P TM and P TF A are not noted 1025 
+
+separately, they share the same values as P AM and P AM .1026 
+
+Supplemental Videos ( supplemental videos.pdf )1027 
+
+Video S1: An infotaxis search with a fixed beam footprint size rB = 1. Selected pings are shown 1028 
+
+in Fig. 3A. 1029 
+
+Video S2: An infotaxis search with two beam footprint sizes rB = {1, 2}. Selected pings are 1030 
+
+shown in Fig. 3B. 1031 
+
+Video S3: An infotaxis search with three beam footprint sizes rB = {1, 2, 3}. Selected pings are 1032 
+
+shown in Fig. 3C. 1033 
+
+Video S4: An infotaxis search with a false alarm. Selected pings are shown in Fig. 3D. 1034 
+
+Video S5: An infotaxis search with a miss. Selected pings are shown in Fig. 3E. 1035 
+
+Video S6: A MAP search. Selected pings are shown in Fig. 9A. 1036 
+
+Video S7: An infotaxis search with beam aim movement restriction rM = 3. Selected pings are 1037 
+
+shown in Fig. S1A. 1038 
+
+Video S8: An infotaxis search with one miss occurring later in the search. Selected pings are 1039 
+
+shown in Fig. S3A. 1040 
+
+Video S9: An infotaxis search with one miss occurring early in the search. Selected pings are 1041 
+
+shown in Fig. S3B. 1042 
+
+Video S10: An infotaxis search when the agent underestimates the sensory uncertainty. Selected 1043 
+
+pings are shown in Fig. S10A. 1044 
+
+44

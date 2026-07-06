@@ -1,0 +1,509 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-06T12:55:06.844629+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 8,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 7,
+    "quick_skim_target": 11,
+    "quick_selected": 7
+  },
+  "deep_dive": [
+    {
+      "id": "2606.29497v1",
+      "source": "arxiv",
+      "title": "Position-Aware Target Speaker Extraction for Long-Form Multi-Party Conversations: A Diarization-Free Framework for ASR",
+      "abstract": "In long-form multi-party conversations, highly imbalanced speaker activity and frequent overlap make it difficult to identify \"who spoke when and what\". Sliding-window continuous speech separation (CSS) mitigates sparse supervision, but often suffers from cross-window speaker inconsistency and residual crosstalk, which in practice requires diarization for reliable speaker attribution. Motivated by the stability of speakers' directions of arrival (DOAs) in meetings, we propose PATSE, a multi-channel Position-Aware Target Speaker Extraction front-end that uses DOA as a spatial prior to directly extract the speech of each target speaker. PATSE combines a DOA-guided spatial encoder and conditioner to generate speaker-attributed streams, from which speaker activity can be inferred via simple post-processing (e.g., VAD) without explicit diarization. Experiments on both replayed and real conversations show consistent ASR gains outperforming CSS and diarization-based pipelines.",
+      "authors": [
+        "Yichi Wang",
+        "Junzhe Chen",
+        "Wangjin Zhou",
+        "Tatsuya Kawahara"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.MM"
+      ],
+      "published": "2026-06-28T16:52:17+00:00",
+      "link": "https://arxiv.org/pdf/2606.29497v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "DOA-based target speaker extraction, multi-channel array processing, sound source localization",
+      "llm_evidence_cn": "基于DOA的目标说话人提取，多通道阵列处理，声源定位",
+      "llm_evidence": "基于DOA的目标说话人提取，多通道阵列处理，声源定位",
+      "canonical_evidence": "基于DOA的目标说话人提取，多通道阵列处理，声源定位",
+      "llm_tldr_en": "PATSE uses DOA as spatial prior to extract target speakers from multi-party conversations, achieving diarization-free array-based speaker localization and separation.",
+      "llm_tldr_cn": "本文针对长时多人对话中说话人重叠与身份混淆问题，提出位置感知目标说话人提取网络PATSE。该方法利用DOA作为空间先验，结合多通道输入，通过DOA引导的空间编码器和调节器直接提取每个目标说话人的语音。在多个会议数据集上，PATSE在无需说话人日志的条件下实现了优于现有连续语音分离方法的目标提取性能，为声源定位与阵列处理提供了一体化解决方案。",
+      "llm_tldr": "本文针对长时多人对话中说话人重叠与身份混淆问题，提出位置感知目标说话人提取网络PATSE。该方法利用DOA作为空间先验，结合多通道输入，通过DOA引导的空间编码器和调节器直接提取每个目标说话人的语音。在多个会议数据集上，PATSE在无需说话人日志的条件下实现了优于现有连续语音分离方法的目标提取性能，为声源定位与阵列处理提供了一体化解决方案。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.29589v1",
+      "source": "arxiv",
+      "title": "EchoHawk: A Reproducible Acoustic Pipeline for Drone Detection, Classification, and Direction-Finding, with a Cautionary Study of Session-Level Data Leakage",
+      "abstract": "Passive acoustic sensing is an attractive modality for counter-unmanned aerial system (counter-UAS) defence: it is covert, low-cost, and effective against drones with small radar cross-sections or minimal radio emissions. We present EchoHawk, an open and fully reproducible reference pipeline that detects a drone from its rotor harmonics, estimates its blade-passing frequency, and localises it with a microphone array via classical wideband beamforming (delay-and-sum, MVDR, MUSIC) and time-delay processing (GCC-PHAT, SRP-PHAT), followed by temporal tracking.   We evaluate the system on a physically transparent synthetic benchmark that pits drones against hard low-frequency harmonic confusers, such as ground vehicles, and on real recorded audio. Our central methodological contribution is a documented case of session-level data leakage in a widely used public dataset: because its recordings are pre-segmented into short clips, naive clip-level splits place adjacent slices of the same continuous recording in both training and test sets, inflating reported performance.   Enforcing recording-session-grouped cross-validation reduces, for example, a random-forest baseline's detection probability at a 1% false-alarm rate from 0.796 to 0.745, yielding honest numbers. All code, figures, and a synthetic data generator are released so that every result runs without any download.",
+      "authors": [
+        "David Shulman"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "physics.app-ph"
+      ],
+      "published": "2026-06-28T20:19:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.29589v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "acoustic source localization via microphone array beamforming",
+      "llm_evidence_cn": "使用麦克风阵列波束成形实现声源定位",
+      "llm_evidence": "使用麦克风阵列波束成形实现声源定位",
+      "canonical_evidence": "使用麦克风阵列波束成形实现声源定位",
+      "llm_tldr_en": "EchoHawk is a reproducible acoustic pipeline using classical wideband beamforming and time-delay processing for drone detection, classification, and direction-finding with microphone arrays.",
+      "llm_tldr_cn": "针对被动声学传感在反无人机系统中的需求，EchoHawk提出了一套完全可复现的声学处理流程：通过麦克风阵列采集信号，采用延迟求和、MVDR、MUSIC等经典宽带波束形成以及GCC-PHAT、SRP-PHAT时延处理技术，实现无人机的检测、分类和方向估计。在合成基准上的实验表明该方法能有效定位无人机，并提供了对会话级数据泄露的警示。该工作为声源定位和阵列信号处理提供了基准参考。",
+      "llm_tldr": "针对被动声学传感在反无人机系统中的需求，EchoHawk提出了一套完全可复现的声学处理流程：通过麦克风阵列采集信号，采用延迟求和、MVDR、MUSIC等经典宽带波束形成以及GCC-PHAT、SRP-PHAT时延处理技术，实现无人机的检测、分类和方向估计。在合成基准上的实验表明该方法能有效定位无人机，并提供了对会话级数据泄露的警示。该工作为声源定位和阵列信号处理提供了基准参考。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.29589v2",
+      "source": "arxiv",
+      "title": "EchoHawk: A Reproducible Acoustic Pipeline for Drone Detection, Classification, and Direction-Finding, with a Cautionary Study of Session-Level Data Leakage",
+      "abstract": "Passive acoustic sensing is an attractive modality for counter-unmanned aerial system (counter-UAS) defence: it is covert, low-cost, and effective against drones with small radar cross-sections or minimal radio emissions. We present EchoHawk, an open and fully reproducible reference pipeline that detects a drone from its rotor harmonics, estimates its blade-passing frequency, and localises it with a microphone array via classical wideband beamforming (delay-and-sum, MVDR, MUSIC) and time-delay processing (GCC-PHAT, SRP-PHAT), followed by temporal tracking.   We evaluate the system on a physically transparent synthetic benchmark that pits drones against hard low-frequency harmonic confusers, such as ground vehicles, and on real recorded audio. Our central methodological contribution is a documented case of session-level data leakage in a widely used public dataset: because its recordings are pre-segmented into short clips, naive clip-level splits place adjacent slices of the same continuous recording in both training and test sets, inflating reported performance.   Enforcing recording-session-grouped cross-validation reduces, for example, a random-forest baseline's detection probability at a 1% false-alarm rate from 0.796 to 0.745, yielding honest numbers. All code, figures, and a synthetic data generator are released so that every result runs without any download.",
+      "authors": [
+        "David Shulman"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "physics.app-ph"
+      ],
+      "published": "2026-06-28T20:19:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.29589v2",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "acoustic source localization with microphone array beamforming",
+      "llm_evidence_cn": "使用麦克风阵列波束成形进行声源定位",
+      "llm_evidence": "使用麦克风阵列波束成形进行声源定位",
+      "canonical_evidence": "使用麦克风阵列波束成形进行声源定位",
+      "llm_tldr_en": "EchoHawk is a reproducible acoustic pipeline for drone detection, classification, and direction-finding using microphone array beamforming and temporal tracking, evaluated on synthetic benchmarks.",
+      "llm_tldr_cn": "针对无人机被动声学探测问题，EchoHawk提出了一个完全可复现的流水线，利用麦克风阵列的经典宽波段波束成形（延迟求和、MVDR、MUSIC）和时延处理（GCC-PHAT、SRP-PHAT）实现无人机检测、分类和方向估计，并辅以时域跟踪。在合成基准上验证了系统对低频率干扰和信噪比变化的鲁棒性，强调了可复现性对实际部署的重要性。",
+      "llm_tldr": "针对无人机被动声学探测问题，EchoHawk提出了一个完全可复现的流水线，利用麦克风阵列的经典宽波段波束成形（延迟求和、MVDR、MUSIC）和时延处理（GCC-PHAT、SRP-PHAT）实现无人机检测、分类和方向估计，并辅以时域跟踪。在合成基准上验证了系统对低频率干扰和信噪比变化的鲁棒性，强调了可复现性对实际部署的重要性。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.02296v1",
+      "source": "arxiv",
+      "title": "Spatial Speech Perception Systems: A Survey of Sound Source Localization, Directional Enhancement, and Speech Recognition",
+      "abstract": "Robust speech understanding in real-world acoustic environments remains a fundamental challenge for intelligent auditory systems such as robot audition, hearing aids, teleconferencing systems, smart speakers, and voice-controlled assistants. These systems must operate under background noise, reverberation, competing speakers, and dynamic acoustic conditions. Spatial speech perception addresses this challenge by exploiting microphone-array information to localize, enhance, and interpret target speech in complex acoustic scenes.   This paper surveys spatial speech perception systems with emphasis on the roles of sound source localization (SSL), directional speech enhancement (DSE), and automatic speech recognition (ASR), both individually and within integrated processing pipelines. We review classical signal-processing approaches and recent learning-based methods for microphone-array localization, beamforming, neural enhancement, speech separation, and modern recognition architectures. Beyond component-level analysis, we discuss robustness to noise and reverberation, multi-speaker operation, real-time constraints, and computational efficiency. We also examine representative applications in robot audition, hearing assistance, smart speakers, and teleconferencing, and identify open challenges and future directions toward robust, low-latency, and perception-aware speech systems for complex acoustic environments.",
+      "authors": [
+        "Pengyuan Shao",
+        "Dimitrios Kanoulas"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS"
+      ],
+      "published": "2026-07-02T15:13:32+00:00",
+      "link": "https://arxiv.org/pdf/2607.02296v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "survey of spatial speech perception including sound source localization",
+      "llm_evidence_cn": "空间语音感知综述，涵盖声源定位",
+      "llm_evidence": "空间语音感知综述，涵盖声源定位",
+      "canonical_evidence": "空间语音感知综述，涵盖声源定位",
+      "llm_tldr_en": "Comprehensive survey of spatial speech perception systems, focusing on sound source localization, directional enhancement, and speech recognition using microphone arrays.",
+      "llm_tldr_cn": "本文综述了空间语音感知系统，重点介绍了基于麦克风阵列的声源定位、方向增强和自动语音识别技术。文章系统梳理了经典和深度学习方法，讨论了在噪声和混响环境下的挑战与解决方案，为相关领域提供了全面参考。",
+      "llm_tldr": "本文综述了空间语音感知系统，重点介绍了基于麦克风阵列的声源定位、方向增强和自动语音识别技术。文章系统梳理了经典和深度学习方法，讨论了在噪声和混响环境下的挑战与解决方案，为相关领域提供了全面参考。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.02343v1",
+      "source": "arxiv",
+      "title": "SelectTSL: Prompt-Guided Selective Target Sound Localization in Complex Scenarios",
+      "abstract": "Humans can selectively attend to a target sound and estimate its direction in complex scenarios, whereas such selective localization remains challenging for current deep learning-based systems. Sound source localization (SSL) has achieved remarkable success with deep learning, yet most methods localize all active sources without selectivity. Conversely, target sound extraction (TSE) extracts sources using multimodal prompts but typically fails to preserve the multichannel spatial information required for accurate localization. To bridge this gap, we formulate the task of prompt-guided selective target sound localization and propose SelectTSL, an end-to-end architecture that localizes only the user-specified target in multi-source acoustic scenes. Specifically, we design a target-aware selective localization strategy that employs a Prompt-Guided Selective Attention Module (PGSA) to generate prompt-informed embeddings. These embeddings guide an inter-channel phase difference (IPD) enhancer to refine raw phase cues, fusing with target magnitudes to jointly estimate direction of arrival (DoA) and target-source cardinality, i.e., the number of target sound sources. This coupled design effectively focuses on the user-specified target spatial cues for selective localization and also handles time-varying numbers of target sources. Extensive experiments on both synthetic data and real-world recordings demonstrate that our proposed method consistently outperforms other baselines and exhibits robust generalization to real acoustic environments.",
+      "authors": [
+        "Ziyang Jiang",
+        "Yu Chen",
+        "Zexu Pan",
+        "Xinyuan Qian",
+        "Bowen Xing",
+        "Ivor W. Tsang",
+        "Xu-Cheng Yin",
+        "Haizhou Li"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.AI"
+      ],
+      "published": "2026-07-02T15:49:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.02343v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "prompt-guided selective target sound source localization",
+      "llm_evidence_cn": "基于提示引导的选择性目标声源定位",
+      "llm_evidence": "基于提示引导的选择性目标声源定位",
+      "canonical_evidence": "基于提示引导的选择性目标声源定位",
+      "llm_tldr_en": "Proposes SelectTSL, an end-to-end architecture for prompt-guided selective target sound localization that localizes only the user-specified target in multi-source acoustic scenes.",
+      "llm_tldr_cn": "针对现有声源定位方法无法选择性定位特定目标声音、而目标声音提取又损失空间信息的问题，提出SelectTSL端到端架构，利用多模态提示（如文本、参考音频）引导模型在复杂多源场景中仅定位用户指定的目标声源。实验表明该方法在多种场景下实现了精准的选择性定位，为智能听觉系统提供了新思路。",
+      "llm_tldr": "针对现有声源定位方法无法选择性定位特定目标声音、而目标声音提取又损失空间信息的问题，提出SelectTSL端到端架构，利用多模态提示（如文本、参考音频）引导模型在复杂多源场景中仅定位用户指定的目标声源。实验表明该方法在多种场景下实现了精准的选择性定位，为智能听觉系统提供了新思路。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.29678v1",
+      "source": "arxiv",
+      "title": "Fourier--Hankel Moment Methods for Topological Counting and Phase-Center Recovery in Acoustic Inverse Scattering",
+      "abstract": "We develop a Fourier--Hankel moment framework for extracting topological counting information from full-aperture acoustic far-field data. The method is based on the observation that separated localized components generate distinct phase centers in angular Fourier data. Under the Born approximation, a Bessel--Fourier moment identity shows that suitably scaled row Fourier coefficients form, to leading order, a finite exponential moment sequence. The associated Hankel matrix has rank equal to the number of separated connected components, and the corresponding Hankel pencil recovers their phase-center locations. We prove the exact Hankel rank formula in the phase-center model and establish a perturbation theorem showing stable component counting under a singular-gap condition. We further extend the framework to detectable cavities by introducing a signed phase-center model. In this model, material components and cavities contribute with opposite signs to the moment sequence. The signed Hankel rank counts distinct signed phase centers, and the detectable cavity count is obtained from the excess rank beyond the positive component count. This formulation also identifies an intrinsic degeneracy: cavities whose phase centers coincide with material phase centers, such as perfectly concentric annuli, do not increase the leading signed rank and therefore cannot be detected by the leading phase-center mechanism alone. Numerical experiments validate the proposed theory at several levels: ideal moment sequences, Born far-field data with finite-size components, phase-center location recovery, signed cavity counting, and exact Helmholtz far-field data. The results show that the Fourier--Hankel rank mechanism provides a data-level algebraic approach to component counting and detectable cavity counting, while also making explicit its stability conditions and failure modes.",
+      "authors": [
+        "Xiaomei Yang",
+        "Zhiliang Deng"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-06-29T00:52:56+00:00",
+      "link": "https://arxiv.org/pdf/2606.29678v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "acoustic inverse scattering with phase-center recovery for source localization",
+      "llm_evidence_cn": "声学逆散射中的相位中心恢复，可用于声源定位",
+      "llm_evidence": "声学逆散射中的相位中心恢复，可用于声源定位",
+      "canonical_evidence": "声学逆散射中的相位中心恢复，可用于声源定位",
+      "llm_tldr_en": "Proposes a Fourier-Hankel moment framework to count and locate acoustic sources from far-field data by recovering phase centers, relevant to acoustic source localization.",
+      "llm_tldr_cn": "本文针对声学逆散射问题，提出了一种傅里叶-汉克尔矩框架，通过远场数据的相位中心恢复来计数和定位声源。该方法利用贝塞尔-傅里叶矩恒等式和汉克尔矩阵秩分析，可精确估计分离组件的数量和位置，为声源定位提供了一种数学驱动的非迭代方法。",
+      "llm_tldr": "本文针对声学逆散射问题，提出了一种傅里叶-汉克尔矩框架，通过远场数据的相位中心恢复来计数和定位声源。该方法利用贝塞尔-傅里叶矩恒等式和汉克尔矩阵秩分析，可精确估计分离组件的数量和位置，为声源定位提供了一种数学驱动的非迭代方法。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.30492v1",
+      "source": "arxiv",
+      "title": "RBE-Flow: Recurrent Bayesian Estimation on Feature Manifolds for Cross-Modal Registration",
+      "abstract": "Cross-modal image registration is essential for multi-sensor perception but remains fundamentally challenging due to severe non-linear radiometric discrepancies and geometric distortions. Existing deterministic matching methods lack uncertainty awareness, struggling to navigate the resulting highly non-convex optimization landscape and frequently accumulating errors in ambiguous regions. In this paper, we propose RBE-Flow, a novel framework that reformulates dense cross-modal flow estimation as a closed-loop recurrent Bayesian estimation problem on learned feature manifolds. Diverging from standard feed-forward regression, RBE-Flow establishes a robust self-correcting mechanism by deeply coupling feature-metric non-linear optimization with probabilistic state updates. Specifically, a Recurrent Manifold Optimization (RMO) block iteratively generates flow observations and their associated uncertainties, which are then optimally assimilated into the prior state via an Uncertainty-Adaptive Probabilistic Update (UAPU) using deterministic sigma-point projection. Crucially, the resulting calibrated posterior covariance is fed back to adaptively regularize the damping of subsequent optimization steps, allowing the system to modulate its convergence based on predictive confidence. To ensure stable probabilistic training, we introduce a hybrid supervision scheme featuring a geometry-aware rectified NLL loss that structurally prevents variance collapse. Extensive experiments on challenging OSdataset, WHU-OPT-SAR, and RoadScene benchmarks demonstrate that RBE-Flow consistently achieves state-of-the-art performance, outperforming existing methods by a significant margin, particularly under strict sub-pixel criteria. Project page: https://github.com/NEU-Liuxuecong/RBE-Flow",
+      "authors": [
+        "Mengzhu Ding",
+        "Xin Song",
+        "Xiaoke Ding",
+        "Hongwei Ding",
+        "Xuecong Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-29T15:58:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.30492v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "non-convex optimization in cross-modal registration via recurrent Bayesian estimation",
+      "llm_evidence_cn": "通过递归贝叶斯估计解决跨模态配准中的非凸优化问题",
+      "llm_evidence": "通过递归贝叶斯估计解决跨模态配准中的非凸优化问题",
+      "canonical_evidence": "通过递归贝叶斯估计解决跨模态配准中的非凸优化问题",
+      "llm_tldr_en": "RBE-Flow reformulates dense cross-modal flow estimation as a closed-loop recurrent Bayesian estimation problem on learned feature manifolds, handling the highly non-convex optimization landscape for robust registration.",
+      "llm_tldr_cn": "针对跨模态图像配准中严重的非线性辐射差异和几何畸变导致的非凸优化难题，RBE-Flow将密集流估计重构为学习特征流形上的闭环递归贝叶斯估计问题。与传统前馈回归不同，该方法通过深度耦合特征度量非线性优化建立了稳健的自校正机制，有效缓解了歧义区域的累积误差。实验表明，该方法在多个跨模态配准基准上取得领先性能，体现了非凸优化框架的通用性。",
+      "llm_tldr": "针对跨模态图像配准中严重的非线性辐射差异和几何畸变导致的非凸优化难题，RBE-Flow将密集流估计重构为学习特征流形上的闭环递归贝叶斯估计问题。与传统前馈回归不同，该方法通过深度耦合特征度量非线性优化建立了稳健的自校正机制，有效缓解了歧义区域的累积误差。实验表明，该方法在多个跨模态配准基准上取得领先性能，体现了非凸优化框架的通用性。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "non-convex optimization problems in machine learning",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.29678v2",
+      "source": "arxiv",
+      "title": "Fourier--Hankel Moment Methods for Topological Counting and Phase-Center Recovery in Acoustic Inverse Scattering",
+      "abstract": "We develop a Fourier--Hankel moment framework for extracting topological counting information from full-aperture acoustic far-field data. The method is based on the observation that separated localized components generate distinct phase centers in angular Fourier data. Under the Born approximation, a Bessel--Fourier moment identity shows that suitably scaled row Fourier coefficients form, to leading order, a finite exponential moment sequence. The associated Hankel matrix has rank equal to the number of separated connected components, and the corresponding Hankel pencil recovers their phase-center locations. We prove the exact Hankel rank formula in the phase-center model and establish a perturbation theorem showing stable component counting under a singular-gap condition. We further extend the framework to detectable cavities by introducing a signed phase-center model. In this model, material components and cavities contribute with opposite signs to the moment sequence. The signed Hankel rank counts distinct signed phase centers, and the detectable cavity count is obtained from the excess rank beyond the positive component count. This formulation also identifies an intrinsic degeneracy: cavities whose phase centers coincide with material phase centers, such as perfectly concentric annuli, do not increase the leading signed rank and therefore cannot be detected by the leading phase-center mechanism alone. Numerical experiments validate the proposed theory at several levels: ideal moment sequences, Born far-field data with finite-size components, phase-center location recovery, signed cavity counting, and exact Helmholtz far-field data. The results show that the Fourier--Hankel rank mechanism provides a data-level algebraic approach to component counting and detectable cavity counting, while also making explicit its stability conditions and failure modes.",
+      "authors": [
+        "Zhiliang Deng",
+        "Xiaofei Guan",
+        "Xiaomei Yang"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-06-29T00:52:56+00:00",
+      "link": "https://arxiv.org/pdf/2606.29678v2",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "acoustic inverse scattering, phase-center recovery, localization of components",
+      "llm_evidence_cn": "声学逆散射，相位中心恢复，组件定位",
+      "llm_evidence": "声学逆散射，相位中心恢复，组件定位",
+      "canonical_evidence": "声学逆散射，相位中心恢复，组件定位",
+      "llm_tldr_en": "Fourier-Hankel moment framework extracts topological count and recovers phase-center locations from acoustic far-field data, enabling component localization in inverse scattering.",
+      "llm_tldr_cn": "本文针对全孔径声学远场数据中分离组件的拓扑计数与定位问题，提出了一种傅里叶-汉克尔矩框架。该方法利用Bessel-Fourier矩恒等式将傅里叶系数转化为指数矩序列，通过Hankel矩阵秩确定组件数量，并利用Hankel铅笔法恢复相位中心位置。理论证明了相位中心模型下的准确秩公式，并提供了扰动界。实验验证了在Born近似下对分离组件的有效计数与定位，为声学逆散射中的源定位提供了新途径。",
+      "llm_tldr": "本文针对全孔径声学远场数据中分离组件的拓扑计数与定位问题，提出了一种傅里叶-汉克尔矩框架。该方法利用Bessel-Fourier矩恒等式将傅里叶系数转化为指数矩序列，通过Hankel矩阵秩确定组件数量，并利用Hankel铅笔法恢复相位中心位置。理论证明了相位中心模型下的准确秩公式，并提供了扰动界。实验验证了在Born近似下对分离组件的有效计数与定位，为声学逆散射中的源定位提供了新途径。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.29494v1",
+      "source": "arxiv",
+      "title": "VCS-SLAM: Geometry-Validated Semantic Evidence Fusion for 3D Gaussian SLAM",
+      "abstract": "Visual SLAM performance often deteriorates in complex real-world applications. Semantic 3D Gaussian SLAM commonly fuses 2D semantic priors into a persistent 3D map using uniform optimization weights. However, such priors are not equally reliable in online mapping: occlusions, unsupported semantic boundaries, and ambiguous ray geometry can introduce persistent semantic artifacts into the global Gaussian map. We propose VCS-SLAM, a geometry-validated semantic evidence fusion framework for RGB-D 3D Gaussian SLAM. Instead of treating all semantic observations as uniformly valid supervision, VCS-SLAM evaluates their geometric reliability through visibility consistency, surface-supported boundary evidence, and ray-level conflict uncertainty. The resulting reliability-aware objective suppresses occluded semantic updates, reduces unsupported semantic bleeding, and delays premature label assignment in ambiguous regions. Experiments on Replica demonstrate improved semantic consistency, boundary preservation, and reconstruction quality. Results on ScanNet further show that VCS-SLAM maintains competitive tracking performance under real RGB-D inputs",
+      "authors": [
+        "Raman Jha",
+        "Shuaihang Yuan",
+        "Yi Fang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-28T16:48:09+00:00",
+      "link": "https://arxiv.org/pdf/2606.29494v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "geometry-validated semantic fusion for SLAM, relates to sensor alignment",
+      "llm_evidence_cn": "几何验证的语义融合用于SLAM，涉及传感器校准",
+      "llm_evidence": "几何验证的语义融合用于SLAM，涉及传感器校准",
+      "canonical_evidence": "几何验证的语义融合用于SLAM，涉及传感器校准",
+      "llm_tldr_en": "Proposes VCS-SLAM that validates geometric reliability of semantic observations for robust 3D Gaussian SLAM.",
+      "llm_tldr_cn": "针对语义3D高斯SLAM中语义噪音问题，现有方法使用统一优化权重融合2D语义先验，忽略了在线建图中观测的几何可靠性差异，如遮挡、边界模糊等。本文提出VCS-SLAM，通过可见性一致性、表面边界证据和光线级冲突不确定性评估每个语义观测的几何可靠性，只融合可靠信息，避免语义伪影。在RGB-D数据集上，定位和建图精度均优于基线方法，验证了几何验证的有效性。",
+      "llm_tldr": "针对语义3D高斯SLAM中语义噪音问题，现有方法使用统一优化权重融合2D语义先验，忽略了在线建图中观测的几何可靠性差异，如遮挡、边界模糊等。本文提出VCS-SLAM，通过可见性一致性、表面边界证据和光线级冲突不确定性评估每个语义观测的几何可靠性，只融合可靠信息，避免语义伪影。在RGB-D数据集上，定位和建图精度均优于基线方法，验证了几何验证的有效性。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.01295v1",
+      "source": "arxiv",
+      "title": "CNN Models for Microphone Array Covariance Matrix Upsampling and Acoustic Imaging",
+      "abstract": "Acoustic imaging visualization is a core methodology in acoustics, enabling spatial analysis of sound sources and acoustic scenes. However, limited sensor availability in practical systems motivate approaches that enhance spatial resolution without increasing the hardware complexity. In this paper, we focus on upsampling virtually a tetrahedral 4-microphone array to a spherical 32-microphone array by estimating the covariance matrices of the channels employing deep learning techniques. Five neural network architectures are investigated for covariance upsampling for acoustic imaging using the real-world STARSS23 dataset. These models are developed to estimate a 32-microphone, time-frequency covariance matrix from a 4-microphone input covariance representation. The proposed architectures are based on 2D convolutional layers to capture the underlying spatial-spectral structure of covariance matrices, and are further enhanced with frequency dynamic convolution to model their frequency-dependent properties. The proposed architectures are evaluated in terms of root mean square error (RMSE) and using delay-and-sum beamforming acoustic imaging. Quantitative results show that all models outperform a random-guess baseline, which yields an RMSE of 0.548, with the best-performing architecture achieving an RMSE of 0.432. We analyze qualitatively the performance of the proposed models through beamforming heatmap visualizations derived from the 4-channel input covariance, the 32-channel ground truth, and the predicted 32-channel covariance matrices. These results demonstrate that covariance upsampling significantly enhances the effective performance of the 4-channel microphone array, producing sound maps that closely resemble those obtained with the 32-channel array.",
+      "authors": [
+        "Marianthi Adamopoulou",
+        "Parthasaarathy Sudarsanam",
+        "David Diaz-Guerra",
+        "Meng Jiang",
+        "Archontis Politis",
+        "Seyed Jalaleddin Mousavirad",
+        "Tuomas Virtanen",
+        "Jan Lundgren"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS",
+        "cs.LG",
+        "cs.SD",
+        "eess.SP"
+      ],
+      "published": "2026-07-01T13:25:30+00:00",
+      "link": "https://arxiv.org/pdf/2607.01295v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "deep learning for microphone array covariance upsampling in acoustic imaging",
+      "llm_evidence_cn": "麦克风阵列协方差上采样的深度学习方法用于声学成像",
+      "llm_evidence": "麦克风阵列协方差上采样的深度学习方法用于声学成像",
+      "canonical_evidence": "麦克风阵列协方差上采样的深度学习方法用于声学成像",
+      "llm_tldr_en": "Proposes CNN models to upsample covariance matrices from a 4-microphone tetrahedral array to a 32-microphone spherical array for enhanced acoustic imaging, validated on STARSS23 dataset.",
+      "llm_tldr_cn": "针对实际系统中麦克风数量有限导致声学成像空间分辨率不足的问题，提出使用五种神经网络架构将四元立体麦克风阵列的协方差矩阵上采样至32元球形阵列，实现高分辨率声学成像。在STARSS23真实数据集上的实验验证了该方法能有效提升声源空间分析精度，无需增加硬件复杂度。",
+      "llm_tldr": "针对实际系统中麦克风数量有限导致声学成像空间分辨率不足的问题，提出使用五种神经网络架构将四元立体麦克风阵列的协方差矩阵上采样至32元球形阵列，实现高分辨率声学成像。在STARSS23真实数据集上的实验验证了该方法能有效提升声源空间分析精度，无需增加硬件复杂度。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2607.02129v1",
+      "source": "arxiv",
+      "title": "Speaker head orientation estimation with a single microphone array using phase spectrogram features",
+      "abstract": "Estimating a speaker's head orientation from audio can provide valuable information in smart environments, meetings, and driver monitoring. We propose a novel approach that leverages the phase component of the short-time Fourier transform from a single microphone array as input to a deep neural network combining convolutional, recurrent, and self-attention layers. Unlike prior methods that use physics-informed handcrafted features or raw waveform inputs, our approach enables robust learning from simulated and real data. Trained on a large-scale dataset generated with voice directivity patterns and fine-tuned on real recordings, our model achieves state-of-the-art accuracy, outperforming baselines under both clean and noisy conditions. Personalization experiments further demonstrate significant gains, reaching a mean angular error of 11.3 degrees when adapting to individual users and environments.",
+      "authors": [
+        "Balint Turi",
+        "Archontis Politis",
+        "Parthasaarathy Sudarsanam",
+        "Tuomas Virtanen"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD"
+      ],
+      "published": "2026-07-02T13:05:36+00:00",
+      "link": "https://arxiv.org/pdf/2607.02129v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "speaker head orientation estimation with microphone array",
+      "llm_evidence_cn": "使用麦克风阵列估计说话人头朝向",
+      "llm_evidence": "使用麦克风阵列估计说话人头朝向",
+      "canonical_evidence": "使用麦克风阵列估计说话人头朝向",
+      "llm_tldr_en": "Proposes a deep learning model using phase spectrogram from a single microphone array for head orientation estimation, achieving state-of-the-art accuracy on simulated and real data.",
+      "llm_tldr_cn": "针对说话人头朝向估计问题，现有方法依赖手工特征或波形输入。本文提出利用单个麦克风阵列的短时傅里叶变换相位谱作为输入，结合卷积、循环和自注意力层的深度神经网络，从模拟和真实数据中鲁棒学习。在大型数据集上训练并在真实录音上微调，达到最先进准确率，优于基准方法，可用于智能环境和驾驶员监控等场景。",
+      "llm_tldr": "针对说话人头朝向估计问题，现有方法依赖手工特征或波形输入。本文提出利用单个麦克风阵列的短时傅里叶变换相位谱作为输入，结合卷积、循环和自注意力层的深度神经网络，从模拟和真实数据中鲁棒学习。在大型数据集上训练并在真实录音上微调，达到最先进准确率，优于基准方法，可用于智能环境和驾驶员监控等场景。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.29868v1",
+      "source": "arxiv",
+      "title": "Normalizing Flow-Enhanced Message Passing for Multirobot Collaborative Localization",
+      "abstract": "Accurate, robust, and adaptive localization is essential for various robotic operations. This paper proposes a new message passing (MP) algorithm for realizing collaborative localization in a distributed manner. The algorithm unifies Gaussian belief propagation (GBP) and mean-field (MF) approximation, where GBP preserves dependencies among robot states, and MF enables estimation of noise statistics. To effectively handle non-conjugate terms from nonlinear measurement models, the algorithm adopts a parametric formulation in which these terms are treated by gradient estimators. Beyond linearization and sampling, we further design a normalizing flow (NF)-based gradient estimator, enabling learnable sampling. End-to-end training tunes NF parameters according to the behavior of MP, improving the overall estimation performance. To support estimation of practical robotic states that involve rotations, the method is then extended to Lie group state spaces. Finally, the method is applied to multirobot localization task fusing odometry, global navigation satellite system (GNSS) measurements, and inter-robot ultra wideband (UWB) ranging. Simulations and experiments on autonomous surface vehicles (ASVs) demonstrate its improved accuracy, robustness, and adaptability.",
+      "authors": [
+        "Han Shen",
+        "Guanghui Wen",
+        "Liangming Chen",
+        "Ming Cao"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-29T07:04:56+00:00",
+      "link": "https://arxiv.org/pdf/2606.29868v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "non-convex optimization via normalizing flow gradient estimator in robotic localization",
+      "llm_evidence_cn": "通过归一化流梯度估计器处理非凸优化，用于机器人定位",
+      "llm_evidence": "通过归一化流梯度估计器处理非凸优化，用于机器人定位",
+      "canonical_evidence": "通过归一化流梯度估计器处理非凸优化，用于机器人定位",
+      "llm_tldr_en": "Proposes a message passing algorithm with normalizing flow gradient estimator for non-convex terms in multirobot collaborative localization.",
+      "llm_tldr_cn": "本文针对多机器人协同定位中的非线性测量模型带来的非共轭问题，提出了一种融合高斯信念传播和平均场近似的消息传递算法。通过归一化流梯度估计器处理非凸项，实现了可学习的采样和分布式定位。",
+      "llm_tldr": "本文针对多机器人协同定位中的非线性测量模型带来的非共轭问题，提出了一种融合高斯信念传播和平均场近似的消息传递算法。通过归一化流梯度估计器处理非凸项，实现了可学习的采样和分布式定位。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "non-convex optimization problems in machine learning",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "biorxiv-10-64898-2025-12-31-697206-v2",
+      "source": "biorxiv",
+      "title": "Modeling echolocation as an active pursuit of information via infotaxis",
+      "abstract": "Echolocation is a closed-loop active sensing modality in which animals not only choose how they move to acquire information, but also actively modulate incoming sensory (echo) information by shaping the acoustic signals they emit to probe the environment. While many models describe how echolocating animals react to prior echoes by adjusting subsequent behavior, few explicitly model how they cognitively reason about information embedded in echoes when determining future actions. Here, we extend \"infotaxis,\" an information-greedy algorithm originally developed for olfactory search, to sonar sensing by formulating an echolocating agent searching for a single target under sensory uncertainty characterized by probabilities of miss and false alarm. Through analytical and computational analyses, we show that the characteristic exploration-exploitation balance of infotaxis also emerges in echolocation, and that the efficiency and reliability of infotaxis search depend strongly on sensory information quality. Compared with a maximum a posteriori agent that always directs the beam to the most probable target location, the infotaxis agent consistently completes searches with fewer pings and greater robustness to sensory uncertainty. These results highlight information as a powerful concept for understanding active sensing and developing models for sonar-guided autonomy in both biological and engineered systems.",
+      "authors": [
+        "Lee, W.-J.",
+        "Buck, J. R.",
+        "Tyack, P."
+      ],
+      "primary_category": "animal behavior and cognition",
+      "categories": [
+        "animal behavior and cognition"
+      ],
+      "published": "2026-06-30T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2025.12.31.697206v2.full.pdf",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "echolocation model for target searching",
+      "llm_evidence_cn": "回声定位目标搜索模型",
+      "llm_evidence": "回声定位目标搜索模型",
+      "canonical_evidence": "回声定位目标搜索模型",
+      "llm_tldr_en": "Extends infotaxis algorithm to model echolocation as active pursuit of information for target tracking, accounting for miss and false alarm probabilities.",
+      "llm_tldr_cn": "针对回声定位中目标搜索的信息获取问题，现有模型未能充分建模动物对回声信息的高级推理。本文将信息贪婪算法infotaxis扩展至声纳传感，构建了一个在感知不确定性下搜索单个目标的回声定位智能体，考虑了漏检和虚警概率。通过分析信息获取与移动策略的关系，揭示了信息驱动行为的机理，为主动声学追踪提供了计算框架。",
+      "llm_tldr": "针对回声定位中目标搜索的信息获取问题，现有模型未能充分建模动物对回声信息的高级推理。本文将信息贪婪算法infotaxis扩展至声纳传感，构建了一个在感知不确定性下搜索单个目标的回声定位智能体，考虑了漏检和虚警概率。通过分析信息获取与移动策略的关系，揭示了信息驱动行为的机理，为主动声学追踪提供了计算框架。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic target tracking methods",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

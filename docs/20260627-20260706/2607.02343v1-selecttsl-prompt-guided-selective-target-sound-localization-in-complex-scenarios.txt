@@ -1,0 +1,725 @@
+Title: SelectTSL: Prompt-Guided Selective Target Sound Localization in Complex Scenarios
+
+URL Source: https://arxiv.org/pdf/2607.02343v1
+
+Published Time: Fri, 03 Jul 2026 01:30:53 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+> 1
+
+# SelectTSL: Prompt-Guided Selective Target Sound Localization in Complex Scenarios 
+
+Ziyang Jiang, Student Member, IEEE , Yu Chen, Zexu Pan, Member, IEEE , Xinyuan Qian, Senior Member, IEEE ,Bowen Xing, Ivor W. Tsang, Fellow, IEEE , Xu-Cheng Yin, Senior Member, IEEE , Haizhou Li, Fellow, IEEE 
+
+Abstract —Humans can selectively attend to a target sound and estimate its direction in complex scenarios, whereas such selective localization remains challenging for current deep learn-ing based systems. Sound source localization (SSL) has achieved remarkable success with deep learning, yet most methods localize all active sources without selectivity. Conversely, target sound extraction (TSE) extracts sources using multimodal prompts but typically fails to preserve the multichannel spatial information re-quired for accurate localization. To bridge this gap, we formulate the task of prompt-guided selective target sound localization and propose SelectTSL, an end-to-end architecture that localizes only the user-specified target in multi-source acoustic scenes. Specifi-cally, we design an target-aware selective localization strategy that employs a Prompt-Guided Selective Attention Module (PGSA) to generate prompt-informed embeddings. These embeddings guide an inter-channel phase difference (IPD) enhancer to refine raw phase cues, fusing with target magnitudes to jointly estimate direction of arrival (DoA) and target-source cardinality (i.e., the number of target sound sources). This coupled design effectively focuses on the user-specified target spatial cues for selective local-ization and also handles time-varying numbers of target sources. Extensive experiments on both synthetic data and real-world recordings demonstrate that our proposed method consistently outperforms other baselines and exhibits robust generalization to real acoustic environments. Dataset and code will be released. 
+
+I. I NTRODUCTION 
+
+# SOUND source localization (SSL), which estimates the spatial location of acoustic events, supports a wide range of array-based audio and speech applications. For instance, in smart speakers, SSL enables direction-aware target speech enhancement and far-field automatic speech recognition (ASR) by steering microphone-array beamformers [1]. In hearing aids, it supports directional noise reduction via spatial filtering [2]. Despite remarkable progress of SSL via signal process-ing (e.g., generalized cross-correlation with phase transform (GCC-PHAT) [3], multiple signal classification (MUSIC) [4]) or deep neural networks (e.g., convolutional recurrent neu-ral networks (CRNNs) [5]), existing methods are inherently 
+
+semantic-blind , treating all acoustic sources as generic signals without identity awareness: all active sources are localized without selectivity, including interfering sounds. This differs from human auditory perception where listeners can selec-tively attend to a target sound when competing speakers and background noise exist, i.e., the “cocktail party problem” [6]. As illustrated in Fig. 1(a), conventional SSL systems indiscriminately localize both target and irrelevant sources (e.g., dog barks and noise), yielding non-selective direction-of-arrival (DoA) trajectories and preventing users from directing the system to focus on a specific target such as speech. Target       
+
+> (Speech)
+> Interference
+> (Dog barks)
+> Noise
+> Target
+> Trajectory Interference
+> Trajectory
+> Dual -channel microphone
+> Conventional SSL (Semantic -Blind)
+> Localizes
+> ALL sources
+> Output :
+> Non -selective
+> Target
+> (Speech)
+> Interference
+> (Dog barks)
+> Noise
+> Target
+> Trajectory Interference
+> Trajectory
+> Ours ( SelectTSL : Prompt -guided selective)
+> Localizes
+> ONLY the target
+> source
+> Output :
+> Selective SSL
+> Prompt Input
+> Another
+> Speech
+> TSE -DOAnet
+> Selective DoA
+> Estimation
+> “locate the speech”
+> (a) (b)
+
+Fig. 1. Illustration of conventional semantic-blind SSL and our proposed prompt-guided SelectTSL: (a) Conventional SSL localizes all active sources, yielding non-selective DoA trajectories, whereas (b) SelectTSL uses a text and audio prompt (“locate the speech”) to focus on the target speech which only provides its corresponding DoA trajectory. 
+
+To associate semantics with location, sound event localiza-tion and detection (SELD) methods [7], [7], [8] detect and localize all events of known classes. However, they perform passive scene analysis that lacks an interactive mechanism to filter sources based on user intent [9]. Conversely, in the field of target sound extraction (TSE), methods [10]–[13] extract specific sound sources guided by audio or text prompts. Nevertheless, TSE focuses more on waveform reconstruction process rather than spatial sensing, thus spatial cues like inter-channel phase difference (IPD) are often degraded for precise SSL. This leads to a fundamental mismatch: TSE is aware of what to extract but not where to localize, whereas conventional SSL knows where sources are but not which semantic target to follow. Therefore, it remains an open problem to build a unified framework that is both semantic-aware and location-aware. In this paper, we propose the SelectTSL network. Unlike standard approaches, SelectTSL is an end-to-end localiza-tion framework, where prompt-guided target extraction guides subsequent spatial estimation. In particular, a Prompt-Guided Selective Attention (PGSA) module, conditioned by multi-modal prompts (text or audio), acts as a semantic filter to purify target-consistent features from the audio mixture. These features are then fused with spatial cues (e.g., IPD) and fed into a dedicated DoA estimator. This design decouples semantic selection from spatial estimation, enabling robust localization of user-specified targets even in noisy and multi-source environments. Our contributions are listed as: 1) We formulate a prompt-guided selective target sound 
+
+> arXiv:2607.02343v1 [cs.SD] 2 Jul 2026 2
+
+localization task in dynamic, noisy and multi-source environments, where sources are moving and the number of active target sources is unknown and varies over time. The goal is to localize only the user-specified target(s) while suppressing interference. 2) We propose SelectTSL , an end-to-end framework that supports both text and audio prompts. A prompt-guided PGSA module produces extraction-informed embed-dings (EIEs) that condition an IPD Enhancer to refine spatial phase cues, which are fused with target magni-tudes for DoA estimation. 3) We handle unknown and time-varying active targets via a lightweight cardinality head that jointly predicts DoA heatmaps and frame-level target-source counts, enabling stable localization and tracking under moving speakers and intermittent activity. 4) Extensive experiments on synthetic and real data demon-strate consistent improvements over strong baselines in localization and tracking, and confirm robust generaliza-tion under realistic room acoustics. II. R ELATED WORK 
+
+Conventional SSL approaches excel at estimating spatial direction but are typically prompt-agnostic, localizing all active sources indiscriminately. Conversely, TSE provides controllable target selection via auxiliary cues to reconstruct clean sound. However, it prioritizes signal fidelity over spatial consistency, often distorting the spatial information needed for precise localization. Prompt-guided selective target sound localization bridges the gap between semantic-aware extrac-tion and spatial-aware localization, effectively unifying these two objectives. Despite its promise, existing studies in this emerging field are still limited by unimodal prompting (text or audio only) and restricted evaluation scenarios (e.g., handling at most a single target per query, with limited evaluation in moving-source and noisy environments). The following section reviews literature in TSE, SSL, and prompt-guided localization. The significant methods summarized in Table I. 
+
+A. Target Sound Extraction (TSE) 
+
+TSE aims to extract a specific type of sound source (e.g., speech, music, or other acoustic events) from a mixture, conditioned on explicit auxiliary cues. Existing methods have explored auxiliary cues ranging from visual signals [14]–[17], spatial information [18], [19], reference audio [10], [20]–[22] and semantic text descriptions [11], [23]–[25]. While visual cues are highly effective in speech-oriented settings by lever-aging articulatory motions (e.g., lip/face movements) [14], [15], they are not generally applicable to arbitrary acoustic events. Spatial cues used as auxiliary prompts often require additional priors (e.g., array geometry or target direction) beyond the mixture audio, and are thus beyond our scope. Therefore, we focus on text and audio cues in the remainder of this section. For text-prompted extraction, the core mechanism involves mapping a natural language caption (e.g., “piano”, “glass breaking”) into a semantic embedding space, utilizing pre-trained contrastive models such as Contrastive Language-Audio Pretraining (CLAP) [24]. This embedding then acts as a condition to steer the separation network, predicting a time-frequency mask or waveform residual that extracts the source matching the description [11], [25], [26]. In contrast, audio-prompted extraction utilizes a reference audio clip as the enrollment cue. This mechanism generally operates in two distinct modes based on the granularity of the guidance: (i) query by example, where the reference shares the same semantic class as the target but differs in instance (e.g., using a generic dog bark to extract a specific dog) [27]; and (ii) target enrollment, commonly used in TSE, which utilizes a clean reference utterance to guide the extraction of the target speaker [10], [20], [22]. Architecturally, these prompt encoders are integrated into separation backbones, such as Conv-TasNet [28], Dual-Path Recurrent Neural Network (DPRNN) [29] and TF-GridNet [30], via varying fusion mechanisms, ranging from simple feature-wise linear modulation (FiLM) to more com-plex cross-attention layers. However, while prompt-guided TSE offers fine-grained controllability over which source to recover, it is primarily optimized for signal reconstruction fidelity (e.g., scale-invariant signal-to-noise ratio (SI-SNR)) rather than spatial consistency. Unless explicitly designed to preserve inter-channel phase consistency, the reconstruction objective of TSE tends to distort the spatial cues essential for localization. In essence, TSE determines what to extract, yet remains agnostic to where the source is located. 
+
+B. Sound Source Localization (SSL) 
+
+In contrast to TSE that controls which source to extract, SSL addresses where sources are by estimating DoA from multichannel audio inputs [31]. Recent advances have largely adopted deep learning to map time-frequency (TF) and spatial features to DoA estimates. In parallel, the vision community has studied audio-visual sound source localization in videos, where visual context is used to select and localize the sounding object [32]–[34]. Contemporary systems generally follow a common pipeline: a feature extraction backbone followed by a task-specific head. Despite this shared framework, these methods differ primarily in two aspects: (i) the choice of input representations, ranging from raw short-time Fourier transform (STFT) spectrograms to spatially explicit cues such as IPD, inter-channel level difference (ILD), covariance eigenvectors, and generalized cross correlation (GCC) [7], [35]; and (ii) the modeling strategy for these representations, spanning from bandwise processing that preserves narrow-band spatial cues to full-band mechanisms that capture cross-frequency correlations [36], [37]. We organize this subsection along these two aspects to explain the sources of recent performance gains. Typical SSL models map TF features to DoA via classifica-tion or regression heads using deep neural backbones, such as convolutional neural networks (CNNs), CRNNs, Conformer, and Transformer [7], [38]–[41]. Beyond raw STFT features, many systems explicitly encode spatial cues. For example, 3     
+
+> TABLE I BASELINE TAXONOMY WITH TRACK -SLOT (TRACK -WISE )PRIORITY . C ATEGORIES MARKED †ARE NON –TRACK -WISE (NO FIXED -TRACK OUTPUTS ).
+
+Category Model Task family Input / Feature Target Track-wise 
+
+Multi-ACCDoA SELD Mch. STFT Multi-ACCDoA IPDNet SSL Mch. STFT DoA (via DP-IPD) MIMO-DoAnet SSL Mch. STFT Multi-out DoA EINV2 SELD FOA Track-wise SELD embed-ACCDoA SELD CLAP-aug. feat. ACCDoA DiffTrack-DoA SSL Mch. STFT DoA + diff. track loss SALSA / SALSA-Lite SELD SALSA / SALSA-Lite DoA + act. SE-ResNet SELD ResNet/SE enc. DoA + act. NGCC-SELD SELD NGCC + SELD pipe. DoA + act. CST-Former SELD CST attention DoA + act. DCASE25 SELD Stereo (2-ch) audio DoA + act. 
+
+SELD+DoA †
+
+SWG Former SELD Transformer mod. DoA + act. SELDnet SELD Mel/FOA ACCDoA SELDT SELD(T) Transformer SELD DoA + act. 
+
+Pure DoA †
+
+FN-SSL SSL FB+NB fusion DoA (via DP-IPD) (1src) SRP-DNN SSL DP cues + SRP feat. SRP spectrum SALADnet SSL FOA Attn. DoA 
+
+Prompt-based †
+
+KeywordLoc SSL (query) Mch. feat. + kw cue kw-cond. spk DoA Class-cond. SELD SELD (query) Mch. feat. + 1hot cls (FiLM) cls-cond. (DoA+act.) Text-Queried SEL SEL (query) GCC-PHAT + txt emb. txt-cond. DoA/traj LocSelect SSL (query) 2-ch spec. + enroll sp. enroll-cond. spk DoA GCC-Speaker SSL (query) GCC-PHAT + spk-wt spk DoA 
+
+Abbrev. Mch.=multichannel; FOA=First-order Ambisonics; FB/NB=full-/narrow-band; STFT=short-time Fourier transform; CLAP=Contrastive Language-Audio Pretraining; ACCDoA=activity-coupled Cartesian DoA; DP-IPD=direct-path inter-channel phase difference; SRP=steered response power; NGCC=neural generalized cross-correlation; SE=squeeze-and-excitation; enc.=encoder; feat.=feature; mod.=module; pipe.=pipeline; act.=activity; diff.=differentiable; aug.=augmented; spk=speaker; spec.=spectrogram; kw=keyword; cls=class; txt=text; traj=trajectory; 1hot=one-hot; wt=weighting; † Non–track-wise (no fixed-track outputs). 
+
+SALSA augments log-spectrograms with the normalized prin-cipal eigenvector of the spatial covariance [35], and SALSA-Lite uses normalized IPD [42]. Spatial correlation features such as GCC-PHAT and its neural variant neural GCC-PHAT (NGCC-PHAT) are also commonly used in recent SSL systems [3], [43], [44]. In addition to refined inputs, recent work improves robustness by modeling direct-path cues and cross-frequency structure. For example, FN-SSL and IPDNet use full- and narrow-band fusion to estimate direct-path inter-channel phase difference (DP-IPD) and infer DoA (e.g., via template matching) [36], [37]. SRP-DNN learns direct-path delays and phase, and injects them into steered response power (SRP)-style spectra to refine spatial peaks [45]. Moreover, MIMO-DoAnet predicts source-wise pseudo-spectra to reduce reliance on post-hoc heuristics [46]. Beyond DoA estimation, SELD extends the SSL objective by jointly estimating the sound event type. In this case, SELD models can be used as SSL baselines by solely using its localization branch. For instance, ACCDoA and Multi-ACCDoA [47], [48] use activity-coupled Cartesian DoA (AC-CDoA) vectors as regression targets, with auxiliary duplicating permutation invariant training (ADPIT) to handle sound over-laps of the same class. Another line of work adopts explicit track slots with permutation-invariant training. Representa-tive methods such as EIN [49] employ separate attention-based tracks and have been widely adopted in challenge sys-tems [40], [50]. Variants mainly differ in encoders/backbones (e.g., SALADnet [38], SwG-former [39], CST-Former [41]) and feature fusion strategies [51]. The Detection and Classi-fication of Acoustic Scenes and Events (DCASE) 2025 Task 3 baseline further shows an audio-only stereo setting with a CRNN and a Multi-ACCDoA-like output [52]. While the aforementioned methods focus on frame-level DoA estimates, moving-source scenarios require associating predictions over time. For example, SELDT [53] forms tra-jectories by linking frame-wise source activity and DoA es-timates. Differentiable tracking [54] further integrates iden-tity assignment (e.g., Hungarian matching) into training to optimize sequence-level objectives. Although effective for trajectory estimation, such track-based designs inherently rely on a fixed number of output slots and lack a mechanism for user-specified target selection. This limitation motivates prompt-guided localization reviewed below. 
+
+C. Prompt-guided Localization 
+
+Prompt-guided localization conditions a DoA estimator on a user-specified cue, enabling it to localize the queried tar-get selectively rather than all active sources indiscriminately. Existing work has explored this idea through two modalities: text-based conditioning for semantic descriptions and audio-based conditioning for acoustic enrollment. On the text side, early work already explored text-like cues in the form of fixed keywords. Keyword-based speaker localization [55] introduces the task of localizing the speaker 4
+
+who uttered a predefined trigger phrase (e.g., a wake word) in the presence of overlapping speech. Beyond fixed keywords, class-conditioned localization provides a related formulation where the query is a target event class rather than free-form text. A class-conditioned SELD framework [56] utilizes one-hot class indicators as conditioning cues, injecting them into an ACCDoA-based baseline via FiLM layers. This design enables the model to selectively estimate the DoA of the queried class while treating concurrent events from other classes as interference during training. More recently, SEL [57] extends text conditioning to free-form captions and benchmarks fusion schemes that combine textual embeddings (e.g., CLAP, BERT, or FlanT5) with spatial audio features such as GCC-PHAT for selective DoA prediction and trajectory estimation. For audio-based localization, LocSelect [58] studies target speaker localization given an enrollment utterance of the same target speaker. It first predicts a speaker-dependent spectro-gram mask to suppress interferers and then estimates the target DoA from the filtered spectrogram using a long short-term memory (LSTM)-based localizer [58]. Alternatively, ap-proaches like GCC-Speaker [59] adapt classical spatial fea-tures directly, learning speaker-dependent weights for GCC-PHAT to enhance selectivity in multi-speaker scenarios. Overall, existing prompt-guided localization studies are predominantly unimodal, utilizing either text or audio cues but not both within a unified model. Moreover, evaluations are often confined to simplified settings, with limited coverage of moving targets, noisy mixtures, or prompts that correspond to multiple targets. III. T ASK FORMULATION 
+
+Let us consider a dual-channel recording setup. The signal received at the m-th microphone ( m ∈ 1, 2), denoted by 
+
+xm(t), is modeled as the sum of J source signals convolved with their respective room impulse responses (RIRs), together with additive ambient noise: 
+
+xm(t) = 
+
+> J(t)
+
+X
+
+> j=1
+
+sj (t) ∗ hm,j (t, θ j (t)) + nm(t), (1) where sj (t) is the j-th source signal, J(t) is the number of active sources at time t, nm(t) is the additive noise at the m-th microphone, and hm,j (t, θ j (t)) represents the RIR between the j-th source and the m-th microphone, which is critically dependent on the time-varying DoA of the source θj (t). ⋆
+
+indicates convolution. Our goal is to learn a prompt-guided localization model 
+
+Mψ , parameterized by ψ, designed to estimate the spatial trajectory of a target source specified by a multimodal prompt. Unlike traditional SSL systems, the proposed SelectTSL is conditioned on a user-provided cue. It maps the dual-channel mixture signal x(t) = [ x1(t), x 2(t)] T , together with an aux-iliary audio cue xcue (t) or a textual prompt xtext , to two corresponding frame-level predictions:  
+
+> •
+
+The DoA Posteriorgram , ˆPDoA ∈ [0 , 1] Tout ×Θ denotes frame-level DoA confidence maps, where Tout is the number of output frames after temporal alignment and 
+
+Θ = 180 is the number of azimuth bins discretized from 
+
+0◦ to 179 ◦ at 1◦ resolution. Due to front-back ambiguity in symmetric dual-microphone arrays, predictions are restricted to a 180 ◦ range, and the multi-label formulation allows multiple active bins per frame with continuous confidence values.  
+
+> •
+
+The Source Cardinality , ˆPcard ∈ [0 , 1] Tout ×3 denotes frame-level cardinality predictions, a probability distribu-tion over the presence of 0, 1, or 2 active target sources. We optimize the model parameters ψ to jointly predict the target sources’ DoA posteriorgram ˆPDoA and frame-level cardinality ˆPcard , as formally defined by: 
+
+( ˆPDoA , ˆPcard ) = Mψ (x(t)|xcue (t), xtext ). (2) IV. S ELECT TSL A RCHITECTURE 
+
+SelectTSL is an end-to-end framework for prompt-guided selective target sound localization, in which a PGSA mod-ule generates extraction-informed embeddings from a dual-channel mixture and a DoA estimator jointly predicts frame-level DoA and source cardinality. The overall architecture is shown in Fig. 2 and is described as follows. 
+
+A. Prompt-Guided Selective Attention Module (PGSA) 
+
+We introduce the PGSA module, which acts as a prompt-guided selective filter. It leverages multimodal prompts (text or audio) to extract target-specific representations from the input mixture. 
+
+1) Audio Encoder: Given a dual-channel signal xm(t) for 
+
+m ∈ { 1, 2}, we compute complex spectrograms Sm(τ, ν ) by short-time Fourier transform (STFT) using a Hann window, where τ ∈ { 1, . . . , T in } and ν ∈ { 1, . . . , F } represent time frames and frequency bins, respectively. We extract  
+
+> •
+
+Magnitude cues: Am(τ, ν ) = |Sm(τ, ν )|, which are encoded by a Conv1D followed by a ReLU module into 
+
+H(enc)  
+
+> m
+
+∈ RDemb ×Tin :
+
+H(enc)  
+
+> m
+
+= ReLU(Conv1D( Am)) . (3)  
+
+> •
+
+Spatial cues: IPD and inter-channel level difference (ILD): 
+
+IPD( τ, ν ) = ∠S1(τ, ν ) − ∠S2(τ, ν ), (4) 
+
+ILD( τ, ν ) = log |S1(τ, ν )| + ϵ
+
+|S2(τ, ν )| + ϵ . (5) 
+
+2) Prompt Encoders: We employ a frozen CLAP model to extract audio cue xcue (t) and text xtext :
+
+caudio = MLP cue (CLAP audio (xcue (t))) ∈ R256 , (6) 
+
+ctext = MLP text (CLAP text (xtext )) ∈ R256 . (7) Here, MLP cue and MLP text serve as projection layers. During training, we freeze the CLAP encoders and optimize only the projection layers. We then form a unified guidance vector 
+
+cfused = [ caudio ; ctext ] ∈ R512 . In our model, the audio prompt 
+
+xcue (t) is taken as the first 1 s of a 6 s clip, and the remaining 
+
+5 s of that clip is used as the target segment for selection and localization. 
+
+3) Fusion Layer: We condition the encoded magnitude features H(enc ) 
+
+> m
+
+using a two-stage FiLM cascade driven by 
+
+cfused :
+
+FiLM( h, c) = γ(cfused ) ⊙ h + β(cfused ), (8) 5Mixed Audio Audio Cue    
+
+> Audio Cue
+> Encoder
+> Text Encoder
+> Fusion Layer
+> Aligner
+> Card Head
+> Prompt-Guided Selective Attention Module (PGSA)
+> DoA
+> Nsources ={0, 1, 2, ...}
+> Angle Refiner
+> FRBlocks
+> TCNBlocks
+> BiGRU
+> Progressive
+> Refinement Temporal Modeling Module (PRTM)
+
+DoA Estimator    
+
+> Text Cue
+> Audio Encoder
+> "Locate the cat"
+> ❄
+> ❄
+> Projection & Concat
+> ReLU& Conv
+> ILD
+> IPD
+> C0&S 0
+> cos&sin
+> Acoustic Branch
+> IPD
+> Enhancer
+> Semantic Branch
+> ILD
+> IPD enh
+> 090 180 DoA(°) time
+> ✅❌❌
+> Norm FiLM Projection
+> ×2
+> Fusion Layer
+> (a) Fusion Layer and Extraction Network
+> Chunking
+> Intra-block
+> Inter-block
+> Cross-Attention
+> Over-and-Add
+> Extraction Network
+> (b) IPD Enhancer
+> TCN block d=1
+> TCN block d=2
+> TCN block d=4
+> TCN block d=8
+> Forward GRU
+> Backward GRU
+> DWConv1d
+> Norm&ReLU
+> SE
+> Pre-proj
+> PRTM (c) Progressive Refinement Temporal Modeling Module (PRTM)
+> Ac head Sem head
+> DWS Conv2d Gated-FiLM
+> Fuse head &  IPD Delta
+> Acoustic Branch Semantic Branch
+> IPD enh
+> ×
+> Extraction Network
+
+Fig. 2. Overall architecture of SelectTSL. The PGSA module outputs the target magnitude spectrogram and a stack of EIEs H(eie) (from the Extraction Network). The DoA estimator enhances spatial cues with these EIEs and aggregates semantic & spatial information for localization and cardinality estimation. 
+
+where γ(·) and β(·) are learnable functions that map the conditioning vector to scale and shift parameters. First, cfused 
+
+modulates the full-dimensional H(enc )
+
+m , followed by a projec-tion. Then, a downsampled guidance modulates the projected features, yielding H(fused )
+
+m .
+
+4) Extraction Network: We segment H(fused )
+
+m into overlap-ping chunks of length Lchunk with 50% overlap, and process them using Ndprnn dual-path blocks (intra-/inter-chunk RNNs from DPRNN [29]). Inside the stack, we periodically inject cross-attention between the current audio features and the semantic guidance cfused . Let H ∈ RT ×Dh denote the frame-level features in a block and cfused ∈ RDc the guidance vector. We broadcast the guidance across time as ˜C ∈ RT ×Dc and compute cross-attention: 
+
+Q = ˜CW Q, K = HW K, V = HW V, (9) with WQ ∈ RDc×dk and WK, WV ∈ RDh×dk . The attention weights and residual update are 
+
+α = softmax 
+
+ QK ⊤
+
+√dk
+
+
+
+, H ← H + αV. (10) After the DPRNN stack, we project its output to a soft mask Mm, which filters the encoder features and a decoder reconstructs the target magnitude: 
+
+ˆHm = Mm ⊙ H(enc )
+
+m , ˆAm = MLP dec ( ˆHm). (11) We use the extracted target features ˆA1 ∈ RF ×T for DoA estimation, where F and T denote frequency bins and frames. From the last KEIE DPRNN blocks (before overlap-and-add), we export extraction-informed embeddings (EIEs). Each block’s features are linearly projected to a TF feature map in 
+
+RF ×Tin , as illustrated in the Extraction Network (bottom-left) of Fig. 2. Averaging across the two channels yields H(eie) 
+
+k ∈
+
+RF ×Tin , k = 1 , . . . , K EIE . Stacking forms 
+
+H(eie) = stack  H(eie) 1 , . . . , H(eie) 
+
+KEIE 
+
+ ∈ RKEIE ×F ×Tin . (12) These maps emphasize TF regions that are relevant for extract-ing the target and serve as guidance for IPD enhancement. 
+
+B. DoA Estimator 
+
+The DoA estimator consists of two modules: an IPD En-hancer that refines spatial cues, and a Progressive Refinement Temporal Modeling Module (PRTM). Although the PGSA module outputs ˆAm for each channel m, these per-channel magnitude features are highly redundant. Therefore, we use only ˆA1 as the magnitude input to the DoA estimator. The IPD Enhancer takes the mixture spatial cues (IPD, ILD), the extracted target features ˆA1 from the PGSA module, and the H(eie) from the Extraction Network. It then outputs the enhanced IPD IPD enh . The PRTM operates on ˆA1, IPD enh ,and ILD to produce (i) a frame-level DoA posteriorgram over 
+
+Θ azimuth bins and (ii) a categorical distribution over the source-count set N = {0, 1, . . . , N max } (with Nmax = 2 in our experiments), where Nmax is the maximum number of simultaneously active target sources. 
+
+1) IPD Enhancer: We refine the mixture IPD with an IPD Enhancer that is explicitly conditioned on both low-level spatial cues and high-level EIEs (Fig. 2). 
+
+Acoustic branch. The input to the acoustic branch com-prises ˆA1, C0 = cos(IPD) , S0 = sin(IPD) , and ILD . These features are concatenated to form a 4-channel spectrogram 6
+
+representation, which is subsequently processed by an acoustic feature encoder (denoted as ac head ). This module employs a lightweight depthwise-separable Conv2d (DWS Conv2d) to efficiently capture fine-grained spectro-spatial features. 
+
+Semantic branch. Operating in parallel, this branch ex-clusively processes H(eie) from the Extraction Network. It is encoded by a semantic head into a conditioning representation that drives a gated FiLM modulation. Specifically, global pooling is employed to derive channel-wise scale and shift parameters, while a concurrent spatial gate modulates the acoustic features to enable spatially selective IPD enhance-ment. 
+
+Fusion and residual prediction. Let Aac denote the acous-tic features produced by the acoustic branch and Asem the semantic features produced by the semantic head. We fuse them by applying FiLM conditioning followed by a gated modulation: 
+
+˜A =  1 + g(Asem ) ⊙ FiLM( Aac , Asem ), (13) where g(·) is a spatial gating head that modulates the FiLM-conditioned features to enable spatially selective IPD en-hancement. A fuse head then predicts cosine–sine residuals (IPD deltas), and the enhanced IPD is recovered by the four-quadrant inverse tangent atan2( ·, ·):
+
+C0 = cos(IPD) , S0 = sin(IPD) ,
+
+(∆ C, ∆S) = ∆ IPD ( ˜A),
+
+IPD enh = atan2  S0 + ∆ S, C0 + ∆ C ∈ RF ×Tin .
+
+(14) 
+
+2) Progressive Refinement and Temporal Modeling (PRTM) Module: For each frame τ , we concatenate the features: 
+
+zτ =  ˆA1(: , τ ); IPD enh (: , τ ); ILD (: , τ ). (15) Stacking over time gives Zin ∈ RTin ×Cfeat . The sequence is then processed by a PRTM module. First, the input is projected and processed by a stack of Feature Refinement Blocks (FRBs), whose composite operation is denoted as R(·). This module progressively fuses three distinct cues: target magni-tude, enhanced IPD, and ILD. Each FRB is implemented using depthwise-separable 1D convolutions, squeeze-and-excitation modules, and residual connections. This progressive fusion projects the inputs into a unified feature space where spatial and spectral evidence are tightly coupled. On top of this fused representation, a dilated temporal convolutional network (TCN) and a bidirectional gated recurrent unit (BiGRU) focus on modeling longer-range temporal patterns: 
+
+H(temp ) = BiGRU  TCN  R(Linear( Zin ))  ∈ RTin ×2Dgru .
+
+(16) A temporal alignment layer adjusts the frame rate to obtain 
+
+H(aligned ) = T
+
+
+
+H(temp )
+
+∈ RTout ×2Dgru . (17) The alignment layer T (·) compresses the sequence to a fixed length Tout , so that the prediction heads operate at the same temporal resolution as the labels. 
+
+3) Prediction Heads: The aligned features H(aligned) ∈
+
+RTout ×2Dgru are decoded by the Angle Refiner (Fig. 2), which is implemented as two parallel heads. Let proj DoA (·) and 
+
+proj card (·) denote two learned frame-wise affine projections that output logits, applied row-wise to H(aligned) :
+
+ˆPDoA = σ
+
+
+
+proj DoA 
+
+ H(aligned) 
+
+∈ [0 , 1] Tout ×Θ, (18a) 
+
+ˆPcard = softmax 
+
+
+
+proj card 
+
+ H(aligned) 
+
+∈ [0 , 1] Tout ×|N | ,
+
+(18b) where proj DoA : R2Dgru → RΘ and proj card : R2Dgru → R|N | .During inference, we strictly couple the two predictions frame-wise. First, the number of active sources is estimated as ˆnt = arg max n∈N ˆPcard (t, n ). Then, the DoA estimates are derived from the top-ˆnt peaks of ˆPDoA (t, :) . Specifically, peak picking involves: (i) circular Gaussian smoothing on 
+
+ˆPDoA (t, :) to mitigate jaggedness while handling the 0◦-180 ◦
+
+wrap-around; (ii) identifying strict local maxima that exceed an adaptive threshold τt = max( μt + σt, τ min ) (where μt, σ t
+
+are the frame-wise mean and std, and τmin = 0 .3); and (iii) selecting the ˆnt highest peaks as the final DoA predictions. 
+
+4) Training Objective: The network is jointly trained with three loss terms. The separation loss is the negative SI-SNR averaged over the two channels: 
+
+Lsel = − 12
+
+
+
+SI -SNR(ˆ s1, s1) + SI -SNR(ˆ s2, s2)
+
+
+
+. (19) For localization, we use a Binary Cross Entropy (BCE) for frame-level DoA estimation and a Cross Entropy (CE) for source-count prediction: 
+
+LDoA = BCE   ˆPDoA , P⋆
+
+> DoA
+
+, Lcard = CE   ˆPcard , n⋆,
+
+(20) where P⋆ 
+
+> DoA
+
+∈ [0 , 1] Tout ×Θ is a soft DoA label built from ground-truth (GT) azimuths, and n⋆ ∈ { 0, 1, 2}Tout is the frame-wise source-count label. The total loss is a weighted sum of separation, DoA and cardinality terms: 
+
+L = ωsel Lsel + ωDoA LDoA + ωcard Lcard , (21) where we fix ωsel = 1 and tune the other weights to balance the influence of each task’s gradient. This is crucial as the losses operate at different scales, especially near convergence. The selection loss Lsel (negative SI-SNR) typically con-verges to a magnitude on the order of O(10 1). In contrast, 
+
+LDoA is a BCE averaged over Tout ×Θ bins. Due to the sparse nature of the DoA target (at most 2 of 180 bins are active), a converging model predicts near-zero loss for ≈ 99% of the outputs. Consequently, the average loss LDoA becomes very small, e.g., O(10 −1) or O(10 −2). To prevent the DoA gradient from vanishing and ensure its influence remains comparable to the separation term (i.e., ωDoA LDoA ≈ ωsel Lsel ), we need to compensate for this scale mismatch. Therefore, ωDoA is chosen to be on the order of O(10 2).V. E XPERIMENTAL SETTING 
+
+A. Dataset 
+
+Our model is trained and evaluated on a synthesized dataset that covers a wide range of acoustic conditions. The synthesis process combines clean source signals with simulated dynamic RIRs and ambient noise. 
+
+a) Sound Sources: To ensure diversity in our target sound events, we collected source signals from several public datasets. Specifically, speech signals were collected from the 7                 
+
+> TABLE II DATASET STATISTICS AND KEY SETTINGS .
+> Item Value
+> Simulated dataset (tr/val/tt) Hours: 288.9 / 31.1 / 18.1 Clips: 208,008 / 22,392 / 13,032 Real dataset (tr/val/tt) TAU-SRIR: 9 rooms; Clips: 72,000 / 9,000 / 9,000 clips target categories 397 Prompt text and/or 1 s audio cue Mixture 1–2 targets/mixture; active/frame
+> ∈ { 0,1,2}
+> Noise signal-to-noise ratio (SNR)
+> ∼ U ([ −5,5]) dB Clip format 5 s, dual channel, 16 kHz Labeling Azimuth bins A=180 over [0 ,180)
+> Label rate 15 Hz ( Tout =75 )
+
+LibriSpeech corpus [60]. Musical instrument sounds were collected from the CC-Music Pianos [61] and GuitarSet datasets [62]. For a broader range of general acoustic events, we utilized samples from AudioSet [63] and WavCaps [64]. 
+
+b) Noise Sources: A collection of noise recordings was used to create realistic and challenging noisy mixtures. These were sourced from multiple datasets, including MS-SNSD [65], WHAM! [66], ESC-50 [67], UrbanSound [68], QUT-NOISE [69] and Musan [70]. 
+
+c) Data Simulation: We generated all training, valida-tion, and test mixtures synthetically. The process relies on dynamic RIRs generated using the GPURIR library [71]. For each simulated scenario, we define a room with dimensions of 4 × 4 × 2 meters and a reverberation time ( T60 ) of 0.2
+
+seconds. A dual-channel microphone array is positioned at coordinates [1 .9, 2.0, 1.0] and [2 .1, 2.0, 1.0] , with the inter-microphone distance of 20 cm. To simulate moving sources, we generate 5-s trajectories within a frontal azimuth range of 180 ◦ and uniformly resample them at 15 Hz, yielding Tout = 75 discrete target directions per clip. Motivated by the DCASE SELD benchmarks, we use a label frame rate coarser than the acoustic feature frame rate to shorten sequences while retaining sufficient temporal detail [72]. At 15 Hz, a source traversing 180 ◦ in 5-s moves by at most 2.4◦ between consecutive labels, which is much smaller than the 20 ◦ angular tolerance adopted in the DCASE SELD localization metrics [8], [72]. Each mixture is generated with one or two moving sound sources. Since these sources may be intermittently silent, the number of active sources in any given time frame is zero, one, or two. These moving sources are created by convolving the clean source signals with their corresponding dynamic RIRs. Finally, a randomly selected noise signal is added to the mixture at SNR uniformly sampled from the range of [−5, 5] 
+
+dB. In total, we generated 288.9 hours of audio for the training set, 31.1 hours for the validation set, and 18.1 hours for the test set. 
+
+d) Real Recordings: We use a subset of nine rooms from TAU-SRIR [73]: Bomb shelter, Gym, PB132, PC226, SA203, SC203, SE203, TB103, and TC352. This subset is chosen to cover the main indoor archetypes represented in the dataset, span distinct surface materials and room volumes (rock and plastic-coated surfaces, carpet vs. hard floors, glass partitions), and include both trajectory types provided by the dataset (circular in Bomb shelter/Gym/PB132/PC226 and lin-ear in SA203/SC203/SE203/TB103/TC352). Although TAU-SRIR provides discrete source positions along circular/linear trajectories, we render each 5-s evaluation segment with a single spatial room impulse response (SRIR), i.e., a measured multichannel RIR with fixed source–microphone geometry, selecting the symmetric mic pair from the tetrahedral array to obtain two channels. The goal is to ensure diverse rever-beration and reflection patterns while keeping the evaluation compact and non-redundant. Clean 5-s utterances from Lib-riSpeech [60] are convolved with the selected two-channel RIRs (symmetric mic pair 0 and 2) and mixed with background noise at SNR uniformly sampled from [−5, 5] dB ; angles are expressed in the two-microphone frame by subtracting the array baseline and folding to [0 ◦, 180 ◦).
+
+B. Implementation details 
+
+With a Hann STFT at 16 kHz ( nfft = 1024 , hop = 256 ) we obtain F = 513 and Tin = 251 ; in the audio encoder, Demb =256 ; in the PGSA module, K = 80 , Ndprnn = 6 , Lchunk =128 , Dh = Dc = dk = 64 , KEIE = 2 ; in the DoA estimator, 
+
+Cfeat = 2180 , Ctcn = 256 , Dgru = 256 (thus 2Dgru = 512 ), 
+
+Tout = 75 , Θ = 180 , Nmax = 2 . For training, we use up to 200 epochs with early stopping (patience = 10 ) and Adam optimization with lr = 5 × 10 −4, and gradient clipping with clip norm = 1 . For the loss weights in the training objective, we use (ωsel , ω DoA , ω card ) = (1 , 100 , 1) in all experiments. 
+
+C. Baseline Methods 
+
+We categorize the baselines into four types: (1) Track-wise methods (IPDNet [37], EINV2 [51], embed-ACCDoA [74], SALSA-Lite [42], the DCASE 2025 Task 3 baseline (denoted as DCASE25 below) [52]), which allocate a fixed number of output tracks for DoA/activity trajectories; (2) SELD+DoA methods (SELDnet [7], SELDT [53]), which output per-class predictions without explicit track control; (3) Pure DoA methods (SRP-DNN [45], FN-SSL [36]), which estimate DoA from spatial features without activity branches; and (4) 
+
+Prompt-based methods , where we compare the text-queried SEL model [57] against our proposed SelectTSL. For fair comparison, we adapt all baselines to our binaural two-channel setup while preserving their original prediction heads and training objectives as much as possible. Specifically, we adapt the baselines as follows: (i) multi-microphone or FOA inputs are reduced to the L-R pair, consistent with stereo/variable-array settings in prior work [37], [52], [75]; (ii) standard FOA features are replaced by two-microphone spatial cues ( cos(IPD) , sin(IPD) , ILD, and GCC-PHAT), following established feature substitution protocols used in DCASE baselines and SALSA-lite [42], [72], [76]; (iii) the geometry is constrained to the horizontal plane ( 0◦–180 ◦ azimuth) to re-move front-back ambiguity [52], [75]; (iv) original prediction heads and losses are preserved with minimal changes, in line with community practice and variable-array SSL designs [37], 8
+
+[72] and (v) inference outputs are mapped to a common frame-wise DoA heatmap format for fair comparison [42], [77]. 
+
+D. Metrics 
+
+We report static frame-level metrics (MAE, Precision, F1, Recall) and dynamic trajectory-level metrics (MOTA ∗,DetA, OSPA-T). The evaluation is based on framewise DoA matching. For each frame t, let Pt = {ˆθt,k } denote the set of predicted azimuth hypotheses and Gt = {θt,k } the annotated references. We match Pt to Gt via a Hungarian assignment that minimizes the circular distance on [0 , 180 ◦),i.e., d◦(ˆθ, θ ) = min  |ˆθ − θ|, 180 ◦ − | ˆθ − θ|. A match is a TP if its error ≤ δ; unmatched predictions/references are FP/FN. Let TP = P 
+
+> t
+
+TP t, FP = P 
+
+> t
+
+FP t, FN = P 
+
+> t
+
+FN t,and GT = P 
+
+> t
+
+|G t|. We report precision P = TP TP+FP , recall 
+
+R = TP TP+FN and F1 = 2P R P +R .
+
+MAE (Mean Angular Error): 
+
+MAE = 1
+
+P 
+
+> t
+
+|Mt|
+
+X
+
+> t
+
+X
+
+> (ˆθ,θ )∈Mt
+
+d◦(ˆθ, θ ),
+
+where Mt denotes the Hungarian assignment between Pt and 
+
+Gt in frame t.
+
+MOTA ∗ (Multiple Object Tracking Accuracy; ID-agnostic): We follow [54] but omit the ID–switch penalty; since all DoA hypotheses extracted under the same prompt belong to a single class, we report an ID-agnostic variant. 
+
+MOTA ∗ = 1 −
+
+P
+
+> t
+
+(FN t + FP t)
+
+P 
+
+> t
+
+|G t| = 1 − FN + FP GT .
+
+DetA (Detection Accuracy): 
+
+DetA = TP TP + FP + FN .
+
+OSPA-T (Optimal Sub-Pattern Assignment [78]). Let 
+
+dc(ˆθ, θ ) = min {d◦(ˆθ, θ ), c } and nt = max( |P t|, |G t|). The frame score is 
+
+OSPA t = 1
+
+nt
+
+ X
+
+> (ˆθ,θ )∈Mt
+
+dc(ˆθ, θ ) + c(FP t + FN t)
+
+
+
+,
+
+where the cutoff c in [78] is set to 15 ◦, and FP t = |P t|−| Mt|,
+
+FN t = |G t| − | Mt|. The sequence score averages over all frames: 
+
+OSPA -T = 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+OSPA t.
+
+VI. E XPERIMENTS 
+
+A. Main Results 
+
+Table III reports the performance of all baselines across static frame-level metrics (MAE, Prec., F1, Recall) and dy-namic trajectory-level metrics (MOTA ∗, DetA, OSPA-T). For readability, we discuss results by the four baseline families defined in Sec. V-C. To disentangle architectural effects from input conditioning, we report results under three input con-ditions: Mix, Sel-Joint, and Clean. Specifically, Mix denotes the original stereo mixture with an unknown number of active sources (0/1/2) plus noise, fed directly to the baseline without any extraction front-end. Sel-Joint denotes end-to-end training where the baseline is preceded by the same PGSA module as ours and takes the concatenation of the PGSA-enhanced magnitude and the original Mix phase as inputs, forming a two-channel representation. Clean is a clean condition where the input contains only the target source(s) consistent with the prompt, with no interfering sound sources and no noise. 
+
+1) Track-wise baselines: Within the track-wise family (IPDNet, EINV2, embed-ACCDoA, SALSA-Lite, DCASE25), only IPDNet and EINV2 remain effective in the Mix condition. IPDNet attains an MAE of 4.60 ◦ and an F1 of 0.24, whereas EINV2 achieves a higher F1 of 0.40 but at the cost of a much larger MAE of 11 .37 ◦. This apparent trade-off (high F1 but large MAE) is consistent with the DP-IPD and ACCDoA formulations. When the target is active, the per-track activity outputs are frequently triggered, leading to many detections and thus a higher F1. However, in the Mix condition the predicted DoAs are biased toward a direction between the target and interfering sources, which can still fall within the evaluation tolerance while increasing the average angular error. The remaining track-wise baselines have almost zero F1 and negative or near-zero MOTA ∗ on Mix, and only become viable once Sel-Joint or Clean inputs simplify the scene. Under Clean inputs, IPDNet and EINV2 achieve MAE 
+
+≈ 1.4◦ and MOTA ∗ ≈ 0.66 –0.69, indicating that track-wise modeling can work once the prompt-based target is extracted. However, these systems are optimized to explain all active sources rather than follow a single target: DP-IPD based IPDNet treats any source at a given direction similarly, and ACCDoA-style systems (EINV2, SALSA-Lite, embed-ACCDoA, DCASE25) only weakly encode the prompt. In complex mixtures, tracks tend to follow non-target sources with similar geometry or break the target trajectory into short, fragmented segments. Our model directly targets the key weakness of generic track-wise designs: weak prompt binding that leads to drift and trajectory fragmentation in complex mixtures. We enforce target selectivity with a prompt-based PGSA front-end, whose EIEs condition the IPD Enhancer so that the refined spatial cues are biased toward the prompt-specified source. On top of these target-dominant cues, we predict a per-azimuth DoA posteriorgram together with a cardinality head, avoiding slot-based track competition and stabilizing tracking under time-varying activity, which yields much higher MOTA ∗ on Mix (Table III). 
+
+2) SELD+DoA (non-track-wise): The SELD+DoA base-lines (SELDnet, SELDT) predict frame-level activity and DoA per class without explicit tracks. In the Mix condition they are highly sensitive to interference: SELDnet attains MAE 
+
+≈ 15 .8◦, SELDT MAE ≈ 22 .1◦, and both have MOTA ∗ ≤ 0
+
+with very poor detection. With Sel-Joint and Clean inputs, their static metrics improve substantially (MAE ≈ 6.6◦), consistent with prior SELD results on less cluttered scenes. Trajectory-level metrics improve much less. Even in Clean, SELDnet remains below MOTA ∗ = 0 .12 and SELDT only reaches MOTA ∗ ≈ 0.19 , suggesting that temporal inconsis-tency in the frame-level DoA predictions still leads to frag-mented trajectories. In comparison, SELDT is clearly stronger on trajectory-level metrics, confirming that its tracking-oriented objectives help stabilize trajectories. However, both models are trained to explain all event classes rather than a 9                  
+
+> TABLE III STATIC METRICS ARE FRAME -LEVEL (PEAK -MATCHING ); DYNAMIC METRICS ARE TRAJECTORY -LEVEL . MAE IS THE MEAN ANGULAR ERROR ON TRUE POSITIVES . P REC .DENOTES PRECISION . MOTA ∗IS ID-AGNOSTIC (NO ID-SWITCH PENALTY ). OSPA-T IS REPORTED IN DEGREES WITH p=1 AND
+> c=15 . P REC ./F1/R ECALL /MOTA ∗/D ET AARE REPORTED AS PERCENTAGES .†NON –TRACK -WISE :THE MODEL CANNOT SPECIFY THE NUMBER OF TRACKS WHEN PRODUCING DOAESTIMATES . G LOBAL BEST RESULTS ARE IN BOLD ; C ATEGORY BEST RESULTS ARE UNDERLINED .
+
+Category Model Input Static DoA (frame-level) Dynamic metrics (trajectory-level) 
+
+MAE (°) ↓ Prec. (%) ↑ F1 (%) ↑ Recall (%) ↑ MOTA ∗ (%) ↑ DetA (%) ↑ OSPA-T (°) ↓
+
+Track-wise 
+
+IPDNet Mix 4.60 74.69 23.63 15.62 21.88 27.03 11.09 Sel-Joint 4.17 78.00 42.69 29.39 21.10 27.14 10.23 Clean 1.40 82.62 81.07 90.83 69.33 72.69 4.55 EINV2 Mix 11.37 47.27 40.36 31.16 7.91 25.28 11.26 Sel-Joint 4.18 69.12 63.99 49.50 41.04 52.40 7.66 Clean 1.45 76.25 84.80 95.52 65.77 73.62 4.15 embed-ACCDoA Mix 20.02 38.33 1.17 0.59 -0.36 0.59 14.74 Sel-Joint 6.28 59.96 34.20 23.93 7.95 20.63 10.86 Clean 6.51 60.00 39.83 29.80 9.93 24.86 9.88 SALSA-Lite Mix 19.66 36.22 1.36 0.69 -0.53 0.68 14.72 Sel-Joint 4.66 70.12 31.53 20.34 11.67 18.72 11.46 Clean 4.34 72.60 37.08 24.89 15.50 22.76 10.78 DCASE25 Mix 17.15 43.34 0.69 0.35 -0.11 0.35 14.77 Sel-Joint 5.71 63.57 35.07 24.21 10.34 21.26 10.79 Clean 5.80 64.40 42.06 31.23 13.97 26.63 9.72 
+
+SELD+DoA †
+
+SELDnet Mix 15.83 42.62 1.51 0.77 -0.27 0.76 14.71 Sel-Joint 6.62 57.66 35.18 25.31 6.72 21.34 10.54 Clean 6.34 60.76 41.36 41.36 11.10 26.08 9.65 SELDT Mix 22.12 31.81 2.97 1.56 -1.78 1.51 14.58 Sel-Joint 6.66 61.53 48.26 39.71 14.88 31.81 8.40 Clean 6.63 62.96 53.17 46.01 18.94 36.21 7.49 
+
+Pure DoA †
+
+SRP-DNN Mix 6.24 59.91 31.34 21.22 6.98 18.58 11.21 Sel-Joint 5.56 63.83 26.49 16.71 7.24 15.27 11.99 Clean 5.97 62.86 38.63 27.89 11.41 23.94 10.17 FN-SSL Mix 7.01 70.23 17.41 19.08 18.23 17.87 10.09 Sel-Joint 5.83 82.56 35.12 22.98 23.10 25.13 7.82 Clean 5.92 79.72 33.82 24.29 21.13 23.78 8.84 
+
+Prompt-based SEL Mix 5.37 59.82 30.45 20.42 6.70 7.96 13.14 Sel-Joint 2.78 83.01 49.50 44.17 16.25 23.71 7.96 Clean 2.84 82.91 50.23 43.88 17.14 21.17 8.01 Ours Mix 0.98 98.28 95.67 93.20 91.57 91.70 2.08 
+
+single prompt-based target. When multiple sources overlap, they distribute energy across several classes and directions instead of committing to a single, stable trajectory for the target. Consequently, even with Sel-Joint or Clean inputs their MOTA ∗ remains far below both the best track-wise baselines and our SelectTSL, which explicitly enforces selectivity and temporal consistency with respect to prompt. 
+
+3) Pure DoA (non-track-wise): The pure DoA baselines (SRP-DNN, FN-SSL) operate without any sound event de-tection (SED) head or explicit tracks, estimating DoA directly from binaural phase cues. SRP-DNN uses a causal CRNN to estimate a frame-wise spatial spectrum on a fixed azimuth grid, followed by peak-picking to obtain the DoA. In our binaural horizontal setup this yields very similar localization across input conditions (MAE = 6.24 ◦ / Mix, 5.56 ◦ / Sel-Joint, 5.97 ◦ / Clean) and only modest changes in MOTA ∗
+
+(≈ 0.07 /0.07 /0.11 ). This limited variation reflects the fixed spatial grid and the absence of explicit temporal modeling: cleaner magnitudes sharpen the peaks but only mildly affect their centers, while framewise fluctuations still lead to frag-mented trajectories. FN-SSL also estimates DP-IPD but uses full-band / narrow-band fusion to exploit cross-frequency and temporal structure. From Mix to Sel-Joint and Clean, its MAE improves from 
+
+7.01 ◦ to 5.8◦, and MOTA ∗ increases from 0.18 to 0.23 and 0.21, yielding a more favorable static–dynamic trade-off than SRP-DNN. Nevertheless, FN-SSL remains a purely geometric, single-stage DoA estimator that treats all spatial peaks in the mixture as equally plausible, without any mechanism to focus on the target source. Consequently, it significantly underperforms our SelectTSL integrating the PGSA front-end. This performance gap across both static and trajectory-level metrics confirms that geometry alone is insufficient for robust, prompt-based localization and tracking. 
+
+4) Prompt-based: The prompt-based baseline SEL [57] conditions localization directly on a text description of the tar-get event. It takes multichannel audio and a text query, fuses an audio representation with a CLAP-based text embedding, and predicts a discretized azimuth distribution per frame. Under the Mix condition, SEL already benefits from text conditioning 10 
+
+but remains limited by interference and ambiguous audio–text correspondence (MAE = 5.37 ◦, MOTA ∗ = 0.07). Prepending the PGSA module (Sel-Joint) or switching to Clean inputs substantially strengthens frame-level localization (MAE ≈ 2.8◦ in both cases) and improves trajectory metrics (MOTA ≈0.16–0.17). However, SEL predicts a single azimuth distribution per frame for a given text embedding. When more than one source matches the query, it often focuses on the dominant target or averages multiple directions, leading to missed or unstable secondary trajectories, consistent with the original benchmark. Our model is explicitly designed to handle up to at least two concurrent target sources per text query. Using the raw Mix as input, it achieves an MAE of 0.98 ◦ and a MOTA ∗
+
+of 0.92, substantially outperforming SEL even when SEL is given Sel-Joint or Clean inputs. We attribute these gains to the combination of a prompt-based PGSA front-end and a per-azimuth DoA heatmap that represents multiple peaks per frame, rather than collapsing them into a single discrete angle. This yields much sharper and more stable trajectories, especially in frames where two target sources overlap. 
+
+B. Ablation and Design Analysis of SelectTSL 1) System-level architectural ablations: We perform system-level ablations to quantify the contribution of key design choices in SelectTSL (Table IV), including: (i) coupling between selection and DoA (conditioning on extracted target magnitude vs. mixture magnitude), (ii) spatial cues to the DoA estimator (IPD+ILD, w/o ILD, w/o IPD, or none), (iii) the number KEIE of DPRNN blocks used to form EIEs, (iv) the DoA module design (with/without cross-attention and FuseLayer), (v) the cardinality head, and (vi) the training scheme (end-to-end vs. two-stage). In each row, only the factor in the “Setting” column is changed and all other components follow the main configuration. Across (i)–(ii), both target-dependent conditioning and ex-plicit multichannel cues are indispensable. Even with EIEs disabled ( KEIE =0 ), conditioning on the selected target clearly outperforms the Mix →DoA variant using mixture magnitude (MAE 1.21 ◦ vs. 3.32 ◦, MOTA ∗ 0.88 vs. 0.49 ). Removing ILD already degrades performance, while removing IPD or all spatial cues leads to large errors (MAE ≥ 3.89 ◦) and much lower MOTA ∗, confirming the central role of phase-based spatial information in reverberant multi-source scenes. For temporal and structural choices (iii)-(vi), using EIEs from only a few DPRNN blocks is sufficient: our default 
+
+KEIE =2 performs best, KEIE =1 remains close, whereas 
+
+KEIE =3 or 4 monotonically worsen MAE and MOTA ∗,suggesting that incorporating EIEs from more blocks mainly injects noise. Removing cross-attention in the Extraction Net-work hurts trajectory metrics more than replacing the Fu-sion Layer with simple concatenation, since cross-attention is where the prompt interacts with the mixture features. Re-moving it weakens target emphasis and increases interference, which hurts temporal association. The cardinality head is cru-cial for stable tracking: removing it sharply reduces MOTA ∗
+
+(0.89 →0.58) and increases OSPA (3.1 ◦ →6.3 ◦). Finally, the                                                                       
+
+> TABLE IV ABLATION STUDY OF SELECT TSL (MAE, F1, MOTA ∗, OSPA-T; ↓
+> LOWER IS BETTER ,↑HIGHER IS BETTER ). F1 AND MOTA ∗ARE REPORTED AS PERCENTAGES . T HE FULL MODEL ROW IS SHOWN AS A REFERENCE AND IS NOT CONSIDERED WHEN HIGHLIGHTING BEST RESULTS . B EST RESULTS WITHIN EACH ABLATION GROUP ARE HIGHLIGHTED IN BOLD .
+> Setting MAE (°) ↓F1 (%) ↑MOTA ∗(%) ↑OSPA-T (°) ↓
+> Full model (SelectTSL) 0.98 95.67 91.57 2.08 Coupling: w/o EIEs ( KEIE =0 )1.21 93.58 87.93 2.72
+> Coupling: Mix →DoA 3.32 65.92 49.16 7.82 Spatial: w/o ILD 1.79 87.18 77.27 4.14
+> Spatial: w/o IPD 3.89 60.43 43.30 8.39 Spatial: w/o spatial cues 4.54 54.52 37.48 9.20 EIE blocks: 1 1.43 91.68 88.76 3.11
+> EIE blocks: 3 1.95 84.98 73.88 4.50 EIE blocks: 4 2.25 81.79 69.20 4.97 Backbone: w/o cross-attn 1.50 91.04 83.55 3.24 Backbone: w/o FuseLayer 1.08 94.65 89.84 2.40
+> Cardinality: w/o head 2.91 73.57 58.19 6.33 Training: separate Sel/DoA 1.28 90.16 81.64 3.56
+
+two-stage training variant lags behind end-to-end optimization (MAE 1.28 ◦, F1 0.90 , MOTA ∗ 0.82 ), indicating that joint training is needed for PGSA to produce EIEs that are aligned with the DoA objective. 
+
+2) Prompt-only ablations: To disentangle the roles of text and audio cues at the fusion layer, we run prompt-only ablations where the mixture is always encoded but one con-ditioning branch is masked to an all-zero embedding, forcing the model to rely solely on the remaining modality (Table V). For text-only conditioning, we keep the text branch active and zero out the audio embedding. We use Qwen2.5-7B [79] to generate paraphrases for each class and group them into three bands by CLAP similarity to the canonical caption: high, medium, and low ( [0 .85 , 1.00] , [0 .70 , 0.85) , [0 .50 , 0.70) ). Performance degrades monotonically as similarity decreases: relative to the canonical “Text-Only” caption (MAE = 1.12 ◦,MOTA ∗ = 0.86), the highest band already worsens to MAE = 1.94 ◦/MOTA ∗ = 0.74, and the lowest band falls to MAE = 3.48 ◦/MOTA ∗ = 0.43, indicating that semantically close prompts are crucial when no audio cue is available. For audio-only conditioning, we mask the text embedding and feed a 1 s audio cue through the audio-prompt branch. We compare four strategies: taking the first 1 s from the class clip (Audio-Only / Front), sampling a random 1 s segment (Pos-Rand), time-stretching the first 1 s (Aug-Front), and taking the first 1 s from another clip of the same class (XClip-Front). Using the clip onset yields the best audio-only performance (MAE = 1.57 ◦, MOTA ∗ = 0.81); random or cross-clip cues substantially degrade it (MAE ≈ 2.30 ◦, MOTA ∗ ≈ 0.51 ), with simple time-stretch in between. This suggests that under audio-only conditioning, the model is most sensitive to temporal misalignment and identity mismatch, while moderate temporal deformation is less harmful. 
+
+3) DoA estimator ablations: We ablate the proposed DoA estimator to assess the IPD Enhancer, the semantic–acoustic branches, and the feature refinement block (FRB). Table VI summarizes MAE, frame-level F1, MOTA ∗, and OSPA-T; below we focus on MAE and MOTA ∗ as representative static and trajectory metrics. 11                                                                                                                        
+
+> TABLE V JOINT ABLATION OVER TEXT AND AUDIO PROMPTS UNDER SINGLE -MODALITY CONDITIONING AT THE FUSION LAYER . F1 AND
+> MOTA ∗ARE REPORTED ON A 0–1 SCALE .
+> Modality Setting / Similarity MAE (°) ↓F1 ↑MOTA ∗↑OSPA-T (°) ↓
+> Text-only Text-Only 1.12 0.93 0.86 2.95
+> [0 .85 ,1.00] 1.94 0.86 0.74 4.37
+> [0 .70 ,0.85) 2.19 0.80 0.65 5.82
+> [0 .50 ,0.70) 3.48 0.65 0.43 8.22 Audio-only Audio-Only 1.57 0.89 0.81 3.67 Pos-Rand 2.30 0.71 0.52 7.28 Aug-Front 1.92 0.78 0.62 5.93 XClip-Front 2.29 0.70 0.51 7.46
+> TABLE VI ABLATION ON DOAESTIMATOR ARCHITECTURE . F1 AND MOTA ∗ARE REPORTED ON A 0–1 SCALE .
+> Setting MAE (°) ↓F1 ↑MOTA ∗↑OSPA-T (°) ↓
+> Baseline and IPD / semantic–acoustic design (A1–A4)
+> Full (ours) 0.98 0.96 0.92 2.08 A1: w/o IPD Enhancer 2.10 0.83 0.69 5.02 A2: semantic branch only 1.40 0.91 0.84 3.32 A3: acoustic branch only 1.62 0.89 0.80 3.78 A4: direct IPD input 2.71 0.73 0.53 6.50
+> FRB design (B1–B7)
+> B1: w/o FRB 3.80 0.64 0.38 7.90 B2: FRB depth ×11.52 0.84 0.79 3.71 B3: FRB depth ×31.37 0.83 0.79 3.81 B4: FRB depth ×42.12 0.83 0.69 4.91 B5: FRB conv-only, ×2(no SE) 2.13 0.83 0.68 4.95 B6: FRB SE-only, ×2(no conv) 1.96 0.85 0.72 4.50 B7: FRB w/o residual, ×21.93 0.85 0.72 4.62
+
+For the IPD Enhancer and semantic–acoustic design (A1–A4), removing the IPD Enhancer (A1) causes a marked degradation relative to the full model (MAE = 0.98 ◦ → 2.10 ◦,MOTA ∗ = 0.92 → 0.69 ), showing that denoising and refining raw IPD is critical for robust localization. Using only the semantic branch (A2) or only the acoustic branch (A3) is also suboptimal: both fall behind the full system, and semantic-only outperforms acoustic-only, indicating that text-conditioned embeddings carry strong class cues but still benefit from being fused with spatial features. Replacing enhanced IPD with direct IPD input (A4) yields the worst performance in this group (MAE = 2.71 ◦, MOTA ∗ = 0.53), further highlighting the importance of the IPD enhancement module. For the FRB variants (B1–B7), the results show that iterative refinement is necessary but must be carefully structured. Completely removing FRB (B1) severely hurts performance (MAE = 3.80 ◦, MOTA ∗ = 0.38), indicating that a single pass through the backbone is insufficient. Varying FRB depth (B2–B4) suggests that the default depth ×2 strikes the best balance: shallower or deeper configurations do not improve MAE or MOTA ∗ and can even degrade them. Ablating internal components (B5–B7) by removing the convolution, SE branch, or residual connection again worsens both metrics, confirming that the full FRB with all three components is most effective. 
+
+4) Cardinality head ablations: As described in Sec-tion IV-B, we decouple DoA estimation and source-count pre-diction: the DoA head produces a frame-level posteriorgram over Θ azimuth bins, while a separate cardinality head predicts a distribution over N = {0, 1, 2}. At inference, we take ˆnt and select the top-ˆnt local maxima of ˆPDoA (t, :) as DoA estimates (“Ours” in Table VII), so the cardinality head provides a discrete prior on the number of sources without explicitly                             
+
+> TABLE VII ABLATION ON HOW THE CARDINALITY HEAD INTERACTS WITH THE DOA
+> HEAD . A LL VARIANTS SHARE THE SAME BACKBONE AND CARDINALITY CLASSIFIER ;ONLY THE WAY CARDINALITY INFORMATION IS USED DIFFERS . F1 AND MOTA ∗ARE REPORTED ON A 0–1 SCALE .
+> Setting MAE (°) ↓F1 ↑MOTA ∗↑OSPA-T (°) ↓
+> Ours (top-ˆnpeaks) 0.98 0.96 0.92 2.08 Card-head attention 1.87 0.85 0.72 4.67 Embed (concat to DoA head) 1.52 0.91 0.83 3.45
+
+injecting cardinality embeddings into the DoA representation. To test whether tighter coupling helps, we compare this design with two alternatives that feed cardinality information back into the DoA head. In the “Card-head attention” variant, the predicted count is mapped to an embedding that queries a multi-head attention block over DoA features, and the attention output is added via a residual connection. In the “Embed” variant, the 3-way cardinality probabilities are passed through a small MLP to produce an embedding that is concatenated with the DoA head input. Table VII shows that both variants are worse than the simple top-ˆn peak selection, despite using more parameters: MAE increases from 0.98 ◦ to 1.52 ◦/1.87 ◦ and MOTA ∗ drops from 0.92 to 0.83/0.72. Compared with the “no cardinality head” configuration in Table IV, all three designs benefit from having a dedicated source-count predictor, but directly injecting car-dinality embeddings into DoA features tends to distort spatial structure. The decoupled design with top-ˆn selection therefore offers the best overall trade-off while keeping the architecture and decoding rule simple. 
+
+C. Robustness and Generalization 1) Varying acoustic complexity: To study robustness under different acoustic conditions, we define three difficulty levels (A/B/C) by gradually enlarging the room and widening the range of reverberation time T60 ; the exact parameter ranges are given in Table VIII. Level A uses compact rooms with short T60 , Level B moderately increases both, and Level C spans the largest, most asymmetric rooms and the longest, most variable reverberation. As shown in Table VIII, performance degrades steadily from A to C. MAE increases from 2.36 ◦ to 3.03 ◦ and MOTA ∗
+
+drops from 0.61 to 0.46, with similar trends for the other static and trajectory-level metrics. Larger, more asymmetric rooms introduce stronger spatial ambiguities, and longer, more vari-able T60 smears binaural cues, together defining the robustness envelope of our model under increasing acoustic variability. 
+
+2) Varying motion dynamics: To evaluate robustness under different motion dynamics, we define four speed buckets (A– D) that control the instantaneous angular velocity of the sources. Bucket A corresponds to slow motion within ±5◦,bucket B to moderate motion within ±15 ◦, and buckets C and D to increasingly rapid motion within ±30 ◦ and ±50 ◦,respectively (Table IX). Table IX shows that tracking performance degrades as motion becomes faster and more irregular. MAE remains low for slow and moderate motion (1.20 ◦ in A, 1.14 ◦ in B) but rises to 1.55 ◦ and 2.32 ◦ in buckets C and D, while MOTA ∗
+
+drops from 0.96 to 0.53 with similar declines in the other 12      
+
+> TABLE VIII PERFORMANCE AND ACOUSTIC CONFIGURATION ACROSS DIFFICULTY LEVELS . R OOM DIMENSIONS Lx, L y, L zAND REVERBERATION TIME T60 ARE SAMPLED FROM THE RANGES SHOWN FOR EACH LEVEL .
+
+Setting Lx (m) Ly (m) Lz (m) T60 (s) MAE ( ◦) Prec. F1 Recall MOTA* DetA OSPA-T ( ◦)
+
+Main 4.0 4.0 2.0 0.20 0.98 0.98 0.96 0.93 0.92 0.92 2.08 A [3 .6, 4.6] [3 .6, 4.6] [1 .8, 2.3] [0 .20 , 0.35] 2.36 0.90 0.78 0.69 0.61 0.64 5.82 
+
+B [3 .8, 6.0] [3 .8, 5.2] [2 .2, 3.0] [0 .25 , 0.55] 2.65 0.88 0.72 0.61 0.52 0.56 6.82 C [3 .5, 7.0] [3 .5, 6.0] [2 .2, 3.0] [0 .20 , 0.65] 3.03 0.83 0.68 0.58 0.46 0.52 7.21 TABLE IX PERFORMANCE ACROSS DIFFERENT MOTION SPEED BUCKETS .                                             
+
+> Bucket Range ( ◦)MAE Prec. F1 Recall MOTA* DetA OSPA-T ( ◦)
+> A±51.20 0.98 0.98 0.98 0.96 0.96 1.63
+> B±15 1.14 0.97 0.95 0.93 0.90 0.91 2.29 C±30 1.55 0.95 0.88 0.82 0.78 0.78 3.98 D±50 2.32 0.88 0.72 0.61 0.53 0.57 6.91
+> TABLE X ABLATION AND ROBUSTNESS UNDER DIFFERENT MOTION AND PROMPT CONDITIONS . F1 AND MOTA ∗ARE REPORTED ON A 0–1 SCALE .
+
+Category Setting MAE (°) ↓ F1 ↑ MOTA ∗ ↑ OSPA-T (°) ↓
+
+Movement stat–stat 0.15 0.99 0.98 0.45 
+
+mov–stat 0.40 0.98 0.96 0.70 stat–mov 0.97 0.96 0.92 2.02 mov–mov 0.98 0.96 0.92 2.08 No-prompt r=30% 1.00 0.96 0.92 1.20 
+
+r=50% 2.22 0.83 0.67 3.32 r=70% 2.53 0.78 0.60 4.55 
+
+metrics. Higher angular velocities induce larger frame-to-frame direction changes, breaking the temporal smoothness the model relies on, so gradual or moderate movement is handled well whereas abrupt high-speed rotations remain challenging. 
+
+3) Robustness to motion and prompt conditions: We further test robustness when spatial dynamics are present and when text prompts may be missing (Table X). For motion, we inde-pendently control movement of the background and the target, yielding four regimes: stat–stat (static noise, static source), mov–stat (moving noise, static source), stat–mov (static noise, moving source), and mov–mov (both moving), with all other factors fixed. For prompts, we create no-prompt clips where the caption is removed but the target remains in the mixture, and vary the no-prompt proportion r ∈ { 30% , 50% , 70% }.In the movement group, the fully static case (stat–stat) achieves the best performance (MAE = 0.15 ◦, MOTA ∗ =0.98), background motion alone has only a mild impact (mov– stat), while moving the target (stat–mov, mov–mov) increases MAE to about 0.97 ◦ and reduces MOTA ∗ to about 0.92. In the no-prompt group, performance degrades as the no-prompt proportion increases: MAE rises from 1.00 ◦ at r = 30% 
+
+to 2.53 ◦ at r = 70% , while MOTA ∗ drops from 0.92 to 0.60. Even so, the model remains usable when captions are frequently absent, showing that it can still localize and track targets based primarily on audio cues. 
+
+4) Real-world data: We further assess generalization on the real-room subset of TAU-SRIR, using the same protocol as in simulation. As summarized in Table XI, the mean performance across rooms is MAE = 2.62 ◦, MOTA ∗ = 0.77, and OSPA-T                                                                                
+
+> TABLE XI PERFORMANCE ON THE TAU-SRIR REAL -ROOM EVALUATION SET .
+> Setting MAE ( ◦)Prec. F1 Recall MOTA* DetA OSPA-T ( ◦)
+> 01 bomb shelter 2.82 0.86 0.89 0.92 0.77 0.80 2.92 02 gym 2.01 0.87 0.91 0.94 0.81 0.83 2.47 03 pb132 0.82 0.93 0.95 0.97 0.91 0.91 1.25
+> 04 pc226 1.90 0.89 0.92 0.95 0.84 0.85 2.09 05 sa203 6.89 0.81 0.83 0.85 0.64 0.70 4.26 06 sc203 2.39 0.89 0.91 0.94 0.82 0.84 2.29 08 se203 0.79 0.79 0.81 0.83 0.61 0.68 4.74 09 tb103 3.37 0.85 0.88 0.91 0.75 0.78 3.04 10 tc352 2.63 0.87 0.90 0.93 0.79 0.82 2.62 Mean 2.62 0.86 0.89 0.92 0.77 0.80 2.85
+
+= 2.85 ◦, indicating strong transfer to measured spaces. Room-level trends correlate with the measured room at-tributes and trajectory design. PB132 is a small carpeted classroom with circular trajectories, implying shorter effective reverberation and a stable direct-to-reverberant ratio (DRR); this yields easy association and correspondingly strong scores (MAE 0.82 ◦, MOTA ∗ 0.91, OSPA-T 1.25 ◦). SA203 is a lecture hall with an inclined floor and linear trajectories at multiple ranges, which introduce stronger early/late reflections and larger DRR variation, leading to increased angular bias and track fragmentation (MAE = 6.89 ◦, MOTA ∗ = 0.64, OSPA-T = 4.26 ◦). SE203 (a large classroom with hard floor and linear trajectories) shows a different failure mode: framewise azimuths remain sharp (MAE = 0.79 ◦), but repeated crossings and specular clutter cause association breaks, resulting in the highest OSPA-T ( 4.74 ◦). Overall, the model maintains accurate DoA estimates across diverse real rooms, with per-formance variations that can be explained by room geometry and trajectory complexity. VII. V ISUALIZATION 
+
+To better understand the effect of different prompt designs, we visualize the frame-wise DoA posteriors produced by four separately trained models with different prompt inputs: (i) a Full model that uses both the audio cue and the text prompt, (ii) a Text-only model, (iii) an Audio-only model that only uses the audio cue, and (iv) a No-prompt model. For each row in Fig. 3, all four models are evaluated on the same mixture recording, and the rightmost panel overlays their decoded DoA trajectories together with the GT. In the first row, only the Full model is able to follow the challenging non-stationary trajectory, while the Text-only and Audio-only models fail to provide a reliable track and the No-prompt model produces a completely wrong trajectory. In the second row, both the Full and Text-only models closely 13  
+
+> Fig. 3. Heatmap visualization of frame-wise DoA posteriors from four separately trained models under different prompt configurations. For three representative target events (rows), the first four columns correspond to the Full (text+cue), Text-only, Audio-only, and No-prompt models, all evaluated on the same mixture. The rightmost column shows the estimated and GT DoA trajectories. Warmer colors indicate higher posterior probability.
+> Fig. 4. Polar visualization of temporal-spatial DoA trajectories. The radial axis encodes time (0–75 frames) and the angular axis encodes DoA ( 0◦-180 ◦).
+
+match the ground truth, whereas the Audio-only and No-prompt models exhibit large deviations and fragmented tracks. In the third row, the Full and Audio-only models roughly capture the motion pattern, while the Text-only and No-prompt models again fail to track the source. These qualitative results demonstrate that text and audio prompts provide complemen-tary information, and that jointly exploiting both leads to the most robust localization performance. We also visualize estimated DoA trajectories in polar co-ordinates in Fig. 4, where the radial axis encodes time (0–75 frames) and the angular axis encodes DoA ( 0◦-180 ◦). Panel (a) shows a dual-source recording with wide angular motion. The model follows the target across the full range. Panel (b) presents a single-source sequence with smooth motion, where predictions form a continuous track well aligned with the ground truth. Panel (c) shows a two-source sequence with silent periods that create three disjoint active segments. The model quickly re-locks onto the correct direction whenever the target becomes active again. These examples illustrate that the model can handle dual-source, single-source, and silent-period cases while maintaining temporally consistent trajectories. VIII. C ONCLUSION 
+
+We presented SelectTSL, a framework for prompt-guided selective target sound localization that leverages prompt-based selectivity to learn target-aware representations for dual-channel DoA estimation. By leveraging text and audio prompts and a target-aware multi-spatial-cue representation, our model can selectively estimate the DoA of the target source. Exper-iments show consistent improvements on both static frame-level and dynamic trajectory-level metrics over competitive baselines. Future work will extend SelectTSL toward unified multimodal prompting (e.g., incorporating visual prompts and scene context) to facilitate robust deployment in real-world environments. REFERENCES [1] J. Benesty, J. Chen, and Y. Huang, Microphone array signal processing .Springer, 2008. 14 
+
+[2] R. H¨ eb-Umbach, T. Nakatani, M. Delcroix, C. Boeddeker, and T. Ochiai, “Microphone array signal processing and deep learning for speech enhancement: Combining model-based and data-driven approaches to parameter estimation and filtering [special issue on model-based and data-driven audio signal processing],” IEEE Signal Processing Maga-zine , vol. 41, no. 6, pp. 12–23, 2025. [3] C. Knapp and G. Carter, “The generalized correlation method for estimation of time delay,” IEEE Trans. on Audio, Speech, and Language Processing , vol. 24, no. 4, pp. 320–327, 2003. [4] R. Schmidt, “Multiple emitter location and signal parameter estimation,” 
+
+IEEE transactions on antennas and propagation , vol. 34, no. 3, pp. 276– 280, 1986. [5] S. Chakrabarty and E. A. Habets, “Multi-speaker doa estimation using deep convolutional networks trained with noise signals,” IEEE J. Sel. Topics Signal Process. , vol. 13, no. 1, pp. 8–21, 2019. [6] E. C. Cherry, “Some experiments on the recognition of speech, with one and with two ears,” J. Acoust. Soc. Am. , vol. 25, no. 5, pp. 975–979, 1953. [7] S. Adavanne, A. Politis, J. Nikunen, and T. Virtanen, “Sound event localization and detection of overlapping sources using convolutional recurrent neural networks,” IEEE J. Sel. Topics Signal Process. , vol. 13, no. 1, pp. 34–48, 2018. [8] A. Politis, A. Mesaros, S. Adavanne, T. Heittola, and T. Virtanen, “Overview and evaluation of sound event localization and detection in dcase 2019,” IEEE Trans. on Audio, Speech, and Language Processing ,vol. 29, pp. 684–698, 2020. [9] A. Senocak, H. Ryu, J. Kim, T.-H. Oh, H. Pfister, and J. S. Chung, “Toward interactive sound source localization: Better align sight and sound!” IEEE Trans. Pattern Anal. Mach. Intell. , 2025. [10] Q. Wang, H. Muckenhirn, K. Wilson, P. Sridhar, Z. Wu, J. R. Hershey, R. A. Saurous, R. J. Weiss, Y. Jia, and I. L. Moreno, “VoiceFilter: Targeted voice separation by speaker-conditioned spectrogram masking,” 
+
+INTERSPEECH , pp. 2728–2732, 2019. [11] X. Liu, H. Liu, Q. Kong, X. Mei, J. Zhao, Q. Huang, M. D. Plumbley, and W. Wang, “Separate what you describe: Language-queried audio source separation,” in INTERSPEECH , 2022, pp. 1801–1805. [12] K. Saijo, J. Ebbers, F. G. Germain, S. Khurana, G. Wiehern, and J. Le Roux, “Leveraging audio-only data for text-queried target sound extraction,” in ICASSP . IEEE, 2025, pp. 1–5. [13] M. Kim, R. Mira, H. Chen, S. Petridis, and M. Pantic, “Contextual speech extraction: Leveraging textual history as an implicit cue for target speech extraction,” in ICASSP . IEEE, 2025, pp. 1–5. [14] T. Afouras, J. S. Chung, A. Senior, O. Vinyals, and A. Zisserman, “Deep audio-visual speech recognition,” IEEE Trans. Pattern Anal. Mach. Intell. , 2018. [15] K. Li, F. Xie, H. Chen, K. Yuan, and X. Hu, “An audio-visual speech separation model inspired by cortico-thalamo-cortical circuits,” IEEE Trans. Pattern Anal. Mach. Intell. , vol. 46, no. 10, pp. 6637–6651, 2024. [16] Z. Pan, M. Ge, and H. Li, “Usev: Universal speaker extraction with visual cue,” IEEE Trans. on Audio, Speech, and Language Processing ,vol. 30, pp. 3032–3045, 2022. [17] R. Tao, X. Qian, Y. Jiang, J. Li, J. Wang, and H. Li, “Audio-visual target speaker extraction with reverse selective auditory attention,” IEEE Trans. on Audio, Speech, and Language Processing , 2025. [18] R. Gu, L. Chen, S.-X. Zhang, J. Zheng, Y. Xu, M. Yu, D. Su, Y. Zou, and D. Yu, “Neural spatial filter: Target speaker speech separation assisted with directional information.” in INTERSPEECH , 2019, pp. 4290–4294. [19] R. Gu, S.-X. Zhang, Y. Zou, and D. Yu, “Towards unified all-neural beamforming for time and frequency domain speech separation,” IEEE Trans. on Audio, Speech, and Language Processing , vol. 31, pp. 849– 862, 2022. [20] K. ˇ Zmol´ ıkov´ a, M. Delcroix, K. Kinoshita, T. Ochiai, T. Nakatani, L. Bur-get, and J. ˇ Cernock` y, “Speakerbeam: Speaker aware neural network for target speaker extraction in speech mixtures,” IEEE J. Sel. Topics Signal Process. , vol. 13, no. 4, pp. 800–814, 2019. [21] C. Xu, W. Rao, E. S. Chng, and H. Li, “Spex: Multi-scale time domain speaker extraction network,” IEEE Trans. on Audio, Speech, and Language Processing , vol. 28, pp. 1370–1384, 2020. [22] K. Liu, Z. Du, X. Wan, and H. Zhou, “X-sepformer: End-to-end speaker extraction network with explicit optimization on speaker confusion,” in 
+
+ICASSP . IEEE, 2023, pp. 1–5. [23] H.-W. Dong, N. Takahashi, Y. Mitsufuji, J. McAuley, and T. Berg-Kirkpatrick, “Clipsep: Learning text-queried sound separation with noisy unlabeled videos,” arXiv preprint arXiv:2212.07065 , 2022. [24] Y. Wu, K. Chen, T. Zhang, Y. Hui, T. Berg-Kirkpatrick, and S. Dubnov, “Large-scale contrastive language-audio pretraining with feature fusion and keyword-to-caption augmentation,” in ICASSP . IEEE, 2023, pp. 1–5. [25] H. Ma, Z. Peng, X. Li, M. Shao, X. Wu, and J. Liu, “Clapsep: Lever-aging contrastive pre-trained model for multi-modal query-conditioned target sound extraction,” IEEE Trans. on Audio, Speech, and Language Processing , 2024. [26] X. Liu, Q. Kong, Y. Zhao, H. Liu, Y. Yuan, Y. Liu, R. Xia, Y. Wang, M. D. Plumbley, and W. Wang, “Separate anything you describe,” IEEE Trans. on Audio, Speech, and Language Processing , 2024. [27] K. Chen, X. Du, B. Zhu, Z. Ma, T. Berg-Kirkpatrick, and S. Dubnov, “Zero-shot audio source separation through query-based learning from weakly-labeled data,” in AAAI , vol. 36, no. 4, 2022, pp. 4441–4449. [28] Y. Luo and N. Mesgarani, “Conv-TasNet: Surpassing ideal time– frequency magnitude masking for speech separation,” IEEE Trans. on Audio, Speech, and Language Processing , vol. 27, no. 8, pp. 1256–1266, 2019. [29] Y. Luo, Z. Chen, and T. Yoshioka, “Dual-path rnn: efficient long sequence modeling for time-domain single-channel speech separation,” in ICASSP . IEEE, 2020, pp. 46–50. [30] Z.-Q. Wang, S. Cornell, S. Choi, Y. Lee, B.-Y. Kim, and S. Watanabe, “Tf-gridnet: Integrating full-and sub-band modeling for speech separa-tion,” IEEE Trans. on Audio, Speech, and Language Processing , vol. 31, pp. 3221–3236, 2023. [31] P.-A. Grumiaux, S. Kiti´ c, L. Girin, and A. Gu´ erin, “A survey of sound source localization with deep learning methods,” J. Acoust. Soc. Am. ,vol. 152, no. 1, pp. 107–151, 2022. [32] A. Senocak, T.-H. Oh, J. Kim, M.-H. Yang, and I. S. Kweon, “Learning to localize sound sources in visual scenes: Analysis and applications,” 
+
+IEEE Trans. Pattern Anal. Mach. Intell. , vol. 43, no. 5, pp. 1605–1619, 2019. [33] H. Xuan, Z. Wu, J. Yang, B. Jiang, L. Luo, X. Alameda-Pineda, and Y. Yan, “Robust audio-visual contrastive learning for proposal-based self-supervised sound source localization in videos,” IEEE Trans. Pattern Anal. Mach. Intell. , vol. 46, no. 7, pp. 4896–4907, 2024. [34] Z. Song, J. Zhang, Y. Wang, J. Fan, and Z. Zhang, “Enhancing sound source localization via false negative elimination,” IEEE Trans. Pattern Anal. Mach. Intell. , vol. 46, no. 12, pp. 10 499–10 514, 2024. [35] T. N. T. Nguyen, K. N. Watcharasupat, N. K. Nguyen, D. L. Jones, and W.-S. Gan, “Salsa: Spatial cue-augmented log-spectrogram features for polyphonic sound event localization and detection,” IEEE Trans. on Audio, Speech, and Language Processing , vol. 30, pp. 1749–1762, 2022. [36] Y. Wang, B. Yang, and X. Li, “Fn-ssl: Full-band and narrow-band fusion for sound source localization,” in INTERSPEECH , 2023, pp. 3779–3783. [37] ——, “Ipdnet: A universal direct-path ipd estimation network for sound source localization,” IEEE Trans. on Audio, Speech, and Language Processing , 2024. [38] P.-A. Grumiaux, S. Kiti´ c, P. Srivastava, L. Girin, and A. Gu´ erin, “Salad-net: Self-attentive multisource localization in the ambisonics domain,” in IEEE Workshop Appl. Signal Process. Audio Acoust. IEEE, 2021, pp. 336–340. [39] W. Huang, Q. Huang, L. Ma, and C. Wang, “Swg-former: A sliding-window graph convolutional network for simultaneous spatial-temporal information extraction in sound event localization and detection,” arXiv preprint arXiv:2310.14016 , 2023. [40] J. Hu, Y. Cao, M. Wu, Q. Kong, F. Yang, M. D. Plumbley, and J. Yang, “Sound event localization and detection for real spatial sound scenes: Event-independent network and data augmentation chains,” 
+
+arXiv preprint arXiv:2209.01802 , 2022. [41] Y. Shul and J.-W. Choi, “Cst-former: Transformer with channel-spectro-temporal attention for sound event localization and detection,” in 
+
+ICASSP . IEEE, 2024, pp. 8686–8690. [42] T. N. T. Nguyen, D. L. Jones, K. N. Watcharasupat, H. Phan, and W.-S. Gan, “Salsa-lite: A fast and effective feature for polyphonic sound event localization and detection with microphone arrays,” in ICASSP . IEEE, 2022, pp. 716–720. [43] A. Berg, J. Engman, J. Gulin, K. Astr¨ om, M. Oskarsson, and B. Sony Eu-rope, “The lu system for dcase 2024 sound event localization and detection challenge,” DCASE2024 Challenge, Tech. Rep, Tech. Rep., 2024. [44] A. Berg, J. Engman, J. Gulin, K. ˚ Astr¨ om, and M. Oskarsson, “Learning multi-target tdoa features for sound event localization and detection,” 
+
+arXiv preprint arXiv:2408.17166 , 2024. [45] B. Yang, H. Liu, and X. Li, “Srp-dnn: Learning direct-path phase difference for multiple moving sound source localization,” in ICASSP .IEEE, 2022, pp. 721–725. [46] H. Yin, M. Ge, Y. Fu, G. Zhang, L. Wang, L. Zhang, L. Qiu, and J. Dang, “Mimo-doanet: Multi-channel input and multiple outputs doa 15 
+
+network with unknown number of sound sources,” arXiv preprint arXiv:2207.07307 , 2022. [47] K. Shimada, Y. Koyama, N. Takahashi, S. Takahashi, and Y. Mitsufuji, “Accdoa: Activity-coupled cartesian direction of arrival representation for sound event localization and detection,” in ICASSP . IEEE, 2021, pp. 915–919. [48] K. Shimada, Y. Koyama, S. Takahashi, N. Takahashi, E. Tsunoo, and Y. Mitsufuji, “Multi-accdoa: Localizing and detecting overlapping sounds from the same class with auxiliary duplicating permutation invariant training,” in ICASSP . IEEE, 2022, pp. 316–320. [49] Y. Cao, T. Iqbal, Q. Kong, Y. Zhong, W. Wang, and M. D. Plumbley, “Event-independent network for polyphonic sound event localization and detection,” arXiv preprint arXiv:2010.00140 , 2020. [50] Y. Cao, T. Iqbal, Q. Kong, F. An, W. Wang, and M. D. Plumbley, “An improved event-independent network for polyphonic sound event localization and detection,” in ICASSP . IEEE, 2021, pp. 885–889. [51] D. Mu, Z. Zhang, and H. Yue, “Mff-einv2: Multi-scale feature fusion across spectral-spatial-temporal domains for sound event localization and detection,” arXiv preprint arXiv:2406.08771 , 2024. [52] K. Shimada, A. Politis, I. R. Roman, P. Sudarsanam, D. Diaz-Guerra, R. Pandey, K. Uchida, Y. Koyama, N. Takahashi, T. Shibuya et al. ,“Stereo sound event localization and detection with onscreen/offscreen classification,” arXiv preprint arXiv:2507.12042 , 2025. [53] S. Adavanne, A. Politis, and T. Virtanen, “Localization, detection and tracking of multiple moving sound sources with a convolutional recurrent neural network,” arXiv preprint arXiv:1904.12769 , 2019. [54] ——, “Differentiable tracking-based training of deep learning sound source localizers,” in IEEE Workshop Appl. Signal Process. Audio Acoust. IEEE, 2021, pp. 211–215. [55] S. Sivasankaran, E. Vincent, and D. Fohr, “Keyword-based speaker localization: Localizing a target speaker in a multi-speaker environment,” in INTERSPEECH , 2018. [56] O. Slizovskaia, G. Wichern, Z.-Q. Wang, and J. Le Roux, “Locate this, not that: Class-conditioned sound event doa estimation,” in ICASSP .IEEE, 2022, pp. 711–715. [57] J. Zhao, X. Qian, Y. Xu, H. Liu, Y. Cao, D. Berghi, and W. Wang, “Text-queried target sound event localization,” in EUSIPCO . IEEE, 2024, pp. 261–265. [58] Y. Chen, X. Qian, Z. Pan, K. Chen, and H. Li, “Locselect: Target speaker localization with an auditory selective hearing mechanism,” in ICASSP .IEEE, 2024, pp. 8696–8700. [59] G. Li, W. Xue, W. Liu, J. Yi, and J. Tao, “Gcc-speaker: Target speaker localization with optimal speaker-dependent weighting in multi-speaker scenarios,” in ICASSP . IEEE, 2023, pp. 1–5. [60] V. Panayotov, G. Chen, D. Povey, and S. Khudanpur, “Librispeech: an asr corpus based on public domain audio books,” in ICASSP . IEEE, 2015, pp. 5206–5210. [61] M. Zhou, S. Wu, S. Ji, Z. Li, and W. Li, “A holistic evaluation of piano sound quality,” in National Conf. on Sound and Music Technology .Springer, 2023, pp. 3–17. [62] Q. Xi, R. M. Bittner, J. Pauwels, X. Ye, and J. P. Bello, “Guitarset: A dataset for guitar transcription.” in ISMIR , 2018, pp. 453–460. [63] J. F. Gemmeke, D. P. Ellis, D. Freedman, A. Jansen, W. Lawrence, R. C. Moore, M. Plakal, and M. Ritter, “Audio set: An ontology and human-labeled dataset for audio events,” in ICASSP . IEEE, 2017, pp. 776–780. [64] X. Mei, C. Meng, H. Liu, Q. Kong, T. Ko, C. Zhao, M. D. Plumbley, Y. Zou, and W. Wang, “Wavcaps: A chatgpt-assisted weakly-labelled audio captioning dataset for audio-language multimodal research,” IEEE Trans. on Audio, Speech, and Language Processing , vol. 32, pp. 3339– 3354, 2024. [65] C. K. Reddy, V. Gopal, R. Cutler, E. Beyrami, R. Cheng, H. Dubey, S. Matusevych, R. Aichner, A. Aazami, S. Braun et al. , “The interspeech 2020 deep noise suppression challenge: Datasets, subjective testing framework, and challenge results,” arXiv preprint arXiv:2005.13981 ,2020. [66] G. Wichern, J. Antognini, M. Flynn, L. R. Zhu, E. McQuinn, D. Crow, E. Manilow, and J. L. Roux, “Wham!: Extending speech separation to noisy environments,” arXiv preprint arXiv:1907.01160 , 2019. [67] K. J. Piczak, “ESC: Dataset for Environmental Sound Classification,” in 
+
+ACM Int. Conf. Multimedia . ACM Press, pp. 1015–1018. [68] J. Salamon, C. Jacoby, and J. P. Bello, “A dataset and taxonomy for urban sound research,” in ACM Int. Conf. Multimedia , Orlando, FL, USA, Nov. 2014, pp. 1041–1044. [69] D. Dean, S. Sridharan, R. Vogt, and M. Mason, “The qut-noise-timit corpus for evaluation of voice activity detection algorithms,” in 
+
+INTERSPEECH . International Speech Communication Association, 2010, pp. 3110–3113. [70] D. Snyder, G. Chen, and D. Povey, “Musan: A music, speech, and noise corpus,” arXiv preprint arXiv:1510.08484 , 2015. [71] D. Diaz-Guerra, A. Miguel, and J. R. Beltran, “gpurir: A python library for room impulse response simulation with gpu acceleration,” 
+
+Multimedia Tools and Applications , vol. 80, no. 4, pp. 5653–5671, 2021. [72] A. Politis, S. Adavanne, and T. Virtanen, “A dataset of reverberant spatial sound scenes with moving sources for sound event localization and detection,” arXiv preprint arXiv:2006.01919 , 2020. [73] A. Politis, S. Adavanne, T. Virtanen, E. Fagerlund, A. Koskimies, A. Hakala, and A. Gohar, “TAU Spatial Room Impulse Response Database (TAU-SRIR DB),” Apr. 2022. [74] K. Shimada, K. Uchida, Y. Koyama, T. Shibuya, S. Takahashi, Y. Mit-sufuji, and T. Kawahara, “Zero-and few-shot sound event localization and detection,” in ICASSP . IEEE, 2024, pp. 636–640. [75] J. Wilkins, M. Fuentes, L. Bondi, S. Ghaffarzadegan, A. Abavisani, and J. P. Bello, “Two vs. four-channel sound event localization and detection,” arXiv preprint arXiv:2309.13343 , 2023. [76] Y. Zhang, S. Wang, Z. Li, K. Guo, S. Chen, and Y. Pang, “Data augmentation and class-based ensembled cnn-conformer networks for sound event localization and detection,” Proc. DCASE , vol. 2021, 2021. [77] A. Politis, K. Shimada, P. Sudarsanam, S. Adavanne, D. Krause, Y. Koyama, N. Takahashi, S. Takahashi, Y. Mitsufuji, and T. Virtanen, “Starss22: A dataset of spatial recordings of real scenes with spatiotem-poral annotations of sound events,” arXiv preprint arXiv:2206.01948 ,2022. [78] ´A. F. Garc´ ıa-Fern´ andez, A. S. Rahmathullah, and L. Svensson, “A metric on the space of finite sets of trajectories for evaluation of multi-target tracking algorithms,” IEEE Trans. on Signal Processing , vol. 68, pp. 3917–3928, 2020. [79] A. Yang, B. Yang, B. Hui, B. Zheng, B. Yu, C. Zhou, C. Li, C. Li, D. Liu, F. Huang, G. Dong, H. Wei, H. Lin, J. Tang, J. Wang, J. Yang, J. Tu, J. Zhang, J. Ma, J. Xu, J. Zhou, J. Bai, J. He, J. Lin, K. Dang, K. Lu, K. Chen, K. Yang, M. Li, M. Xue, N. Ni, P. Zhang, P. Wang, R. Peng, R. Men, R. Gao, R. Lin, S. Wang, S. Bai, S. Tan, T. Zhu, T. Li, T. Liu, W. Ge, X. Deng, X. Zhou, X. Ren, X. Zhang, X. Wei, X. Ren, Y. Fan, Y. Yao, Y. Zhang, Y. Wan, Y. Chu, Y. Liu, Z. Cui, Z. Zhang, and Z. Fan, “Qwen2 technical report,” arXiv preprint arXiv:2407.10671 ,2024.
