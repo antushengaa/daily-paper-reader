@@ -1,0 +1,247 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-07T21:54:16.689457+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2607.02971v1",
+      "source": "arxiv",
+      "title": "Physics-Informed Direction-of-Arrival Estimation Over Distributed Edge Devices",
+      "abstract": "Direction-of-arrival (DoA) estimation is a fundamental array processing task that has benefited substantially from deep learning. Deploying such methods across distributed edge devices introduces privacy and communication constraints that federated learning (FL) can address. Yet, standard FL algorithms treat DoA as a generic classification problem, ignoring the underlying physics of the array manifold. To address this, we propose a physics-informed FL framework for DoA estimation that incorporates steering-vector geometry directly into the local training objective via a manifold-aware regularizer. Unlike existing FL baselines, the regularizer in our framework penalizes discrepancies in steering space rather than label space, exploiting the known geometric structure of the array manifold. We provide theoretical convergence guarantees for our framework, showing convergence to a stationary point. Simulation results confirm that our physics informed approach outperforms multiple FL baseline approaches across iid and non-iid data conditions.",
+      "authors": [
+        "Nathan Tatsuta",
+        "Rajeev Sahay"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP"
+      ],
+      "published": "2026-07-03T05:28:12+00:00",
+      "link": "https://arxiv.org/pdf/2607.02971v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "physics-informed federated learning for DoA estimation with array manifold",
+      "llm_evidence_cn": "结合阵列流形物理知识的联邦学习到达方向估计",
+      "llm_evidence": "结合阵列流形物理知识的联邦学习到达方向估计",
+      "canonical_evidence": "结合阵列流形物理知识的联邦学习到达方向估计",
+      "llm_tldr_en": "Proposes a physics-informed federated learning framework for DoA estimation that incorporates steering-vector geometry via a manifold-aware regularizer, improving performance over standard FL baselines.",
+      "llm_tldr_cn": "针对分布式边缘设备上的到达方向估计，提出物理信息联邦学习框架。通过在本地训练目标中加入流形感知正则项，引入导向矢量几何先验，使模型在保护隐私的同时提升估计精度。实验显示该正则化策略优于传统联邦学习基线，且有效利用了阵列物理结构。",
+      "llm_tldr": "针对分布式边缘设备上的到达方向估计，提出物理信息联邦学习框架。通过在本地训练目标中加入流形感知正则项，引入导向矢量几何先验，使模型在保护隐私的同时提升估计精度。实验显示该正则化策略优于传统联邦学习基线，且有效利用了阵列物理结构。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.03890v1",
+      "source": "arxiv",
+      "title": "Microsecond-precision sound localization emerges from slow equilibrium dynamics",
+      "abstract": "Precise sound localization relies on microsecond sensitivity to interaural time differences (ITDs), yet binaural perception exhibits sluggish tracking of dynamic acoustic cues. How these properties coexist remains unresolved. Here, ITD is represented as a stable equilibrium of neural population dynamics rather than by the classical place-coding framework originally proposed by Jeffress in 1948. In this framework, excitatory and inhibitory interactions across frequency channels generate a population signal that drives a dynamical system toward an equilibrium corresponding to the estimated ITD. Despite relying on relatively slow temporal dynamics, the model achieves microsecond-level precision and reproduces key physiological observations, including frequency-dependent best-delay distributions, without requiring explicit delay lines or precisely timed inhibition. These findings provide a potential explanation for how precise ITD sensitivity can arise from slow neural dynamics.",
+      "authors": [
+        "Toshio Irino"
+      ],
+      "primary_category": "q-bio.NC",
+      "categories": [
+        "q-bio.NC"
+      ],
+      "published": "2026-07-04T14:14:41+00:00",
+      "link": "https://arxiv.org/pdf/2607.03890v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "sound localization model for ITD",
+      "llm_evidence_cn": "用于ITD的声音定位模型",
+      "llm_evidence": "用于ITD的声音定位模型",
+      "canonical_evidence": "用于ITD的声音定位模型",
+      "llm_tldr_en": "Proposes an equilibrium-based neural dynamics model achieving microsecond ITD precision, explaining sound localization cues without place coding.",
+      "llm_tldr_cn": "该论文针对双耳声源定位中ITD微小时间差感知的机制问题，提出了一个基于神经群体动力学平衡的模型，替代经典位置编码理论。模型通过跨频率通道的兴奋和抑制交互生成稳态信号，尽管依赖较慢的动力学，仍然实现了微秒级精度，并复现了关键生理观测结果。这项工作为理解听觉定位提供了新的理论框架。",
+      "llm_tldr": "该论文针对双耳声源定位中ITD微小时间差感知的机制问题，提出了一个基于神经群体动力学平衡的模型，替代经典位置编码理论。模型通过跨频率通道的兴奋和抑制交互生成稳态信号，尽管依赖较慢的动力学，仍然实现了微秒级精度，并复现了关键生理观测结果。这项工作为理解听觉定位提供了新的理论框架。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.29738v1",
+      "source": "arxiv",
+      "title": "MyGO-Splat: Multi-Objective Closed-Loop Geometric Feedback for RGB-Only Gaussian SLAM",
+      "abstract": "Real-time monocular Simultaneous Localization and Mapping (SLAM) fundamentally suffers from scale ambiguity and a lack of geometric self-correction. While 3D Gaussian Splatting (3DGS) enables high-fidelity rendering, existing RGB-only systems remain open-loop because depth priors are injected into mapping but refined geometry cannot effectively regulate tracking drift. We present MyGO-Splat, a closed-loop Gaussian SLAM framework that analytically rasterizes Gaussian primitives into pixel-wise depth and surface normals, allowing the map to actively supervise camera pose optimization. To bridge monocular priors and scale consistency, our framework introduces scale-aware adaptive alignment that projects foundation-model depth estimates into the globally optimized Gaussian space, forming a self-correcting cycle for scale feedback. Extensive evaluations show that this closed-loop design improves scale stability and appearance-geometry consistency, achieving performance comparable to RGB-D methods while using only monocular input.",
+      "authors": [
+        "Fan Zhu",
+        "Ziyu Chen",
+        "Zhenjun Zhao",
+        "Zhisong Xu",
+        "Hui Zhu",
+        "Mingrui Li",
+        "Chunmao Jiang",
+        "Javier Civera"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-29T03:22:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.29738v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multi-objective closed-loop geometric feedback for SLAM",
+      "llm_evidence_cn": "多目标闭环几何反馈SLAM",
+      "llm_evidence": "多目标闭环几何反馈SLAM",
+      "canonical_evidence": "多目标闭环几何反馈SLAM",
+      "llm_tldr_en": "Proposes a closed-loop Gaussian SLAM framework that rasterizes Gaussian primitives pixel-wise to supervise camera pose optimization, addressing scale ambiguity and geometric self-correction.",
+      "llm_tldr_cn": "针对单目SLAM的尺度模糊和缺乏几何自校正问题，提出MyGO-Splat闭环高斯SLAM框架。通过解析地将高斯基元光栅化为逐像素深度和法线，使地图能够主动监督相机位姿优化，并引入尺度自适应对齐投影基础模型深度估计，实现了高质量的实时定位与重建。",
+      "llm_tldr": "针对单目SLAM的尺度模糊和缺乏几何自校正问题，提出MyGO-Splat闭环高斯SLAM框架。通过解析地将高斯基元光栅化为逐像素深度和法线，使地图能够主动监督相机位姿优化，并引入尺度自适应对齐投影基础模型深度估计，实现了高质量的实时定位与重建。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.03920v1",
+      "source": "arxiv",
+      "title": "LH-AVLN: A Benchmark for Long-Horizon Audio-Visual-Language Navigation",
+      "abstract": "Embodied navigation is moving toward long-horizon missions, yet existing long-horizon benchmarks are largely acoustically silent, and audio-visual navigation tasks typically focus on a single goal. We introduce LH-AVLN, a benchmark for Long-Horizon Audio-Visual-Language Navigation that combines multi-goal mission execution, heterogeneous goal specifications, and persistent spatialized acoustic cues. In LH-AVLN, an agent receives a global mission of two to four goals specified by category, language description, or reference image, and navigates with RGB-D observations, pose, and binaural audio in indoor 3D environments. The benchmark supports both ordered and unordered missions, where alternating goal-associated sounds can guide non-line-of-sight search but may also become distractors as mission progress changes. We further develop PAG-Nav, a training-free reference agent that maintains a temporal uniform semantic map and performs progressive goal-state planning, using sound for search while reserving completion for visual-semantic verification. Experiments show that existing vision-language, memory-based, and audio-visual agents struggle to complete full LH-AVLN missions, and that PAG-Nav provides a stronger diagnostic baseline while leaving substantial room for future progress.",
+      "authors": [
+        "Rufeng Chen",
+        "Yue Chang",
+        "Zili Shao",
+        "Zhaofan Zhang",
+        "Hechang Chen",
+        "Hui Xiong",
+        "Sihong Xie"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-04T15:25:25+00:00",
+      "link": "https://arxiv.org/pdf/2607.03920v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "audio-visual navigation with spatialized acoustic cues for source localization",
+      "llm_evidence_cn": "使用空间化声学线索进行视听导航，涉及声源定位",
+      "llm_evidence": "使用空间化声学线索进行视听导航，涉及声源定位",
+      "canonical_evidence": "使用空间化声学线索进行视听导航，涉及声源定位",
+      "llm_tldr_en": "Introduces a long-horizon audio-visual-language navigation benchmark with persistent binaural audio, enabling sound source localization and acoustic target tracking in indoor environments.",
+      "llm_tldr_cn": "该论文提出长时程视听语言导航基准LH-AVLN，结合多目标任务、异构目标描述和持续空间化双耳声学线索。智能体需根据全球任务（2-4个目标）在室内环境中导航，利用与目标关联的交替声音辅助非视线搜索。该基准直接涉及声源定位和声学目标追踪，为声学感知与导航结合提供了标准化评估平台。",
+      "llm_tldr": "该论文提出长时程视听语言导航基准LH-AVLN，结合多目标任务、异构目标描述和持续空间化双耳声学线索。智能体需根据全球任务（2-4个目标）在室内环境中导航，利用与目标关联的交替声音辅助非视线搜索。该基准直接涉及声源定位和声学目标追踪，为声学感知与导航结合提供了标准化评估平台。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.04471v1",
+      "source": "arxiv",
+      "title": "Weakly Guided and Autoregressive Beamformer Parameterization for Generalizable Moving Speaker Extraction in Higher-Order Ambisonics",
+      "abstract": "Linear spatial filters (beamformers) enable robust, generalizable and interpretable speech enhancement with performance guarantees under ideal parameterization. Modern beamformers are often parameterized by deep neural networks, whose performance degrades in dynamic scenarios with multiple moving speakers of unknown directions. We propose a data-driven beamforming pipeline, which only requires an estimate of the target's initial direction. Building on a higher-order ambisonics representation, we show that neural temporal-spectral processing can be decoupled from linear spatial processing, and thereby achieve generalizable and array-agnostic enhancement. By incorporating autoregression into a frame-wise causal framework, we maintain consistent performance throughout fast speaker motion and long recordings. Evaluation on synthetic data demonstrates robust enhancement under challenging conditions with closely spaced and crossing speakers. Real-world recordings in a dynamic office meeting scenario complement these findings and show generalizability across varying ambisonics orders.",
+      "authors": [
+        "Jakob Kienegger",
+        "Tal Peer",
+        "Sina Khanagha",
+        "Timo Gerkmann"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS",
+        "cs.LG",
+        "cs.SD"
+      ],
+      "published": "2026-07-05T19:32:57+00:00",
+      "link": "https://arxiv.org/pdf/2607.04471v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "beamforming for moving speaker extraction in ambisonics",
+      "llm_evidence_cn": "基于高声阶立体混响的波束形成移动说话人提取",
+      "llm_evidence": "基于高声阶立体混响的波束形成移动说话人提取",
+      "canonical_evidence": "基于高声阶立体混响的波束形成移动说话人提取",
+      "llm_tldr_en": "Proposes a data-driven beamforming pipeline for moving speaker extraction, decoupling neural temporal-spectral processing from linear spatial processing for array-agnostic enhancement.",
+      "llm_tldr_cn": "针对动态多说话人场景中基于深度网络的波束形成性能下降问题，提出一种数据驱动波束形成流水线。利用高声阶立体混响表示，将神经时频处理与线性空间处理解耦，仅需目标初始方向估计，即可实现阵列无关的通用移动说话人提取。自回归机制提升移动追踪能力。在移动源数据上取得优于传统方法的提取精度。",
+      "llm_tldr": "针对动态多说话人场景中基于深度网络的波束形成性能下降问题，提出一种数据驱动波束形成流水线。利用高声阶立体混响表示，将神经时频处理与线性空间处理解耦，仅需目标初始方向估计，即可实现阵列无关的通用移动说话人提取。自回归机制提升移动追踪能力。在移动源数据上取得优于传统方法的提取精度。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.01860v2",
+      "source": "arxiv",
+      "title": "DL-SLAM: Enabling High-Fidelity Gaussian Splatting SLAM in Dynamic Environments based on Dual-Level Probability",
+      "abstract": "Recent advances in 3D Gaussian Splatting (3DGS) have enabled significant progress in dense dynamic Simultaneous Localization And Mapping (SLAM). Prevailing methods typically discard predefined dynamic objects, ignoring that transiently static objects offer valuable geometric constraints for pose estimation. A recent work attempts to leverage this potential by employing per-pixel uncertainty maps to quantify the magnitude of motion. While this approach enables transiently static objects to enhance pose estimation, it erroneously integrates these objects into the static map, resulting in persistent artifacts. Moreover, its reliance on purely geometric information leads to ambiguous object boundaries in the uncertainty maps. To overcome these limitations, we present DL-SLAM, a monocular Gaussian Splatting SLAM system built upon a novel dual-level probabilistic framework. Our method computes dynamic probability maps by combining semantic and geometric information. These pixel-level probabilities are lifted to 3D and aggregated to derive an object-level dynamic probability for each instance. Object-level probability enables the categorical pruning of dynamic Gaussians, resulting in an artifact-free static map. The static map, in turn, provides a geometrically consistent guidance to refine the pixel-wise probabilities, enhancing their reliability. Experimental results demonstrate that DL-SLAM outperforms existing approaches, improving tracking accuracy by up to 13\\% while generating high-fidelity semantic maps.",
+      "authors": [
+        "Ziheng Xu",
+        "Qingfeng Li",
+        "Xuefeng Liu",
+        "Chen Chen",
+        "Jianwei Niu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-07-02T08:18:23+00:00",
+      "link": "https://arxiv.org/pdf/2607.01860v2",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "geometric calibration in SLAM with Gaussian splatting and dual-level probability",
+      "llm_evidence_cn": "SLAM中的几何校准，使用高斯溅射和双层概率",
+      "llm_evidence": "SLAM中的几何校准，使用高斯溅射和双层概率",
+      "canonical_evidence": "SLAM中的几何校准，使用高斯溅射和双层概率",
+      "llm_tldr_en": "Enables high-fidelity 3DGS SLAM in dynamic environments by leveraging transiently static objects for pose estimation through dual-level probability, closely related to geometric calibration for sensor alignment.",
+      "llm_tldr_cn": "该论文针对动态环境下的稠密SLAM问题，提出基于双层概率的高斯溅射SLAM方法。现有方法忽略短暂静态物体对位姿估计的几何约束，而该工作通过每像素不确定性图量化运动幅度，使短暂静态物体参与位姿优化，同时避免将其错误融入静态地图。该方法显著提升了动态场景中位姿估计的精度和地图保真度，为传感器几何校准提供了可迁移的优化思路。",
+      "llm_tldr": "该论文针对动态环境下的稠密SLAM问题，提出基于双层概率的高斯溅射SLAM方法。现有方法忽略短暂静态物体对位姿估计的几何约束，而该工作通过每像素不确定性图量化运动幅度，使短暂静态物体参与位姿优化，同时避免将其错误融入静态地图。该方法显著提升了动态场景中位姿估计的精度和地图保真度，为传感器几何校准提供了可迁移的优化思路。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

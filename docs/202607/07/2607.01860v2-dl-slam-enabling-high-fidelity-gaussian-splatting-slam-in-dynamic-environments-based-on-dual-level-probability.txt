@@ -1,0 +1,638 @@
+Title: DL-SLAM: Enabling High-Fidelity Gaussian Splatting SLAM in Dynamic Environments based on Dual-Level Probability
+
+URL Source: https://arxiv.org/pdf/2607.01860v2
+
+Published Time: Tue, 07 Jul 2026 00:18:49 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# DL-SLAM: Enabling High-Fidelity Gaussian Splatting SLAM in Dynamic Environments based on Dual-Level Probability 
+
+# Ziheng Xu, Qingfeng Li, Xuefeng Liu, Chen Chen, Jianwei Niu RGB Stream  Reconstructed Static Map  Ours (RGB)  SGS (RGB) Ours (Sem)  SGS (Sem) 
+
+Figure 1: DL-SLAM. Given a monocular video sequence captured in dynamic environments, our method estimates accurate camera poses and reconstructs an artifact-free static map by leveraging dual-level dynamic probability to identify and remove dynamic objects. In contrast to SGS-SLAM, our method effectively eliminates the interference of dynamic objects, achieving high-fidelity rendering in both RGB and semantic views. 
+
+## Abstract 
+
+Recent advances in 3D Gaussian Splatting (3DGS) have enabled significant progress in dense dynamic Simultaneous Localization And Mapping (SLAM). Prevailing methods typically discard pre-defined dynamic objects, ignoring that transiently static objects offer valuable geometric constraints for pose estimation. A recent work attempts to leverage this potential by employing per-pixel uncertainty maps to quantify the magnitude of motion. While this approach enables transiently static objects to enhance pose esti-mation, it erroneously integrates these objects into the static map, resulting in persistent artifacts. Moreover, its reliance on purely geometric information leads to ambiguous object boundaries in the uncertainty maps. To overcome these limitations, we present DL-SLAM, a monocular Gaussian Splatting SLAM system built upon a novel dual-level probabilistic framework. Our method computes dynamic probability maps by combining semantic and geometric information. These pixel-level probabilities are lifted to 3D and aggregated to derive an object-level dynamic probability for each instance. Object-level probability enables the categorical pruning of dynamic Gaussians, resulting in an artifact-free static map. The static map, in turn, provides a geometrically consistent guidance to refine the pixel-wise probabilities, enhancing their reliability. Experimental results demonstrate that DL-SLAM outperforms ex-isting approaches, improving tracking accuracy by up to 13% while generating high-fidelity semantic maps. 
+
+## CCS Concepts 
+
+• Computing methodologies → Computer graphics .
+
+## Keywords 
+
+SLAM, 3D Gaussian Splatting, Dynamic Environment, Semantic Mapping 
+
+## 1 Introduction 
+
+Visual SLAM is a foundational technology for applications such as embodied AI, autonomous driving, and mixed reality. Recent SLAM methods that employ Neural Radiance Fields (NeRF) [ 16 ] and 3D Gaussian Splatting (3DGS) [ 9 ] as scene representations have demonstrated unprecedented capabilities in novel view synthesis and high-fidelity dense mapping [ 3, 8, 24 , 36 ]. However, these ap-proaches rely on a static world assumption, which causes their cam-era tracking and reconstruction accuracy to degrade significantly in the presence of dynamic objects. Dynamic objects introduce er-roneous inter-frame correspondences that corrupt pose estimation, while their inclusion in the 3D map produces visual artifacts. A common strategy for mitigating this issue involves using se-mantic masks to uniformly exclude all objects within predefined dynamic categories, such as persons and vehicles [ 7, 13 , 26 , 27 ]. However, dynamic objects do not invariably exert detrimental ef-fects on SLAM performance. When transiently static, they provide valuable geometric and photometric constraints for pose estimation. The indiscriminate removal of all masked regions leads to the unnec-essary loss of potentially useful information. This information loss becomes critical when dynamic objects dominate the scene, as the remaining static structure may be too sparse to reliably constrain the camera pose. Moreover, reliance on a fixed set of predefined classes limits the generalizability of such methods to environments with dynamic objects outside the predefined categories.  
+
+> arXiv:2607.01860v2 [cs.RO] 3 Jul 2026 ACMMM 2026, , Rio de Janeiro, Brazil Xu et al.
+
+Seeking to leverage the valuable information from transiently static objects, WildGS-SLAM [ 34 ] employs per-pixel uncertainty maps to serve as weights in the tracking process, enabling tran-siently static objects to contribute to pose estimation. However, this approach exhibits two primary drawbacks. First, it fuses tran-siently static objects into the map representation due to their low uncertainty values, resulting in persistent artifacts. Second, the uncertainty estimation relies purely on geometric cues, leading to imprecise values at object boundaries, hindering the robust identi-fication of dynamic regions. To address these challenges, we present DL-SLAM, a monocular Gaussian Splatting SLAM system built upon a Dual-Level proba-bilistic framework. Our method operates at two distinct scales. At the pixel level, an initial dynamic probability map is computed by combining fine-grained semantic labels with optical flow. This map serves as an adaptive weight within the dense bundle adjustment (DBA) layer, allowing stable regions of transiently static objects to contribute positively to tracking. At the object level, the pixel-wise probabilities are lifted to the 3D representation and aggregated ac-cording to semantic labels to calculate a holistic probability for each object. This object-level probability facilitates categorical pruning of dynamic Gaussians, yielding a coherent static map. Critically, these two levels are tightly coupled in a feedback loop. The purified static map is leveraged to render a geometrically consistent probability map, which in turn guides the Bayesian update of the initial pixel-level estimations. Furthermore, to achieve high-fidelity semantic mapping, we introduce a dynamic-aware semantic label refinement strategy, which handles occlusions caused by dynamic objects and rectifies label inconsistencies across frames. Extensive evaluations on three dynamic datasets show that DL-SLAM achieves state-of-the-art tracking accuracy and high-quality semantic mapping, surpassing existing dense dynamic SLAM systems. Our main contributions are summarized as follows: 
+
+• A dual-level probabilistic framework for dynamic SLAM that enables transiently static objects to contribute to pose estimation while preventing their incorporation into the final map, thereby achieving robust tracking and artifact-free rendering in dynamic environments. 
+
+• A feedback loop that tightly couples pixel-level and object-level processing, where dynamic Gaussian pruning at the object level guides the Bayesian update of per-pixel proba-bilities using the refined static map. 
+
+• A dynamic-aware semantic label refinement strategy that compensates for dynamic object occlusion and resolves inter-frame semantic inconsistency, achieving high-fidelity seman-tic mapping. 
+
+## 2 RELATED WORK 2.1 Traditional Dynamic SLAM 
+
+Early strategies for dynamic SLAM focus on excluding moving ob-jects identified by semantic segmentation [ 1, 2 , 29 , 30 ]. While these methods stabilized pose estimation by treating segmented regions as outliers, their classification of objects as either static or dynamic results in discarding valuable information from transiently static objects. To address this limitation, subsequent works introduce probabilistic frameworks. CFP-SLAM [ 5], for instance, assigns each feature point a continuous static probability, updated over time using geometric constraints. This formulation offers greater robust-ness to segmentation errors and retains transiently static features, yet it remains dependent on predefined object categories and its multi-stage update can be computationally expensive. In contrast, our method leverages the 3DGS representation to integrate the dynamic probability directly as a Gaussian attribute. This allows for the identification of dynamic objects based on object-level prob-ability rather than a predefined semantic categories, and enables efficient updates through the differentiable rendering pipeline. 
+
+## 2.2 Dense Dynamic SLAM 
+
+Recent works in dense dynamic SLAM have primarily focused on ex-plicit motion filtering. Pioneering NeRF-based dynamic SLAM meth-ods concentrate on robust motion masking, with NID-SLAM [ 27 ]refining masks via depth and RoDyn-SLAM [ 7] improving precision by fusing them with optical flow. This trend continues in 3DGS-based approaches. DG-SLAM [ 26 ] introduces adaptive management of the Gaussians to handle dynamic objects, while SDD-SLAM [ 13 ]manages both active and passive dynamic objects. Nevertheless, the above approaches share two main limitations: 1) the dependence on prior semantic classes, which restricts generalization, and 2) the indiscriminate removal of potentially valuable constraints from transiently static objects. A notable exception is WildGS-SLAM [ 34 ], which uses learned uncertainty to leverage transiently static objects for pose estimation. However, it integrates transiently static objects that exhibit low uncertainty into the static map, and the uncertainty estimation can be imprecise at object boundaries. Our approach, in contrast, introduces dual-level probability to overcome these limitations. By incorporating semantic information, we estimate accurate pixel-level probability maps to leverage transiently static objects for robust tracking, while performing object-level pruning of dynamic objects to generate an artifact-free static map. 
+
+## 2.3 Dense Semantic SLAM 
+
+The integration of semantic information into 3DGS-based SLAM has advanced through three stages. SGS-SLAM [ 12 ], as a pioneer-ing effort, assigns additional semantic color parameters to each Gaussian, providing a straightforward yet coarse-grained seman-tic representation. Subsequent methods [ 6, 10 , 35 ] pursued richer representations by embedding high-dimensional, implicit feature vectors within each Gaussian. While enabling differentiable opti-mization, these approaches necessitate a separate decoding stage to recover discrete labels, hindering direct object-level reasoning. A more recent paradigm, pioneered by OpenGS-SLAM [ 28 ], advocates for an explicit representation by assigning a discrete class label to each Gaussian, facilitating object-level understanding. However, these methods are designed for static scenes. In dynamic environ-ments, object motion and severe occlusions often result in temporal inconsistencies in the extracted semantic information, corrupting the semantic integrity of the map. To address this issue, we propose a dynamic-aware semantic refinement strategy that enforces tem-poral consistency by merging inconsistent and densifying occluded regions, ensuring high-fidelity semantic mapping. DL-SLAM: Enabling High-Fidelity Gaussian Splatting SLAM in Dynamic Environments based on Dual-Level Probability ACMMM 2026, , Rio de Janeiro, Brazil Prob. Guided 
+
+DBA Layer 
+
+> Input Images
+
+Semantic Map 
+
+Generation 
+
+Optical Flow 
+
+Pixel -Level 
+
+Prob. Est. 
+
+Tracking 
+
+Semantic Label 
+
+Refinement 
+
+Object -Level 
+
+Prob. Est. 
+
+Prob. Update 
+
+Mapping 
+
+Map 
+
+Optimization 
+
+Map 
+
+Initialization 
+
+> Splatting
+> Bayesian Update
+> Camera Poses
+> Semantic Label
+
+ConvGRU     
+
+> Init. Prob.
+> Rendered Prob. Updated Prob.
+> …
+> Object -level Prob.: static →dynamic
+> Prune
+> 0
+> 1
+> color
+> mean
+> cov .
+> …
+> prob .
+> label
+
+Figure 2: System Overview. DL-SLAM takes RGB images as input to estimate camera poses and reconstruct a static 3D map. Our method leverages dual-level probability to mitigate interference from dynamic objects. The dynamic probability is a continuous score from 0 to 1, where higher values correspond to a greater likelihood of motion. In the tracking process, we use the semantic label map 𝐿 and optical flow to estimate a pixel-level dynamic probability map 𝑃 , which serves as the weight of DBA optimization. In the mapping process, these probabilities and labels are lifted to the 3D Gaussian representation. This enables object-level probability estimation for dynamic Gaussian pruning. The static map is then used to render a probability map ˆ𝑃 ′ that, in turn, refines the initial estimate 𝑃 .
+
+## 3 METHOD 3.1 Gaussian Scene Representation 
+
+We utilize a 3D Gaussian representation [ 9] to reconstruct the static part of the scanned environment. The scene is represented by a set of anisotropic Gaussians G = {𝑔 𝑖 }𝐾 𝑖 =1. Each Gaussian 𝑔 𝑖 is pa-rameterized by its mean 𝜇 𝑖 ∈ R3, covariance Σ𝑖 ∈ R3×3, opacity 
+
+𝑜 𝑖 ∈ [ 0, 1], RGB color 𝑐 𝑖 ∈ R3. We additionally add dynamic prob-ability 𝑝 𝑖 ∈ [ 0, 1] and explicit semantic label ℓ𝑖 ∈ R1 as Gaussian attributes. By using differentiable splatting to render color and depth maps, the scene is optimized via an iterative process that computes losses against input images and updates the Gaussian parameters accordingly. The color image ˆ𝐶 and depth map ˆ𝐷 are rendered via alpha-blending proposed in [9]: 
+
+ˆ𝐶 =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑐 𝑖 𝛼 𝑖 𝑇 𝑖 , ˆ𝐷 =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑑 𝑖 𝛼 𝑖 𝑇 𝑖 ,𝑇 𝑖 = 
+
+> 𝑖 −1
+
+Ö
+
+> 𝑗 =1
+
+ 1 − 𝛼 𝑗 
+
+ , (1) where 𝑐 𝑖 and 𝑑 𝑖 denote the color and depth values of Gaussian 𝑔 𝑖 .Opacity 𝛼 𝑖 is computed by the coordinate 𝑢 , mean 𝜇 and covariance 
+
+Σ2𝐷 of the splatted 2D Gaussian in pixel space: 
+
+𝛼 𝑖 = 𝑜 𝑖 exp 
+
+
+
+− 12 (𝑢 − 𝜇 )𝑇 Σ−12𝐷 (𝑢 − 𝜇 )
+
+
+
+. (2) Similarly, the dynamic probability map is rendered as: 
+
+ˆ𝑃 =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑝 𝑖 𝛼 𝑖 𝑇 𝑖 (3) We render semantic label map ˆ𝐿 using Gaussian voting proposed in [ 28 ], where the label with the highest cumulative weight 𝑊 is assigned to the corresponding pixel 𝑢 . The weight 𝑊 𝑗 for label 𝑙 𝑗 is computed as: 
+
+𝑊 𝑗 =∑︁   
+
+> 𝑔 𝑖 ∈ G 𝑗 𝑢
+
+𝛼 𝑖 𝑖 −1Ö
+
+> 𝑘 =1
+
+(1 − 𝛼 𝑘 ) , (4) where G𝑢 𝑗 is the set of Gaussians contributing to 𝑢 with 𝑙 𝑗 .
+
+## 3.2 Dual-Level Probabilistic Framework 
+
+We propose a dual-level probabilistic framework to leverage the potential of transiently static objects, which couples 2D per-pixel estimation with 3D object-level reasoning. 
+
+Semantic Map Generation. The foundation of our framework is a robust and temporally consistent semantic understanding of the scene. Semantic label maps provide strong priors that ensure well-defined object boundaries in the pixel-level probability maps. More importantly, they form the basis for achieving object-level scene understanding. ACMMM 2026, , Rio de Janeiro, Brazil Xu et al. 
+
+Unlike methods that rely on predefined dynamic categories such as persons [ 7 , 13 , 26 ], we employ the Recognize Anything Model [ 33 ] to generate open-set class tags from the input image. These tags serve as text prompts for Grounding DINO [ 14 ] to generate class-aware bounding boxes, which then guide Mobile-SAMv2 [ 31 ] to produce fine-grained semantic label maps. However, these per-frame segmentations lack temporal consistency across frames. To resolve this, we implement a robust data association method. Prior work [ 28 ] relies solely on Intersection over Union (IoU) for matching, which is often unreliable for dynamic objects with large displacements. We therefore compute a fused matching score combining both spatial overlap (IoU) and appearance similar-ity, using features extracted by CLIP [ 19 ]. For each new detection, this fused score is computed against all existing tracked objects of the same semantic class. A match is established with the object yielding the highest score above threshold 𝜏 sim , inheriting its object ID. Detections that fail to match are initialized as new labels. The result is a semantic label map 𝐿 , where each object is consistently identified across frames. 
+
+Pixel-Level Probability Estimation. To obtain a robust, pixel-wise dynamic probability map, we leverage epipolar geometry to quantify the degree of inconsistency for each pixel under the as-sumption of a static scene. For computational efficiency, the dy-namic probability map is only estimated for keyframes. We employ a Convolutional Gated Recurrent Unit (ConvGRU) [ 22 ] to estimate the optical flow between the current keyframe 𝐼 𝑘 and the previ-ous keyframe 𝐼 𝑘 −1, which is subsequently used for pose estimation. From the dense pixel correspondences derived from the optical flow, we estimate a fundamental matrix 𝐹 𝑘,𝑘 −1. We then calculate the Sampson error 𝑒 𝐹 𝑘,𝑘 −1 (𝑢 ), for each pixel 𝑢 to quantify its deviation from the epipolar constraint. Inspired by CFP-SLAM [ 5], we model this geometric error sta-tistically. Assuming the error for a static pixel follows a Gaussian distribution, the squared Sampson error can be modeled by a chi-squared distribution with two degrees of freedom. The dynamic probability for pixel 𝑢 is thus given by the cumulative distribution function (CDF) as: 
+
+˜𝑃 𝑘 |𝑘 −1 (𝑢 ) = CDF 𝜒 2
+
+
+
+𝑒 𝐹 𝑘,𝑘 −1 (𝑢 )
+
+2
+
+; 2 
+
+
+
+(5) This formulation yields an initial probability map ˜𝑃 𝑘 |𝑘 −1, where a larger geometric error corresponds to a higher likelihood of being dynamic. Under the assumption that all pixels on a rigid object share the same motion state, we perform a semantic aggregation for each object 𝑜 . Let 𝑝 2D  
+
+> 𝑜
+
+denote the aggregated dynamic probabil-ity for object 𝑜 and M𝑜 be its corresponding semantic mask. We collect the set of all per-pixel probabilities { ˜𝑃 𝑘 |𝑘 −1 (𝑢 )| 𝑢 ∈ M 𝑜 } and sort them in descending order. To ensure that significant motion dictates the overall object state, 𝑝 2D  
+
+> 𝑜
+
+is calculated as the average of the first quartile and the median of the sorted values. Finally, the aggregated dynamic probability map 𝑃 𝑘 is constructed by assigning the probability 𝑝 2D  
+
+> 𝑜
+
+to all pixels within M𝑜 .
+
+Object-Level Probability Estimation. By lifting the pixel-level information to the 3D representation as Gaussian attributes, our method enables object-level reasoning. Each new Gaussian 𝑔 𝑖 ,created from keyframe 𝑘 , is associated with a dynamic probability 
+
+𝑝 𝑖 and a semantic label ℓ𝑖 from its corresponding pixel in 𝑃 𝑘 and 𝐿 𝑘 .A straightforward approach to compute the object-level proba-bility would be averaging the dynamic probabilities of all associated Gaussians with an object. This method, however, suffers from tem-poral inertia, failing to handle situations where a long-term static object starts moving, as newly-added, high-probability Gaussians are diluted by a large history of static ones. To address this, we in-troduce a recency-weighted aggregation strategy. Let G𝑜 denote the set of Gaussians associated with object 𝑜 . At the current keyframe 𝑘 ,we assign an exponentially decaying weight 𝑤 𝑖 = exp (− 𝛿 (𝑘 − 𝑘 𝑖 )) 
+
+to each Gaussian 𝑔 𝑖 ∈ G 𝑜 , where 𝛿 = 0.3 is the decay rate and 𝑘 𝑖 is the creation keyframe index of 𝑔 𝑖 . The object-level probability is then computed as: 
+
+𝑝 3D  
+
+> 𝑜
+
+=
+
+Í𝑔 𝑖 ∈ G 𝑜 𝑤 𝑖 𝑝 𝑖 
+
+Í𝑔 𝑖 ∈ G 𝑜 𝑤 𝑖 
+
+. (6) This formulation ensures that the motion state of an object is pre-dominantly dictated by its recent behavior, allowing for rapid de-tection of state changes. To maintain a coherent and static scene representation, we re-move dynamic objects from the Gaussian map. To avoid premature removal of static objects, we employ a temporal confirmation proto-col. An object is marked as dynamic and added to a global dynamic object set if 𝑝 3D  
+
+> 𝑜
+
+exceeds a threshold 𝜏 prune for three consecutive keyframes. All Gaussians belonging to any object within this global dynamic set are removed from the scene. 
+
+Probability Update. The fidelity of the aggregated probability map 
+
+𝑃 𝑘 is inherently limited by the reliability of the initial estimation 
+
+˜𝑃 𝑘 |𝑘 −1. Since these initial estimates are derived from 2D optical flow, they are prone to error in textureless regions with poor feature quality. Furthermore, traditional geometry-based methods [ 5] rely on costly multi-stage pipelines to update the initial probability. To address these limitations, we introduce an efficient update method that leverages the 3D Gaussian representation. The core of this approach is a feedback loop that tightly couples the pixel and object levels of our framework, using the optimized 3D map to correct the frame-to-frame 2D estimates. Specifically, we render a geometrically consistent likelihood map ˆ𝑃 𝑘 using Eq. 3 from the 3D representation. However, the rendering process acts as a weighted average, which diminishes the contribution of high-probability dynamic Gaussians as they are blended with numerous static ones. To amplify the influence of high-probability values, we apply a power-law scaling to the rendered map as ˆ𝑃 ′ 
+
+> 𝑘
+
+= ( ˆ𝑃 𝑘 )𝛾 , where 𝛾 is set to 0.5. The amplified probability ˆ𝑃 ′ 
+
+> 𝑘
+
+is then fused with the initial estimate 𝑃 𝑘 within a Bayesian framework to compute a posterior probability as: 
+
+𝑃 post  
+
+> 𝑘
+
+=
+
+ˆ𝑃 ′ 
+
+> 𝑘
+
+· 𝑃 𝑘 
+
+ˆ𝑃 ′ 
+
+> 𝑘
+
+· 𝑃 𝑘 + ( 1 − ˆ𝑃 ′ 
+
+> 𝑘
+
+) · ( 1 − 𝑃 𝑘 ) . (7) To maintain consistency, the 2D posterior probability 𝑃 post  
+
+> 𝑘
+
+is propagated back to the 3D representation. For the current viewpoint, the 3D centers of all visible Gaussians are projected onto the image plane. The corresponding pixel-wise probabilities are used to update the dynamic attribute 𝑝 𝑖 of each Gaussian 𝑔 𝑖 .DL-SLAM: Enabling High-Fidelity Gaussian Splatting SLAM in Dynamic Environments based on Dual-Level Probability ACMMM 2026, , Rio de Janeiro, Brazil   
+
+> Input Label Map w/o Refinement w/ Refinement Bonn_mv_box2_frame_idx _520 Bonn_mv_box2_frame_idx _520 Bonn_mv_box2_frame_idx _520
+
+Figure 3: Effect of Semantic Label Refinement. Our method resolves semantic inconsistencies (e.g., the box on the floor) and robustly reconstructs regions occluded by dynamic ob-jects (e.g., the chair). 
+
+## 3.3 Semantic Label Refinement 
+
+While integrating semantic labels into 3D reconstruction enables object-level scene understanding, dynamic environments pose two primary challenges. First, despite our 2D data association, lingering semantic inconsistencies can still arise, as the matching relies purely on frame-to-frame cues and lacks the global geometric context provided by the 3D map. Second, dynamic objects cause severe occlusions that lead to sparse and under-reconstructed regions, characterized by semantically ambiguous Gaussians. As shown in Fig. 3, our method effectively corrects input labels and plausibly completes the regions occluded by dynamic objects. To resolve semantic inconsistencies, we introduce a robust online correction mechanism. The goal is to determine if a rendered object mask with label 𝑖 and an input mask with label 𝑗 correspond to the same object. To address label ambiguities, we match each rendered mask M𝑖 ⊂ ˆ𝐿 with input mask M𝑗 ⊂ 𝐿 using a score function that combines IoU with containment ratios: 
+
+𝑆 m (𝑖, 𝑗 ) = max 
+
+ |M 𝑖 ∩ M 𝑗 ||M 𝑖 ∪ M 𝑗 | , |M 𝑖 ∩ M 𝑗 ||M 𝑗 | , |M 𝑖 ∩ M 𝑗 ||M 𝑖 |
+
+
+
+. (8) If the matching score 𝑆 m (𝑖, 𝑗 ) exceeds a threshold 𝜏 match , we estab-lish a potential match, considering label 𝑗 to be an alias for label 
+
+𝑖 . To ensure robustness against transient errors, this association is only solidified into a permanent identity merge after the same label pair matches for three consecutive keyframes. Once merged, the Gaussians are then relabeled to enforce object-level consistency. To tackle the challenge of under-reconstructed regions, we in-troduce a dynamic-aware densification strategy. We target regions exhibiting high semantic fragmentation that lie within the aggrega-tion of all dynamic object masks. Semantic fragmentation is quanti-fied using a pixel-wise semantic gradient 𝑆 g (𝑢 ), which counts the number of neighbors in a 4-connected neighborhood N ( 𝑢 ) with a different semantic label as: 
+
+𝑆 g (𝑢 ) =∑︁  
+
+> 𝑞 ∈ N ( 𝑢 )
+
+I( ˆ𝐿 (𝑢 ) ≠ ˆ𝐿 (𝑞 )) , (9) where I(·) is the indicator function. Densification is performed on regions where 𝑆 g (𝑢 ) exceeds the threshold 𝜏 grad , thereby improving the reconstruction quality of regions corrupted by dynamic objects. 
+
+## 3.4 SLAM process 
+
+Tracking. Our tracking module builds upon DROID-SLAM [ 22 ], which employs a DBA layer to jointly optimize keyframe poses 
+
+𝜔 and disparities 𝑑 over a frame graph 𝐹 = (𝑉 , 𝐸 ). Here, 𝑉 repre-sents the set of keyframes and 𝐸 represents the keyframe edges. To enhance robustness against dynamic objects, we incorporate our dynamic probability map as a weighting term in the DBA formula-tion. We estimate the metric depth ˜𝐷 𝑖 using Metric3D [ 4] for each new keyframe 𝐼 𝑖 and incorporate it into the DBA objective: 
+
+arg min 
+
+> 𝜔, 𝑑
+
+∑︁ (𝑖,𝑗 ) ∈ 𝐸 
+
+˜u𝑖 𝑗 − Π𝑐 
+
+ 𝜔 −1 
+
+> 𝑗
+
+𝜔 𝑖 Π−1 
+
+> 𝑐
+
+(𝑢 𝑖 , 𝑑 𝑖 ) 2   
+
+> Σ𝑖 𝑗 /( 1−𝑃 𝑖 )
+
+. (10) where 𝑢 𝑖 is the pixel coordinates of keyframe 𝐼 𝑖 and ˜u𝑖 𝑗 is the predicted pixel correspondence with keyframe 𝐼 𝑗 by optical flow estimation. Π𝑐 is the 3D-2D camera projection function. The error terms are weighted by the confidence matrix Σ𝑖 𝑗 from ConvGRU and our dynamic probability map 𝑃 𝑖 . This formulation ensures that pixels exhibiting active motion are down-weighted, while stable regions of transiently static objects can contribute to the DBA. 
+
+Mapping. We incrementally grow the Gaussian map G with new keyframes to cover newly observed regions. Unlike previous meth-ods that attempt to filter dynamic objects in 2D [ 11 , 13 ], our ap-proach allows all pixels to initialize new Gaussians and handle the pruning of dynamic Gaussians in the 3D representation. Following map expansion, the Gaussian map is optimized over a local window of covisible keyframes. For each selected keyframe, we render the color ˆ𝐶 and depth ˆ𝐷 images from the Gaussian model and minimize the rendering loss: 
+
+(1 − 𝑃 )  𝜆 c Lcolor + ( 1 − 𝜆 c) L depth 
+
+ + 𝜆 reg Liso . (11) The color loss Lcolor combines L1 and SSIM losses as: 
+
+Lcolor = (1 − 𝜆 ssim ) | ˆ𝐶 − 𝐶 |1 + 𝜆 ssim 
+
+
+
+1 − SSIM ( ˆ𝐶, 𝐶 )
+
+
+
+. (12) The depth loss is defined as: 
+
+Ldepth = | ˆ𝐷 − ˜𝐷 |1. (13) To mitigate the influence of dynamic objects, both the color loss and the depth loss terms are weighted by our dynamic probability map 𝑃 . The isotropic loss Liso [15 ] is included to prevent Gaussians in less constrained regions from becoming excessively elongated. 
+
+Lreg = 1
+
+|G| 
+
+> | G |
+
+∑︁ 
+
+> 𝑖 =1
+
+|𝑠 𝑖 − ¯𝑠 𝑖 |1, (14) where G denotes the Gaussian map, 𝑠 𝑖 is the scale of the 𝑖 -th Gauss-ian, ¯𝑠 𝑖 represents the mean scale within the map. Instead of optimiz-ing for a fixed number of iterations, we terminate the optimization once the variance of the mapping loss in the local window falls below 𝜏 var , avoiding redundant iterations after convergence. 
+
+## 4 EXPERIMENTS 4.1 Experimental Setup 
+
+Datasets. We evaluate DL-SLAM on three dynamic datasets: the TUM RGB-D dynamic [ 21 ] and BONN datasets [ 18 ], as well as the challenging Wild-SLAM iPhone [ 34 ] dataset to assess performance in unconstrained settings. 
+
+Metrics. We evaluate camera tracking accuracy using the Absolute Trajectory Error (ATE) [ 21 ], reporting both the Root Mean Square Error (RMSE) and Standard Deviation (S.D.). For reconstruction and rendering quality, we compare rendered images against the ACMMM 2026, , Rio de Janeiro, Brazil Xu et al. 
+
+Ground Truth SGS-SLAM DG-SLAM WildGS-SLAM DL-SLAM (Ours) 
+
+> wandering
+
+Wild_iPhone_wandering  wildgs  ours 
+
+GT Wild_iPhone_ wandering _504 
+
+wildgs  ours 
+
+GT  DG SGS Wild_iPhone_ wandering _504 
+
+wildgs  ours 
+
+GT  DG SGS Wild_iPhone_wandering  wildgs  ours 
+
+GT Wild_iPhone_wandering  wildgs  ours 
+
+GT Wild_iPhone_wandering  wildgs  ours 
+
+GT Wild_iPhone_wandering  wildgs  ours 
+
+GT street iPhone _street _frame_idx _234               
+
+> wildgs ours GT SGS DG iPhone _street _frame_idx _234
+> wildgs ours GT SGS DG iPhone _street _frame_idx _234
+> wildgs ours GT SGS DG iPhone _street _frame_idx _234
+> wildgs ours GT SGS DG iPhone _street _frame_idx _234
+> wildgs ours GT SGS DG iPhone _street _frame_idx _234
+> wildgs ours GT SGS DG iPhone _street _frame_idx _234
+> wildgs ours GT SGS DG ps_trk
+
+Bonn_person _trk_frame_idx_256 
+
+wildgs  ours 
+
+GT Bonn_person _trk_frame_idx_256 
+
+wildgs  ours GT 
+
+SplaTAM  Splat -SLAM 
+
+DG 
+
+SGS Bonn_person _trk_frame_idx_256 
+
+wildgs  ours GT 
+
+SplaTAM  Splat -SLAM 
+
+DG 
+
+SGS Bonn_person _trk_frame_idx_256 
+
+wildgs  ours 
+
+GT Bonn_person _trk_frame_idx_256 
+
+wildgs  ours 
+
+GT Bonn_person _trk_frame_idx_256 
+
+wildgs  ours 
+
+GT Bonn_person _trk_frame_idx_256 
+
+wildgs  ours 
+
+GT ps_trk2 Bonn_person_trk2: frame_idx _40
+
+wildgs  ours 
+
+GT Bonn_person_trk2: frame_idx_40 
+
+wildgs  ours 
+
+GT 
+
+SplaTAM  Splat -SLAM 
+
+DG SGS Bonn_person_trk2: frame_idx_40 
+
+wildgs  ours 
+
+GT 
+
+SplaTAM  Splat -SLAM 
+
+DG SGS Bonn_person_trk2: frame_idx _40
+
+wildgs  ours 
+
+GT 
+
+SplaTAM  Splat -SLAM Bonn_person_trk2: frame_idx _40
+
+wildgs  ours 
+
+G
+
+T
+
+SplaTAM  Splat -SLAM Bonn_person_trk2: frame_idx _40
+
+wildgs  ours 
+
+GT Bonn_person_trk2: frame_idx _40
+
+wildgs  ours 
+
+GT mv_box Bonn_mv_box_frame_idx_340          
+
+> wildgs ours GT Bonn_mv_box_frame_idx_340
+> wildgs ours
+> GT
+> SplaTAM Splat -SLAM
+> DG -SLAM SGS -SLAM Bonn_mv_box_frame_idx_340
+> wildgs ours
+> GT
+> SplaTAM Splat -SLAM
+> DG -SLAM SGS -SLAM Bonn_mv_box_frame_idx_340
+> wildgs ours GT Bonn_mv_box_frame_idx_340
+> wildgs ours GT Bonn_mv_box_frame_idx_340
+> wildgs ours GT Bonn_mv_box_frame_idx_340
+> wildgs ours GT
+
+Figure 4: Rendering results on Wild-SLAM iPhone and BONN datasets. Alongside the rendered images, we compare the uncertainty map of WildGS-SLAM against our dynamic probability map. The red box shows the zoomed-in view of the red dashed box. WildGS-SLAM suffers from artifacts due to transiently static objects (e.g., the two persons in wandering and the box in mv_box ), whereas our method achieves artifact-free rendering via object-level pruning. Table 1: Rendering performance on Wild-SLAM iPhone and BONN datasets. The best results are indicated in bold. 
+
+Method Metric Wild-SLAM iPhone BONN 
+
+piano shop street tower wall wander ps_trk ps_trk2 mv_box mv_box2 
+
+SGS-SLAM PSNR[dB] ↑ 16.65 15.59 18.31 17.53 14.15 14.11 17.02 15.78 20.46 19.68 SSIM[%] ↑ 0.669 0.584 0.736 0.715 0.415 0.513 0.635 0.604 0.829 0.785 LPIPS[%] ↓ 0.409 0.583 0.418 0.385 0.681 0.561 0.313 0.341 0.193 0.232 DG-SLAM PSNR[dB] ↑ 13.41 12.76 13.23 13.98 11.97 13.14 17.11 16.38 20.92 21.11 SSIM[%] ↑ 0.263 0.227 0.375 0.531 0.203 0.260 0.666 0.686 0.776 0.798 LPIPS[%] ↓ 0.846 0.936 0.855 0.674 0.994 0.831 0.656 0.610 0.423 0.422 WildGS-SLAM PSNR[dB] ↑ 17.93 15.79 19.69 19.06 16.32 16.70 20.86 20.46 22.55 21.45 SSIM[%] ↑ 0.650 0.499 0.700 0.805 0.503 0.569 0.854 0.853 0.866 0.800 LPIPS[%] ↓ 0.248 0.468 0.337 0.245 0.493 0.341 0.260 0.239 0.213 0.401 
+
+DL-SLAM (Ours) 
+
+PSNR[dB] ↑ 19.18 18.34 21.06 19.93 18.07 17.92 21.81 21.37 23.74 22.62 
+
+SSIM[%] ↑ 0.764 0.689 0.810 0.864 0.715 0.751 0.859 0.859 0.869 0.862 
+
+LPIPS[%] ↓ 0.171 0.236 0.175 0.163 0.236 0.197 0.253 0.235 0.208 0.229 
+
+ground truth training views using Peak Signal to Noise Ratio (PSNR), SSIM [25], and LPIPS [32] metrics. 
+
+Baselines. We compare DL-SLAM against the state-of-the-art SLAM methods, which are divided into three groups based on their scene representation: (1) Traditional: ORB-SLAM2 [ 17 ], Re-Fusion [ 18 ], DynaSLAM [ 1], CFP-SLAM [ 5 ]; (2) NeRF-based: Co-SLAM [ 23 ], NID-SLAM [ 27 ], RoDyn-SLAM [ 7 ], DynaMoN [ 20 ]; 
+
+(3) 3DGS-based: SGS-SLAM [ 12 ], DG-SLAM [ 26 ], SDD-SLAM [ 13 ], WildGS-SLAM [ 34 ]. For each category, we select one representative static method (ORB-SLAM2, Co-SLAM, and SGS-SLAM) as a refer-ence, while the remaining are designed for dynamic environments. 
+
+Implementation details. We run DL-SLAM on a desktop PC with an Intel Core i9-12900KF CPU and an NVIDIA RTX 3090 GPU. For the cross-frame data association, the similarity threshold 𝜏 sim is 0.7. DL-SLAM: Enabling High-Fidelity Gaussian Splatting SLAM in Dynamic Environments based on Dual-Level Probability ACMMM 2026, , Rio de Janeiro, Brazil 
+
+Table 2: Tracking performance on BONN dataset (ATE [cm] ↓). The best results are indicated in bold, and the second-best results are underlined. “-” indicates the absence of mention. 
+
+Method ball ball2 crowd crowd2 ps_trk ps_trk2 mv_box mv_box2 Avg. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. 
+
+Traditional 
+
+ORB-SLAM2 15.8 6.3 12.6 5.4 98.0 60.1 62.8 35.7 69.8 32.7 78.6 45.4 32.3 11.5 79.6 35.9 56.2 29.1 ReFusion 17.5 - 25.4 - 20.4 - 15.5 - 28.9 - 46.3 - 7.1 - 17.9 - 22.4 -DynaSLAM 3.4 1.5 3.2 1.4 2.5 1.3 2.9 1.7 4.7 1.6 12.6 7.2 2.0 1.0 26.2 11.8 7.2 3.4 
+
+NeRF-based 
+
+Co-SLAM 25.0 12.4 38.7 20.8 245.8 64.5 229.0 103.6 77.2 35.6 73.7 31.1 10.5 4.6 25.4 11.5 90.7 35.5 RoDyn-SLAM 7.9 2.7 11.5 6.1 13.5 5.9 13.7 4.5 14.5 4.6 13.8 3.5 24.9 13.6 12.6 4.7 14.1 5.7 DynaMoN 2.9 1.2 2.7 1.0 3.3 2.6 4.8 3.5 15.1 9.7 2.3 0.9 1.5 0.7 2.7 1.0 4.4 2.6 
+
+3DGS-based 
+
+SGS-SLAM 44.7 20.1 37.2 18.9 105.8 28.9 267.0 78.1 128.7 36.6 66.7 36.8 23.6 22.7 41.5 20.8 89.4 32.9 DG-SLAM 6.2 2.3 4.8 2.0 2.1 1.8 3.2 2.5 4.6 3.4 6.3 2.6 2.8 1.9 3.6 1.8 4.2 2.3 SDD-SLAM 2.2 - 4.0 - - - - - 4.5 - 6.5 - - - 2.1 - - -WildGS-SLAM 2.8 1.2 2.5 1.1 1.6 0.8 2.2 1.3 3.7 1.8 3.1 1.4 1.7 0.9 2.3 1.2 2.5 1.2 
+
+Ours 2.4 1.1 2.3 1.0 1.3 0.6 1.6 0.7 3.4 1.6 2.9 1.3 1.4 0.7 2.6 1.3 2.2 1.0 Table 3: Tracking performance on TUM RGB-D dynamic dataset. The metric unit is [cm]. 
+
+Method f3/sit_s f3/sit_x f3/sit_r f3/sit_h f3/walk_s f3/walk_x f3/walk_r f3/walk_h Avg. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. RMSE S.D. 
+
+Traditional 
+
+ORB-SLAM2 0.9 0.4 0.9 0.5 2.0 1.2 1.9 1.1 38.7 16.4 72.1 25.6 78.4 40.1 46.7 26.0 30.2 13.9 ReFusion 0.9 - 4.0 - 13.2 - 11.0 - 1.7 - 9.9 - 40.6 - 10.4 - 11.5 -DynaSLAM 0.5 0.3 1.3 0.6 2.7 1.4 1.9 0.9 0.7 0.3 1.6 0.9 3.5 1.9 3.0 1.6 1.9 1.0 CFP-SLAM 0.5 0.3 0.9 0.4 2.5 1.5 1.5 0.7 0.7 0.3 1.4 0.7 3.7 2.3 2.4 1.1 1.7 0.9 
+
+NeRF-based 
+
+Co-SLAM 1.5 0.8 4.8 2.4 51.7 41.7 8.6 4.3 30.6 9.3 72.5 33.6 236.0 31.5 100.7 31.8 63.3 19.4 NID-SLAM 1.9 - 7.5 - 8.6 - 10.5 - 6.2 - 6.4 - 64.8 - 7.1 - 14.1 -RoDyn-SLAM 1.7 0.9 5.2 3.1 6.7 3.9 4.4 2.2 1.7 0.9 8.3 5.5 7.9 4.7 5.6 2.8 5.2 3.0 DynaMoN 0.5 0.3 1.0 0.6 2.4 1.4 2.6 1.6 0.7 0.3 1.4 0.7 3.5 2.1 1.9 0.9 1.8 1.0 
+
+3DGS-based 
+
+SGS-SLAM 1.4 0.7 1.8 1.1 13.5 8.1 12.9 5.9 60.3 10.2 130.4 35.3 70.7 26.5 69.6 37.9 37.2 15.7 DG-SLAM 0.7 0.5 1.1 0.5 3.6 2.2 2.5 1.1 3.5 2.5 2.9 1.5 4.4 2.1 3.7 2.1 2.8 1.6 SDD-SLAM - - - - - - - - 0.5 - 1.5 - 3.2 - 2.0 - - -WildGS-SLAM 0.5 0.3 0.8 0.4 2.3 1.4 1.7 1.1 0.5 0.3 1.3 0.6 3.1 2.1 1.5 0.8 1.5 0.9 
+
+Ours 0.5 0.3 0.8 0.4 1.9 1.2 1.3 0.7 0.4 0.2 1.2 0.6 2.9 1.9 1.4 0.7 1.3 0.8 
+
+The threshold 𝜏 prune for dynamic Gaussian pruning is set to 0.8. For semantic refinement, we set 𝜏 match = 0.8 and 𝜏 grad = 3. For map optimization, the loss weights and variance threshold are set to 
+
+𝜆 c = 0.5, 𝜆 reg = 10 , 𝜆 ssim = 0.2, and 𝜏 var = 0.002 , respectively. 
+
+## 4.2 Tracking Evaluation 
+
+We report the camera tracking results in Table 2 and Table 3. On the TUM RGB-D dataset, DL-SLAM consistently outperforms all baseline methods across every sequence. Notably, our approach achieves a significant improvement in average accuracy, with up to a 13% reduction in RMSE compared to the next-best method. Similarly, on the BONN dataset, our method attains the best overall accuracy, surpassing competing approaches. These results validate that our dual-level probabilistic framework effectively mitigates the interference of dynamic objects, leading to robust camera tracking. 
+
+## 4.3 Rendering Evaluation 
+
+Fig. 4 presents our rendering results on the Wild-SLAM iPhone and BONN datasets. In wandering sequence, WildGS-SLAM ex-hibits rendering artifacts due to the integration of transiently static ACMMM 2026, , Rio de Janeiro, Brazil Xu et al. 
+
+Before removal After removal (RGB) After removal (Sem) Render_before_removal  After_remova l     
+
+> iPhone_towe r:frame_idx _17 1
+> After_removal_sem Render_before_removal After_remova l
+> iPhone_towe r:frame_idx _17 1
+> After_removal_sem Render_before_removal After_remova l
+> iPhone_towe r:frame_idx _17 1
+> After_removal_sem
+
+Figure 5: Interactive scene editing on Wild-SLAM iPhone. Table 4: Runtime and memory performance on TUM RGB-D. 
+
+Metric Rodyn- SGS- WildGS- Ours 
+
+SLAM SLAM SLAM Segmentation [ms/frame] ↓ 250.0 168.5 - 168.5 
+
+Tracking [ms/frame] ↓ 378.4 1307.1 139.6 139.6 
+
+Mapping [ms/frame] ↓ 757.2 620.3 995.9 590.4 
+
+Model Size [MB] ↓ 7.3 32.9 8.0 11.1 GPU Memory [GB] ↓ 5.0 6.5 10.8 11.5 objects into its map. In contrast, our method yields artifact-free rendering by performing object-level pruning of dynamic objects. In the mv_box sequence, our method correctly treats the box that moves from the table to the floor as a dynamic object, removing it to avoid artifacts in either its initial or final location. Moreover, while the uncertainty estimation of WildGS-SLAM is inaccurate near dynamic object boundaries, our method estimates precise dynamic probability to ensure robust identification of dynamic regions. Table 1 presents the quantitative rendering results. Our method consistently outperforms competing methods, achieving photo-realistic rendering in challenging dynamic environments. In Fig. 5, we demonstrate that our object-level semantic map supports interactive scene editing. By entering a user prompt specifying the target object, the corresponding instance is successfully identified and removed from the final map. 
+
+## 4.4 Runtime and Memory Analysis 
+
+We report the runtime and memory usage of our method in Table 4. For semantic segmentation, we provide SGS-SLAM with the same semantic labels generated by our method for a fair comparison. Although WildGS-SLAM bypasses this module, it still incurs sub-stantial computational overhead from the online optimization of its uncertainty estimation network, which contributes to its higher mapping latency compared to ours. For tracking, our method shares the efficient DBA layer with WildGS-SLAM, achieving the lowest latency among all compared methods. In terms of memory, our method requires moderately higher GPU usage and model size than RoDyn-SLAM and WildGS-SLAM, a direct consequence of the addi-tional semantic label and dynamic probability attributes stored per Gaussian. Compared to SGS-SLAM, which also maintains semantic attributes, our representation is approximately 3 × more compact. 
+
+## 4.5 Ablation Study 
+
+We conduct an ablation study on the BONN dataset to validate the effectiveness of our core components. As shown in Table 5, 
+
+Ground truth w/o object-level w/o object -level 
+
+GT  Ours 
+
+Close -up 
+
+Bonn _crow d2: frame_idx _316 w/o object -level 
+
+DL-SLAM (Ours) Zoomed-in view w/o object -level 
+
+GT  Ours 
+
+Close -up 
+
+Bonn _crow d2: frame_idx _316 w/o object -level 
+
+GT  Ours 
+
+Close -up 
+
+Bonn _crow d2: frame_idx _316 
+
+Figure 6: Rendering ablation results on BONN. Table 5: Ablation study on BONN dataset. We report the av-erage performance across 8 sequences. The units for ATE RMSE, ATE S.D. and PSNR are [cm], [cm], and dB. 
+
+ATE RMSE ↓ ATE S.D. ↓ PSNR ↑
+
+w/o pixel-level prob. 4.8 2.8 19.00 w/o object-level prob. 2.6 1.3 19.38 w/o semantic refinement 2.4 1.1 18.74 DL-SLAM (Ours) 2.2 1.0 19.99 
+
+the pixel-level probability proves crucial for robust tracking, as it mitigates interference from dynamic objects. As illustrated in Fig. 6, the object-level probability enables identifying and pruning transiently static objects, effectively eliminating rendering artifacts caused by dynamic objects. We also ablate our semantic refinement strategy to demonstrate its crucial role in enhancing rendering quality and enabling the generation of high-fidelity semantic maps. 
+
+## 5 Conclusion 
+
+In this paper, we present DL-SLAM, a high-fidelity Gaussian Splat-ting SLAM system in dynamic environments. At the core of our method is a dual-level probabilistic framework that resolves the challenge of handling transiently static objects. By coupling pixel-level estimation with object-level understanding, our method suc-cessfully leverages these objects to enhance tracking accuracy while simultaneously ensuring their exclusion from the final map. Fur-thermore, our dynamic-aware semantic refinement strategy com-pensates for temporal inconsistencies and occlusions caused by moving objects. As validated through extensive experiments, DL-SLAM outperforms existing methods in terms of tracking accuracy and rendering quality. A promising direction for future work is to extend our framework to explicitly model the trajectories of dynamic objects, enabling a complete 4D scene understanding. DL-SLAM: Enabling High-Fidelity Gaussian Splatting SLAM in Dynamic Environments based on Dual-Level Probability ACMMM 2026, , Rio de Janeiro, Brazil 
+
+## References 
+
+[1] Berta Bescós, José M. Fácil, Javier Civera, and José Neira. 2018. DynaSLAM: Tracking, Mapping, and Inpainting in Dynamic Scenes. IEEE Robotics Autom. Lett. 3, 4 (2018), 4076–4083. [2] Yingchun Fan, Qichi Zhang, Yuliang Tang, Shaofeng Liu, and Hong Han. 2022. Blitz-SLAM: A semantic SLAM in dynamic environments. Pattern Recognit. 121 (2022), 108225. [3] Seongbo Ha, Jiung Yeon, and Hyeonwoo Yu. 2024. RGBD GS-ICP SLAM. In 
+
+Computer Vision - ECCV 2024 - 18th European Conference , Vol. 15094. Springer, 180–197. [4] Mu Hu, Wei Yin, Chi Zhang, Zhipeng Cai, Xiaoxiao Long, Hao Chen, Kaixuan Wang, Gang Yu, Chunhua Shen, and Shaojie Shen. 2024. Metric3D v2: A Versatile Monocular Geometric Foundation Model for Zero-Shot Metric Depth and Surface Normal Estimation. IEEE Trans. Pattern Anal. Mach. Intell. 46, 12 (2024), 10579– 10596. [5] Xinggang Hu, Yunzhou Zhang, Zhenzhong Cao, Rong Ma, Yanmin Wu, Zhiqiang Deng, and Wenkai Sun. 2022. CFP-SLAM: A Real-time Visual SLAM Based on Coarse-to-Fine Probability in Dynamic Environments. In IEEE/RSJ International Conference on Intelligent Robots and Systems . IEEE, 4399–4406. [6] Yiming Ji, Yang Liu, Guanghu Xie, Boyu Ma, and Zongwu Xie an Hong Liu. 2024. NEDS-SLAM: A Neural Explicit Dense Semantic SLAM Framework Using 3D Gaussian Splatting. IEEE Robotics Autom. Lett. 9, 10 (2024), 8778–8785. [7] Haochen Jiang, Yueming Xu, Kejie Li, Jianfeng Feng, and Li Zhang. 2024. RoDyn-SLAM: Robust Dynamic Dense RGB-D SLAM With Neural Radiance Fields. IEEE Robotics Autom. Lett. 9, 9 (2024), 7509–7516. [8] Nikhil Varma Keetha, Jay Karhade, Krishna Murthy Jatavallabhula, Gengshan Yang, Sebastian A. Scherer, Deva Ramanan, and Jonathon Luiten. 2024. SplaTAM: Splat, Track & Map 3D Gaussians for Dense RGB-D SLAM. In IEEE/CVF Conference on Computer Vision and Pattern Recognition . IEEE, 21357–21366. [9] Bernhard Kerbl, Georgios Kopanas, Thomas Leimkühler, and George Drettakis. 2023. 3D Gaussian Splatting for Real-Time Radiance Field Rendering. ACM Trans. Graph. 42, 4 (2023), 139:1–139:14. [10] Linfei Li, Lin Zhang, Zhong Wang, and Ying Shen. 2024. GS 3 LAM: Gaussian Semantic Splatting SLAM. In Proceedings of the 32nd ACM International Conference on Multimedia . ACM, 3019–3027. [11] Mingrui Li, Dong Li, Sijia Hu, Kangxu Wang, Zhenjun Zhao, and Hongyu Wang. 2025. SLAM-X: Generalizable Dynamic Removal for NeRF and Gaussian Splatting SLAM. In Proceedings of the 33rd ACM International Conference on Multimedia .ACM, 1132–1140. [12] Mingrui Li, Shuhong Liu, Heng Zhou, Guohao Zhu, Na Cheng, Tianchen Deng, and Hongyu Wang. 2024. SGS-SLAM: Semantic Gaussian Splatting for Neu-ral Dense SLAM. In Computer Vision - ECCV 2024 - 18th European Conference .Springer, 163–179. [13] Haosong Liu, Long Wang, Haiyong Luo, Fang Zhao, Runze Chen, Yushi Chen, Mingyu Xiao, Jiaquan Yan, and Dan Luo. 2025. SDD-SLAM: Semantic-Driven Dynamic SLAM With Gaussian Splatting. IEEE Robotics Autom. Lett. 10, 6 (2025), 5721–5728. [14] Shilong Liu, Zhaoyang Zeng, Tianhe Ren, Feng Li, Hao Zhang, Jie Yang, Qing Jiang, Chunyuan Li, Jianwei Yang, Hang Su, Jun Zhu, and Lei Zhang. 2024. Grounding DINO: Marrying DINO with Grounded Pre-training for Open-Set Object Detection. In Computer Vision - ECCV 2024 - 18th European Conference ,Vol. 15105. Springer, 38–55. [15] Hidenobu Matsuki, Riku Murai, Paul H. J. Kelly, and Andrew J. Davison. 2024. Gaussian Splatting SLAM. In IEEE/CVF Conference on Computer Vision and Pattern Recognition . IEEE, 18039–18048. [16] Ben Mildenhall, Pratul P. Srinivasan, Matthew Tancik, Jonathan T. Barron, Ravi Ramamoorthi, and Ren Ng. 2022. NeRF: representing scenes as neural radiance fields for view synthesis. Commun. ACM 65, 1 (2022), 99–106. [17] Raul Mur-Artal and Juan D. Tardós. 2017. ORB-SLAM2: An Open-Source SLAM System for Monocular, Stereo, and RGB-D Cameras. IEEE Trans. Robotics 33, 5 (2017), 1255–1262. [18] Emanuele Palazzolo, Jens Behley, Philipp Lottes, Philippe Giguère, and Cyrill Stachniss. 2019. ReFusion: 3D Reconstruction in Dynamic Environments for RGB-D Cameras Exploiting Residuals. In IEEE/RSJ International Conference on Intelligent Robots and Systems . IEEE, 7855–7862. [19] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen Krueger, and Ilya Sutskever. 2021. Learning Transferable Visual Models From Natural Language Supervision. In Proceedings of the 38th International Conference on Machine Learning , Vol. 139. PMLR, 8748–8763. [20] Nicolas Schischka, Hannah Schieber, Mert Asim Karaoglu, Melih Görgülü, Flo-rian Grötzner, Alexander Ladikos, Nassir Navab, Daniel Roth, and Benjamin Busam. 2025. DynaMoN: Motion-Aware Fast and Robust Camera Localization for Dynamic Neural Radiance Fields. IEEE Robotics Autom. Lett. 10, 1 (2025), 548–555. [21] Jürgen Sturm, Nikolas Engelhard, Felix Endres, Wolfram Burgard, and Daniel Cremers. 2012. A benchmark for the evaluation of RGB-D SLAM systems. In 
+
+IEEE/RSJ International Conference on Intelligent Robots and Systems . IEEE, 573– 580. [22] Zachary Teed and Jia Deng. 2021. DROID-SLAM: Deep Visual SLAM for Monocu-lar, Stereo, and RGB-D Cameras. In Annual Conference on Neural Information Pro-cessing Systems 2021 , Marc’Aurelio Ranzato, Alina Beygelzimer, Yann N. Dauphin, Percy Liang, and Jennifer Wortman Vaughan (Eds.). 16558–16569. [23] Hengyi Wang, Jingwen Wang, and Lourdes Agapito. 2023. Co-SLAM: Joint Coordinate and Sparse Parametric Encodings for Neural Real-Time SLAM. In 
+
+IEEE/CVF Conference on Computer Vision and Pattern Recognition . IEEE, 13293– 13302. [24] Haitao Wang, Sijia Wen, and Bo Guo. 2025. Polarimetric Monocular Gaussian Splatting SLAM for Dense Surface Reconstruction. In Proceedings of the 33rd ACM International Conference on Multimedia . ACM, 7519–7528. [25] Zhou Wang, Alan C. Bovik, Hamid R. Sheikh, and Eero P. Simoncelli. 2004. Image quality assessment: from error visibility to structural similarity. IEEE Trans. Image Process. 13, 4 (2004), 600–612. [26] Yueming Xu, Haochen Jiang, Zhongyang Xiao, Jianfeng Feng, and Li Zhang. 2024. DG-SLAM: Robust Dynamic Gaussian Splatting SLAM with Hybrid Pose Optimization. In Advances in Neural Information Processing Systems 38: Annual Conference on Neural Information Processing Systems 2024 .[27] Ziheng Xu, Jianwei Niu, Qingfeng Li, Tao Ren, and Chen Chen. 2024. NID-SLAM: Neural Implicit Representation-based RGB-D SLAM In Dynamic Environments. In IEEE International Conference on Multimedia and Expo . IEEE, 1–6. [28] Dianyi Yang, Yu Gao, Xihan Wang, Yufeng Yue, Yi Yang, and Mengyin Fu. 2025. OpenGS-SLAM: Open-Set Dense Semantic SLAM with 3D Gaussian Splatting for Object-Level Scene Understanding. In IEEE International Conference on Robotics and Automation . IEEE, 8486–8492. [29] Chao Yu, Zuxin Liu, Xin-Jun Liu, Fugui Xie, Yi Yang, Qi Wei, and Fei Qiao. 2018. DS-SLAM: A Semantic Visual SLAM towards Dynamic Environments. In IEEE/RSJ International Conference on Intelligent Robots and Systems . IEEE, 1168–1174. [30] Xun Yuan and Song Chen. 2020. SaD-SLAM: A Visual SLAM Based on Semantic and Depth Information. In IEEE/RSJ International Conference on Intelligent Robots and Systems . IEEE, 4930–4935. [31] Chaoning Zhang, Dongshen Han, Sheng Zheng, Jinwoo Choi, Tae-Ho Kim, and Choong Seon Hong. 2023. Mobilesamv2: Faster segment anything to everything. 
+
+arXiv abs/2312.09579 (2023). [32] Richard Zhang, Phillip Isola, Alexei A. Efros, Eli Shechtman, and Oliver Wang. 2018. The Unreasonable Effectiveness of Deep Features as a Perceptual Metric. In 
+
+2018 IEEE Conference on Computer Vision and Pattern Recognition . IEEE, 586–595. [33] Youcai Zhang, Xinyu Huang, Jinyu Ma, Zhaoyang Li, Zhaochuan Luo, Yanchun Xie, Yuzhuo Qin, Tong Luo, Yaqian Li, Shilong Liu, Yandong Guo, and Lei Zhang. 2024. Recognize Anything: A Strong Image Tagging Model. In IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition . IEEE, 1724–1732. [34] Jianhao Zheng, Zihan Zhu, Valentin Bieri, Marc Pollefeys, Songyou Peng, and Iro Armeni. 2025. WildGS-SLAM: Monocular Gaussian Splatting SLAM in Dy-namic Environments. In IEEE/CVF Conference on Computer Vision and Pattern Recognition . IEEE, 11461–11471. [35] Siting Zhu, Renjie Qin, Guangming Wang, and Jiuming Liu andHesheng Wang. 2024. SemGauss-SLAM: Dense Semantic Gaussian Splatting SLAM. arXiv 
+
+abs/2403.07494 (2024). [36] Zihan Zhu, Songyou Peng, Viktor Larsson, Weiwei Xu, Hujun Bao, Zhaopeng Cui, Martin R. Oswald, and Marc Pollefeys. 2022. NICE-SLAM: Neural Implicit Scalable Encoding for SLAM. In IEEE/CVF Conference on Computer Vision and Pattern Recognition . IEEE, 12776–12786.
