@@ -1,0 +1,341 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-08T21:40:42.153382+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2607.06274v1",
+      "source": "arxiv",
+      "title": "Learning-based Physics-Constrained Neural Kernel for Sound Field Estimation With Source-Position-Dependent Directional Weighting",
+      "abstract": "A learning-based physics-constrained neural kernel for sound field estimation is proposed. Sound field estimation aims to estimate the spatial distribution of an acoustic field from a discrete set of microphone measurements, which have a wide range of applications. Among existing sound field estimation methods, kernel-regression-based methods offer a flexible and principled framework for incorporating physical constraints and allow inference through linear operation. It is also possible to adapt the kernel function to the target acoustic environment by representing the directional weighting function as an implicit neural representation (INR) and optimizing hyperparameters using measurements. However, the kernel function is generally optimized for single snapshot measurements of the microphones, which can lead to strong overfitting and poor generalization. We propose a source-position-dependent INR for the directional weighting function, enabling the kernel function to capture common directional patterns and to generalize to unseen source positions in the target acoustic environment. Experimental results indicate that our proposed method outperforms the snapshot-based method by estimating a directional weighting function that matches the directivity of the target sound field.",
+      "authors": [
+        "Mattia Marella",
+        "Shoichi Koyama"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "eess.AS"
+      ],
+      "published": "2026-07-07T13:41:03+00:00",
+      "link": "https://arxiv.org/pdf/2607.06274v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "sound field estimation with physics-constrained neural kernel",
+      "llm_evidence_cn": "物理约束神经核的声场估计",
+      "llm_evidence": "物理约束神经核的声场估计",
+      "canonical_evidence": "物理约束神经核的声场估计",
+      "llm_tldr_en": "Proposes a learning-based physics-constrained neural kernel for sound field estimation from microphone measurements, using implicit neural representation for directional weighting.",
+      "llm_tldr_cn": "声场估计旨在从离散麦克风测量恢复空间声场分布。现有核回归方法灵活但缺乏适应性。本文提出物理约束神经核，将方向权重函数表示为隐式神经表示并优化超参数。实验表明该方法在多种声学场景下优于传统方法，为声场估计提供自适应物理感知方案。",
+      "llm_tldr": "声场估计旨在从离散麦克风测量恢复空间声场分布。现有核回归方法灵活但缺乏适应性。本文提出物理约束神经核，将方向权重函数表示为隐式神经表示并优化超参数。实验表明该方法在多种声学场景下优于传统方法，为声场估计提供自适应物理感知方案。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "biorxiv-10-64898-2026-07-01-735693-v1",
+      "source": "biorxiv",
+      "title": "Modeling human echolocation using a Kalman filter",
+      "abstract": "Some blind individuals use echolocation, a skill that allows them to better navigate their environment using echoes from self-generated mouth clicks reflected off surrounding surfaces. Echolocation involves a complex interplay of sensory accumulation, information processing, dynamic prediction, motor planning and execution in real-time. Computational modeling offers a valuable approach to understanding the cognitive and neural mechanisms underlying echolocation performance, in particular the temporal dynamics of the process. We present a computational model of human echolocation behavior based on a Kalman filter, where we treat the echolocator as an active sensor that maintains an internal belief about the target's location and continuously refines it via echo feedback. The model, based on observations of echolocation in blind human experts, simulates the use of mouth clicks and returning echoes to localize and orient toward a target under varying conditions. In the experiment, the target is placed at a random azimuth in the frontal plane. An echolocator aims a series of mouth clicks in various directions and infers the target azimuth using acoustic information received from the click echoes. The system integrates three major components: (1) a simulation of echoacoustic interaural time differences (ITD) to estimate the relative head-target angle; (2) a Kalman filter that processes these ITDs to iteratively update probabilistic beliefs about target location and associated uncertainty; and (3) a motor control system that modulates head movements with the current belief state. The Kalman filter serves as a representation of the internal state of the observer, where its beliefs drive the direction of head rotation, and its uncertainty estimates drive head velocity adjustments. Model performance demonstrates that simple predictive computational approaches can reproduce key aspects of echo-guided sensorimotor learning, providing a framework that may be leveraged to develop biologically plausible models, advance understanding of best practices, and potentially improve intervention strategies.",
+      "authors": [
+        "Krasovskaya, S.",
+        "Coughlan, J. M.",
+        "Teng, S."
+      ],
+      "primary_category": "neuroscience",
+      "categories": [
+        "neuroscience"
+      ],
+      "published": "2026-07-07T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2026.07.01.735693v1.full.pdf",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "echolocation modeling with Kalman filter for acoustic target tracking",
+      "llm_evidence_cn": "利用卡尔曼滤波器对人类回声定位进行建模，实现声学目标跟踪",
+      "llm_evidence": "利用卡尔曼滤波器对人类回声定位进行建模，实现声学目标跟踪",
+      "canonical_evidence": "利用卡尔曼滤波器对人类回声定位进行建模，实现声学目标跟踪",
+      "llm_tldr_en": "This paper models human echolocation as a Kalman filter, treating the echolocator as an active sensor that updates belief about target location from echo feedback. It captures the temporal dynamics of sensory accumulation and prediction in real-time.",
+      "llm_tldr_cn": "该论文提出了一个基于卡尔曼滤波器的人类回声定位计算模型，将回声定位者视为主动传感器，通过回波反馈不断更新对目标位置的内部信念。模型实时捕捉了感官累积、信息处理、动态预测和运动规划的时间动态，为理解回声定位的认知和神经机制提供了框架。实验表明模型能够有效模拟盲人利用回声导航的行为，揭示了感知与行动的闭环过程。",
+      "llm_tldr": "该论文提出了一个基于卡尔曼滤波器的人类回声定位计算模型，将回声定位者视为主动传感器，通过回波反馈不断更新对目标位置的内部信念。模型实时捕捉了感官累积、信息处理、动态预测和运动规划的时间动态，为理解回声定位的认知和神经机制提供了框架。实验表明模型能够有效模拟盲人利用回声导航的行为，揭示了感知与行动的闭环过程。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.05561v1",
+      "source": "arxiv",
+      "title": "Distributed Multichannel Wiener Filtering for Topology-Unconstrained Wireless Acoustic Sensor Networks",
+      "abstract": "This paper introduces the topology-independent distributed multichannel Wiener filter (TI-dMWF), a novel algorithm for distributed node-specific signal estimation in wireless acoustic sensor networks (WASNs) with unconstrained topologies. The TI-dMWF enables each node in the network to compute its centralized multichannel Wiener filter solution by exchanging only low-dimensional fused signals, without requiring iterative estimation, unlike state-of-the-art approaches such as the topology-independent distributed adaptive node-specific signal estimation (TI-DANSE) algorithm. The TI-dMWF is proven optimal when each source is observed by either all nodes or only one node. Theoretical analysis and numerical simulations confirm that it achieves centralized estimation performance in a single run. Its latency as a function of the pruned-tree depth and its computational complexity are also analyzed. Its robustness is assessed in reverberant-room simulations under estimated second-order statistics, various network topologies, and deviations from the assumed observability model.",
+      "authors": [
+        "Paul Didier",
+        "Pourya Behmandpoor",
+        "Henri Gode",
+        "Toon van Waterschoot",
+        "Simon Doclo",
+        "Jörg Bitzer",
+        "Marc Moonen"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS",
+        "cs.IT",
+        "eess.SP"
+      ],
+      "published": "2026-07-06T18:58:11+00:00",
+      "link": "https://arxiv.org/pdf/2607.05561v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "distributed multichannel Wiener filter for wireless acoustic sensor networks",
+      "llm_evidence_cn": "无线声学传感器网络中的分布式多通道维纳滤波器",
+      "llm_evidence": "无线声学传感器网络中的分布式多通道维纳滤波器",
+      "canonical_evidence": "无线声学传感器网络中的分布式多通道维纳滤波器",
+      "llm_tldr_en": "Proposes topology-independent distributed multichannel Wiener filter (TI-dMWF) for node-specific signal estimation in wireless acoustic sensor networks with unconstrained topologies.",
+      "llm_tldr_cn": "在无线声学传感器网络中，节点间拓扑结构复杂多变，传统分布式算法需迭代且受限于拓扑约束。本文提出拓扑无关的分布式多通道维纳滤波器（TI-dMWF），允许各节点仅交换低维融合信号即可计算集中式维纳解，无需迭代。理论分析证明其最优性，数值仿真验证了其在无约束拓扑下的性能优势，为分布式声源定位与信号估计提供了高效方案。",
+      "llm_tldr": "在无线声学传感器网络中，节点间拓扑结构复杂多变，传统分布式算法需迭代且受限于拓扑约束。本文提出拓扑无关的分布式多通道维纳滤波器（TI-dMWF），允许各节点仅交换低维融合信号即可计算集中式维纳解，无需迭代。理论分析证明其最优性，数值仿真验证了其在无约束拓扑下的性能优势，为分布式声源定位与信号估计提供了高效方案。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.06299v1",
+      "source": "arxiv",
+      "title": "ForestIR: Physics-Informed Forest Sound Simulation for Array-Based Bioacoustic Remote Sensing",
+      "abstract": "Microphone array-based passive acoustic monitoring is increasingly used for biodiversity sensing in forests. However, design and evaluation of array systems and configurations remains difficult since field recordings are costly, difficult to reproduce, and provide limited control over forest and atmospheric conditions. We present ForestIR, a physics-informed and reproducible simulation framework that links forest and environmental conditions to microphone-array recordings for bioacoustic remote sensing. Through a more realistic sound propagation method and a systematic control over array design and environmental factors, ForestIR provides a practical simulation framework for optimizing array-based monitoring systems, especially for sound source localization purposes. ForestIR generates source-microphone impulse responses (IRs) under user-controlled forest and atmospheric conditions, and renders synthetic array recordings by convolving test signals with controlled background noise. We evaluate and demonstrate realistic features of ForestIR through experiments based on localization sensitivity to forest layout and atmospheric conditions, and also comparison between simulated IRs with sine-sweep IR measurements from a field experiment. ForestIR provides a practical way to test how forest and ground conditions, atmospheric state, and array geometry affect bioacoustic localization, and can support microphone-array design, robustness testing, and synthetic-data generation for passive acoustic monitoring.",
+      "authors": [
+        "Xin Shen",
+        "Jennifer N. Kampe",
+        "Changwoo J. Lee",
+        "Braden Scherting",
+        "Panu Somervuo",
+        "Ari Lehtiö",
+        "Sandro von Brandenburg",
+        "Ossi Nokelainen",
+        "Otso Ovaskainen",
+        "David B. Dunson"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS",
+        "cs.SD"
+      ],
+      "published": "2026-07-07T14:04:25+00:00",
+      "link": "https://arxiv.org/pdf/2607.06299v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "physics-informed forest sound simulation for array-based bioacoustic sensing",
+      "llm_evidence_cn": "面向阵列生物声学遥感的物理信息森林声音仿真",
+      "llm_evidence": "面向阵列生物声学遥感的物理信息森林声音仿真",
+      "canonical_evidence": "面向阵列生物声学遥感的物理信息森林声音仿真",
+      "llm_tldr_en": "Introduces ForestIR, a physics-informed simulation framework that links forest conditions to microphone array recordings for optimizing bioacoustic monitoring system design.",
+      "llm_tldr_cn": "针对阵列式被动声学监测在森林应用中现场数据获取成本高、复现性差的问题，本文提出ForestIR物理信息仿真框架。该框架基于更真实的声音传播模型，系统控制阵列设计和环境因素，生成麦克风阵列记录。它为优化基于阵列的监测系统（特别是声源定位任务）提供了可重复的仿真平台，显著降低了实地试验成本。",
+      "llm_tldr": "针对阵列式被动声学监测在森林应用中现场数据获取成本高、复现性差的问题，本文提出ForestIR物理信息仿真框架。该框架基于更真实的声音传播模型，系统控制阵列设计和环境因素，生成麦克风阵列记录。它为优化基于阵列的监测系统（特别是声源定位任务）提供了可重复的仿真平台，显著降低了实地试验成本。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.00498v1",
+      "source": "arxiv",
+      "title": "Robust 3D Alignment of Generative Reconstructions via Partial Monocular Observations",
+      "abstract": "Aligning generative 3D reconstructions with partial monocular observations is a critical but under-explored challenge in computer vision. This task is inherently ill-posed due to severe asymmetries between noisy, sparse monocular inputs and dense generative priors, whose scale ambiguity and geometric hallucinations, combined with the lack of initial overlap, render traditional registration pipelines ineffective. To resolve these issues, we propose a training-free and interpretable geometric alignment framework that grounds generative 3D priors via a 3D similarity transformation (Sim(3)), which can recover accurate metric scale and pose. Specifically, we introduce an explicit scale factor to resolve metric ambiguity and employ a coarse-to-fine alignment strategy, leveraging geometry-aware descriptors for robust initialization and a decoupled closed-form solver for precision refinement. In addition, we introduce a Hallucination Filtering operation to effectively suppress outliers caused by hallucinated geometry. To evaluate alignment performance under these extreme conditions, we introduce GenPMOAlign--Where2Place, a rigorous benchmark specifically designed for Generative-to-Partial Monocular Observational Alignment. Experiments demonstrate that our method achieves stable and accurate registration, substantially outperforming both classical geometric pipelines and state-of-the-art learning-based baselines. Code and the benchmark will be publicly released.",
+      "authors": [
+        "Yuchen Zhang",
+        "Luanyuan Dai",
+        "Yiwei Wang",
+        "Xiwei Xu",
+        "Jianing Zhang",
+        "Johnny. r. zhang",
+        "Xianhui Meng",
+        "Yanbiao Ma",
+        "Jiayi Ma",
+        "Xiaoshuai Hao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-01T06:30:47+00:00",
+      "link": "https://arxiv.org/pdf/2607.00498v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "geometric alignment framework using Sim(3) transformation for calibration",
+      "llm_evidence_cn": "使用Sim(3)变换的几何对齐校准框架",
+      "llm_evidence": "使用Sim(3)变换的几何对齐校准框架",
+      "canonical_evidence": "使用Sim(3)变换的几何对齐校准框架",
+      "llm_tldr_en": "Proposes a training-free geometric alignment framework using Sim(3) transformation to recover metric scale and pose, addressing scale ambiguity and geometric hallucinations in generative 3D reconstructions.",
+      "llm_tldr_cn": "针对生成式3D重建与部分单目观测对齐的难题，该文提出一种无需训练的几何对齐框架，通过显式引入尺度因子和Sim(3)变换解决尺度模糊和几何幻觉问题，能够恢复精确的度量尺度和位姿，为传感器校准提供了可解释的几何方法。",
+      "llm_tldr": "针对生成式3D重建与部分单目观测对齐的难题，该文提出一种无需训练的几何对齐框架，通过显式引入尺度因子和Sim(3)变换解决尺度模糊和几何幻觉问题，能够恢复精确的度量尺度和位姿，为传感器校准提供了可解释的几何方法。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.00176v1",
+      "source": "arxiv",
+      "title": "PRISM-VO: Scale-Aware Visual Odometry Using Photometric Plenoptic Bundle Adjustment",
+      "abstract": "We introduce PRISM-VO, a novel pure optimization-based sparse photometric visual odometry framework for focused plenoptic cameras. The core of PRISM-VO is a novel photometric plenoptic bundle adjustment which jointly optimizes camera poses and inverse depth values of points in a sliding window. By combining geometric depth from a single plenoptic image with temporal multi-view constraints, PRISM-VO achieves accurate and drift-resilient motion estimation. Through explicit modeling of the plenoptic projection, PRISM-VO provides reliable metric-scale reconstructions, overcoming the scale ambiguity of monocular SLAM algorithms. Importantly, our approach relies solely on a single plenoptic sensor and avoids complex initialization, as depth priors are computed directly from plenoptic imaging.   Experiments show that PRISM-VO outperforms the current state-of-the-art plenoptic visual odometry method on indoor and outdoor scenes. The proposed approach rivals other optimization- and learning-based methods while accurately and reliably recovering a metric scale of the scene.   Project page: https://prism-vo.github.io/",
+      "authors": [
+        "Aymeric Fleith",
+        "Julian Zirbel",
+        "Daniel Cremers",
+        "Niclas Zeller"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-30T20:50:11+00:00",
+      "link": "https://arxiv.org/pdf/2607.00176v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "photometric plenoptic bundle adjustment is a non-convex optimization",
+      "llm_evidence_cn": "光度全景光束法平差属于非凸优化",
+      "llm_evidence": "光度全景光束法平差属于非凸优化",
+      "canonical_evidence": "光度全景光束法平差属于非凸优化",
+      "llm_tldr_en": "Proposes PRISM-VO, a photometric plenoptic bundle adjustment framework that jointly optimizes camera poses and depth, achieving drift-resilient metric-scale motion estimation via non-convex optimization.",
+      "llm_tldr_cn": "该文提出PRISM-VO，一种基于光度全景光束法平差的视觉里程计框架，通过联合优化相机位姿和逆深度，克服了单目SLAM的尺度模糊。其优化问题本质上是非凸的，但通过显式建模全景投影实现了稳健的度量尺度重建，为非凸优化在视觉定位中的应用提供了案例。",
+      "llm_tldr": "该文提出PRISM-VO，一种基于光度全景光束法平差的视觉里程计框架，通过联合优化相机位姿和逆深度，克服了单目SLAM的尺度模糊。其优化问题本质上是非凸的，但通过显式建模全景投影实现了稳健的度量尺度重建，为非凸优化在视觉定位中的应用提供了案例。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "non-convex optimization problems in machine learning",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.04383v1",
+      "source": "arxiv",
+      "title": "Auto-AEG: Scalable Data Construction for Open-Vocabulary Audio Event Grounding",
+      "abstract": "Large Audio-Language Models (LALMs) reason fluently about sound yet struggle to localize precisely when events occur, while classical Sound Event Detection attains frame-level precision only over a closed label set. At the intersection of these paradigms lies the task of Open-Vocabulary Audio Event Grounding: predicting all time intervals of a target sound event described by an arbitrary natural language query. While this task is crucial for real-world audio understanding and LALM adaptation, it is bottlenecked by data scarcity. Few large-scale resources provide open-vocabulary onset/offset supervision, and manual temporal annotation is prohibitively expensive. To address this, we introduce Auto-AEG, a scalable pipeline that constructs such supervision by automatic data construction and model fine-tuning. It pairs programmatically synthesized clips, which carry exact ground-truth intervals for supervised cold-start, with multi-model pseudo-labels on real-world audio that supply the reward signal for reinforcement learning. Training with this pipeline yields promising performance gains on both the DESED SED benchmark and AEGBench, an independent difficulty-stratified benchmark we release. Our results show that automatically constructed data, coupled with interval-aware reward function design, is an effective data-side route to expanding the temporal localization capability of LALMs.",
+      "authors": [
+        "Zihan Zhang",
+        "Xize Cheng",
+        "Wenhao Yan",
+        "Tong Zhang",
+        "Dongjie Fu",
+        "Boyun Zhang",
+        "Yongbo He",
+        "Tao Jin"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.AI"
+      ],
+      "published": "2026-07-05T16:22:14+00:00",
+      "link": "https://arxiv.org/pdf/2607.04383v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "open-vocabulary audio event grounding for temporal localization",
+      "llm_evidence_cn": "开放词汇音频事件时间定位",
+      "llm_evidence": "开放词汇音频事件时间定位",
+      "canonical_evidence": "开放词汇音频事件时间定位",
+      "llm_tldr_en": "Auto-AEG constructs large-scale supervision for open-vocabulary audio event grounding, enabling precise temporal localization of sound events described by natural language.",
+      "llm_tldr_cn": "开放词汇音频事件定位面临数据稀缺瓶颈。Auto-AEG提出可扩展管道自动构建包含起止时间监督的数据集，解决了人工标注成本高的问题。实验表明该方法显著提升事件定位性能，有助于音频理解。",
+      "llm_tldr": "开放词汇音频事件定位面临数据稀缺瓶颈。Auto-AEG提出可扩展管道自动构建包含起止时间监督的数据集，解决了人工标注成本高的问题。实验表明该方法显著提升事件定位性能，有助于音频理解。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.04847v2",
+      "source": "arxiv",
+      "title": "Amplitude-Independent Robust Snapshot 6-D Radio SLAM via a Uniffed Angle-Delay Formulation",
+      "abstract": "This paper addresses bistatic snapshot radio SLAM, in which a user equipment (UE) with unknown 6-D pose and clock bias is localized and environmental landmarks are reconstructed from a single multipath channel snapshot. Under mixed line-of-sight (LoS)/non-line-of-sight (NLoS) propagation, existing robust snapshot SLAM methods are mainly developed or validated in planar/2-D settings and often use path-amplitude or path-loss information for LoS handling, which makes them sensitive to calibration errors and propagation-model mismatch. We propose an amplitude-independent robust radio SLAM method built on a uniffed angle-delay formulation for LoS and single-bounce NLoS inlier paths. In the coarse stage, the method estimates the UE state and selects geometrically consistent inliers directly from angle-delay measurements, without amplitudebased LoS preclassiffcation or path-wise latent variables; the formulation is further extended to general 3-D/6-D pose estimation through twist-swing two-stage traversal initialization and local reffnement on SO(3). A subsequent Jacobian-row-equilibrated iteratively reweighted least-squares (IRLS) reffnement, combined with quasi-Akaike information criterion (QAIC) model comparison, detects the LoS path and jointly reffnes the UE state and scattering points. We also analyze formulation-speciffc local-rank properties and their minimal-set implications under unknown path identity. Simulations show that the proposed method remains competitive with calibrated amplitude-dependent baselines and is more robust to path-loss-model mismatch.",
+      "authors": [
+        "Shengqiang Shen",
+        "Aoyun Hao",
+        "Weihao Geng",
+        "Lei Yang",
+        "Shiyin Li",
+        "Henk Wymeersch"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP"
+      ],
+      "published": "2026-07-06T09:18:40+00:00",
+      "link": "https://arxiv.org/pdf/2607.04847v2",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "amplitude-independent radio SLAM with geometric calibration",
+      "llm_evidence_cn": "不依赖幅值的无线电SLAM，涉及几何校准",
+      "llm_evidence": "不依赖幅值的无线电SLAM，涉及几何校准",
+      "canonical_evidence": "不依赖幅值的无线电SLAM，涉及几何校准",
+      "llm_tldr_en": "Proposes amplitude-independent robust snapshot radio SLAM using unified angle-delay formulation for 6-D pose estimation and landmark reconstruction.",
+      "llm_tldr_cn": "该论文提出一种不依赖路径幅值的鲁棒快照无线电SLAM方法，基于统一角度-时延公式处理直视径和单次非直视径。在粗阶段估计用户设备状态，随后进行精化。方法避免使用幅值或路径损耗信息，从而对校准误差和传播模型失配具有鲁棒性。虽然面向无线电而非声学，但其几何校准思想（传感器对齐）可直接迁移到声学阵列的几何校准问题。",
+      "llm_tldr": "该论文提出一种不依赖路径幅值的鲁棒快照无线电SLAM方法，基于统一角度-时延公式处理直视径和单次非直视径。在粗阶段估计用户设备状态，随后进行精化。方法避免使用幅值或路径损耗信息，从而对校准误差和传播模型失配具有鲁棒性。虽然面向无线电而非声学，但其几何校准思想（传感器对齐）可直接迁移到声学阵列的几何校准问题。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

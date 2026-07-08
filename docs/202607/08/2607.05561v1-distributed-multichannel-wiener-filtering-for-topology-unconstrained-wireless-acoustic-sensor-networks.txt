@@ -1,0 +1,1143 @@
+Title: Distributed Multichannel Wiener Filtering for Topology-Unconstrained Wireless Acoustic Sensor Networks
+
+URL Source: https://arxiv.org/pdf/2607.05561v1
+
+Published Time: Wed, 08 Jul 2026 00:07:15 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+<Society logo(s) and publica-tion title will appear here. >
+
+Received XX Month, XXXX; revised XX Month, XXXX; accepted XX Month, XXXX; Date of publication XX Month, XXXX; date of current version XX Month, XXXX. 
+
+> Digital Object Identifier 10.1109/XXXX.2022.1234567
+
+# Distributed Multichannel Wiener Filtering for Topology-Unconstrained Wireless Acoustic Sensor Networks 
+
+Paul Didier 1, Pourya Behmandpoor 4, Henri Gode 2, Toon van Waterschoot 1, Simon Doclo 2,3 , J ¨ org Bitzer 3, and Marc Moonen 1 
+
+> 1
+
+STADIUS Center for Dynamical Systems, Signal Processing, and Data Analytics, Electrical Engineering Department (ESAT), KU Leuven, Leuven, Belgium  
+
+> 2
+
+Signal Processing Group, Department of Medical Physics, and with the Acoustics and Cluster of Excellence Hearing4all, Carl von Ossietzky Universit ¨ at Oldenburg, Oldenburg, Germany  
+
+> 3
+
+Fraunhofer IDMT, Project Group Hearing, Speech and Audio Technology, Oldenburg, Germany  
+
+> 4
+
+Department of Electronics and Informatics, Vrije Universiteit Brussel, B-1050 Brussels, Belgium Corresponding author: Paul Didier (email: phmdidier@proton.me). This research work was carried out in the frame of Research Council KU Leuven project C14-21-0075 ”A holistic approach to the design of integrated and distributed digital signal processing algorithms for audio and speech communication devices” and the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie Grant Agreement No. 956369: “Service-Oriented Ubiquitous Network-Driven Sound — SOUNDS”. This paper reflects only the authors’ views and the Union is not liable for any use that may be made of the contained information. The scientific responsibility is assumed by the authors. 
+
+ABSTRACT This paper introduces the topology-independent distributed multichannel Wiener filter (TI-dMWF), a novel algorithm for distributed node-specific signal estimation in wireless acoustic sensor networks (WASNs) with unconstrained topologies. The TI-dMWF enables each node in the network to compute its centralized multichannel Wiener filter solution by exchanging only low-dimensional fused signals, without requiring iterative estimation, unlike state-of-the-art approaches such as the topology-independent distributed adaptive node-specific signal estimation (TI-DANSE) algorithm. The TI-dMWF is proven optimal when each source is observed by either all nodes or only one node. Theoretical analysis and numerical simulations confirm that it achieves centralized estimation performance in a single run. Its latency as a function of the pruned-tree depth and its computational complexity are also analyzed. Its robustness is assessed in reverberant-room simulations under estimated second-order statistics, various network topologies, and deviations from the assumed observability model. 
+
+INDEX TERMS Distributed signal processing, ad-hoc wireless acoustic sensor networks, multichannel Wiener filter, dimensionality reduction, distributed noise reduction 
+
+I. Introduction 
+
+# IN recent years, devices capable of recording, process-ing, and exchanging audio data wirelessly have become ubiquitous, enabling the creation of wireless acoustic sensor networks (WASNs), which have gained attention for applica-tions such as environmental monitoring and smart homes [1], [2]. Within a WASN, devices (nodes) equipped with one or more microphones (sensors), such as smartphones, laptops, or hearing aids, collaborate to perform audio signal processing tasks, e.g., noise reduction [3]–[5], dereverberation [6], [7], or sound source localization [8], [9]. Compared to traditional fixed microphone arrays, WASNs offer greater spatial coverage, deployment flexibility, and robustness to node failures [1], but operate under constraints such as communication cost and potentially dynamic topologies, making the design of distributed algorithms that respect these constraints a key challenge. This paper addresses node-specific signal estimation in a WASN, where each node estimates a signal of interest (e.g., speech) from its own sensor signals and signals sent by other nodes. The optimal centralized linear minimum mean square error (LMMSE) solution to this problem is provided as the multichannel Wiener filter (MWF) [10, Ch.2], but computing the MWF directly requires access to all sensor signals in the network, which is often infeasible due to communication cost constraints and in WASNs that are not  
+
+> This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/ VOLUME , 1arXiv:2607.05561v1 [eess.AS] 6 Jul 2026 P. Didier et al.: Distributed Multichannel Wiener Filtering for Topology-Unconstrained Wireless Acoustic Sensor Networks:
+
+fully connected (FC). The distributed multichannel Wiener filter (dMWF) [11] lets each node of a FC WASN solve its node-specific LMMSE problem distributively by exchanging only dimensionally reduced (fused) signals, addressing the communication cost constraint. However, topologies may not be FC and may vary over time. We here propose the topology-independent distributed multichannel Wiener filter (TI-dMWF), which lets nodes of a topology-unconstrained WASN compute the centralized MWF as if they had access to all network signals, while exchanging only fused signals. Here, topology-unconstrained is a property of the WASN and topology-independent (TI) is a property of an algorithm: the TI-dMWF is a topology-independent algorithm over topology-unconstrained WASNs. As the dMWF, it is itera-tionless, unlike the topology-independent distributed adaptive node-specific signal estimation (TI-DANSE) [12] and TI-DANSE + [13] algorithms. The TI-DANSE algorithm belongs to the distributed adaptive signal fusion (DASF) framework [14], which the distributed adaptive node-specific signal fusion (DANSF) framework [15] extends to node-specific problems. Note that TI-DANSE + is closely related to DANSF [13]. Unlike all these iterative algorithms, the TI-dMWF reaches the centralized MWF in a single discovery-estimation pass in global-local subspaces (GLS) scenarios (defined hereafter). Unlike the dMWF, which handles any partially overlapping desired subspaces (PODS) scenario [11], the TI-dMWF targets GLS scenarios, where each (speech or noise) source is observed by either all nodes (a global source) or only one node (a local source). Such scenarios arise, e.g., in airports or train stations: a global source is a signal propagating throughout the environment and picked up by all nodes (e.g., a public-address or alarm announcement), while a local source is observed by a single node (e.g., a nearby talker or localized noise). The more general case where a source is observed by an arbitrary subset of nodes is described by the PODS model; the GLS model considered here remains a relevant special case whenever network-wide and strictly local sources are clearly separated. The GLS assumption differs from the fully overlapping desired subspaces (FODS) assumption [11] (all speech sources observed by all nodes) needed for TI-DANSE and TI-DANSE + convergence and optimality [12], [13]. 
+
+> II. Problem Statement
+
+We consider a WASN consisting of K nodes, where node 
+
+k has Mk sensors ( k ∈ K := {1, ..., K }) such that the total number of sensors is M = P 
+
+> k∈K
+
+Mk. Signals are complex-valued, e.g., representing processing in one filter-bank bin. The acoustic scenario includes Q(s) desired sources whose latent signals at time t are grouped in slat [t] ∈ CQ(s) ×1, and 
+
+Q(n) noise sources with latent signals nlat [t] ∈ CQ(n) ×1,for a total of Q = Q(s) + Q(n) sources. The sensor signals at all nodes are stacked in y[t] ∈ CM ×1. Omitting the time-index [t] for conciseness, y can be written as 
+
+y = yT1 , . . . , yT
+
+> K
+
+T = s + n + v, where s = As lat and 
+
+n = Bn lat are the speech and noise components, with 
+
+A ∈ CM ×Q(s) 
+
+and B ∈ CM ×Q(n) 
+
+the corresponding steering matrices, and v ∈ CM ×1 the self-noise. In GLS scenarios, this can be further expanded as: 
+
+y = ◦
+
+s + ˙ s + ◦
+
+n + ˙ n + v, (1) where s = ◦
+
+s + ˙ s and n = ◦
+
+n + ˙ n decompose into global-source components ◦
+
+s = ◦
+
+As lat , ◦
+
+n = ◦
+
+Bn lat and local-source components ˙s = ˙As lat , ˙n = ˙Bn lat . The matrices ◦
+
+A, ◦
+
+B
+
+(resp. ˙A, ˙B) equal A, B with the local-source (resp. global-source) columns set to zero. As in the dMWF [11], the matrix obtained by removing the all-zeros columns from [ ◦
+
+A | ◦
+
+B]
+
+is assumed full column rank; its number of columns ◦
+
+Q is the total number of global sources , and ˙Q = Q − ◦
+
+Q the number of local sources. A root node k is assumed to satisfy 
+
+Mk ≥ ◦
+
+Q, so that its upstream signal in Section III (cf. (7)) is well-defined; a node with Mk < ◦
+
+Q may still participate as a non-root node (cf. Section III-E). Relaxing this for root nodes is left for future work (cf. Section VII). Without loss of generality (w.l.o.g.), the desired signal at any node k contains the contribution to the first D sensors of node k of all speech sources observed by node k (global and local speech sources), i.e., dk = ET 
+
+> k
+
+s ∈ CD×1, ∀ k ∈ K ,where Ek ∈ { 0, 1}M ×D extracts the first D channels of sk
+
+from s. Also w.l.o.g., D is assumed to be the same for all nodes. To optimally estimate dk based on y in the LMMSE sense in a centralized setting, the centralized MWF can be computed at the fusion center as: 
+
+cWk = arg min  
+
+> W∈CM×D
+
+E
+
+n
+
+dk − WHy 22
+
+o
+
+= R−1 
+
+> yy
+
+Ryd k , (2) where Ryy = E yy H and Ryd k = E yd H 
+
+> k
+
+are spatial covariance matrices (SCMs). To estimate these SCMs in practical speech enhancement scenarios time-averaging strategies can be applied, assuming ergodic signals. The first SCM Ryy can be estimated during speech-active periods using, e.g., exponential averaging over incoming time-frames of y [4]. The second SCM Ryd k cannot be estimated directly as it involves the unavailable desired signal dk.Instead, since Ryd k = Rss Ek with Rss = E ss H , and assuming wide-sense stationary noise, the on-off nature of speech is leveraged through a voice activity detector (VAD) or speech presence probability (SPP) [16]–[19] to estimate the noise-only SCM Rnn in speech-absent frames, giving Ryd k = ( Ryy − Rnn )Ek. A generalized eigenvalue decomposition (GEVD)-based approach can alternatively be used [5]. In practice, we may use a forgetting factor 
+
+0 ≪ β < 1 to recursively estimate Ryy and Rnn as: if VAD=1: Ryy [t] = βRyy [t − 1] + (1 − β)yk[t]yk[t]H,
+
+if VAD=0: Rnn [t] = βRnn [t − 1] + (1 − β)yk[t]yk[t]H,
+
+(3) where Ryy [t] and Rnn [t] denote SCM at time-frame t.
+
+> III. Topology-Independent Distributed MWF (TI-dMWF)
+
+Without a fusion center, communication cost constraints and a possibly non-FC, time-varying topology inhibit the direct  
+
+> 2VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+computation of the centralized MWF (2) at each node k.The TI-dMWF described in this section lets each node of any topology-unconstrained WASN compute the centralized MWF (2) distributively by exchanging only dimensionally reduced (fused) sensor signals. The TI-dMWF is defined with respect to one specific node k and only allows the estimation of the desired signal dk at this node. The TI-dMWF steps must thus be repeated for each node in the WASN. The desired signal estimate at a particular node k is obtained through cascaded estimation-fusion processes. To enable this cascade of operations, the WASN is first pruned to a tree. For instance, a minimum spanning tree (MST) can be computed from any WASN topology using Prim’s algorithm [20], then oriented by choosing a root node. In the resulting rooted tree, a non-root node with a single neighbor is a leaf node and any other non-root node is an internal node; each non-root node has one downstream neighbor (towards the root) and each internal node at least one upstream neighbor (towards the leaves). We let Uq denote the upstream neighbors of node q and Uq all nodes upstream of q, with Uq ⊆ U q .Consider a node k and let it be the root of the tree after pruning. As in the dMWF [11], we seek a set of signals, stacked into an observation vector eyk at node k, from which 
+
+dk can be estimated. To this end, a sum-and-send data flow from the leaf nodes to the root node k is defined. To outline it, we focus on one non-root node q ∈ K k = K\{ k}. In the considered GLS scenario, the TI-dMWF fused signal dimension is ◦
+
+Q, the total number of global sources, so that the fused signal encompasses all accessible information about the global-sources subspace (recalling that all sources are mutually uncorrelated). If the total dimension cMq of the signals available at node q (defined in (5)) does not exceed ◦
+
+Q, i.e., cMq ≤ ◦
+
+Q, fusing them into a ◦
+
+Q-dimensional signal would not reduce their dimensionality. Node q then directly forwards its available signals to its downstream neighbor, bypassing the fusion operation. This mixed-network case is discussed in Section III-E . For exposition, we assume 
+
+cMq > ◦
+
+Q, ∀ q ∈ K k in the remainder of this section. Aiming at estimation of dk at root node k, node q will send a fused signal bzq to its (only) downstream neighbor in the tree topology. This signal is recursively defined as a linear combination of the local sensor signals yq with the signals received by node q from its own upstream neighbors (if q is a leaf node, then byq below is simply yq ), i.e.: 
+
+∀ q ∈ K k : bzq = bPH 
+
+> q
+
+byq ∈ C
+
+> ◦
+> Q×1
+
+, (4) with byq = yT 
+
+> q
+
+, bzT 
+
+> u1
+
+, . . . , bzT
+
+> uB
+
+T ∈ CcMq ×1, (5) where cMq = Mq + |U q | ◦
+
+Q, (6) where {u1, . . . , u B } are the indices of the upstream neighbors of node q (with B = |U q |), and bPq ∈ CcMq × ◦ 
+
+> Q
+
+is the fusion matrix at node q directed towards root node k. For notation simplicity, we omit to refer to the root node k in bzq , bPq ,and byq but it is understood that these quantities are defined with respect to a particular root node k. When a tree with another root is pruned, B = |U q | and byq change (and so do 
+
+bPq and bzq ) depending on the new set {U q }q∈K . It is noted that, for any leaf node l (i.e., any non-root node with a single neighbor), byl = yl and thus cMl = Ml.The TI-dMWF is composed of two distinct steps. When aiming at a particular root node k, the first step is the 
+
+discovery step , where the fusion matrix bPq and fused signal 
+
+bzq are computed at each node q ∈ K k. This discovery step can itself be subdivided into two parts: (i) an upstream data flow , where fused signals are transmitted from the root node 
+
+k to the leaf nodes, and (ii) a downstream data flow , where fused signals are transmitted from the leaf nodes to the root node k. The second step is an estimation step where the root node estimates dk using the observation vector byk.
+
+> A. Discovery Step: Upstream Data Flow
+
+In the upstream data flow, the root node k floods a signal yk↑
+
+through the tree, such that every other node in Kk eventually has access to yk↑. This signal is defined as a subset of yk:
+
+yk↑ = ET
+
+> ◦
+> Q
+
+yk ∈ C
+
+> ◦
+> Q×1
+
+, (7) where E ◦ 
+
+> Q
+
+= [ I ◦ 
+
+> Q
+
+| 0]T ∈ { 0, 1}Mk × ◦ 
+
+> Q
+
+is a selection matrix. For simplicity, (7) assumes all ◦
+
+Q global sources are active and that ◦
+
+Q is known a priori or estimated by node k via source enumeration [21]–[24]. 
+
+> B. Discovery Step: Downstream Data Flow
+
+The downstream data flow runs from the leaf nodes towards the root node k. Each node q ∈ K k receives the fused signals 
+
+{bzu}u∈U q from its upstream neighbors, builds byq via (5), and uses it with yk↑ to compute its fusion matrix (towards root k) by solving the LMMSE problem: 
+
+bPq = arg min    
+
+> Pq∈CcMq × ◦
+> Q
+
+E
+
+n
+
+yk↑ − PH 
+
+> q
+
+byq
+
+> 22
+
+o
+
+, (8) 
+
+⇔ bPq = R−1  
+
+> byqbyq
+
+Rbyq yk↑ ∈ CcMq × ◦
+
+> Q
+
+, ∀ q ∈ K k, (9) where Rbyq byq = E byq byH 
+
+> q
+
+∈ CcMq × cMq and Rbyq yk↑ =
+
+E
+
+nbyq yH
+
+> k↑
+
+o
+
+∈ CcMq × ◦
+
+> Q
+
+. Node q can then compute bzq via (4) and send it to its own downstream neighbor. For a leaf node 
+
+l, (8) and (9) also hold, with byl = yl and cMl = Ml.When the tree-pruned WASN is a star (every node q ∈ K k
+
+directly connected to the root k), the TI-dMWF reduces to the dMWF [11]: the upstream flow sends yk↑ (equating 
+
+yk→q in [11]) to every q, and the downstream flow returns 
+
+bzq (equating zq ) to k.
+
+> C. Estimation Step
+
+At the end of the downstream data flow, root node k has access to {bzq }q∈U k and can build its own observation vector 
+
+byk as in (5). Node k can then estimate its desired signal based on byk via: 
+
+fWk = arg min    
+
+> Wk∈CcMk×D
+
+E
+
+n
+
+dk − WH 
+
+> k
+
+byk
+
+> 22
+
+o
+
+, (10)  
+
+> VOLUME , 3P. Didier et al.: Distributed Multichannel Wiener Filtering for Topology-Unconstrained Wireless Acoustic Sensor Networks:
+
+⇔ fWk = R−1  
+
+> bykbyk
+
+Rbyk dk , (11) where Rbyk dk = E bykdH 
+
+> k
+
+. In a similar way as for the centralized MWF from (2), the two SCMs necessary to compute (11) may be estimated based on a VAD (or an SPP) and time-averaging as in (3). The TI-dMWF desired signal estimate is then obtained as bdk, TI-dMWF = ( fWk)H byk.All three steps are repeated for each node k ∈ K to estimate 
+
+{dk}k∈K . When the root index k changes, so do byq (and hence bPq and bzq ), through the new sets {U q }q∈K k .
+
+D. TI-dMWF Overview and Optimality 
+
+Each node k performs the estimation step at every time-frame, which requires the fused signals {bzq }q∈U k from the downstream data flow towards k. These steps are thus performed every frame. The fusion-matrix computation and the upstream data flow, however, may run less frequently (e.g., every Nus > 1 frames). The TI-dMWF is summarized in Algorithm 1. 
+
+Theorem 1 (TI-dMWF optimality): Under the signal model (1) (GLS scenario), the TI-dMWF desired signal estimate is equal to the centralized desired signal estimate at node k, ∀ k ∈ K ,when bPq is defined as in (9) , ∀ q ∈ K k, i.e., (fWk)H byk =
+
+cWH 
+
+> k
+
+y, ∀ k ∈ K where cWk is defined in (2) and fWk is defined in (11). Proof : see Appendix A. 
+
+Remark 1 (Failure under PODS scenarios): The proof of Theorem 1 relies on the inter-node uncorrelatedness of the non-global components { ˙yq }q∈K , which holds under the GLS model (every source is global or observed by a single node). It is used twice: the block-diagonality of ˙Γ in (18) admits a factorization of the joint LMMSE filter fWl′l into locally computable ◦
+
+Q-dimensional fusion matrices, and it justifies replacing the unobservable ET
+
+> ◦
+> Q
+> ◦
+
+yk by the measurable ET
+
+> ◦
+> Q
+
+yk
+
+at every non-root node. Under a PODS model, a source observed by a strict subset of two or more nodes makes 
+
+E  ˙yq ˙yH
+
+> q′
+
+ ̸ = 0 for some q̸ = q′, so both steps fail: the fused signals are no longer a sufficient statistic and the algorithm does not reach the centralized MWF. This suboptimality is quantified in Section VI-B. 
+
+E. Practical Considerations 
+
+Since the pruned tree (and hence the fusion matrices) depends on the root, each non-root node q generally maintains a distinct fusion matrix bPq for each possible root k ∈ K q , i.e., 
+
+K − 1 in total, with the tree (re-)oriented per root. When the topology changes (e.g., due to a link failure or a node joining/leaving), the pruned tree is recomputed for each affected root, and the fusion matrices bPq re-estimated only at nodes q whose upstream set Uq (hence byq ) changes. The matrices of unaffected nodes remain valid. We advocate a shortest-path tree (SPT) [25] rooted at each k: since the downstream flow runs every frame while the upstream flow runs every Nus frames, the dominant per-frame latency grows with the tree depth , which an SPT minimizes. 
+
+Algorithm 1 The TI-dMWF.                                                                                            
+
+> 1: for time-frame index t= 0 ,1, . . . do
+> 2: for k∈ K do
+> 3: The WASN is pruned to a tree with root k.4: if mod ( t, N us ) = 0 then
+> 5: yk↑[t]is flooded from kthrough the tree. 6: end if
+> 7: for qfrom leaves to root k(excluded) do
+> 8: Node qgathers {bzq′[t]}q′∈U qand builds byq[t]as in (5). 9: Node qestimates Rbyqbyqusing byq[t]and Rbyqyk↑using
+> yk↑[t](or yk↑[t′]where t′<t if mod ( t, N us )̸=0 ). 10: Node qcomputes bPqas in (9). 11: Node qcomputes bzq[t]as in (4) and sends it downstream. 12: end for
+> 13: Node kgathers {bzq[t]}q∈U kand builds byk[t]as in (5). 14: Node kestimates Rbykbykand Rbykdk.15: Node kcomputes fWkas in (11) then bdk, TI-dMWF [t].16: end for
+> 17: end for
+
+The flooding of yk↑ need not be synchronous: since the upstream flow is decoupled from the per-frame downstream flow, node q may compute bPq from a delayed yk↑[t′] (t′ < t ), as the SCM estimation relies on time-averaged statistics (cf. (3)) that vary slowly relative to the frame rate. The TI-dMWF also accommodates mixed networks where only some nodes apply a fusion operation. A node q for which fusion would not reduce the forwarded dimension ( cMq ≤ ◦
+
+Q) instead forwards byq unfused, which is then treated by its downstream neighbor as additional channels in (5). Theorem 1 optimality is preserved, as forwarding unfused signals retains the global-sources subspace information and the cascaded-fusion argument of Appendix A holds for any subset of fusing nodes. The number of global sources ◦
+
+Q, setting the dimension of yk↑ in (7), must in practice be estimated by source enumeration (cf. Section III-A ). For a mis-estimated ◦
+
+Q′̸ = ◦
+
+Q,fixed network-wide for a given root k, every downstream node targets the same ◦
+
+Q′-dimensional signal in (8). Underes-timation ( ◦
+
+Q′ < ◦
+
+Q) makes yk↑ span only a ◦
+
+Q′-dimensional subset of the global-sources subspace, losing information and yielding a suboptimal estimate. Overestimation ( ◦
+
+Q′ > ◦
+
+Q)preserves optimality at the cost of a higher communication cost ( ◦
+
+Q′-dimensional exchanges), provided Rbyq byq stays full-rank with the extra channels, which holds generically owing to per-sensor self-noise. This assumes ◦
+
+Q′ ≤ Mk; the case ◦
+
+Q′ > M k, for which (7) is ill-defined, is left for future work (cf. Section VII). 
+
+IV. Communication Cost Analysis 
+
+We analyze and compare the communication cost of the TI-dMWF and TI-DANSE, assuming peer-to-peer signal exchanges and a TI-dMWF upstream data flow every Nus ≥ 1
+
+frames (cf. Section III). Note that TI-DANSE + has the same communication cost as TI-DANSE [13].  
+
+> 4VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+For one updating node k, the upstream data flow exchanges 
+
+Nup = ( K − 1) ◦
+
+Q signal channels (propagating yk↑ from root to leaves), and similarly for the downstream data flow, Ndown = ( K − 1) ◦
+
+Q. As the downstream flow runs continuously, the per-frame total is between Ndown and 
+
+Ndown + Nup , depending on the upstream-flow frequency. Both flows are repeated for each node k. Some exchanges could be saved when nodes share upstream or downstream neighbors, but for simplicity we leave this optimization for future work. For comparison, TI-DANSE exchanges NTI-D = 2( K −
+
+1) Q(s) signal channels per iteration [12]. While this is lower than the TI-dMWF, TI-DANSE requires multiple iterations 
+
+to approach the centralized MWF. The single-pass nature of the TI-dMWF thus generally yields a lower cumulative 
+
+communication cost than the iterative baselines whenever near-centralized accuracy is required. This has been verified in numerical experiments, omitted here for conciseness. 
+
+> V. Latency and Complexity Analysis
+
+Real-time feasibility depends on the per-frame latency Lk,dominated in the TI-dMWF by the downstream data flow at every frame. Let δhop be the average per-hop delay (transmission and per-node time to compute (4)). Since each node q must gather its upstream neighbors’ fused signals before transmitting its own fused signals, the per-frame latency for root k is Lk = ∆ kδhop , with ∆k the pruned-tree depth. Topology-independence lets one choose a pruning strategy minimizing this depth: whereas an MST minimizes total communication power but may yield deeper trees, an SPT rooted at k minimizes ∆k [25]. The real-time constraint Lk <Tshift (with Tshift the STFT frame shift) requires δhop <Tshift /∆k; for Tshift = 20 ms and ∆k = 4 , this allows 
+
+δhop up to 5 ms, which is attainable by low-latency wireless protocols. A separate discovery latency is associated with the up-stream signal flooding. Since the discovery step runs only every Nus frames, independently of the per-frame estimation path, the upstream statistics may be delivered asynchronously or with delay without affecting optimality in slowly varying environments. Moreover, once the SCMs are well-estimated, the TI-dMWF reaches centralized performance in a single discovery cycle. The per-frame computational complexity of the TI-dMWF stays low by decoupling the frequent downstream fusion from the infrequent upstream discovery. In the estimation step , each node performs a single matrix-vector product (4), of complexity O( ◦
+
+Q cMq ), plus per-frame rank-1 SCM updates (3) costing O( cM 2 
+
+> q
+
++ ◦
+
+Q cMq ). The most intensive task, solving (8) for bPq at O( cM 3 
+
+> q
+
+), runs only in the discovery step , every Nus 
+
+frames, giving a mean per-frame complexity O( ◦
+
+Q cMq + cM 2 
+
+> q
+
++
+
+cM 3 
+
+> q
+
+/N us ). In contrast, TI-DANSE has a cheaper per-iteration update (an LMMSE problem of size Mk + ◦
+
+Q at the updating node) but needs many such updates across frames. Finally, a topology change costs only tree re-pruning ( O(K|E| log K)
+
+per node via Dijkstra’s algorithm [25] for K root-specific SPTs) plus fusion-matrix re-estimation at the affected nodes. 
+
+> VI. Numerical Simulations
+
+This section reports four experiments. The first (Section VI-A )validates the framework using oracle SCMs in idealized scenarios. The second (Section VI-B) also uses oracle SCMs, isolating model mismatch from estimation errors to assess robustness to deviations from the GLS assumption. The third and fourth (Section VI-C ) evaluate the TI-dMWF in simulated reverberant scenarios with SCMs estimated from the microphone signals, assessing respectively the convergence under estimated SCMs and the influence of the tree-pruning strategy. 
+
+> A. Validation under Oracle SCMs
+
+As a first experiment, the framework is validated using oracle SCMs. The TI-dMWF is compared in an ideal setting to TI-DANSE [12] (with the filter-normalization of [26]) and TI-DANSE + [13], validating the TI-dMWF framework and assessing the convergence of the iterative baselines. Since TI-DANSE + is closely related to DANSF [13], [15], this also indirectly contrasts the TI-dMWF with the node-specific extension of the DASF framework. The SCMs at the updating node of TI-DANSE and TI-DANSE + may be singular in general GLS scenarios, so the comparison is conducted only in constrained global-local subspaces (cGLS) scenarios where all speech sources are observed by all nodes. In the idealized setting, a topology-unconstrained WASN of K = 6 nodes with Mk = 5 , ∀ k ∈ K is deployed with 
+
+Q(s) = 2 speech and Q(n) = 2 noise sources (so Mk ≥
+
+Q, ∀ k ∈ K ). The steering matrix entries used in the signal model (1) are independently drawn from a standard normal distribution. Each node k ∈ K aims to estimate its own single-channel ( D=1 ) desired signal dk.All SCMs needed for the MWFs in (2), (9), and (11) (and cf. [12], [13] for TI-DANSE and TI-DANSE +) are computed from oracle knowledge of the steering matrices, source powers, and self-noise power. The centralized SCM is 
+
+Ryy = Rss + Rnn + Rvv = AR lat  
+
+> ss
+
+AH + BR lat 
+
+> nn
+
+BH + Rvv ,with Rlat  
+
+> ss
+
+, Rlat  
+
+> nn
+
+diagonal latent speech/noise power matrices and Rvv the (diagonal) self-noise SCM. The latent power is set to 1 for every speech and noise source, and the self-noise power to 0.01 for every sensor. The SCMs required for the distributed algorithms are computed based on the centralized SCMs and the fusion matrices. For instance, in the TI-dMWF estimation step, the SCM Rbyk byk in (11) is computed as 
+
+Rbyk byk = E byk byH 
+
+> k
+
+= DH 
+
+> k
+
+Ryy Dk, where Dk arranges the fusion matrices {Pq }q∈K k (such that WTI  
+
+> k
+
+= Dk fWk,with WTI  
+
+> k
+
+the network-wide TI-dMWF filter at node k; see Appendix A). The other SCMs (for the TI-dMWF and for each TI-DANSE/TI-DANSE + iteration) follow analogously, omitted for brevity.  
+
+> VOLUME , 5P. Didier et al.: Distributed Multichannel Wiener Filtering for Topology-Unconstrained Wireless Acoustic Sensor Networks:
+
+In each simulation, the WASN is generated as a non-fully connected graph with connectivity C = 0 .5 (as defined in [13]). This graph is pruned to a tree using the multiple max-|U ik| trees (MMUT) strategy [13], a constrained variant of Kruskal’s MST algorithm [27] shown to speed up TI-DANSE + convergence relative to MST pruning. Two evaluation metrics are used: the network-wide filter error MSE W = 1
+
+> K
+
+P 
+
+> k∈K
+
+∥Wk − cWk∥2F, measuring the difference between the distributed ( Wk) and centralized ( cWk)network-wide filter coefficients 1, and the desired-signal error 
+
+MSE d = 1
+
+> K
+
+P 
+
+> k∈K
+
+∥dk − bdk∥22, quantifying the error in the desired-signal estimates. Figure 1a compares the TI-dMWF to TI-DANSE and TI-DANSE + on both metrics. The MSE d is also computed for bdk set to (i) the unprocessed first sensor signal yk, 1
+
+(D=1 here) and (ii) the local MWF estimate from yk alone. Results are averaged over 20 random cGLS scenarios, using a geometric mean for MSE W (for a clear logarithmic-axis depiction [13]) and an arithmetic mean for MSE d.To simulate observability patterns in cGLS scenarios, K ×
+
+Q observability matrices (with entries 0 for an unobserved and 1 for an observed source) are randomly generated such that all speech sources are observed by all nodes and each noise source is observed by a single node or by all nodes. The results show that the TI-dMWF achieves the same performance as the centralized MWF and does so without relying on iterations, which is visible through the machine-precision MSE W and the equal MSE d between the central-ized MWF and TI-dMWF. Conversely, TI-DANSE requires many iterations to converge towards the centralized MWF. While TI-DANSE + converges faster than TI-DANSE (we use MMUT pruning at connectivity C = 0 .5), it still requires many iterations to reach the centralized MWF. After about 60 iterations, its MSE d nearly matches the centralized MWF even though its MSE W has not reached that of the TI-dMWF, suggesting that a moderately low MSE W can suffice in practice. To outperform the local MWF, TI-DANSE + and TI-DANSE require around 30 and 82 iterations, respectively, in this 6-node setup. 
+
+> B. Robustness to GLS Deviations
+
+The second experiment assesses TI-dMWF’s sensitivity to deviations from the GLS assumption via a leakage parameter 
+
+α ∈ [0 , 1] . Sources unobserved under the assumed GLS pattern leak into the corresponding microphone signals with gain α, so α = 0 is the strict GLS scenario and increasing α
+
+injects each source’s energy into the nodes the pattern treats as non-observing. The algorithm keeps operating under the assumed pattern as the actual signals depart from it. To isolate model mismatch, it uses oracle SCMs and the idealized setup of Section VI-A with random steering matrices. Figure 1b shows the TI-dMWF MSE W and MSE d versus 
+
+α, with the centralized, local, and unprocessed references. 
+
+> 1For full expressions of the network-wide filters please refer to (18) for the TI-dMWF, [12] for TI-DANSE, and [13] for TI-DANSE +.
+
+At α = 0 (strict GLS), the TI-dMWF attains the centralized MWF exactly, its network-wide filter coinciding with the centralized MWF to machine precision ( MSE W ≈ 10 −16 )and its estimate reaching the centralized MSE d, as predicted by Theorem 1. Any non-zero leakage immediately breaks this exact optimality, with no finite tolerance band: MSE W
+
+leaves machine precision and rises continuously. This matches Remark 1 of Section III-D: once a source is observed by a strict subset of nodes, the non-global components { ˙yq }q∈K 
+
+become inter-node correlated, the block-diagonality of ˙Γ
+
+in (18) is lost, and the fused signals are no longer a sufficient statistic. Exact optimality is confined to the strict GLS scenario, but away from it the TI-dMWF degrades smoothly and monotonically with α. Nonetheless, across the whole 
+
+α range the TI-dMWF network-wide filter stays closer to the centralized MWF than the local MWF, and its estimate stays more accurate than the local MWF and the unprocessed input. 
+
+> C. Performance under Estimated SCMs
+
+Beyond the idealized setting of Section VI-A , the TI-dMWF is evaluated in reverberant scenarios with all SCMs estimated from the microphone signals. room impulse responses (RIRs) are generated with the image-source method (ISM) in Pyroomacoustics [28] for a 5×5×3 m room with T60 = 0 .2 s. As in Section VI-A , the WASN has K = 6 nodes with 
+
+Mk = 5 microphones (compact 3 cm-radius arrays), placed at least 0.25 m from the walls, with a C = 0 .5 ad-hoc topology pruned via the SPT strategy unless stated otherwise. The scene contains Q(s) = 2 speech sources (VCTK [29]) and 
+
+Q(n) = 2 babble noise sources, at least 1 m from any node, at 0 dB mean signal-to-noise ratio (SNR) (latent speech vs. noise), with sensor self-noise 20 dB below the source power. The cGLS observability follows Section VI-A : one noise source is observed by all nodes, one by a single node. Microphone signals are obtained by time-domain con-volution of the latent source signals with the RIRs and processed in a weighted overlap-add (WOLA) filter bank (1024 -sample discrete Fourier transform (DFT), 50 % overlap, Hann window). Speech sources follow a 3 s on-off cycle with randomized start times. The SCMs are estimated by VAD-based recursive averaging (3) with forgetting factor β,from a random initialization; an imperfect VAD flips each per-source frame decision with probability pe. Each 40 sscenario is averaged over 20 runs. Under estimated SCMs, a rank- ◦
+
+Q GEVD-based MWF [30] replaces the plain MWF of Section II (standard for robustness against estimation errors), applied equally to the centralized, local, and TI-dMWF estimators. Fusion matrices and filters are recomputed every Nus = 5 frames ( 160 ms, cf. Sec-tion V) while the SCMs update every frame. Performance is assessed by means of the short-term objective intelligibility (STOI) [31] over sliding windows, averaged over all K nodes. The third experiment tracks the TI-dMWF STOI over time, testing whether SCM estimation errors accumulate through  
+
+> 6VOLUME ,
+
+<Society logo(s) and publication title will appear here. > 
+
+> (a) (b)
+
+FIGURE 1: TI-dMWF performance, MSE W (top) and MSE d (bottom). (a) Versus iteration over 20 cGLS oracle scenarios (C = 0 .5), comparing the TI-dMWF, TI-DANSE, and TI-DANSE +. (b) Versus the observability-leakage α over 20 GLS oracle scenarios, with local, centralized, and unprocessed references (log-log inset). its cascaded estimation-fusion structure (upstream fusion-matrix errors propagating towards the root). It is compared to the centralized GEVD-based multichannel Wiener filter (GEVD-MWF) (estimating a single M × M SCM), the local GEVD-MWF, and the unprocessed reference, at β = 0 .99 
+
+and pe ∈ { 0, 0.05 , 0.1}.Figure 2 shows that the online estimated-SCM filters reach a steady regime after an initial transient of about 15 s. At 
+
+β = 0 .99 and pe = 0 , the TI-dMWF closely tracks the centralized GEVD-MWF, with a converged all-node STOI of 0.76 versus 0.77 , both clearly exceeding the local GEVD-MWF ( 0.66 ) and the unprocessed reference ( 0.63 ). The TI-dMWF thus matches the centralized estimated-SCM MWF to within a small margin, even though each of its nodes estimates only a small cMq × cMq SCM rather than the single 
+
+M × M centralized SCM. SCM estimation errors thus do not accumulate through the cascaded estimation-fusion structure, despite upstream fusion-matrix errors propagating towards the root. Robustness to an imperfect VAD is shown by the 
+
+pe = 0 .05 (dashed) and pe = 0 .1 (dotted) curves, for which the converged TI-dMWF STOI degrades monotonically to 
+
+0.74 and 0.66 , respectively, while preserving the convergence behavior and the relative ordering of the estimators. The fourth experiment assesses how the tree-pruning strategy affects SCM estimation-error propagation. The same scenarios are processed with five strategies: SPT, MMUT, and MST on the C = 0 .5 ad-hoc topology, plus synthetic star and line topologies bounding the tree depth ( 1 for star, 
+
+K − 1 for line). The per-frame downstream cost is identical across strategies (any spanning tree of K nodes has K − 1
+
+edges, each carrying a ◦
+
+Q-dimensional fused signal), so the choice is purely a latency-vs-performance trade-off. The converged all-node TI-dMWF STOI and mean tree depth per strategy ( 20 cGLS scenarios, β = 0 .99 , pe = 0 )
+
+FIGURE 2: All-node mean STOI vs. time at β = 0 .99 ,over 20 cGLS scenarios, for VAD error probabilities pe ∈{0, 0.05 , 0.1} (solid, dashed, dotted, respectively). are summarized below; the tree-independent references are local 0.661 , centralized 0.785 , and unprocessed 0.626 .              
+
+> star SPT MMUT MST line Mean depth 1.02.63.13.64.0
+> STOI 0.792 0.767 0.767 0.755 0.757
+
+The TI-dMWF performance varies only marginally, from 
+
+0.79 STOI for the shallow star topology (depth 1) to 0.76 
+
+for the deeper MST and line topologies, a spread within the inter-scenario variability, with a mild trend favoring shallower trees (fewer cascaded fusion stages). Since the per-frame communication cost is identical across strategies, the choice is governed by latency, for which the SPT is preferable as the minimum-depth tree for an arbitrary topology. 
+
+> VII. Conclusion
+
+We have introduced the TI-dMWF, an algorithm for dis-tributed signal estimation in topology-unconstrained WASNs  
+
+> VOLUME , 7P. Didier et al.: Distributed Multichannel Wiener Filtering for Topology-Unconstrained Wireless Acoustic Sensor Networks:
+
+that lets each node compute its node-specific centralized MWF by exchanging only low-dimensional fused signals, without iterative filter estimation, unlike state-of-the-art algorithms. Simulations confirm that the TI-dMWF is optimal in GLS scenarios, where each source is observed by all nodes or only one. Latency and complexity analyses show that the TI-dMWF retains centralized optimality in the GLS setting with predictable latency, computational load, and communication cost, and degrades controllably when the GLS assumption only approximately holds. Future work may relax the GLS assumption and validate the algorithm in real-world scenarios beyond the present simulation study, and generalize the upstream signal construction (7) beyond the selection-matrix formulation to handle ◦
+
+Q > M k at the root node. 
+
+Appendix A: TI-dMWF Optimality 
+
+We first show that a leaf node l ∈ K k estimating ET
+
+> ◦
+> Q
+> ◦
+
+yk from its local signals yl obtains an LMMSE filter usable as a fusion matrix that compresses yl into a lower-dimensional fused signal, which its downstream neighbor can then use to estimate ET
+
+> ◦
+> Q
+> ◦
+
+yk without performance loss. Applying this recursively from the leaves to the root node k yields the centralized LMMSE estimator of ET
+
+> ◦
+> Q
+> ◦
+
+yk at node k, achievable in practice by having each node transmit estimates of ET
+
+> ◦
+> Q
+
+yk.The same process finally yields the centralized LMMSE estimator for dk at node k.For convenience, we rewrite the signal model as yk =
+
+> ◦
+
+yk + ˙ yk = ◦
+
+Hk
+
+> ◦
+
+xlat + ˙ yk, where ◦
+
+Hk ∈ CMk × ◦ 
+
+> Q
+
+is the steering matrix relative to all global sources in the environment and 
+
+> ◦
+
+xlat ∈ C ◦ 
+
+> Q×1
+
+is the vector of their latent source signals. Consider the problem of estimating ET
+
+> ◦
+> Q
+> ◦
+
+yk ∈ C ◦ 
+
+> Q×1
+
+at a node l ∈ K k based solely on its local sensor signals yl. The corresponding LMMSE formulation is: 
+
+fWl = arg min 
+
+> Wl∈CMl× ◦
+> Q
+
+E
+
+
+
+ET
+
+> ◦
+> Q
+> ◦
+
+yk − WH 
+
+> l
+
+yl
+
+> 22
+
+
+
+(12) 
+
+= R−1 
+
+> ylyl
+
+Ryl 
+
+> ◦
+> yk
+
+E ◦
+
+> Q
+
+, (13) where Ryl 
+
+> ◦
+> yk
+
+= E yl
+
+> ◦
+
+yH 
+
+> k
+
+= ◦
+
+HlR◦
+
+> x◦
+> x
+> ◦
+
+HH 
+
+> k
+
+with R◦ 
+
+> x◦
+> x
+
+=
+
+E  ◦
+
+xlat ( ◦
+
+xlat )H . The MWF (13) can be expanded using the matrix inversion lemma to obtain: 
+
+fWl =
+
+
+
+R ˙yl ˙yl + ◦
+
+HlR◦
+
+> x◦
+> x
+> ◦
+
+HH
+
+> l
+
+−1 ◦
+
+HlR◦
+
+> x◦
+> x
+> ◦
+
+HH 
+
+> k
+
+E ◦ 
+
+> Q
+
+(14) 
+
+= R−1˙yl ˙yl
+
+> ◦
+
+Hl
+
+| {z } 
+
+> Ml×◦
+> Q
+
+
+
+I ◦ 
+
+> Q
+
+− X−1
+
+> l
+> ◦
+
+HH 
+
+> l
+
+R−1˙yl ˙yl
+
+> ◦
+
+Hl
+
+
+
+R◦
+
+> x◦
+> x
+> ◦
+
+HH 
+
+> k
+
+E ◦
+
+> Q
+
+| {z }  
+
+> =Mlk ∈C◦
+> Q× ◦
+> Q
+
+,
+
+(15) with Xl = R−1 
+
+> ◦
+> x◦
+> x
+
++ ◦
+
+HH 
+
+> l
+
+R−1˙yl ˙yl
+
+> ◦
+
+Hl, (16) and where R ˙yl ˙yl = E  ˙yl ˙yH 
+
+> l
+
+is full-rank and square, thus invertible. The term R−1˙yl ˙yl
+
+> ◦
+
+Hl in (15) acts as a fusion matrix compressing yl into a ◦
+
+Q-dimensional signal, post-multiplied by Mlk to obtain the LMMSE filter fWl.Now consider an internal node l′ (direct downstream neigh-bor of l) estimating ET
+
+> ◦
+> Q
+> ◦
+
+yk from yl′ and the yl transmitted by node l. The corresponding LMMSE problem is: 
+
+fWl′l = arg min  
+
+> Wl′l∈C(Ml′+Ml)× ◦
+> Q
+
+E
+
+(
+
+ET
+
+> ◦
+> Q
+> ◦
+
+yk − WH
+
+> l′l
+
+yl′
+
+yl
+
+ 22
+
+)
+
+.
+
+(17) Following a similar reasoning as (12)-(16), an alternative expression for fWl′l can be obtained: 
+
+fWl′l =
+
+"
+
+R−1˙yl′ ˙yl′◦
+
+Hl′
+
+R−1˙yl ˙yl
+
+> ◦
+
+Hl
+
+#
+
+Ml′lk . (18) 
+
+Ml′lk =
+
+
+
+I ◦ 
+
+> Q
+
+− X−1
+
+> l′l
+> ◦
+
+HH 
+
+> l′l
+
+˙Γ ◦
+
+Hl′l
+
+
+
+R◦
+
+> x◦
+> x
+> ◦
+
+HH 
+
+> k
+
+E ◦ 
+
+> Q
+
+(19) 
+
+Xl′l = ( R◦
+
+> x◦
+> x
+
+)−1 + ◦
+
+HH 
+
+> l′l
+
+˙Γ ◦
+
+Hl′l, (20) with R ˙yl′ ˙yl′ = E  ˙yl′ ˙yH 
+
+> l′
+
+, ◦
+
+Hl′l = [ ◦
+
+HT 
+
+> l′
+
+| ◦
+
+HT 
+
+> l
+
+]T, and 
+
+˙Γ = blkdiag 
+
+n
+
+R−1˙yl′ ˙yl′ , R−1˙yl ˙yl
+
+o
+
+. As in (15), the leftmost products R−1˙yl′ ˙yl′◦
+
+Hl′ and R−1˙yl ˙yl
+
+> ◦
+
+Hl in (18) act as fusion matrices compressing yl′ and yl into ◦
+
+Q-dimensional signals. A fusion matrix is valid (in the sense of this proof) if an LMMSE problem using the fused signals yields the same result as one using the original signals. The matrices 
+
+R−1˙yl′ ˙yl′◦
+
+Hl′ and R−1˙yl ˙yl
+
+> ◦
+
+Hl are valid, being the LMMSE filters of nodes l′ and l when estimating ET
+
+> ◦
+> Q
+> ◦
+
+yk from yl′ and yl
+
+alone, cf. (15) (proof omitted). Hence node l′’s estimate of ET
+
+> ◦
+> Q
+> ◦
+
+yk from yl′ and yl is unchanged if node l transmits the fused (R−1˙yl ˙yl
+
+> ◦
+
+Hl)Hyl ∈
+
+C ◦ 
+
+> Q×1
+
+instead of yl ∈ CMl×1. Moreover, post-multiplying 
+
+R−1˙yl ˙yl
+
+> ◦
+
+Hl by any invertible ◦
+
+Q × ◦
+
+Q matrix (e.g., Mlk in (15) or Ml′lk in (18)) gives an equally valid fusion matrix (proof omitted), so the estimate is likewise unchanged if l transmits 
+
+fWH 
+
+> l
+
+yl ∈ C ◦ 
+
+> Q×1
+
+instead of yl.Formula (18) extends to any number of cooperating nodes. In a tree, each leaf node l first computes a valid fusion matrix fWl from its local observation yl as in (15). Each 
+
+internal node p then combines the fused signals from its upstream neighbors with yp to compute its own LMMSE filter for ET
+
+> ◦
+> Q
+> ◦
+
+yk, of the form (18), which serves as its fusion matrix to compress all available signals into a single ◦
+
+Q-dimensional signal. Repeating this up to the root node k
+
+yields the centralized LMMSE estimator for ET
+
+> ◦
+> Q
+> ◦
+
+yk there. Since ◦
+
+yk is not directly available in practice, ET
+
+> ◦
+> Q
+> ◦
+
+yk can be replaced by ET
+
+> ◦
+> Q
+
+yk (cf. (7)) in the LMMSE estimation at all nodes but k without changing the obtained filters since 
+
+˙yk is uncorrelated to ˙yl by definition for any l ∈ K k. Once node k has received the same fused signals, the centralized LMMSE estimator for dk = ET 
+
+> k
+
+s is likewise computed at 
+
+k, with a filter analogous to (18) (omitted for brevity). This concludes the proof of the optimality of the TI-dMWF.  
+
+> 8VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+REFERENCES 
+
+[1] A. Bertrand, “Applications and trends in wireless acoustic sensor networks: A signal processing perspective,” in Proceedings of the IEEE Symposium on Communications and Vehicular Technology , 2011, pp. 1–6. [2] S. Natarajan, S. A. R. Al-Haddad, F. A. Ahmad, M. K. Hassan, R. Kamil, S. Azrad, and J. F. Macleans, “A Comprehensive Review of Beamforming-Based Speech Enhancement Techniques, IoT, and Smart City Applications,” in Proceedings of the Industrial Electronics Society Annual On-Line Conference , 2023, pp. 1–6. [3] S. Doclo, M. Moonen, T. Van den Bogaert, and J. Wouters, “Reduced-Bandwidth and Distributed MWF-Based Noise Reduction Algorithms for Binaural Hearing Aids,” IEEE/ACM Trans. Audio, Speech, Language Process. , vol. 17, no. 1, pp. 38–51, 2009. [4] A. Bertrand and M. Moonen, “Distributed Adaptive Node-Specific Signal Estimation in Fully Connected Sensor Networks—Part I: Sequential Node Updating,” IEEE Trans. Signal Process. , vol. 58, no. 10, pp. 5277–5291, 2010. [5] A. Hassani, A. Bertrand, and M. Moonen, “GEVD-based low-rank approximation for distributed adaptive node-specific signal estimation in wireless sensor networks,” IEEE Trans. Signal Process. , vol. 64, no. 10, pp. 2557–2572, 2016. [6] A. Lohmann, T. van Waterschoot, J. Bitzer, and S. Doclo, “Dereverber-ation in Acoustic Sensor Networks Using Weighted Prediction Error with Microphone-Dependent Prediction Delays,” in Proceedings of the IEEE International Conference on Acoustics, Speech, and Signal Processing , 2023, pp. 1–5. [7] R. Chang, Z. Chen, and F. Yin, “Distributed Kalman Filtering for Speech Dereverberation and Noise Reduction in Acoustic Sensor Networks,” IEEE Sensors J. , vol. 23, no. 24, pp. 31027–31037, 2023. [8] A. Griffin, A. Alexandridis, D. Pavlidi, Y. Mastorakis, and A. Mouchtaris, “Localizing Multiple Audio Sources in a Wireless Acoustic Sensor Network,” Signal Processing , vol. 107, pp. 54–67, 2015. [9] M. Cobos, F. Antonacci, A. Alexandridis, A. Mouchtaris, and B. Lee, “A Survey of Sound Source Localization Methods in Wireless Acoustic Sensor Networks,” Wireless Communications and Mobile Computing ,vol. 2017, pp. 1–24, 2017. [10] J. Benesty, S. Makino, and J. Chen, Speech Enhancement , Springer Science & Business Media, Mar. 2006. [11] P. Didier, T. van Waterschoot, S. Doclo, J. Bitzer, P. Behmandpoor, H. Gode, and M. Moonen, “Distributed Multichannel Wiener Filtering for Wireless Acoustic Sensor Networks,” 2025, Submitted for publication in IEEE/ACM Trans. Audio, Speech, Language Process. [12] J. Szurley, A. Bertrand, and M. Moonen, “Topology-Independent Distributed Adaptive Node-Specific Signal Estimation in Wireless Sensor Networks,” IEEE Trans. Signal Inf. Process. Netw. , vol. 3, no. 1, pp. 130–144, 2017. [13] P. Didier, T. van Waterschoot, S. Doclo, J. Bitzer, and M. Moonen, “Fast-Converging Distributed Signal Estimation in Topology-Unconstrained Wireless Acoustic Sensor Networks,” arXiv preprint arXiv:2506.02797 ,2025, Submitted for publication in IEEE Trans. Signal Inf. Process. Netw. [14] C. A. Musluoglu and A. Bertrand, “A Unified Algorithmic Framework for Distributed Adaptive Signal and Feature Fusion Problems – Part I: Algorithm Derivation,” IEEE Trans. Signal Process. , vol. 71, pp. 1863–1878, 2023. [15] C. A. Musluoglu and A. Bertrand, “A Distributed Adaptive Algorithm for Node-Specific Signal Fusion Problems in Wireless Sensor Networks,” in Proceedings of the European Signal Processing Conference , 2023, pp. 1654–1658. [16] M. H. Bahari, L. K. Hamaidi, M. Muma, J. Plata-Chaves, M. Moonen, A. M. Zoubir, and A. Bertrand, “Distributed Multi-Speaker Voice Activity Detection for Wireless Acoustic Sensor Networks,” 2017. [17] Y. Zhao, J. K. Nielsen, J. Chen, and M. G. Christensen, “Model-Based Distributed Node Clustering and Multi-Speaker Speech Presence Probability Estimation in Wireless Acoustic Sensor Networks,” Journal of the Acoustical Society of America , vol. 147, no. 6, pp. 4189–4201, 2020. [18] M. Souden, Jingdong Chen, J. Benesty, and S. Affes, “Gaussian Model-Based Multichannel Speech Presence Probability,” IEEE/ACM Trans. Audio, Speech, Language Process. , vol. 18, no. 5, pp. 1072–1077, 2010. [19] M. Tammen, D. Fischer, B. T. Meyer, and S. Doclo, “DNN-Based Speech Presence Probability Estimation for Multi-Frame Single-Microphone Speech Enhancement,” in Proceedings of the IEEE International Conference on Acoustics, Speech, and Signal Processing ,2020, pp. 191–195. [20] R. C. Prim, “Shortest connection networks and some generalizations,” 
+
+Bell System Technical Journal , vol. 36, no. 6, pp. 1389–1401, 1957. [21] D. Williams and D. Johnson, “Using the Sphericity Test for Source Detection with Narrow-Band Passive Arrays,” IEEE/ACM Trans. Audio, Speech, Language Process. , vol. 38, no. 11, pp. 2008–2014, 1990. [22] R. Brcich, A. Zoubir, and P. Pelin, “Detection of Sources Using Bootstrap Techniques,” IEEE Trans. Signal Process. , vol. 50, no. 2, pp. 206–215, 2002. [23] P. Stoica and Y. Selen, “Model-Order Selection: A Review of Information Criterion Rules,” IEEE Signal Process. Mag. , vol. 21, no. 4, pp. 36–47, 2004. [24] M. Wax and A. Adler, “Detection of the Number of Signals by Signal Subspace Matching,” IEEE Trans. Signal Process. , vol. 69, pp. 973–985, 2021. [25] E. W. Dijkstra, “A note on two problems in connexion with graphs,” 
+
+Numerische Mathematik , vol. 1, no. 1, pp. 269–271, 1959. [26] P. Didier, T. van Waterschoot, and M. Moonen, “Topology-Independent GEVD-Based Distributed Adaptive Node-Specific Signal Estimation in Ad-Hoc Wireless Acoustic Sensor Networks,” in Proceedings of the European Signal Processing Conference , 2024, pp. 1–5. [27] J. B. Kruskal, “On the shortest spanning subtree of a graph and the traveling salesman problem,” Proceedings of the American Mathematical Society , vol. 7, no. 1, pp. 48–50, 1956. [28] R. Scheibler, E. Bezzam, and I. Dokmani ´c, “Pyroomacoustics: A Python Package for Audio Room Simulation and Array Processing Algorithms,” in Proceedings of the IEEE International Conference on Acoustics, Speech, and Signal Processing , 2018, pp. 351–355. [29] C. Veaux, J. Yamagishi, and K. MacDonald, “CSTR VCTK Corpus: English Multi-speaker Corpus for CSTR Voice Cloning Toolkit,” Tech. Rep., The Centre for Speech Technology Research (CSTR), University of Edinburgh, 2017, Accessed: August 14, 2025. [30] R. Serizel, M. Moonen, B. Van Dijk, and J. Wouters, “Low-rank Approximation Based Multichannel Wiener Filter Algorithms for Noise Reduction with Application in Cochlear Implants,” IEEE/ACM Trans. Audio, Speech, Language Process. , vol. 22, no. 4, pp. 785–799, 2014. [31] C. H. Taal, R. C. Hendriks, R. Heusdens, and J. Jensen, “An Algorithm for Intelligibility Prediction of Time–Frequency Weighted Noisy Speech,” IEEE/ACM Trans. Audio, Speech, Language Process. ,vol. 19, no. 7, pp. 2125–2136, 2011.

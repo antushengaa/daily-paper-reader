@@ -1,0 +1,1364 @@
+Title: Amplitude-Independent Robust Snapshot 6-D Radio SLAM via a Uniffed Angle-Delay Formulation
+
+URL Source: https://arxiv.org/pdf/2607.04847v2
+
+Published Time: Wed, 08 Jul 2026 01:12:36 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+> 1
+
+# Amplitude-Independent Robust Snapshot 6-D Radio SLAM via a Unified Angle-Delay Formulation 
+
+Shengqiang Shen, Member, IEEE, Aoyun Hao, Weihao Geng, Lei Yang, Shiyin Li, and Henk Wymeersch, Fellow, IEEE 
+
+Abstract—This paper addresses bistatic snapshot radio SLAM, in which a user equipment (UE) with unknown 6-D pose and clock bias is localized and environmental landmarks are reconstructed from a single multipath channel snapshot. Under mixed line-of-sight (LoS)/non-line-of-sight (NLoS) propaga-tion, existing robust snapshot SLAM methods are mainly devel-oped or validated in planar/2-D settings and often use path-amplitude or path-loss information for LoS handling, which makes them sensitive to calibration errors and propagation-model mismatch. We propose an amplitude-independent robust radio SLAM method built on a unified angle-delay formu-lation for LoS and single-bounce NLoS inlier paths. In the coarse stage, the method estimates the UE state and selects geometrically consistent inliers directly from angle-delay mea-surements, without amplitude-based LoS preclassification or path-wise latent variables; the formulation is further extended to general 3-D/6-D pose estimation through twist-swing two-stage traversal initialization and local refinement on SO (3) .A subsequent Jacobian-row-equilibrated iteratively reweighted least-squares (IRLS) refinement, combined with quasi-Akaike information criterion (QAIC) model comparison, detects the LoS path and jointly refines the UE state and scattering points. We also analyze formulation-specific local-rank properties and their minimal-set implications under unknown path identity. Simulations show that the proposed method remains competi-tive with calibrated amplitude-dependent baselines and is more robust to path-loss-model mismatch. Index Terms—Snapshot Radio SLAM, mmWave, Amplitude-Independent, Model Selection. 
+
+I. Introduction 
+
+# THE ongoing rollout of 5G and evolution toward 6G enable high-precision positioning and sensing for emerging applications [1], [2]. These capabilities are driven by mmWave spectrum and MIMO architectures, which provide wide bandwidth and large antenna arrays for improved delay and angular resolution [3], [4]. Resolvable multipath components are particularly useful because their delay and angular parameters carry both UE-state information and environmental landmark information, enabling radio SLAM, including single-BS bistatic radio SLAM in cellular mmWave settings [5]–[7], which jointly estimates the user equipment (UE) pose, clock bias, and environmental scattering points. In radio SLAM, the line-of-sight (LoS) path and single-bounce reflections are typically treated as geometric inliers because their delay/angle measurements are well captured by simple propagation models. Specifically, the LoS path directly relates the transmitter and receiver states, while a single-bounce path can be represented through one domi-nant scattering point, such as a wall reflection; both path Landmark  
+
+> Landmark Scattering
+> points
+> BS
+> UE
+> LoS
+> NLoS -1
+> NLoS -n
+> Scattering
+> points
+
+Fig. 1. Illustration of the bistatic radio SLAM paradigm where UE jointly estimates its state as well as those of the environment landmarks. 
+
+types therefore provide useful constraints for localization and mapping. In contrast, multi-bounce propagation often deviates from the single-scatter model and is commonly treated as an outlier, since it can exhibit longer delays and more complex angle-delay relationships. Following [8], we refer to single-bounce paths as NLoS-1 and multi-bounce paths as NLoS-n in this paper, as illustrated in Fig. 1. Within bistatic radio SLAM, snapshot radio SLAM is designed on a single channel snapshot without prior user states or motion models [6], [9]; it is therefore useful as a standalone baseline and as an initializer for sequential schemes [10]–[12]. Beyond snapshot settings, sequential multipath-based SLAM has also been developed to fuse information across multiple propagation paths and radio-reflective surfaces [13]. An inherent challenge of snapshot radio SLAM is the ambiguity of path identity, since LoS, NLoS-1, and NLoS-n paths have distinct geometric characteristics and require different modeling assump-tions. Early snapshot radio SLAM formulations assume known path identity and inlier-only measurements [9], [11], [14]. More recent robust snapshot methods, mainly developed or validated for planar/2-D settings, further handle outliers and unknown path identity through ro-bust estimation or Bayesian hypothesis handling [4], [15]. However, these robust snapshot baselines often rely on path-amplitude or path-loss information for LoS handling, making their performance dependent on calibration qual-ity and propagation-model accuracy. Moreover, although both LoS and NLoS-1 paths are valid inliers, confusing arXiv:2607.04847v2 [eess.SP] 7 Jul 2026 2
+
+these two path types can bias the state estimate because the LoS path has no associated scattering point [16], [17]. To address these challenges, we develop an amplitude-independent robust snapshot radio SLAM method based on a unified angle-delay formulation. The proposed for-mulation uses angle-delay geometric consistency to handle LoS and NLoS-1 inliers, reject NLoS-n outliers, and extend naturally to general 3-D/6-D pose estimation without introducing path-wise latent variables. Built on this formu-lation, the coarse stage performs robust initialization and path-consistency testing directly from the UE state and angle-delay observations, avoiding amplitude-based LoS preclassification. LoS detection is deferred to a subsequent model-selection refinement stage, thereby reducing the impact of LoS/NLoS-1 misclassification within the inlier set. Our main contributions are summarized as follows:  
+
+> •
+
+We propose a unified angle-delay coarse-stage formu-lation for LoS and NLoS-1 inlier paths. The formula-tion is written directly in the UE state and channel angle-delay observations, avoids path-wise latent vari-ables in the coarse-stage solver state, and does not require amplitude-based LoS preclassification.  
+
+> •
+
+We develop an amplitude-independent robust ini-tialization pipeline under unknown path identity and NLoS-n outliers. The pipeline embeds the pro-posed coarse solver into a consensus-based minimal-set search with geometric feasibility checks, while formulation-specific local-rank analysis provides the corresponding minimal-set implications.  
+
+> •
+
+We extend the formulation to a general 3-D setting for 6-D pose and clock-bias estimation, with the planar case treated as a special case of the same vector construction. For the 3-D case, the position and clock bias are updated in closed form for a given orientation, while the UE orientation is initialized by twist-swing two-stage traversal and then refined locally on SO (3) . 
+
+> •
+
+Building on the coarse estimate, we develop aJacobian-row-equilibrated IRLS refinement stage with QAIC-based model comparison that jointly re-fines the UE state, detects the LoS path, and esti-mates scattering points without relying on calibrated path-loss information. The rest of the paper is organized as follows. Section II presents the problem formulation and system models. Section III develops the proposed angle-delay formulation, robust initialization, and refinement scheme. Section IV discusses local-rank and minimal-sample implications. Sec-tion V reports simulation results, and Section VI concludes the paper. II. Problem formulation and models We consider a bistatic downlink snapshot radio SLAM problem with stationary BS and UE. The BS state, includ-ing position pBS ∈ R3 and orientation RBS ∈ SO (3) , is as-sumed known, while the UE state is x = {pUE , b UE , RUE },where position pUE ∈ R3, clock bias bUE ∈ R, and zxyipLoS 
+
+> NLoS -1
+> NLoS -n
+
+'' yOBS pUE p'' x'' z'x'y'zBS  BS { , }p RUE UE { , }p R
+
+Fig. 2. A spatial schematic that depicts multiple signal prop-agation paths with one LoS path (red line), one NLoS-1 path (blue line), and one NLoS-n path (green line). The local frame of the BS (x′, y ′, z ′) and that of UE (x′′ , y ′′ , z ′′ ), respectively, has relative transformations of {pBS , RBS } and {pUE , RUE }  
+
+> with respect to the global coordinate system (x, y, z ). The point
+> pidenotes the position of the scattering point of the NLoS-1 path.
+
+orientation RUE ∈ SO (3) . As shown in Fig. 2, the propagation paths are classified as LoS, single-scattering NLoS (NLoS-1), and multi-scattering NLoS (NLoS-n). An NLoS-1 path is associated with a scattering point pi ∈ R3.Radio SLAM is typically performed in two phases: multipath channel-parameter estimation followed by ge-ometric localization and mapping [4], [18]. This work focuses on the second phase and treats the estimated path parameters as observations. A. Geometric Measurement Models We assume that antenna arrays are available at both the BS and UE, and that a standard channel-estimation method [1], [10], [19] provides the AoD ϕi = [ ϕa,i , ϕ e,i ]⊤,AoA θi = [ θa,i , θ e,i ]⊤, delay τi, Doppler frequency shift νi,and complex gain ξi of the ith path [12], [20]. Since UE mobility is not considered, we set νi = 0 or absorb it into the complex gain. The geometric measurement model uses these channel estimates as observations. Let c denote the speed of light, let zi = [c˜τi, ˜ϕi, ˜θi] denote the measurement of the ith path, and let Z and I denote the measurement set and associated indices. Assuming zero-mean Gaussian measurement noise [4], the likelihood is 
+
+p(zi | Θi) = N (zi | hi(Θi), Σi), (1) where hi = [ cτ i, ϕi, θi] is the noiseless channel-parameter vector parameterized by Θi, and Σi is the measurement covariance. Here Σi describes the data-generating uncer-tainty; the proposed estimator does not assume calibrated path-wise covariance and therefore uses the covariance-free Jacobian-row-equilibrated IRLS refinement in Sec-3
+
+tion III-C. The mean model differs for LoS, NLoS-1, and NLoS-n paths. LoS Path: The LoS mean model [21] is 
+
+
+
+cτ LoS = ∥pBS − pUE ∥ + cb UE 
+
+ϕa,LoS = tan −1
+
+( e⊤  
+
+> 2R⊤
+> BS (pUE −pBS )
+> e⊤
+> 1R⊤
+> BS (pUE −pBS )
+
+)
+
+ϕe,LoS = sin −1 ( e⊤ 
+
+> 3R⊤
+> BS (pUE −pBS )
+> ∥pBS −pUE ∥
+
+)
+
+θa,LoS = tan −1
+
+( e⊤  
+
+> 2R⊤
+> UE (pBS −pUE )
+> e⊤
+> 1R⊤
+> UE (pBS −pUE )
+
+)
+
+θe,LoS = sin −1 ( e⊤ 
+
+> 3R⊤
+> UE (pBS −pUE )
+> ∥pBS −pUE ∥
+
+)
+
+, (2) where ek denotes the kth canonical basis vector. (2) implies that Θi
+
+.
+
+= {pUE , b UE , RUE } ∈ R4 × SO (3) .NLoS-1 Path: The NLoS-1 mean model [21] is 
+
+
+
+cτ i = ( ∥pBS − pi∥ + ∥pi − pUE ∥) + cb UE 
+
+ϕa,i = tan −1
+
+( e⊤  
+
+> 2R⊤
+> BS (pi−pBS )
+> e⊤
+> 1R⊤
+> BS (pi−pBS )
+
+)
+
+ϕe,i = sin −1 ( e⊤ 
+
+> 3R⊤
+> BS (pi−pBS )
+> ∥pBS −pi∥
+
+)
+
+θa,i = tan −1
+
+( e⊤  
+
+> 2R⊤
+> UE (pi−pUE )
+> e⊤
+> 1R⊤
+> UE (pi−pUE )
+
+)
+
+θe,i = sin −1 ( e⊤ 
+
+> 3R⊤
+> UE (pi−pUE )
+> ∥pi−pUE ∥
+
+)
+
+, (3) Thus, Θi
+
+.
+
+= {pUE , b UE , pi, RUE } ∈ R7 × SO (3) for an NLoS-1 path. NLoS-n Path: Since NLoS-n paths do not admit a simple single-scatter geometric model, they are described directly by Θi
+
+.
+
+= {cτ i, ϕi, θi} ∈ R5.This paper focuses on estimating the UE state and NLoS-1 scattering points while identifying LoS/NLoS-1 inliers and rejecting NLoS-n outliers from the measure-ment set Z. The unknown path identity motivates the robust formulation developed next. III. Proposed Amplitude-Independent Method This section develops the proposed unified angle-delay formulation for LoS and NLoS-1 inlier paths. We first present a planar special case embedded in the same 3-D vector construction, then extend it to general 3-D/6-D pose estimation, unknown path identity, outlier rejection, and Jacobian-row-equilibrated IRLS refinement with QAIC-based model comparison. A. Amplitude-Independent Method in the absence of Outliers We begin with the planar special case because it exposes the geometric structure with lighter notation. The purpose is to derive an angle-delay expression of the UE state without introducing the unknown incidence/scattering point locations pi as variables. The resulting equations provide a novel amplitude-independent coarse-stage for-mulation, written directly in the UE state and angle-delay observations, and lead naturally to the general 3-D case. 1) Planar Scenario: In this scenario, all scatterers lie in a common horizontal plane, and the elevation components of AoA and AoD are disregarded. As shown in Fig. 3, the planar construction is illustrated as a top-view schematic BS pi
+
+
+
+imiuiptivE
+
+AUE pxzy'y'x'' x'' yBS 
+
+> i
+> LoS
+> LoS
+> UE
+> i
+> in
+
+Fig. 3. Top-view planar schematic of the angle-delay construc-tion, viewed along the global z axis and projected onto the 
+
+X − Y plane. The global X-Y coordinates are indicated in the figure. For illustration, one LoS path and one NLoS-1 path are shown. Auxiliary circles are introduced so that the angle-delay consistency of a valid NLoS-1 path can be expressed directly in the UE state. The derivation itself does not assume that the LoS identity is known a priori. The scattering point pi shares the center of the gray dashed circles that intersect pBS and 
+
+pUE , respectively. 
+
+viewed along the global z axis, with the global X-Y coor-dinates indicated in the figure. The planar case is treated as a special case of the general 3-D vector construction. The UE and BS orientations are described by the yaw angles αUE and αBS , with RUE = blkdiag 
+
+( ˜R(αUE ), 1
+
+)
+
+and RBS = blkdiag 
+
+( ˜R(αBS ), 1
+
+)
+
+, where 
+
+˜R(α) = 
+
+[cos( α) − sin( α)sin( α) cos( α)
+
+]
+
+∈ SO (2) , (4) and the AoA θ and AoD ϕ are expressed in the local frames of the UE and BS, respectively. In Fig. 3, two auxiliary circles centered at pi are used to express the NLoS-1 angle-delay consistency directly in the UE state. Defined in the global coordinate system, the AoD and AoA direction vectors of the ith path are 
+
+ui = RBS [cos( ϕi), sin( ϕi), 0] ⊤, (5) 
+
+vi = RUE [cos( θi), sin( θi), 0] ⊤. (6) Let t = pUE − pBS denote the BS-to-UE displacement, and introduce mi as an auxiliary vector. From the sym-metry of the auxiliary construction about the scattering point pi, the corresponding vector relations satisfy 
+
+{ t × vi = ui × mi
+
+t⊤vi = u⊤ 
+
+> i
+
+mi. (7) Here, AE denotes the auxiliary segment from E to A, with 
+
+mi = −→
+
+EA . By the symmetry of the auxiliary construction, 
+
+AE is congruent to the BS-to-UE segment, and hence 4
+
+∥mi∥2 = ∥t∥2. Equivalently, 
+
+mi = ( t + divi)
+
+︸ ︷︷ ︸ 
+
+> Point A
+
+− diui
+
+︸︷︷︸  
+
+> Point E
+
+, (8) and di = c(τi − bUE ) is the propagation distance of the ith path after clock-bias correction. The auxiliary segment AE allows the path constraint to be written in terms of the UE state and angle-delay observations, without introducing an extra path-wise variable such as pi or the fractional parameter in [11]. The same relation covers both LoS and NLoS-1 inlier paths, with LoS as a degenerate case. Substituting (8) into (7) and using the vector triple-product identity yields the compact constraint 
+
+Mit = di(vi − ui), (9) where 
+
+Mi = viu⊤ 
+
+> i
+
++ uiv⊤ 
+
+> i
+
+− (u⊤ 
+
+> i
+
+vi + 1) I. (10) This constraint is equivalent to (7)–(8). Matrix Mi maps 
+
+t onto the path-induced constraint subspace determined by (ui, vi); for an NLoS-1 path, its nullspace is along 
+
+ni = ui + vi, while LoS is a more degenerate case. For each path, di depends on the clock bias and vi
+
+depends on the UE orientation. Thus, (9) defines the residual 
+
+ri(x) .
+
+= Mit − di(vi − ui). (11) where x = [ p⊤
+
+> UE
+
+, b UE , α UE ]⊤, which is free of the scattering point positions pi. With noisy observations, we estimate 
+
+x by LS over the inlier set I:
+
+J(x) = ∑ 
+
+> i∈I
+
+Ji(x), Ji(x) = ∥ri(x)∥2, (12) and 
+
+ˆx = arg min  
+
+> x
+
+J(x). (13) For a fixed heading αUE , the position and clock bias admit a closed-form update. We therefore search over αUE ∈A and choose the heading that minimizes (13), while all candidate inlier paths are evaluated by the same angle-delay constraint without LoS preclassification. Position and Clock Bias Estimation: For a given αUE ,(12) can be written as 
+
+J(x) = 
+
+∥∥∥∥∥b − A
+
+[pUE − pBS 
+
+−cb UE 
+
+] ∥∥∥∥∥
+
+> 2
+
+, (14) with 
+
+A =
+
+[
+
+· · · , A⊤ 
+
+> i
+
+, · · · , [0 , 0, 1, 0] ⊤]⊤
+
+∈ R(3 |I| +1) ×4, (15) and 
+
+b = [ · · · , b⊤ 
+
+> i
+
+, · · · , 0] ⊤ ∈ R(3 |I| +1) ×1, (16) for i ∈ I . In (15) the submatrix 
+
+Ai = [ Mi − (vi − ui)] ∈ R3×4 (17) while in (16) the subvector bi = cτ i(vi − ui). Since we discuss the planar scenario and solve the problem in a 3-D view, we set the last row of A and b to be [0 , 0, 1, 0] 
+
+and 0, respectively, to constrain the third dimension of the BS pUE pBS pUE pBS pUE pixiy1ix +1iy +2ix +2iy +1i+pip2i+p2ix +2iy +2i+p2ix +2iy +2i+p1ix +1iy +1i+p1ix +1iy +1i+pixiyipixiyipBS pUE pBS pUE p
+
+Fig. 4. The complete 3-D geometric framework of the con-sidered propagation scenario embedded in the X − Y − Z
+
+space, represented by a pencil of planes. Each propagation path defines a local plane spanned by the BS, UE and scatterer pi,and is illustrated using its own local coordinate frame (xi, y i).
+
+estimate to be 0, ensuring that the final solution is confined to the horizontal plane. Then, a closed-form solution can be obtained as 
+
+[
+
+(ˆ pUE − pBS )⊤, −cˆbUE 
+
+]⊤
+
+= A†b. (18) where (·)† computes the pseudoinverse. UE Orientation Estimation: For each candidate α ∈ A ,let ˆxα
+
+.
+
+= [ˆ p⊤
+
+> UE
+
+(α), ˆbUE (α), α ]⊤ denote the state obtained by the closed-form position and clock-bias update. The optimal αUE is then obtained by 
+
+ˆαUE = arg min  
+
+> α∈A
+
+J(ˆ xα). (19) Here J(ˆ xα) denotes J(x) evaluated after substituting the closed-form position and clock-bias estimate associated with α.2) General Scenario: The planar derivation extends directly to 3-D because the BS, UE, and each NLoS-1 scatterer define a local propagation plane. As illustrated by the pencil-of-planes representation in Fig. 4 [22], the same auxiliary construction yields the global AoD and AoA direction vectors 
+
+ui = RBS 
+
+
+
+cos( ϕe,i ) cos( ϕa,i )cos( ϕe,i ) sin( ϕa,i )sin( ϕe,i )
+
+ , (20) 
+
+vi = RUE 
+
+
+
+cos( θe,i ) cos( θa,i )cos( θe,i ) sin( θa,i )sin( θe,i )
+
+ . (21) By applying the same geometric relationships in (8) and (11) and by adopting the LS criterion in the presence of noise, we have the 3-D counterpart of (13), that is, 
+
+ˆx = arg min 
+
+> x
+
+∑ 
+
+> i∈I
+
+∥ri(x)∥2 s.t. RUE ∈ SO (3) , (22) 5
+
+where x = {pUE , b UE , RUE }, and the constraint RUE ∈
+
+SO (3) in (22) implies RTUE RUE = I, det ( RUE ) = +1 .As in the planar case, for a fixed RUE , the position and clock bias admit a closed-form update. Hence, the 3-D problem is handled by profiling out (pUE , b UE ) for each orientation candidate and then refining the orientation on 
+
+SO (3) . The orientation initialization and the subsequent local manifold refinement are described below. 3-D Position and Clock Bias Estimation: As with the planar scenario, for a given RUE , a closed-form solution can be obtained for xRUE 
+
+.
+
+= [ p⊤
+
+> UE
+
+, b UE ]⊤, which is of the same form of (18) but has a slightly different A and b,i.e., 
+
+A = [· · · , A⊤ 
+
+> i
+
+, · · · ]⊤ ∈ R(3 |I| )×4, i ∈ I , (23) and 
+
+b = [· · · , b⊤ 
+
+> i
+
+, · · · ]⊤ ∈ R(3 |I| )×1, i ∈ I . (24) The LS update has the same normal-equation form as (18), with the planar constraint row removed. For any fixed orientation R, let ˆxR
+
+.
+
+= {ˆpUE (R), ˆbUE (R), R} denote the full candidate state obtained after this closed-form position and clock-bias update. 3-D UE Orientation Estimation: This step estimates the UE orientation matrix by iteratively updating the orientation matrix RUE . Specifically, at iteration k, the orientation matrix is updated as 1
+
+R(k+1) UE = Exp ([δUE ]×
+
+) R(k) UE . (25) where δUE ∈ R3 is the left-perturbation increment. The increment vector is obtained as 
+
+δUE = − (∇RUE r)† r. (26) where ∇RUE r = [· · · , (∇RUE ri)⊤, · · · ]⊤ for i ∈ I . Follow-ing the left perturbation [23], the Jacobian matrix of the residual ri(x) with respect to the UE orientation is 
+
+∇RUE ri = −(( u⊤ 
+
+> i
+
+t−di)I+uit⊤ −tu ⊤ 
+
+> i
+
+)[ vi]× ∈ R3×3. (27) where vi is the global AoA unit vector in (21). Orientation Initialization: The following procedure pro-vides the initial orientation for the 3-D UE orientation estimation in (25). To avoid exhaustive traversal over 
+
+SO (3) while exploiting the fact that the receiver is usually approximately upright, we use a twist-swing two-stage traversal. Here, the twist denotes an in-plane yaw rotation, while the swing denotes a bounded out-of-plane tilt around a horizontal axis. Using the planar yaw block in (4), the twist rotation and the swing rotation are defined as 
+
+Rtw (ψ) = blkdiag 
+
+( ˜R(ψ), 1
+
+)
+
+, Rsw (χ, β ) = Exp ( β[a(χ)] ×) ,
+
+(28) where ψ is the twist angle, a(χ) = [− sin χ, cos χ, 0] ⊤
+
+specifies the horizontal swing axis, and β is the swing magnitude.               
+
+> 1Here Exp( ·)denotes the matrix exponential. For any a∈R3,[a]×
+> denotes the skew-symmetric matrix satisfying [a]×b=a×bfor any
+> b∈R3.
+
+An upright UE implies that the local vertical axis of the receiver is approximately aligned with the global vertical axis, i.e., RUE e3 ≈ e3 with e3 = [0 , 0, 1] ⊤. Thus, the dominant attitude uncertainty is the twist angle around the vertical axis, while the swing angle β only accounts for a bounded tilt away from the upright direction. Compared with an Euler-angle parameterization, this decomposition avoids rotation-order ambiguity and makes the upright prior explicit, because β directly bounds the tilt of the receiver vertical axis instead of indirectly constraining coupled pitch and roll angles. We define the twist grid 
+
+Aψ = {− π, −π + ∆ ψ , . . . , π }, the swing-axis grid Aχ =
+
+{0, ∆χ, . . . , 2π}, and a bounded swing-magnitude grid 
+
+Aβ = {0, ∆β , . . . , β max }.In the first stage, the twist angle is selected by 
+
+ˆψ = arg min 
+
+> ψ∈A ψ
+
+J(ˆxRtw (ψ)
+
+) , (29) where pUE and bUE are updated in closed form for each twist candidate using (23)–(24). In the second stage, a bounded swing traversal is performed around the selected twist seed: 
+
+( ˆ χ, ˆβ) = arg min 
+
+> χ∈A χ,β ∈A β
+
+J
+
+(
+
+ˆxRsw (χ,β )Rtw ( ˆψ)
+
+)
+
+. (30) Starting from R(0) UE = Rsw ( ˆ χ, ˆβ)Rtw ( ˆψ), the subsequent Gauss-Newton refinement updates the full rotation on 
+
+SO (3) .Local Convergence: The first block is a strictly convex least-squares problem, thus, its update does not increase the objective. For the second block, in a neighborhood of the solution, the convergence rates of the Gauss-Newton method on SO (3) is superlinear [24]. 3) Feasibility Check: During the coarse search, feasi-bility checks reject geometrically inconsistent candidates without requiring prior LoS knowledge. The final LoS decision is deferred to the model-selection refinement in Section III-C. Each path is tested against two admissible inlier interpretations:  
+
+> •
+
+A collinearity-consistent LoS: when the norm of both 
+
+∆1 = ˆ¯t × ˆvi and ∆2 = ˆ¯t × ui are below threshold εc
+
+in absolute value, where ˆ¯t is the unit vector of ˆt =(ˆ pUE − pBS ), the transmit-receive pair is confirmed to be collinear with ˆt. 
+
+> •
+
+A single-bounce-consistent NLoS-1: when ∆⊤ 
+
+> 1∆2
+> ∥∆1∥∥ ∆2∥
+
+is above a positive threshold εp, the vectors ui and 
+
+vi reside on the same side of the vector ˆt within a common plane. Upon confirmation of this, if the inner products further satisfy ˆ¯t⊤ ˆvi < ˆ¯t⊤ui, the path is considered satisfying the NLoS-1 path condition. A candidate UE state is retained only if every selected inlier path satisfies at least one of these conditions. B. Extension to Scenarios in the presence of Outliers To handle NLoS-n outliers, we embed the coarse solver in a consensus-based exhaustive minimal-set search. The robust search is related to earlier snapshot SLAM ideas [4], but its hypothesis generation and feasibility handling 6
+
+Algorithm 1 Robust coarse solver                                                                                                               
+
+> Require: Observation set Z, index set I, minimal subset size Nmin ,threshold Tε, dimension flag D∈ { 2D ,3D }, orientation grids A,
+> Aψ,Aχ, and Aβ
+> Ensure: Coarse inlier set ̂Iand initial UE-state estimate ˆx0
+> 1: Generate the set of all candidate minimal subsets
+> J={J ⊆ I :|J | =Nmin }
+> 2: Initialize C⋆←+∞,̂I ← ∅ ,ˆx0←∅
+> 3: for all J ∈ Jdo 4: if D= 2D then 5: Traverse αUE ∈ A and update pUE , b UE using (18) 6: Recover the orientation using (19) 7: else 8: Traverse the twist grid Aψand update pUE , b UE using (23)–(24) 9: Traverse the swing grids Aχand Aβusing (30) 10: Refine the full orientation using (25) 11: continue if Jfails the feasibility check 12: Form the coarse UE-state hypothesis ˆxJ
+> 13: Initialize the consensus set IJ← ∅
+> 14: for all path k∈ I do 15: Compute the residual rk(ˆ xJ)
+> 16: if ∥rk(ˆ xJ)∥< T εthen 17: IJ← I J∪ { k}
+> 18: Compute the truncated cost CJ=∑
+> k∈I min (∥rk(ˆ xJ)∥2, T 2
+> ε
+> )
+> 19: if CJ< C ⋆then 20: C⋆←CJ,̂I ← I J,ˆx0←ˆxJ
+> 21: return ̂I,ˆx0
+
+are tailored to the proposed angle-delay formulation. Algorithm 1 uses an MSAC-style truncated cost [25]; the minimum-cost subset defines the coarse inlier set and the initial UE-state estimate for refinement. C. Iterative Estimation and LoS Detection The coarse stage provides an inlier set and an initial UE-state estimate, while final estimation fits the physical measurement model to Zinliers . Since LoS and NLoS-1 paths have different parameterizations, refinement and LoS identification are handled jointly by model selection [26]. With M inliers, we consider M +1 candidate models: one all-NLoS-1 model and M mixed models in which path m is interpreted as LoS and the remaining paths as NLoS-1. For each candidate model, h(m) 
+
+> k
+
+represents the chosen parameterization of the kth observation, and the parameter set is 
+
+Θ(m) =
+
+{
+
+{x} ∪ { pk|k ∈ I inliers \m}, for LoS case 
+
+{x} ∪ { pk|k ∈ I inliers }, otherwise .
+
+(31) For model m, define the stacked residual and mea-surement Jacobian as e(m)(Θ(m)) = z − h(m)(Θ(m))
+
+and J(m)(Θ(m)) = ∇Θ(m) h(m)(Θ(m)). Because calibrated path-wise covariance matrices are not used as algorith-mic inputs, the refinement is implemented as an itera-tively reweighted least-squares (IRLS) procedure based on Jacobian-row equilibration [27], [28], rather than as Gauss-Newton minimization of a fixed covariance-weighted like-lihood. At iteration ℓ, the residual and Jacobian are evaluated at the current linearization point, 
+
+e(m) 
+
+> ℓ
+
+= e(m)(Θ(m) 
+
+> ℓ
+
+), J(m) 
+
+> ℓ
+
+= J(m)(Θ(m) 
+
+> ℓ
+
+). (32) To mitigate local sensitivity imbalance among residual components while avoiding excessive amplification of weakly sensitive or nearly singular residual equations, the Ruiz row-equilibration weight [29] of the jth residual com-ponent is computed as W(m) 
+
+> ℓ
+
+= diag 
+
+(
+
+[. . . , ∥J(m) 
+
+> k,ℓ
+
+∥−1, . . . ]
+
+)
+
+,where J(m) 
+
+> k,ℓ
+
+is the kth row of J(m) 
+
+> ℓ
+
+. The weights are recomputed at the beginning of each IRLS iter-ation and then frozen within the local least-squares step. The local increment is obtained from δ(m) 
+
+> ℓ
+
+=
+
+(
+
+(W(m) 
+
+> ℓ
+
+)1/2J(m)
+
+> ℓ
+
+)† (
+
+W(m) 
+
+> ℓ
+
+)1/2e(m)
+
+> ℓ
+
+)
+
+. The increment δ(m)
+
+> ℓ
+
+is applied by ordinary addition for Euclidean variables and by the exponential-map update for RUE ∈ SO (3) [24]. After convergence at iteration ℓ⋆, the model-m estimate is ˆΘ(m)
+
+= Θ(m) 
+
+> ℓ⋆
+
+, and the final frozen weighted residual score is 
+
+˜Em( ˆΘ(m)
+
+) = 
+
+∥∥∥∥(W(m) 
+
+> ℓ⋆
+
+) 12 e(m)
+
+∥∥∥∥
+
+> 2
+
+. (33) The associated Jacobian matrices are given in Appendix A. Since ˜Em is the terminal score of a row-equilibrated IRLS procedure rather than the exact negative Gaussian log-likelihood, it is used only as a quasi-deviance for model comparison. All M + 1 candidate models are refined first, and the LoS hypothesis is then selected by the quasi-Akaike information criterion (QAIC) [26]: 
+
+QAIC m = 2 d(m)Θ + n 
+
+> ˆc
+
+ln 
+
+( ˜Em
+
+> n
+
+)
+
+, (34) where n = kd|I inliers |, with kd = 3 (or 5) for 2-D (or 3-D) measurements, d(m)Θ is the model degrees of freedom, and 
+
+ˆc is the residual scale. The model with the smallest (34) determines the LoS state. 1) Initialization: The refinement variables are initial-ized from the coarse-stage output. Specifically, the UE state is set to the coarse estimate returned by Algorithm 1, while the scattering points, which are not explicit variables in the coarse formulation, are recovered analytically from this coarse UE-state estimate. UE state x: The coarse UE-state estimate is used di-rectly, i.e., x(0) = ˆ x0, so no external UE-state initialization is required. Scattering Point pi: Given the coarse UE position ˆpUE 
+
+and orientation ˆRUE , each retained NLoS-1 scattering point is initialized as 
+
+pi = pBS + dl,i ui + dr,i ˆvi + ˆ t
+
+2 , (35) where [dl,i , d r,i ]⊤ = ([ ui, −ˆvi]) †ˆt.2) Computational Complexity: For the closed-form-like algorithm, given N observed paths, the consensus-based exhaustive minimal-set search tests all Nmin -subsets of the N paths, which yields L = |Z| !(|Z|− Nmin )! Nmin ! . minimal-set hypotheses. For each hypothesis, the 2-D and 3-D estimations adopt a slightly different strategy. On the one hand, a candidate 2-D solution is obtained via a discrete search over |A| UE headings. For each heading, the closed-form update of (18) is obtained by solving a pseudoinverse 7
+
+whose dominant complexity is of order O (N 2min 
+
+). Overall, the 2-D estimation has complexity O(L|A| N 2min ). On the other hand, a 3-D candidate is obtained from the minimal subset via Kcl alternating updates. For each alternating update, the closed-form update (18) is of order O (N 2min 
+
+),while evaluating the perturbation vector of (26) has a dominant complexity of order O (N 2min 
+
+). Consequently, the overall 3-D estimation has complexity O(LK cl N 2min ).Finally, for the iterative estimation, the complexity is dominated by the computation of the pseudoinverse. Assume M inliers are selected with the closed-form-like algorithm, which yields M + 1 candidate models, the pseudoinverse computed in each iteration scales on the order of O(M 3). With Kls iterations, the refinement complexity is O(Kls (M + 1) M 3).IV. Formulation-Specific Local-Rank and Minimal-Sample Implications The radio SLAM problem is only identifiable if asufficient number of inliers exist. Herein, we first analyze the minimum number of inliers required to ensure a unique solution for x in the 3-D scenario, based on which the required number for the planar scenario is then derived. A. 3-D Scenario To analyze the minimum number of inliers required by the proposed formulation, we examine the rank and nullspace of the per-path Jacobian. The rank indicates how many independent first-order constraint directions an inlier can provide, whereas the nullspace identifies the UE-state perturbations that remain locally unobservable from that path. The Jacobian matrix of the residual error ri(x)
+
+is 
+
+∇xri =
+
+[
+
+Mi
+
+︸︷︷︸  
+
+> ∇pUE ri
+
+c(vi − ui)
+
+︸ ︷︷ ︸ 
+
+> ∇bUE ri
+
+−Gi[vi]×
+
+︸ ︷︷ ︸ 
+
+> ∇RUE ri
+
+]
+
+∈ R3×7, (36) where Mi is given by (10), and Gi = (u⊤ 
+
+> i
+
+t−di
+
+)I+uit⊤ −
+
+tu ⊤ 
+
+> i
+
+∈ R3×3.Theorem 1 (Single-Measurement Jacobian Rank Bounds). Let ni = ui + vi. For the Jacobian ∇xri, the following statements hold: 1) For a NLoS-1 path, i.e., ui̸ = −vi, then 
+
+rank (∇pUE ri
+
+) = 2 , N (∇pUE ri
+
+) = span {ni}.
+
+(37) For a LoS path, i.e., ui = −vi, rank (∇pUE ri
+
+) = 1 .2) The sub-Jacobian [∇pUE ri ∇bUE ri] satisfies 
+
+rank ([∇pUE ri ∇bUE ri]) = rank( ∇pUE ri). (38) 3) The rotation sub-Jacobian ∇RUE ri contributes acomponent along ni if and only if 
+
+n⊤ 
+
+> i
+
+(∇RUE ri)̸ = 0 ⇐⇒ vi × (G⊤ 
+
+> i
+
+ni)̸ = 0. (39) Geometric Interpretation. Theorem 1 shows that a single path contributes only a low-dimensional path-induced constraint subspace. In particular, an NLoS-1 path leaves a sliding direction span {ni}, whereas a LoS path is more degenerate and contributes only one independent direc-tion. The clock-bias column does not create an additional single-path constraint direction. Proof. First, consider the basis {ni, gi, qi} with gi = ui −
+
+vi, and qi = ui × vi. A direct substitution into (10) yields 
+
+Mini = 0, Migi = −2gi, and Miqi = −(1 + u⊤ 
+
+> i
+
+vi)qi.Hence, when ui̸ = −vi we have one zero eigenvalue and two nonzero eigenvalues, implying rank( Mi) = 2 and 
+
+N (Mi) = span {ni}. If ui = −vi, then qi = 0 and only 
+
+gi remains as a nonzero-eigen direction, giving rank one. Second, from (10) and ∥ui∥ = ∥vi∥ = 1 we obtain the identity 
+
+Miui = vi − ui, (40) which implies −(vi − ui) = −Miui and hence the column 
+
+∇bUE ri lies in the column space of ∇pUE ri. Therefore, concatenating ∇bUE ri cannot increase the rank beyond 
+
+rank( ∇pUE ri), proving (38). Finally, for the rotation sub-Jacobian, the left-perturbation form satisfies 
+
+∇RUE ri = −Gi[vi]×. (41) Applying the scalar triple-product identity gives 
+
+n⊤ 
+
+> i
+
+Gi(δ × vi) = δ⊤(vi × (G⊤ 
+
+> i
+
+ni)), (42) which proves the equivalence (39). Corollary 1 (No Rank Contribution at a Perfect Fit). Under the assumptions of Theorem 1, if the model is perfectly satisfied for measurement i, i.e., 
+
+ri(x⋆) = 0, (43) then the rotation sub-Jacobian has nullspace span {v⋆i }
+
+and does not contribute any component outside n⊥ 
+
+> i
+
+:
+
+n⊤
+
+> i
+
+(∇RUE 
+
+∣∣x⋆ ri
+
+) = 0 =⇒ Col (∇RUE 
+
+∣∣x⋆ ri
+
+) ⊆ n⊥ 
+
+> i
+
+. (44) Consequently, the single-measurement Jacobian evaluated at a perfect fit has effective rank of rank (∇pUE ri
+
+), in the sense that all first-order variations of ri lie in the same 2-D subspace n⊥ 
+
+> i
+
+.Geometric Interpretation. Near a consistent solution, the rotational perturbation remains confined to the same path-induced subspace n⊥ 
+
+> i
+
+. Hence, even the rotational contribution of a single path does not generally introduce a new independent first-order direction. Proof. At a perfect fit (43), for a LoS path, i.e., u⊤ 
+
+> i
+
+t⋆ = d⋆i ,we have ∇RUE ri = 0. On the other hand, for an NLoS-1 path, we have M⋆i t⋆ = d⋆i (v⋆i − ui). This equality implies that t⋆ lies in the plane spanned by {ui, v⋆i } (i.e., it has no component along ui ×v⋆i ). Substituting this structure into the left-perturbation Jacobian gives δ ∥ v⋆i , which implies 
+
+N (∇RUE 
+
+∣∣x⋆ ri
+
+) = span {v⋆i }. Substituting the perfect-fit structure into G⊤ 
+
+> i
+
+ni gives G⊤ 
+
+> i
+
+ni ∥ v⋆i , and hence v⋆i ×
+
+(G⊤ 
+
+> i
+
+ni) = 0. By (39), this yields n⊤
+
+> i
+
+(∇RUE 
+
+∣∣x⋆ ri
+
+) = 0
+
+and (44). Corollary 2 (Minimal Sample Size Nmin ). For the proposed unified coarse-stage formulation, an NLoS-1 measurement 8
+
+provides at most two independent constraint directions on x, whereas a LoS path provides only one (Theorem 1). Since the total number of degrees of freedom is 7, for the proposed coarse solver, the resulting local-rank heuristic suggests 
+
+{ 2Nmin ≥ 7 for NLoS 2( Nmin − 1) + 1 ≥ 7 for LoS ⇒ Nmin ≥ 4. (45) This statement concerns the proposed resid-ual/Jacobian analysis and should not be interpreted as a fundamental minimum for the broader problem class. Theorem 2 (Stacked Nullspace Criterion for Local Identi-fiability). Let ∇xr ∈ R3N ×7 be the stacked Jacobian ob-tained by vertically concatenating (36) over i = 1 , . . . , N .Consider a consistent solution x⋆ and evaluate all quan-tities below at x⋆, with the superscript omitted for compactness. Define 
+
+Bi = [ c(vi − ui) − Gi[vi]×] ∈ R3×4, Pi = M† 
+
+> i
+
+Mi,
+
+(46) where Pi is the orthogonal projector onto Range( Mi). If the reduced stacked nullspace matrix 
+
+H =
+
+
+
+P1 M†
+
+> 1
+
+B1
+
+... ...
+
+PN M† 
+
+> N
+
+BN
+
+ ∈ R3N ×7 (47) has full column rank, then ∇xr has full column rank and the UE state x is locally identifiable. Geometric Interpretation. The matrix H makes explicit the possible coupling between translation, clock bias, and rotation perturbations. For an NLoS-1 path, Pi
+
+projects away the sliding direction span {ni}; for a LoS path, it projects onto the one-dimensional LoS constraint direction. Full column rank of H means that no nonzero joint perturbation can remain hidden in all path-induced nullspaces simultaneously. Proof. Let a first-order perturbation be written as δx =[δp⊤, δb, δ ω⊤]⊤ and set δq = [δb, δ ω⊤]⊤. For the ith measurement, 
+
+∇xri δx = Miδp + Biδq. (48) Assume δx ∈ N (∇xr). Then for every i,
+
+Miδp + Biδq = 0. (49) By Theorem 1, the clock-bias column lies in Range( Mi),and by Corollary 1, at a consistent solution the rotation block also lies in the same path-induced constraint sub-space. Hence Biδq ∈ Range( Mi), so applying M† 
+
+> i
+
+to (49) gives 
+
+Piδp + M† 
+
+> i
+
+Biδq = 0. (50) Stacking these equations over all measurements yields 
+
+Hδx = 0. If H has full column rank, then δx = 0.Therefore N (∇xr) = {0}, which proves that the stacked Jacobian has full column rank. Local identifiability follows from the standard local-rank condition. Remark. The formal identifiability condition is the full-column-rank test on the stacked matrix H in (47), which explicitly accounts for coupled translation-clock-rotation null directions. Informally, this full-rank condition requires sufficient geometric diversity in {vi} and {ni = ui +vi}. In particular, diversity of {vi} suppresses common rotational ambiguity, diversity of {ni} suppresses common transla-tional sliding directions, and at least one non-degenerate angle pair with vi̸ = ui helps make the clock-bias direction observable. B. Planar Scenario Assume a planar setting in which all quantities lie in the X − Y plane and rotation is restricted to yaw only: t = [˜t⊤, 0]⊤, u = [˜u⊤, 0]⊤, v = [˜v⊤, 0]⊤,
+
+RUE = blkdiag 
+
+( ˜R(αUE ), 1
+
+)
+
+, then substituting into (11) shows that, for every measurement i, the 3-D residual satisfies ri = [˜ r⊤ 
+
+> i
+
+, 0] ⊤, where the induced residual in plane is 
+
+˜ri(˜ t, b, α UE ) = ˜Mi˜t − di(˜ vi − ˜ui) ∈ R2, (51) where ˜Mi = ˜ vi ˜u⊤ 
+
+> i
+
++ ˜ ui ˜v⊤ 
+
+> i
+
+− (˜ u⊤ 
+
+> i
+
+˜vi + 1) I2.Theorem 3 (Rank and Nullspace Reduction in Planar Scenario). Under the planar assumptions, the following statements hold: 1) the planar matrix ˜Mi satisfies 
+
+rank( ˜Mi) = 1 , N ( ˜Mi) = span {˜ni}, (52) and Range( ˜Mi) = ˜ n⊥ 
+
+> i
+
+⊂ R2 is a 1-D line orthogonal to ˜ni, where ˜ni = ˜ ui + ˜ vi.2) Let the unknown vector be ˜x = [˜ p⊤ 
+
+> U E
+
+, b UE , α UE ]⊤ ∈
+
+R4, near a consistent solution, the per-measurement Jacobian ∇˜x˜ri is effectively rank one. Geometric Interpretation. In the planar reduction, each path contributes only one constraint line, while the so-lution remains locally free along ˜ni. Thus, the planar case is the reduced counterpart of the 3-D path-induced constraint-subspace interpretation. Proof. First, under planar reduction, the top-left block ˜Mi
+
+is precisely the restriction of Mi to the X − Y subspace. Since the planar subspace is 2-D, the corresponding range space is the intersection ˜n⊥ 
+
+> i
+
+∩ R2, which is a 1-D subspace (a line). Hence rank( ˜Mi) = 1 and N ( ˜Mi) = span {˜ni}.Second, due to Theorem 1, the column associated with 
+
+bUE , always lies in Range( ˜Mi). Further, since Range( ˜Mi)
+
+is 1-D in 2-D, the rotation contribution cannot provide a new independent direction beyond that line near con-sistency (Theorem 1); hence the per-measurement linear information becomes effectively one-dimensional. Corollary 3 (Minimal sample size heuristic in plane). In the planar specialization, the proposed coarse-stage for-mulation has four degrees of freedom ( (˜ pUE ∈ R2, b UE ∈
+
+R, αUE ∈ R)). Since each measurement contributes one independent constraint direction near consistency, a min-imal solver typically requires at least four measurements. 9x [m]      
+
+> -5 0510 15
+> y [m]
+> 0246810 12 Scatterers Tx Rx NLoS-n AoA NLoS-n AoD
+
+(a) The planar simulation setup. 20        
+
+> yT
+> 10
+> xT
+> zT
+> -20 0
+> 0y[m]
+> -10
+> 5
+> z [m]
+> 0
+> 10 10
+> x[m]
+> -10 20 30 40 50 -20
+> Scatterers Tx Rx NLoS-n AoA NLoS-n AoD
+
+(b) The 3-D simulation setup. 
+
+Fig. 5. The planar and 3-D simulation setup. In each trial, the NLoS-1 paths are generated with scattering points randomly distributed in the considered space, while the NLoS-n paths are characterized by uniformly distributed AoA and AoD angles. 
+
+Importantly, Corollaries 2 and 3 operate at the level of the proposed residual/Jacobian analysis and the corre-sponding initialization strategy. They do not replace clas-sical geometric solvability results for snapshot radio SLAM under stronger path hypotheses. In particular, classical mixed-path facts, such as the solvability of the one-LoS-plus-one-NLoS-1 case under the corresponding geometric assumptions, remain valid and are not contradicted by the formulation-specific path-count discussion above. V. Simulation Results A. Simulation Setup The proposed algorithm is evaluated using simulated measurements. In the planar scenario, the considered area is 20 × 20 m2, with pBS = [0 , 0] m and αBS = − π 
+
+> 3
+
+rad. The UE position is randomly selected from eight equally spaced points on a circle centered at [10 , 10] m with radius 
+
+2√2 m, and αUE is uniformly drawn from [−π, π ] rad. For the general 3-D scenario, the considered space has size 70 × 40 × 10 m3, with pBS = [0 , 0, 3] m and RBS = I.As shown in Fig. 5(b), eight UE states are sampled along a trajectory whose XY projection is an ellipse centered at 
+
+[15 , 0, 1] T m with semi-axes 8 m and 6 m, and whose height follows a sinusoid of amplitude 1 m over three periods. At each sampled location, the receiver frame is tangent to the trajectory. For each accuracy level, 1000 Monte Carlo trials are generated. Each planar trial contains 8 inlier paths and 3 outlier paths, while each 3-D trial contains 9 inlier paths and 3 outlier paths. The proposed method is compared with three baselines where applicable: the MH-MLE approach in [15], the robust snapshot radio SLAM (RSR) method in [4], and the traditional snapshot radio SLAM method in [11]. The MH-MLE and RSR baselines exploit calibrated path-loss or amplitude information for LoS/path-state handling, whereas the traditional method assumes NLoS-only propagation and does not perform LoS model selection. Since directly comparable published baselines for robust 3-D/6-D snapshot SLAM with un-known path identity are not readily available, external comparisons are conducted in the assumption-matched planar setting. The 3-D experiments validate the proposed full-pose formulation, threshold sensitivity, and final re-finement. For the ith path, the observation zi is generated using (1). The noise covariance matrix is 
+
+Σi = γΣℓ(i) , ℓ(i) ∈ { LoS , NLoS -1, NLoS -n}, (53) where Σ1/2LoS = diag([0 .3, π 
+
+> 180
+
+11×(kd−1) ]) [4], Σ1/2NLoS -n =2Σ1/2NLoS -1 = 4 Σ1/2LoS , and γ = [0 .01 , 0.05 , 0.1, 0.5, 1] controls the measurement accuracy. We set bUE = 10 ns, Tϵ = 1 ,and Nmin = 4 . For QAIC, ˆc = exp( γ) at the corresponding accuracy level. The planar angular resolution is 1◦ (|A| =360 ), while the 3-D twist-swing traversal uses ∆ψ = 6 ◦,
+
+∆χ = 12 ◦, ∆β = 10 ◦, and βmax = 90 ◦. Path means are generated according to their NLoS-1/NLoS-n labels, and path magnitudes follow the models in Appendix B. One planar trial and one 3-D trial are shown in Figs. 5(a) and 5(b). The evaluation metrics are defined consistently across the simulations. The UE position and clock-bias errors are ep = ∥ˆpUE − pUE ∥2 and eb = |ˆbUE − bUE |. The orientation error is eR = | wrap(ˆ αUE − αUE )| in 2-D and 
+
+eR = ∥ Log( ˆRUE R⊤
+
+> UE
+
+)∨∥2 in 3-D. Scatterer errors are com-puted after one-to-one nearest-neighbor matching between estimated and true NLoS-1 scatterers. The reported CDFs, P90 values, inlier F1 scores, and computation times are obtained over all Monte Carlo trials. B. Planar Simulation Results 1) Performance with Well-Calibrated Path Loss Model: The empirical CDFs of the UE position, orientation, clock-bias, and scattering-point errors are evaluated in mixed conditions where the LoS path is present with probability 60% . The 90% quantile (P90) is extracted for performance comparison. The methods listed in Section V-A are compared under different noise levels γ, assuming that the path-loss model is well calibrated. Simulation results are illustrated in Fig. 6, where the figures give the P90 error versus γ. As expected, the P90 errors of all methods increase as γ grows, since larger γ
+
+corresponds to less accurate angle-delay observations. The proposed method achieves the lowest or comparable P90 errors in most cases, with a clear advantage in UE position, 10 Prop. MH RSR TRA 10 −2 10 −1 10 0         
+
+> γ
+> 10 0
+> 10 2
+> P90 Pos . Error [m]
+> (a) Position error 10 −210 −110 0
+> γ
+> 10 0
+> P90 Orien . Error [rad] (b) Orientation error 10 −210 −110 0
+> γ
+> 10 0
+> 10 2
+> P90 Bias Error [ns] (c) Clock bias error 10 −210 −110 0
+> γ
+> 10 0
+> 10 1
+> P90 Scatterer Error [m] (d) Scatterer error
+
+Fig. 6. P90 errors of the considered methods in a planar scenario under different γ.
+
+orientation, and clock-bias estimation over the low-to-moderate noise range. For scattering-point estimation, MH-MLE is slightly better at γ = 10 −2, while the pro-posed method becomes more accurate as the measurement noise increases. This indicates that the unified angle-delay initialization provides a stable UE-state estimate, which in turn benefits the subsequent scattering-point refinement. The traditional snapshot radio SLAM method exhibits the largest errors in most cases, which is consistent with its NLoS-only modeling assumption. In mixed propagation, forcing a LoS path into an NLoS-1 model introduces a structural mismatch and biases the UE-state estimate. The RSR and MH-MLE baselines exploit calibrated path-loss information for LoS handling and therefore improve over the traditional method under the well-calibrated setting, but their errors remain generally higher than those of the proposed method, especially as the measurement noise increases. The proposed method remains competitive or superior without amplitude-based LoS preclassifica-tion, because LoS identification is performed after robust amplitude-independent estimation rather than driven by a path-loss likelihood. This shows that the angle-delay consistency used in the coarse stage is sufficient to provide a reliable initialization and inlier set for the refinement stage. 2) Performance in the Presence of Path Loss Model Uncertainty: This stress test is not intended to exhaust all robustness factors in practical channel estimation. In-stead, it targets the calibration-mismatch mechanism that motivates the proposed amplitude-independent formula-tion. To emulate calibration uncertainty, the path-loss parameters are modeled as random perturbations around their nominal values. Specifically, L0 + ∆ L0, ζ + ∆ ζ, and 
+
+σsh exp(∆ σsh ), where [∆ L0, ∆ζ, ∆σsh ]⊤ ∼ N (0, Σpl ) are sampled per trial. The perturbation levels are controlled by Σ1/2pl = diag (2δ−1 [1 , 0.1, 0.1] ) with level factor δ.The simulations are conducted with γ = 10 −1, where 
+
+δ = 0 corresponds to the nominal path-loss model and larger δ indicates stronger calibration uncertainty. Fig. 7 compares the P90 errors of the proposed method and the amplitude-dependent baselines under different uncertainty levels. Since the proposed method does not use path-loss information for LoS preclassification or coarse-stage TABLE I: LoS detection accuracy under different LoS rates                                           
+
+> γ70% LoS Rate 50% LoS Rate 30% LoS Rate Prop. MH Prop. MH Prop. MH
+> 10 −295.88% 89.01% 93.26% 85.06% 90.91% 80.95%
+> 5×10 −296.45% 88.50% 94.09% 84.33% 91.86% 80.04%
+> 10 −196.35% 88.20% 93.66% 83.81% 91.34% 79.25%
+> 5×10 −189.53% 86.43% 83.76% 80.73% 78.05% 74.78%
+> 10 084.70% 85.61% 77.16% 79.11% 69.44% 72.64%
+
+hypothesis generation, its curves remain nearly flat as δ
+
+increases. This behavior is observed consistently for UE position, orientation, clock bias, and scatterer estimation, confirming that the proposed angle-delay formulation is insensitive to the targeted path-loss-parameter mismatch. In contrast, the performance of MH-MLE and RSR degrades when the path-loss model becomes less reliable. MH-MLE shows a gradual increase in all four error metrics, with the degradation becoming more evident at larger δ. RSR is more sensitive in this experiment: its errors are already larger under the nominal model and increase further as the mismatch grows, especially for UE-state estimation. This is because perturbations in L0, ζ,and σsh distort the amplitude-based LoS likelihood and path-consistency evaluation, which can lead to incorrect path-identity decisions and poorer initialization. These results support the motivation of the proposed method: the robustness of amplitude-dependent methods dete-riorates under the targeted path-loss-model calibration uncertainty, whereas the proposed amplitude-independent formulation preserves stable accuracy. 3) LoS Detection Accuracy: Table I compares the LoS detection performance of the different methods with an uncertainty factor of δ = 3 . For γ ≤ 5 × 10 −1, the pro-posed method consistently achieves higher LoS detection accuracy than MH-MLE under all tested LoS occurrence rates. This improvement is consistent with the design of the proposed refinement stage, where LoS identification is performed through information criteria after a robust amplitude-independent estimation, rather than relying on a potentially mismatched path-loss likelihood. 11 0 1 2 3            
+
+> δ
+> 10 0
+> 10 1
+> P90 Pos . Error [m]
+> Prop. MH RSR
+> (a) Position error 0123
+> δ
+> 10 −3
+> 10 −2
+> P90 Orien . Error [rad]
+> Prop. MH RSR (b) Orientation error 0123
+> δ
+> 10 0
+> 10 1
+> P90 Bias Error [ns]
+> Prop. MH RSR (c) Clock bias error δ
+> 0123
+> P90 Scatterer Error [m]
+> 11.5 22.5 3
+> Prop. MH RSR (d) Scatterer error
+
+Fig. 7. P90 errors of the considered methods in a planar scenario under different δ.
+
+TABLE II: Average runtime per planar trial                     
+
+> Case Prop. MH RSR CF LS Total LoS 0.5166s 0.0114s 0.5280s 0.2411s 0.0966s 50% LoS 0.5152s 0.0109s 0.5260s 0.5100s 0.2283s NLoS 0.5141s 0.0104s 0.5245s 0.7729s 0.3582s
+
+As γ increases to 1, the performance gap becomes small and MH-MLE is slightly better in all three LoS-rate cases. This indicates that when the geometric measure-ments are severely degraded, the advantage of amplitude-independent model selection is partially offset by the re-duced reliability of the angle-delay residuals. Nevertheless, across most operating points in Table I, especially in the relevant low-to-moderate noise regime, the proposed method provides more reliable LoS detection under path-loss-model uncertainty. 4) Computation Time: The experiments are conducted on a desktop platform equipped with an Intel i9-14900K CPU and 64 GB of memory. Table II gives the average computation time under different propagation conditions. The proposed method has a nearly constant runtime across the LoS, mixed, and NLoS cases, with a total computation time of 0.5245 –0.5280 s. This is because its robust coarse stage evaluates the same angle-delay consistency formulation regardless of whether the LoS path is present. The coarse stage (CF) dominates the cost, taking 0.5141 –0.5166 s, while the subsequent least-squares refinement (LS) only requires 0.0104 –0.0114 s. Hence, the refinement improves the final estimate with a small additional computational burden. The baselines are faster in the pure LoS case, where reliable magnitude information reduces ambiguity, but their runtime increases as LoS information becomes less available. MH-MLE grows from 0.2411 s to 0.7729 s from LoS to NLoS, and RSR from 0.0966 s to 0.3582 s. Thus, the proposed method provides more stable cost and becomes faster than MH-MLE in the NLoS-dominant setting. C. General 3-D Simulation Results Since the external baselines are evaluated in the assumption-matched planar setting, the 3-D results ex-amine whether the proposed full-pose pipeline remains ǫc   
+
+> 0.05 0.1 0.15 0.2
+> ǫp
+> 0.5 0.6 0.7 0.8 0.9
+> 0.96 0.97 0.98 0.99
+> F1
+
+Fig. 8. 3-D inlier F1 sensitivity to feasibility thresholds εc and   
+
+> εp, with γ= 0 .1.
+
+stable under mixed propagation and how much the final LS refinement improves the coarse-formulation (CF) estimate. 1) Sensitivity Evaluation: Fig. 8 evaluates the sensi-tivity of the coarse inlier selection to the feasibility-check thresholds εc and εp in the 3-D scenario. The overall inlier F1 score remains high over the tested parameter range, staying above approximately 0.96 , which indicates that the proposed robust search is not overly sensitive to a single finely tuned threshold choice. The best performance appears in the region with smaller εc and larger εp, where the LoS collinearity test is relatively strict and the NLoS-1 same-side consistency test requires stronger geometric agreement. In this region, the F1 score approaches 0.99 ,showing that physically meaningful feasibility checks can effectively reject geometrically inconsistent hypotheses before the refinement stage. As εc increases, the F1 score gradually decreases, especially when εp is small. This is expected because a larger collinearity threshold admits more ambiguous paths as LoS-consistent candidates, which can increase false inlier decisions in the presence of NLoS-n components. Conversely, increasing εp improves the F1 score by making the NLoS-1 feasibility condition more selective. These results suggest that the feasibility check should be cho-sen moderately conservatively: strict enough to suppress physically inconsistent minimal-set hypotheses, but not so restrictive that valid noisy inliers are rejected. The smooth variation in Fig. 8 also shows that the proposed pipeline has a broad stable operating region for practical threshold selection. 2) Estimation Evaluation: The CDFs of the estimation errors are evaluated under mixed propagation conditions where the LoS path is present with probability 50% , with 12 LS, γ = 0 .01 LS, γ = 0 .05 LS, γ = 0 .1 CF, γ = 0 .01 CF, γ = 0 .05 CF, γ = 0 .1Position Error [m]     
+
+> 00.5 11.5 2
+> CDF
+> 00.2 0.4 0.6 0.8 1
+
+(a) Position error Orientation Error [rad]    
+
+> 00.02 0.04
+> CDF
+> 00.2 0.4 0.6 0.8 1
+
+(b) Orientation error Clock Bias Error [ns]       
+
+> 012345
+> CDF
+> 00.2 0.4 0.6 0.8 1
+
+(c) Clock bias error Scatterer Error [m]      
+
+> 00.5 11.5 2
+> CDF
+> 00.2 0.4 0.6 0.8 1
+
+(d) Scatterer error 
+
+Fig. 9. Error CDFs of the proposed algorithm in the 3-D mixed-propagation scenario. 
+
+multiple noise levels configured ( γ = [0 .01 , 0.05 , 0.1] ). The evaluation includes the UE position, orientation, clock bias, and scattering-point errors. The metrics follow the definitions in Section V-A. The results are shown in Fig. 9, where the coarse-formulation estimate (CF) and the final least-squares refinement (LS) are compared under the same mixed propagation setting. For all evaluated quantities, increasing γ shifts the CDF curves to the right, which is consistent with the larger perturbations in the AoA, AoD, and delay measurements. Nevertheless, the curves remain ordered with respect to the noise level, showing that the proposed 3-D formulation degrades smoothly rather than failing abruptly as the measurement quality decreases. Compared with the CF estimate, the LS refinement consistently shifts the error distributions to the left. For UE position and clock bias, the CF stage provides a usable initialization, while the LS stage further reduces the resid-ual geometric mismatch. The improvement is especially visible for orientation and scattering-point estimation: the CF orientation errors remain broadly distributed, whereas the LS curves concentrate close to zero for all tested γ;similarly, the scatterer-error CDFs after LS refinement rise much faster than their CF counterparts. This indicates that, once the coarse stage has identified a reliable inlier set and an approximate UE state, fitting the physical LoS/NLoS-1 measurement model can jointly improve both the 6-D UE pose and the reconstructed landmarks. These results verify the role of the two-stage design in the general 3-D scenario. The CF stage provides a robust amplitude-independent initialization under unknown path identity, and the LS stage uses this initialization to jointly refine the UE pose, clock bias, scattering points, and path interpretation. Hence, the proposed pipeline remains effective for full 6-D pose estimation and mapping, not only for the planar special case. VI. Conclusion This paper proposed an amplitude-independent robust snapshot radio SLAM method based on a unified angle-delay formulation for LoS and NLoS-1 inlier paths. The proposed coarse stage is written directly in the UE state and angle-delay observations, avoiding amplitude-based LoS preclassification and path-wise latent variables in the solver state. To handle unknown path identity and NLoS-n outliers, the coarse solver was embedded in a consensus-based minimal-set search with geometric feasibility checks. The formulation was further developed for general 3-D/6-D pose and clock-bias estimation, where the UE orientation is initialized by twist-swing two-stage traversal and refined locally on SO (3) . Building on the coarse estimate, a Jacobian-row-equilibrated IRLS refinement with QAIC-based model comparison jointly refines the UE state, detects the LoS path, and estimates scattering points. We also analyzed formulation-specific local-rank properties and derived minimal-set implications for the proposed initialization. Simulation results show that the proposed method remains competitive with calibrated amplitude-dependent baselines, provides robust LoS/inlier handling under the targeted path-loss-model mismatch, and remains effective in the general 3-D scenario. Appendix A Derivation of Derivatives for Iterative Estimation If h(m) 
+
+> k
+
+is a LoS path in a hypothesis, we have ∇pIm =
+
+01×3, ∇bUE h(m) 
+
+> k
+
+= [1 , 01×4]⊤,
+
+∇pUE hLoS =
+
+ 
+
+> 1
+> c
+> t⊤
+> ∥t∥
+> (R⊤
+> BS t)⊤[−e2,e1,0]R⊤
+> BS
+> ∥[e1,e2]⊤R⊤
+> BS t∥2
+> e⊤
+> 3R⊤
+> BS
+
+[∥t∥2I−tt ⊤]
+
+∥[e1,e2]⊤R⊤
+
+> BS t
+
+∥∥t∥2
+
+> (R⊤
+> UE t)⊤[e2,−e1,0]R⊤
+> UE
+> ∥[e1,e2]⊤R⊤
+> UE t∥2
+
+− e⊤ 
+
+> 3R⊤
+> UE
+
+[∥t∥2I−tt ⊤]
+
+∥[e1,e2]⊤R⊤
+
+> UE t
+
+∥∥t∥2
+
+
+
+, (54) and 
+
+∇RUE hLoS =
+
+
+
+03×3(R⊤
+
+> UE t)⊤[−e2,e1,0]R⊤
+> UE [t]×
+> ∥[e1,e2]⊤R⊤
+> UE t∥2
+
+− ∥t∥e⊤ 
+
+> 3R⊤
+> UE [t]×
+
+∥[e1,e2]⊤R⊤
+
+> UE t
+
+∥
+
+ , (55) 13 
+
+Otherwise, if h(m) 
+
+> k
+
+is a NLoS-1 path in a hypothesis, we have ∇bUE h(m) 
+
+> k
+
+= [1 , 01×4]⊤,
+
+∇pIm hNLoS −1 =
+
+
+
+> 1
+> c
+
+( t∨Im
+
+∥t∨Im ∥ + t∧Im
+
+∥t∧Im ∥
+
+)⊤   
+
+> (R⊤
+> BS t∧Im)⊤[−e2,e1,0]R⊤
+> BS
+> ∥[e1,e2]⊤R⊤
+> BS t∧Im∥2
+> e⊤
+> 3R⊤
+> BS
+
+[∥t∧Im ∥2I−(t∧Im )( t∧Im )⊤]
+
+∥[e1,e2]⊤R⊤ 
+
+> BS t∧Im
+
+∥∥ t∧Im ∥2  
+
+> (R⊤
+> UE t∨Im)⊤[−e2,e1,0]R⊤
+> UE
+> ∥[e1,e2]⊤R⊤
+> UE t∨Im∥2
+
+− e⊤ 
+
+> 3R⊤
+> UE
+
+[∥t∨Im ∥2I−(t∨Im )( t∨Im )⊤]
+
+∥[e1,e2]⊤R⊤ 
+
+> UE t∨Im
+
+∥∥ t∨Im ∥2
+
+
+
+, (56) 
+
+∇pUE hNLoS −1 =
+
+
+
+− 1
+
+> c
+
+(t∨Im )⊤ 
+
+> ∥t∨Im∥
+
+02×3(R⊤  
+
+> UE t∨Im)⊤[e2,−e1,0]R⊤
+> UE
+> ∥[e1,e2]⊤R⊤
+> UE t∨Im∥2
+
+− e⊤ 
+
+> 3R⊤
+> UE
+
+[∥t∨Im ∥2I−(t∨Im )( t∨Im )⊤]
+
+∥[e1,e2]⊤R⊤ 
+
+> UE t∨Im
+
+∥∥ t∨Im ∥2
+
+
+
+, (57) and 
+
+∇RUE hNLoS −1 =
+
+
+
+03×3(R⊤ 
+
+> UE t∨Im)⊤[−e2,e1,0]R⊤
+> UE
+
+[t∨Im ]× 
+
+> ∥[e1,e2]⊤R⊤
+> UE t∨Im∥2
+
+− ∥t∨Im ∥e⊤ 
+
+> 3R⊤
+> UE
+
+[t∨Im ]×
+
+∥[e1,e2]⊤R⊤ 
+
+> UE t∨Im
+
+∥
+
+ . (58) where t∨Im = ( pIm − pUE ) and t∧Im = ( pIm − pBS ).Further, in a planar scenario, the Jacobian matrix degenerates into 
+
+[
+
+∇Θ(m) h(m)
+
+> k
+
+] 
+
+> (sr,sc)
+
+, where the operator 
+
+[A](sr ,sc) returns a submatrix formed by the rows and columns of A that are selected by the vectors sr =[1 , 2, 4] ⊤ and sc = [3] , respectively. Appendix B Generation of NLoS Paths The NLoS-1 path is generated with its scattering point 
+
+pi, which is randomly generated within the space. Con-sequently, the angle and path delay are computed using (3). On the other hand, the NLoS-n path is generated with uniformly distributed angles, that is, 
+
+ϕNLoS −n,a, θ NLoS −n,a ∼ U (0 , 2π), (59) 
+
+ϕNLoS −n,e, θ NLoS −n,e ∼ U (− π 
+
+> 2
+
+, π 
+
+> 2
+
+). (60) Since an NLoS-n path may result from multiple bounces, it can exhibit a longer propagation distance and broader delay dispersion. To emulate this phenomenon in a syn-thetic outlier-delay model, we use a skew-normal random variable [30] to construct the NLoS-n path delay, i.e., 
+
+τNLoS −n ∼ SN (μ, σ, α ), where α is the shape parameter, μ
+
+and σ specify the resulting mean and standard deviation. In our simulation setup, we set μ to the time-delay mean of all inliers, choose σ = 100 ns and α = −4 to introduce asymmetry in the synthetic NLoS-n outlier-delay model. The amplitude ξi = √ηi of each NLoS path (either NLoS-1 or NLoS-n) is generated with total NLoS power and the exponential decay model as ηi = η′  
+
+> i
+> ∑N′
+> k=1 η′
+> k
+
+× ηNLoS ,where η′ 
+
+> i
+
+= 10 S 
+
+> 10
+
+e− τiβ , S is the per-path shadowing and 
+
+S ∼ N (μS , σ 2 
+
+> S
+
+), N ′ denotes the total number of NLoS paths, and ηNLoS represents the total NLoS power. We set β = 31 .4 ns, μS = 0 dB and σS = 9 .4 dB [31] in the simulation setup. In the case of the LoS scenario, the total NLoS power 
+
+ηNLoS is specified by ηNLoS = ηLoS  
+
+> 10 K/ 10
+
+, where the K-factor is assumed K ∼ N (μk, σ 2
+
+> k
+
+), and we set μk = 7 dB and 
+
+σk = 4 dB following [32]. For the power ηdB , we use the logarithmic distance path loss model, that is, ηdB ∼N (f (pUE ), σ 2sh ), where f (pUE ) = −L0 − 10 ζ log 10 (∥pBS −
+
+pUE ∥), L0 is the reference path loss at a distance of one meter and ζ is the path loss coefficient. In LoS scenario, we use the path loss coefficient ζ = 1 .7, standard deviation 
+
+σsh = 1 .8 dB, and the L0 = 13 dB. Otherwise, in the case of the NLoS scenario, we set L0 = 13 dB, ζ = 3 .3 dB, and 
+
+σsh = 4 .6 dB [4], [33]. References 
+
+[1] A. Behravan, V. Yajnanarayana, M. F. Keskin, H. Chen, D. Shrestha, T. E. Abrudan, T. Svensson, K. Schindhelm, A. Wolfgang, S. Lindberg, and H. Wymeersch, “Positioning and sensing in 6G: Gaps, challenges, and opportunities,” IEEE Vehicular Technology Magazine, vol. 18, no. 1, pp. 40–48, 2023. [2] C. De Lima, D. Belot, R. Berkvens, A. Bourdoux, D. Dardari, M. Guillaud, M. Isomursu, E.-S. Lohan, Y. Miao, A. N. Barreto, M. R. K. Aziz, J. Saloranta, T. Sanguanpuak, H. Saried-deen, G. Seco-Granados, J. Suutala, T. Svensson, M. Valkama, B. Van Liempd, and H. Wymeersch, “Convergent communi-cation, sensing and localization in 6G systems: An overview of technologies, opportunities and challenges,” IEEE Access, vol. 9, pp. 26 902–26 925, 2021. [3] M. Arvinte and J. I. Tamir, “MIMO channel estimation using score-based generative models,” IEEE Transactions on Wireless Communications, vol. 22, no. 6, pp. 3698–3713, 2023. [4] O. Kaltiokallio, E. Rastorgueva-Foi, J. Talvitie, Y. Ge, H. Wymeersch, and M. Valkama, “Robust snapshot radio SLAM,” IEEE Transactions on Vehicular Technology, vol. 74, no. 5, pp. 8460 – 8465, 2025. [5] B. Amjad, Q. Z. Ahmed, P. I. Lazaridis, M. Hafeez, F. A. Khan, and Z. D. Zaharis, “Radio SLAM: A review on radio-based simultaneous localization and mapping,” IEEE Access, vol. 11, pp. 9260–9278, 2023. [6] O. Kaltiokallio, J. Talvitie, E. Rastorgueva-Foi, H. Wymeersch, and M. Valkama, “Integrated snapshot and filtering-based bistatic radio SLAM in mmWave networks,” in 2024 IEEE 25th International Workshop on Signal Processing Advances in Wireless Communications (SPAWC), 2024, pp. 301–305. [7] E. Rastorgueva-Foi, O. Kaltiokallio, Y. Ge, M. Turunen, J. Talvitie, B. Tan, M. Furkan Keskin, H. Wymeersch, and M. Valkama, “Millimeter-wave radio SLAM: End-to-end pro-cessing methods and experimental validation,” IEEE Journal on Selected Areas in Communications, vol. 42, no. 9, pp. 2550– 2567, 2024. [8] B. Hu, H. Tian, W. Ni, S. Fan, W. Ni, and E. Hossain, “Multipath identification, user localization, and environment mapping in radio SLAM,” IEEE Transactions on Communica-tions, vol. 72, no. 10, pp. 6457–6473, 2024. [9] A. Fascista, A. Coluccia, H. Wymeersch, and G. Seco-Granados, “Downlink single-snapshot localization and mapping with asingle-antenna receiver,” IEEE Transactions on Wireless Com-munications, vol. 20, no. 7, pp. 4672–4684, 2021. [10] Y. Ge, O. Kaltiokallio, H. Kim, F. Jiang, J. Talvitie, M. Valkama, L. Svensson, S. Kim, and H. Wymeersch, “A computationally efficient EK-PMBM filter for bistatic mmWave radio SLAM,” IEEE Journal on Selected Areas in Communica-tions, vol. 40, no. 7, pp. 2179–2192, 2022. [11] F. Wen and H. Wymeersch, “5G synchronization, positioning, and mapping from diffuse multipath,” IEEE Wireless Commu-nications Letters, vol. 10, no. 1, pp. 43–47, 2021. 14 
+
+[12] Y. Ge, H. Khosravi, F. Jiang, H. Chen, S. Lindberg, P. Ham-marberg, H. Kim, O. Brunnegård, O. Eriksson, B.-E. Olsson, F. Tufvesson, L. Svensson, and H. Wymeersch, “Experimental validation of single BS 5G mmWave positioning and mapping for intelligent transport,” IEEE Transactions on Vehicular Technology, vol. 73, no. 11, pp. 16 744–16 757, 2024. [13] E. Leitinger, A. Venus, B. Teague, and F. Meyer, “Data fusion for multipath-based SLAM: Combining information from multiple propagation paths,” IEEE Transactions on Signal Processing, vol. 71, pp. 4011–4028, 2023. [14] S. Shen and H. Wymeersch, “A projective geometric view for 6D pose estimation in mmWave MIMO systems,” IEEE Transactions on Wireless Communications, vol. 23, no. 8, pp. 9144–9159, 2024. [15] X. Zhang, O. Kaltiokallio, Y. Ge, H. Wymeersch, and M. Valkama, “Robust and efficient Bayesian approach for snapshot radio SLAM,” in 2025 International Conference on Localization and GNSS (ICL-GNSS), 2025, pp. 1–7. [16] Z. Zhou, H. Chen, G. Steinböck, and H. Wymeersch, “Digital twin-assisted high-precision massive MIMO localization in ur-ban canyons,” in 2026 IEEE 6th International Symposium on Joint Communications & Sensing (JC&S), 2026, pp. 1–6. [17] X. Hu, S. Li, S. Xiong, and L. Li, “An indicator constructed from signal features for GNSS NLOS and multipath signal detection,” Advances in Space Research, vol. 75, no. 6, pp. 4457–4471, 2025. [18] A. Shahmansoori, G. E. Garcia, G. Destino, G. Seco-Granados, and H. Wymeersch, “Position and orientation estimation through millimeter-wave MIMO in 5G systems,” IEEE Transac-tions on Wireless Communications, vol. 17, no. 3, pp. 1822–1835, 2018. [19] K.-W. Kim, M.-D. Kim, J. Lee, J.-J. Park, and H.-K. Kwon, “Efficient implementation of the SAGE algorithm for channel impulse response estimation,” in 2021 International Conference on Information and Communication Technology Convergence (ICTC), 2021, pp. 1525–1529. [20] Z. Yang, R. Wang, Y. Jiang, and J. Li, “Joint estimation of velocity, angle-of-arrival and range (JEVAR) using a conjugate pair of Zadoff-Chu sequences,” IEEE Transactions on Signal Processing, vol. 69, pp. 6009–6022, 2021. [21] M. A. Nazari, G. Seco-Granados, P. Johannisson, and H. Wymeersch, “3D orientation estimation with multiple 5G mmWave base stations,” in ICC 2021 - IEEE International Conference on Communications, 2021, pp. 1–6. [22] R. Hartley and A. Zisserman, Multiple view geometry in computer vision. Cambridge university press, 2003. [23] T. D. Barfoot, State estimation for robotics. Cambridge University Press, 2024. [24] P.-A. Absil, R. Mahony, and R. Sepulchre, Optimization algo-rithms on matrix manifolds. Princeton University Press, 2009. [25] P. Torr and A. Zisserman, “Mlesac: A new robust estimator with application to estimating image geometry,” Computer Vision and Image Understanding, vol. 78, no. 1, pp. 138–156, 2000. [26] J. Ding, V. Tarokh, and Y. Yang, “Model selection techniques: An overview,” IEEE Signal Processing Magazine, vol. 35, no. 6, pp. 16–34, 2018. [27] M. Gambarini, G. Ciaramella, and E. Miglio, “A gradient-flow approach for combined layout-control design of wave energy parks,” SIAM Journal on Scientific Computing, vol. 48, no. 1, pp. B59–B82, 2026. [28] M. F. Dixon, Z. Bai, C. F. Brush, F. I. Chung, E. C. Dogrul, and T. N. Kadir, “Error control of iterative linear solvers for integrated groundwater models,” Groundwater, vol. 49, no. 6, pp. 859–865, 2011. [29] D. Ruiz, “A scaling algorithm to equilibrate both rows and columns norms in matrices,” CM-P00040415, Tech. Rep., 2001. [30] M. Pourahmadi, “Construction of skew-normal random vari-ables: Are they linear combinations of normal and half-normal?” Stat. Theory Appl., vol. 3, 01 2007. [31] M. K. Samimi and T. S. Rappaport, “Ultra-wideband statistical channel model for non line of sight millimeter-wave urban channels,” in 2014 IEEE Global Communications Conference, 2014, pp. 3483–3489. [32] Q. Zhu, C.-X. Wang, B. Hua, K. Mao, S. Jiang, and M. Yao, “3GPP TR 38.901 channel model,” in the wiley 5G Ref: the essential 5G reference online. Wiley Press, 2021, pp. 1–35. [33] P. F. M. Smulders, “Statistical characterization of 60-GHz indoor radio channels,” IEEE Transactions on Antennas and Propagation, vol. 57, no. 12, pp. 2820–2829, 2009.

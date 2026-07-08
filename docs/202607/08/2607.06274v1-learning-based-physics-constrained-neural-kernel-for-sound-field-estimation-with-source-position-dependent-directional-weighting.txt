@@ -1,0 +1,186 @@
+Title: Learning-based Physics-Constrained Neural Kernel for Sound Field Estimation With Source-Position-Dependent Directional Weighting
+
+URL Source: https://arxiv.org/pdf/2607.06274v1
+
+Published Time: Wed, 08 Jul 2026 01:02:53 GMT
+
+Number of Pages: 5
+
+Markdown Content:
+# LEARNING-BASED PHYSICS-CONSTRAINED NEURAL KERNEL FOR SOUND FIELD ESTIMATION WITH SOURCE-POSITION-DEPENDENT DIRECTIONAL WEIGHTING 
+
+# Mattia Marella 1,2 ∗ and Shoichi Koyama 11National Institute of Informatics, Tokyo, Japan, 2 University of Ferrara, Ferrara, Italy 
+
+ABSTRACT 
+
+A learning-based physics-constrained neural kernel for sound field estimation is proposed. Sound field estimation aims to estimate the spatial distribution of an acoustic field from a discrete set of mi-crophone measurements, which have a wide range of applications. Among existing sound field estimation methods, kernel-regression-based methods offer a flexible and principled framework for incor-porating physical constraints and allow inference through linear op-eration. It is also possible to adapt the kernel function to the tar-get acoustic environment by representing the directional weighting function as an implicit neural representation (INR) and optimizing hyperparameters using measurements. However, the kernel func-tion is generally optimized for single snapshot measurements of the microphones, which can lead to strong overfitting and poor gener-alization. We propose a source-position-dependent INR for the di-rectional weighting function, enabling the kernel function to cap-ture common directional patterns and to generalize to unseen source positions in the target acoustic environment. Experimental results indicate that our proposed method outperforms the snapshot-based method by estimating a directional weighting function that matches the directivity of the target sound field. 
+
+Index Terms — kernel regression, neural networks, physics-informed machine learning, sound field reconstruction, spatial audio 
+
+1. INTRODUCTION 
+
+Sound field estimation/reconstruction/interpolation is a fundamental task in audio signal processing and machine learning, aiming to esti-mate the spatial distribution of an acoustic field from a discrete set of sensor (microphone) observations. It can be applied to a wide variety of downstream tasks, for example, acoustic imaging [1], room acous-tic analysis [2], and spatial audio reproduction and control [3, 4]. There have been many studies on sound field estimation [5]. One of the most widely used techniques is the basis-expansion-based method, which is based on the representation of the sound field as a linear combination of predefined basis functions, such as plane waves, spherical wave functions, and equivalent point sources [3, 6]. The expansion coefficients are then estimated from the microphone measurements using the least squares method. Sparse regulariza-tion techniques have also been applied to promote sparsity in the coefficient space to improve reconstruction accuracy [7–9]. Kernel-regression-based methods generalize the (finite-dimensional) basis-expansion-based method to an infinite-dimensional basis expansion, 
+
+> ∗This work was performed while Mattia Marella was an intern at the Na-tional Institute of Informatics. This work was supported by JST FOREST Program under Grant Number JPMJFR216M and ”Strategic Programs” grant from ROIS (Research Orga-nization of Information and Systems).
+
+thereby enabling the estimates to be constrained to the solution of the governing equation (wave and Helmholtz equations) [10, 11]. In recent years, neural network (NN)-based methods have at-tracted attention because of their high representational power and interpolation capabilities [12–16]. Physics-informed (penalized and constrained) approaches have also been investigated in the NN-based methods to avoid overfitting and increase the interpretability [17– 21]. Among these current sound field estimation methods, the kernel-regression-based methods are particularly practical for ap-plications requiring real-time processing, as they satisfy physical constraints while enabling inference through linear operation. To design physics-constrained kernel functions, the Herglotz wave function [22], which is equivalent to a plane wave expansion, is used. To incorporate prior information regarding the directivity of the tar-get sound field, a directional weighting function can be introduced into the Herglotz wave function [10]. Although a fixed unimodal function or its linear combination has been used as the directional weighting function, they are unable to fully capture the characteris-tics of the target acoustic environment. Ribeiro et al. [18] proposed a method for adapting physics-constrained kernel functions to the target acoustic environment by introducing implicit neural represen-tations (INR) [23] and optimizing the hyperparameters based on the measurement data, which is referred to as physics-constrained neu-ral kernel . However, since the kernel function is adapted only to a single snapshot of measurement data, updating it requires significant computational effort for fine-tuning the hyperparameters, resulting in strong overfitting and poor generalization performance. We propose a learning-based physics-constrained neural kernel, which enables adapting the kernel function to the target acoustic environment based on a set of training data. The training data is assumed to be obtained in advance through numerical simulations and/or practical measurements of acoustic transfer functions (ATFs). The directional weighting function is designed as an INR depending on the source positions. Thus, the source-dependent characteristics of the target acoustic environment are expected to be captured by the training data, and the directional weighting function optimal to the given source positions can be obtained without finetuning. Experi-mental evaluations are performed to compare the proposed method with the snapshot-based physics-constrained neural kernel. 
+
+2. PROBLEM FORMULATION 
+
+Let Ω ⊂ R3 be a simply-connected, source-free region of interest. The acoustic pressure field of angular frequency ω at position x ∈ Ω
+
+is denoted by u(x, ω ), which satisfies the homogeneous Helmholtz equation: 
+
+∇2u(x, ω ) + k2u(x, ω ) = 0 , ∀x ∈ Ω, (1) arXiv:2607.06274v1 [cs.SD] 7 Jul 2026 where k = ω/c is the wavenumber and c is the speed of sound. Sound field estimation aims to reconstruct u(x, ω ) throughout Ω
+
+from a finite set of measurements {sm(ω)}Mm=1 collected at known microphone positions {xm}Mm=1 ⊂ Ω. Hereafter, we omit the fre-quency dependence for simplicity. In the learning-based approach to sound field estimation, a set of ATFs from the sources at known positions {yj }Jj=1 ⊂ R3\Ω
+
+to the target positions {xi}Ii=1 ⊂ Ω in a static acoustic environ-ment is assumed to be available, which is denoted as {h(xi, yj )}i,j .They could be obtained by numerical simulations and/or practical measurements of the target environment. The goal is to estimate u
+
+for unseen sources at given positions from the measurements s =[s1, . . . , s M ]T, exploiting the features of the target acoustic environ-ment extracted from the training ATFs. 
+
+3. RELATED WORK 
+
+We here briefly revisit the kernel-regression-based sound field esti-mation methods, which can be regarded as a generalization of finite-dimensional basis-expansion-based methods. They allow for inter-ference through linear operation and require few parameters that have to be set empirically, such as the number of basis functions. 
+
+3.1. Kernel Regression for Sound Field Estimation 
+
+The kernel-regression-based methods provide a flexible and princi-pled framework for incorporating physical constraints. The problem to be solved is formulated as 
+
+ˆu = arg min 
+
+> u∈H
+> M
+
+X
+
+> m=1
+
+|sm − u(xm)|2 + λ∥u∥2
+
+> H
+
+, (2) where H is a Reproducing Kernel Hilbert Space (RKHS) of func-tions that satisfy the Helmholtz equation (1), and λ > 0 is a regular-ization parameter. The optimal solution can be expressed in closed form using the representer theorem [24] as 
+
+ˆu(x) = κ(x)T (K + λI)−1 s, (3) where κ(x) = [ κ(x, x1), . . . , κ (x, xM )] T is the vector of kernel evaluations and K is the Gram matrix with entries Kij = κ(xi, xj ).The choice of RKHS H as well as the kernel function κ is crucial for the performance of kernel-regression-based methods. Ueno et al. [10] proposed a kernel function based on Herglotz wave functions, which is a weighted integral of plane waves over the unit sphere, expressed as 
+
+κ(x, x′) = 14π
+
+Z
+
+> S2
+
+ejkη·(x−x′)w(η)d η, (4) where w : S2 → R≥0 is a directional weighting function that en-hances the directional sensitivity of the kernel. In [10], the unimodal weighting function based on the von Mises–Fisher distribution [25] is proposed, which admits a closed-form expression for the kernel. 
+
+3.2. Neural Kernels for Sound Field Estimation 
+
+The unimodal directional weighting function in [10] is limited in its ability to capture complex directional patterns of sound fields, especially in reverberant environments. To address this limitation, Ribeiro et al. [18] proposed to model the directional weighting func-tion w as a sum of directed and residual components. The directed component is a superposition of von Mises–Fisher distributions for LebedevSphere
+
+Fig. 1 : Conceptual diagram of the proposed physics-constrained neural kernel. The training pipeline combines the finely-discretized directions on S2 with a source-dependent neural modulation that pro-duces positive directional weights w, which are used to construct the kernel function and reconstruct the sound field. Fourier Enc.                     
+
+> Φ( η)
+> Fourier Enc.
+> Φ( y)
+> Concat + residual η→131 dims
+> Linear 131 →64 + LayerNorm + Mish
+> Linear 64 →32 + LayerNorm + Mish
+> Linear 32 →1+ Softplus Output: w(η,y)≥0
+
+Fig. 2 : Proposed NN architecture. The INR takes RFM embeddings of the direction η and source position y, concatenated with a resid-ual connection, and maps them through an MLP to a non-negative weight via a Softplus output. capturing direct sound and early reflections, and the residual com-ponent is an INR consisting of multilayer perceptrons (MLPs) for capturing late reverberation. The model parameters are jointly opti-mized by the gradient-descent-based method to minimize the recon-struction error. However, a single snapshot measurement is used to optimize the model parameters, which may lead to overfitting and poor generalization performance. 
+
+4. PROPOSED METHOD 
+
+We propose a learning-based neural kernel for sound field estima-tion, which extends the physics-constrained neural kernel framework of [18] to a multi-source training paradigm. Whereas the current method fits independent kernel instances for each source position using snapshot measurements, the proposed approach learns a direc-tional weighting function shared across multiple sources, enabling the model to capture common directional patterns and to generalize to unseen source positions. 
+
+4.1. Learning-based Physics-Constrained Neural Kernel 
+
+We represent the directional weighting function w in (4) as an INR with the input of η and source position y ∈ R3\Ω as 
+
+w(η) = INR( η, y; θ), (5) where θ denotes the NN weights. Thus, the source-position-dependent directional weighting function can be constructed. The kernel function is computed based on (4); therefore, the estimated field by using this kernel function, as in (3), still satisfies the Helmholtz equation. (see Fig. 1) Although the directional weighting function in (5) is a represen-tation of a continuous function with respect to η, the kernel function (4) has to be obtained by numerical integration, as obtaining its ana-lytical expression is normally intractable. Owing to the INR, we can compute the integration by finely discretizing the unit sphere surface 
+
+S2. The discrete directions are denoted by {ηd}Dd=1 . We applied the Lebedev quadrature [26] for sampling on S2 and the discrete direc-tions {ηd}Dd=1 are fixed during the training; thus, the translational invariance of the kernel function κ(x, x′) = κ(x − x′) is preserved. The kernel function based on the INR is also used in the previous method [18] for the residual component. We additionally include the source-position dependence y in the directional weighting (5). Thus, it is expected to enable learning of optimal directional weight-ing functions based on the source positions y from the training data. During inference, it will be possible to obtain optimal directional weighting functions even for unseen sources at given positions only by the forward propagation of the INR. On the contrary, the previ-ous method [18] uses only the direction η as input; therefore, the directional weighting function is optimized solely with the snapshot observations s, and fine-tuning of hyperparameters is required for each measurement. 
+
+4.2. Proposed Network Architecture 
+
+The source-position-dependent INR, INR : ( η, y) → R≥0, is con-structed as shown in Fig. 2. Both the direction η ∈ S2 and the source position y ∈ R3\Ω are first lifted into high-dimensional embeddings via Random Fourier Features (RFF) [27]: 
+
+Φ( z) = [sin(2 πBz ), cos(2 πBz )] , (6) where z is η or y, and B ∈ R32 ×3 is a fixed Gaussian random ma-trix whose bandwidth is scaled proportionally to k, increasing repre-sentational capacity with frequency. These two embeddings are con-catenated with a residual connection of the raw direction η, followed by a three-layer MLP with Layer Normalization [28] and Mish ac-tivations [29]. The final output is enforced to be non-negative by using Softplus activation function [30]. Thus, the positive semi-definiteness of the kernel function κ as well as the Gram matrix K
+
+is guaranteed. The model is trained by using a set of ATFs {h(xi, yj )}i,j from 
+
+J sources to I evaluation points in a single fixed room. The loss function is the normalized mean square error (NMSE) of the recon-structed pressures at the evaluation points. 
+
+L =
+
+P 
+
+> i,j
+
+|ˆu(xi; yj , θ) − u(xi; yj )|2
+
+P 
+
+> i,j
+
+|u(xi; yj )|2 , (7) where ˆu is the estimated pressures from the measurements s by (3) using the kernel function (4) with the directional weighting (5). 0.25  
+
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> x (m) 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> y (m)
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> z (m)
+> Microphones
+> Source
+
+Fig. 3 : Experimental setup. Omnidirectional microphones are placed on two spherical layers of radii 0.50 m and 0.49 m . I = 1331 
+
+target positions are regularly arranged inside the inner spherical shell. 
+
+5. EXPERIMENTS 5.1. Experimental Setup 
+
+To construct a dataset, synthetic room impulse responses (RIRs) are generated by using the image source method [31]. The simulated room is 4.0 m × 6.0 m × 3.0 m shoebox geometry, and the target reverberation time is set to T60 = 200 ms . The target region Ω is a spherical region of radius 0.5 m centered at (2 .0 m , 3.0 m , 1.5 m) 
+
+with the coordinate origin at the bottom corner of the room. The tar-get region is discretized into I = 1331 points every 0.1 m to obtain the evaluation points. 100 point sources are randomly placed inside the room, outside Ω and at a distance of 0.2 m from the walls and 
+
+Ω. The sources are split into training, validation, and test sets at the ratios of 80%, 10%, and 10%, respectively. The sampling frequency is 4800 Hz and sound speed is c = 343 m /s. The complex ATFs are obtained by FFT of size 2048 .Omni-directional microphones are placed on two concentric spherical layers of radius 0.5 m and 0.49 m. A total of M mi-crophones are distributed equally between these layers, with M/ 2
+
+sensors per shell. The microphones on both layers share the same angular orientations (θm, ϕ m), effectively forming M/ 2 radially aligned pairs to avoid the forbidden frequency problem [6]. The points are distributed according to a spherical t-design [32]. We compare the proposed learning-based neural kernel (LB-NK) with the snapshot-based neural kernel (SB-NK) and the fixed kernel using uniform weighting (Uniform). SB-NK is based on the same network architecture as LB-NK for constructing the directional weighting function w, but the source-dependent components are re-moved. Thus, the network parameters are optimized only for the snapshot observation s. The optimization is performed with the Adam optimizer [33] with ReduceLROnPlateau scheduler at an ini-tial learning rate of 10 −3. The early-stopping criterion for LB-NK is based on the validation loss L. Since SB-NK does not have the validation dataset, the number of epochs for optimizing the network parameters is fixed at 300 . Uniform does not require iterative op-timization, and ˆu is obtained by (3) with the fixed kernel function using w = 1 .0. The reconstructed pressure distribution by each method is evaluated by the test loss L.Fig. 4 : Average NMSE of SB-NK, LB-NK, and Uniform with re-spect to the frequency. 
+
+Fig. 5 : Medians, inter-quartile ranges, and outliers of NMSE are plotted as a boxplot. 
+
+5.2. Results 
+
+Fig. 4 shows the NMSE averaged across all test sources as a func-tion of frequency for a configuration with M = 18 microphones. To provide a deeper insight into the statistical distribution of the er-ror, Fig. 5 presents the corresponding boxplots at specific represen-tative frequencies: 150 , 225 , 300 , 450 , and 750 Hz . As expected, all methods exhibit a monotonic degradation in performance as the fre-quency increases. This trend reflects the increasing spatial complex-ity of the acoustic field. Within the frequency range of 75 –525 Hz ,LB-NK consistently achieves a lower average NMSE than both SB-NK and the Uniform baseline. Furthermore, the tighter inter-quartile ranges observed at higher frequencies in the boxplots for LB-NK suggest that the multi-source training acts as an effective structural regularizer, leading to a more stable reconstruction that is less sensi-tive to the specific source realization, even under challenging high-frequency conditions. Fig. 6 shows the optimized directional weighting function w for LB-NK and SB-NK at 150 Hz and 1200 Hz . Whereas the direc-tional weight of SB-NK tends to spread energy across multiple com-peting lobes with no clear alignment to the ground truth, the LB-NK weights are sharply concentrated on the directions corresponding to the direct source and the first-order early reflections. At lower fre-quencies, this concentration allows LB-NK to identify a physically consistent propagation direction, whereas SB-NK exhibits a more isotropic and less accurate distribution. As the frequency increases to 1200 Hz , the SB-NK fails to resolve a dominant directivity pat-tern, showing increased variance. In contrast, LB-NK maintains its       
+
+> (a) 150 Hz ,M= 18
+> (b) 1200 Hz ,M= 50
+
+Fig. 6 : Directional weighting function obtained by SB-NK (left) and LB-NK (right). The directions of the true source and first-der image sources are indicated by red crosses and cyan circles, respectively. focus near the true source and image-source locations. This behavior suggests that training across multiple sources acts as a powerful spa-tial regularizer, encouraging the network to learn a robust directional prior aligned with the underlying room geometry, rather than over-fitting the specific angular noise or fluctuations of individual source realizations. 
+
+6. CONCLUSION 
+
+We proposed a learning-based physics-constrained neural kernel for sound field estimation. The current method suffers from strong over-fitting and poor generalization as the directional weighting function for the kernel function is optimized based solely on the single snap-shot measurements. By constructing the directional weighting func-tion using source-position-dependent INR, the kernel function based on the Herglotz wave function enables adaptation to the target acous-tic environment using training ATF data while constraining the gov-erning equation. We performed experimental evaluations to compare the proposed method with the snapshot-based methods, where the proposed method outperformed the snapshot-based method by prop-erly capturing the directivity of the target sound field. Future work is to generalize this approach to multiple rooms. 
+
+7. REFERENCES 
+
+[1] J. D. Maynard, E. G. Williams, and Y. Lee, “Nearfield acoustic holography: I. theory of generalized holography and the de-velopment of nah,” J. Acoust. Soc. Amer. , vol. 78, no. 4, pp. 1395–1413, 10 1985. [2] M. Park and B. Rafaely, “Sound-field analysis by plane-wave decomposition using spherical microphone array,” J. Acoust. Soc. Amer. , vol. 118, no. 5, pp. 3094–3103, 2005. [3] M. A. Poletti, “Three-dimensional surround sound systems based on spherical harmonics,” J. Audio Eng. Soc. , vol. 53, no. 11, pp. 1004–1025, 2005. [4] S. Koyama, J. Brunnstr¨ om, H. Ito, N. Ueno, and H. Saruwatari, “Spatial active noise control based on kernel interpolation of sound field,” IEEE/ACM Trans. Audio, Speech, Lang. Process. ,vol. 29, pp. 3052–3063, 2021. [5] N. Ueno and S. Koyama, “Sound field estimation: Theories and applications,” Foundations and Trends® in Signal Pro-cessing , vol. 19, no. 1, pp. 1–98, 2025. [6] E. G. Williams, Fourier Acoustics: Sound Radiation and Nearfield Acoustical Holography , Academic Press, 1999. [7] N. Antonello, E. De Sena, M. Moonen, P. A. Naylor, and T. van Waterschoot, “Room impulse response interpolation us-ing a sparse spatio-temporal representation of the sound field,” 
+
+IEEE/ACM Trans. Audio, Speech, Lang. Process. , vol. 25, no. 10, pp. 1929–1941, 2017. [8] S. Koyama, K. Furuya, Y. Haneda, and H. Saruwatari, “Source-location-informed sound field recording and reproduction,” 
+
+IEEE J. Sel. Topics Signal Process. , vol. 9, no. 5, pp. 881–894, 2015. [9] N. Bertin, L. Daudet, V. Emiya, and R. Gribonval, “Compres-sive sensing in acoustic imaging,” in Compressed Sensing and its Applications , H. Boche, R. Calderbank, G. Kutyniok, and J. Vybiral, Eds. Springer, 2015. [10] N. Ueno, S. Koyama, and H. Saruwatari, “Directionally weighted wave field estimation exploiting prior information on source direction,” IEEE Trans. Signal Process. , vol. 69, pp. 2383–2395, 2021. [11] J. Brunnstr¨ om, M. B. Møller, J. Østergaard, S. Koyama, T. van Waterschoot, and M. Moonen, “Time-domain sound field es-timation using kernel ridge regression,” IEEE Trans. Audio, Speech Lang. Process. , vol. 34, pp. 1243–1258, 2026. [12] F. Llu´ ıs, P. Mart´ ınez-Nuevo, M. B. Møller, and S. E. Shepstone, “Sound field reconstruction in rooms: Inpainting meets super-resolution,” J. Acoust. Soc. Amer. , vol. 148, no. 2, 2020. [13] A. Luo, Y. Du, M. J. Tarr, J. B. Tenenbaum, A. Torralba, and C. Gan, “Learning neural acoustic fields,” in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS) , 2022. [14] M. Pezzoli, D. Perini, A. Bernardini, F. Borra, F. Antonacci, and A. Sarti, “Deep prior approach for room impulse response reconstruction,” Sensors , vol. 22, no. 7, 2022. [15] K. Shigemi, S. Koyama, T. Nakamura, and H. Saruwatari, “Physics-informed convolutional neural network with bicubic spline interpolation for sound field estimation,” in Proc. Int. Workshop Acoust. Signal Enhancement (IWAENC) , Sep. 2022. [16] F. Miotello, L. Comanducci, M. Pezzoli, A. Bernardini, F. An-tonacci, and A. Sarti, “Reconstruction of sound field through diffusion models,” in Proc. IEEE Int. Conf. Acoust., Speech, Signal Process. (ICASSP) , Seoul, Republic of Korea, Apr. 2024. [17] M. Pezzoli, F. Antonacci, and A. Sarti, “Implicit neural rep-resentation with physics-informed neural networks for the re-construction of the early part of room impulse responses,” in 
+
+Proc. Forum Acusticum , Sep. 2023. [18] J. G. C. Ribeiro, S. Koyama, R. Horiuchi, and H. Saruwatari, “Sound field estimation based on physics-constrained kernel interpolation adapted to environment,” IEEE/ACM Trans. Au-dio, Speech, Lang. Process. , vol. 32, pp. 4369–4383, 2024. [19] X. Karakonstantis, D. Caviedes-Nozal, A. Richard, and E. Fernandez-Grande, “Room impulse response reconstruction with physics-informed deep learning,” J. Acoust. Soc. Amer. ,vol. 155, no. 2, pp. 1048–1059, 2024. [20] M. Olivieri, X. Karakonstantis, M. Pezzoli, F. Antonacci, A. Sarti, and E. Fernandez-Grande, “Physics-informed neu-ral network for volumetric sound field reconstruction of speech signals,” EURASIP J. Audio, Speech, Music Process. , , no. 42, 2024. [21] S. Koyama, J. G. C. Ribeiro, T. Nakamura, N. Ueno, and M. Pezzoli, “Physics-informed machine learning for sound field estimation: Fundamentals, state of the art, and chal-lenges,” IEEE Signal Process. Mag. , vol. 41, no. 6, pp. 60–71, 2025. [22] D. Colton and R. Kress, Inverse Acoustic and Electromagnetic Scattering Theory , Springer, 2013. [23] V. Sitzmann, J. Martel, A. Bergman, D. Lindell, and G. Wet-zstein, “Implicit neural representations with periodic activation functions,” in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS) ,2020. [24] B. Sch¨ olkopf, R. Herbrich, and A. J. Smola, “A generalized representer theorem,” in Proc. Int. Conf. Comput. Learn. The-ory (COLT) , Amsterdam, Netherlands, Jul. 2001, pp. 416–426. [25] K. V. Mardia and P. E. Jupp, Directional Statistics , John Wiley & Sons, 2009. [26] V. I. Lebedev and D. N. Laikov, “A quadrature formula for the sphere of the 131st algebraic order of accuracy,” Doklady Mathematics , vol. 59, pp. 477–481, 1999. [27] M. Tancik, P. P. Srinivasan, B. Mildenhall, S. Fridovich-Keil, N. Raghavan, U. Singhal, R. Ramamoorthi, J. T. Barron, and R. Ng, “Fourier features let networks learn high frequency functions in low dimensional domains,” in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS) , Red Hook, NY, USA, 2020, Cur-ran Associates Inc. [28] J. Ba, J. Kiros, and G. E. Hinton, “Layer normalization,” 
+
+ArXiv , vol. abs/1607.06450, 2016. [29] D. Misra, “Mish: A self regularized non-monotonic neural activation function,” ArXiv , vol. abs/1908.08681, 2019. [30] C. Dugas, Y. Bengio, F. B´ elisle, C. Nadeau, and R. Gar-cia, “Incorporating second-order functional knowledge for bet-ter option pricing,” in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS) , 2000, pp. 472–478. [31] J. B. Allen and D. A. Berkley, “Image method for efficiently simulating small-room acoustics,” J. Acoust. Soc. Amer. , vol. 65, no. 4, pp. 943–950, 1979. [32] X. Chen and R. S. Womersley, “Existence of solutions to systems of underdetermined equations and spherical designs,” 
+
+SIAM J. Numerical Analysis , vol. 44, no. 6, pp. 2326–2341, 2006. [33] D. P. Kingma and J. Ba, “Adam: A method for stochastic opti-mization,” CoRR , vol. abs/1412.6980, 2014.

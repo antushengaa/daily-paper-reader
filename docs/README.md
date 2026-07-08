@@ -6,38 +6,44 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-07
-- 运行时间：2026-07-07 21:57:08 UTC
+- 最新运行日期：2026-07-08
+- 运行时间：2026-07-08 21:45:17 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：5
-- 速读区：1
+- 本次总论文数：8
+- 精读区：4
+- 速读区：4
 
 ### 今日简报（AI）
-今日精读了两篇9.0分声源定位论文，分别从物理信息融合与慢平衡动力学实现微秒精度；最值得关注的方向是物理信息神经网络在DOA估计中的应用以及基于平衡动力学的超精准定位；建议读者重点消化这两篇声源定位的机制差异，并对比DL-SLAM中的动态环境处理策略。
-- 详情：[/202607/07/README](/202607/07/README)
+今日精读与速读共8篇论文，聚焦声场估计与视觉SLAM；最值得关注的是基于物理约束神经网络的声场估计方法（9.0分）及人类回声定位的卡尔曼滤波模型（9.0分）；建议学术读者重点关注物理约束与统计滤波在声学感知中的融合应用。
+- 详情：[/202607/08/README](/202607/08/README)
 
 ### 精读区论文标签
-1. [Physics-Informed Direction-of-Arrival Estimation Over Distributed Edge Devices](/202607/07/2607.02971v1-physics-informed-direction-of-arrival-estimation-over-distributed-edge-devices)  
+1. [Learning-based Physics-Constrained Neural Kernel for Sound Field Estimation With Source-Position-Dependent Directional Weighting](/202607/08/2607.06274v1-learning-based-physics-constrained-neural-kernel-for-sound-field-estimation-with-source-position-dependent-directional-weighting)  
    标签：评分：9.0/10、query:gso
-   evidence：结合阵列流形物理知识的联邦学习到达方向估计
-2. [Microsecond-precision sound localization emerges from slow equilibrium dynamics](/202607/07/2607.03890v1-microsecond-precision-sound-localization-emerges-from-slow-equilibrium-dynamics)  
+   evidence：物理约束神经核的声场估计
+2. [Modeling human echolocation using a Kalman filter](/202607/08/biorxiv-10-64898-2026-07-01-735693-v1-modeling-human-echolocation-using-a-kalman-filter)  
    标签：评分：9.0/10、query:gso
-   evidence：用于ITD的声音定位模型
-3. [MyGO-Splat: Multi-Objective Closed-Loop Geometric Feedback for RGB-Only Gaussian SLAM](/202607/07/2606.29738v1-mygo-splat-multi-objective-closed-loop-geometric-feedback-for-rgb-only-gaussian-slam)  
+   evidence：利用卡尔曼滤波器对人类回声定位进行建模，实现声学目标跟踪
+3. [Distributed Multichannel Wiener Filtering for Topology-Unconstrained Wireless Acoustic Sensor Networks](/202607/08/2607.05561v1-distributed-multichannel-wiener-filtering-for-topology-unconstrained-wireless-acoustic-sensor-networks)  
    标签：评分：8.0/10、query:gso
-   evidence：多目标闭环几何反馈SLAM
-4. [LH-AVLN: A Benchmark for Long-Horizon Audio-Visual-Language Navigation](/202607/07/2607.03920v1-lh-avln-a-benchmark-for-long-horizon-audio-visual-language-navigation)  
+   evidence：无线声学传感器网络中的分布式多通道维纳滤波器
+4. [ForestIR: Physics-Informed Forest Sound Simulation for Array-Based Bioacoustic Remote Sensing](/202607/08/2607.06299v1-forestir-physics-informed-forest-sound-simulation-for-array-based-bioacoustic-remote-sensing)  
    标签：评分：8.0/10、query:gso
-   evidence：使用空间化声学线索进行视听导航，涉及声源定位
-5. [Weakly Guided and Autoregressive Beamformer Parameterization for Generalizable Moving Speaker Extraction in Higher-Order Ambisonics](/202607/07/2607.04471v1-weakly-guided-and-autoregressive-beamformer-parameterization-for-generalizable-moving-speaker-extraction-in-higher-order-ambisonics)  
-   标签：评分：8.0/10、query:gso
-   evidence：基于高声阶立体混响的波束形成移动说话人提取
+   evidence：面向阵列生物声学遥感的物理信息森林声音仿真
 
 ### 速读区论文标签
-1. [DL-SLAM: Enabling High-Fidelity Gaussian Splatting SLAM in Dynamic Environments based on Dual-Level Probability](/202607/07/2607.01860v2-dl-slam-enabling-high-fidelity-gaussian-splatting-slam-in-dynamic-environments-based-on-dual-level-probability)  
+1. [Robust 3D Alignment of Generative Reconstructions via Partial Monocular Observations](/202607/08/2607.00498v1-robust-3d-alignment-of-generative-reconstructions-via-partial-monocular-observations)  
    标签：评分：7.0/10、query:gso
-   evidence：SLAM中的几何校准，使用高斯溅射和双层概率
+   evidence：使用Sim(3)变换的几何对齐校准框架
+2. [PRISM-VO: Scale-Aware Visual Odometry Using Photometric Plenoptic Bundle Adjustment](/202607/08/2607.00176v1-prism-vo-scale-aware-visual-odometry-using-photometric-plenoptic-bundle-adjustment)  
+   标签：评分：6.0/10、query:gso
+   evidence：光度全景光束法平差属于非凸优化
+3. [Auto-AEG: Scalable Data Construction for Open-Vocabulary Audio Event Grounding](/202607/08/2607.04383v1-auto-aeg-scalable-data-construction-for-open-vocabulary-audio-event-grounding)  
+   标签：评分：6.0/10、query:gso
+   evidence：开放词汇音频事件时间定位
+4. [Amplitude-Independent Robust Snapshot 6-D Radio SLAM via a Uniffed Angle-Delay Formulation](/202607/08/2607.04847v2-amplitude-independent-robust-snapshot-6-d-radio-slam-via-a-uniffed-angle-delay-formulation)  
+   标签：评分：6.0/10、query:gso
+   evidence：不依赖幅值的无线电SLAM，涉及几何校准
 
 
 <div class="dpr-home-promo-card">

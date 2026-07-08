@@ -1,0 +1,506 @@
+Title: ForestIR: Physics-Informed Forest Sound Simulation for Array-Based Bioacoustic Remote Sensing
+
+URL Source: https://arxiv.org/pdf/2607.06299v1
+
+Published Time: Wed, 08 Jul 2026 01:03:58 GMT
+
+Number of Pages: 22
+
+Markdown Content:
+# ForestIR: Physics-Informed Forest Sound Simulation for Array-Based Bioacoustic Remote Sensing 
+
+Xin Shen 1, Jennifer N. Kampe 1,2 , Changwoo J. Lee 1, Braden Scherting 1,Panu Somervuo 3, Ari Lehti¨ o4, Sandro von Brandenburg 4, Ossi Nokelainen 2,5 ,Otso Ovaskainen 2, and David B. Dunson 1
+
+> 1
+
+Department of Statistical Science, Duke University, Durham, NC, USA 
+
+> 2
+
+Department of Biological and Environmental Science, University of Jyv¨ askyl¨ a, Jyv¨ askyl¨ a, Finland 
+
+> 3
+
+Organismal and Evolutionary Biology Research Programme, Faculty of Biological and Environmental Sciences, University of Helsinki, Helsinki, Finland 
+
+> 4
+
+Digital Services, University of Jyv¨ askyl¨ a, Jyv¨ askyl¨ a, Finland 
+
+> 5
+
+Open Science Centre, University of Jyv¨ askyl¨ a, Jyv¨ askyl¨ a, Finland 
+
+Abstract 
+
+Microphone array-based passive acoustic monitoring is increasingly used for biodiver-sity sensing in forests. However, design and evaluation of array systems and configura-tions remains difficult since field recordings are costly, difficult to reproduce, and provide limited control over forest and atmospheric conditions. We present ForestIR , a physics-informed and reproducible simulation framework that links forest and environmental con-ditions to microphone-array recordings for bioacoustic remote sensing. Through a more realistic sound propagation method and a systematic control over array design and en-vironmental factors, ForestIR provides a practical simulation framework for optimizing array-based monitoring systems, especially for sound source localization purposes. Fore-stIR generates source–microphone impulse responses (IRs) under user-controlled forest and atmospheric conditions, and renders synthetic array recordings by convolving test signals with controlled background noise. We evaluate and demonstrate realistic features of Fore-stIR through experiments based on localization sensitivity to forest layout and atmospheric conditions, and also comparison between simulated IRs with sine-sweep IR measurements from a field experiment. ForestIR provides a practical way to test how forest and ground conditions, atmospheric state, and array geometry affect bioacoustic localization, and can support microphone-array design, robustness testing, and synthetic-data generation for pas-sive acoustic monitoring. 
+
+Keywords: bioacoustic remote sensing; impulse response; forest acoustics; sound propagation; sound source localization 
+
+Correspondence: xin.shen@duke.edu (Xin Shen). Senior authors: otso.t.ovaskainen@jyu.fi (Otso Ovaskainen), dunson@duke.edu (David B. Dunson). 
+
+1arXiv:2607.06299v1 [eess.AS] 7 Jul 2026 1 Introduction 
+
+Passive acoustic monitoring (PAM) has become increasingly important in biodiversity monitor-ing due to difficulties in detecting wildlife by sight in forests. Compared to traditional surveys, which comes with much higher labor and time cost, PAM can produce data over substantially larger areas and longer periods [Pettorelli et al., 2016, Allan et al., 2018, Berger-Tal and Lahoz-Monfort, 2018, Stephenson, 2020, Lahoz-Monfort and Magrath, 2021]. For vocal species such as birds, bats and cicadas, acoustic sensing works especially well, and is now a common tool for biodiversity assessment and conservation [Gibb et al., 2019, Sugai et al., 2019, Stowell and Sueur, 2020]. We are particularly motivated by the problem of designing array systems for sound source localization purposes. Simple PAM systems are effective for monitoring the presence or absence of vocal species, but collecting acoustic data with detailed information on sound source locations is a challenging task. Such location information is important because it provides deeper insight into which species are present and where they occur in a detailed manner. By synchronizing the microphone arrays, it is possible to estimate where the calls are originating from based on the time difference of arrival information [Darras et al., 2019, Rhinehart et al., 2020]. However, sound propagation conditions can vary substantially with vegetation and atmospheric conditions [Rhinehart et al., 2020, Verreycken et al., 2021, Haupert et al., 2023, Ostashev et al., 2017], which significantly affect the accuracy of the localization results. These challenges make it difficult to design and evaluate the PAM system using field recording data alone, which is costly, difficult to reproduce, and often multiple factors confounded by many factors at the same time. Simulation provides a valuable tools to design and evaluate array-based monitoring systems in field recordings because it allows to change array layouts, source positions, forest structure, and weather conditions one at a time. This level of control is valuable for designing arrays, testing localization algorithms, and creating synthetic data for training machine learning algo-rithms [Rhinehart et al., 2020, Kaneko and Gamper, 2022, Kujawski et al., 2024]. However, current resources only partly meet these needs. Public IR libraries like OpenAIR [Murphy and Shelley, 2010] allow auralization and benchmarking, but do not offer flexible models that link forest features to array recordings . Earlier tools, such as the Forest Reverb Generator [Wiens, 2008], simulate simple trunk scattering but are not built as reproducible, end-to-end pipelines for localization experiments. Among these acoustic simulators, wave-based methods can capture effects such as diffraction and interference, but are often too computationally heavy for large outdoor areas [Botteldooren, 1995, Raghuvanshi et al., 2010]. Diffuse-field models summarize reverberant energy and late decay, but do not keep the timing needed for classical time difference of arrival (TDoA) and steered response power (SRP)-based localization [Vorl¨ ander, 2008]. By contrast, path-based methods create impulse responses from delayed and weakened sound paths. While this is less complete than full wave models, it works well for generating many clear source–microphone impulse responses when geometry changes [Allen and Berkley, 1979, Savioja and Svensson, 2015]. In more recent forest acoustics studies, Kaneko and Gamper [2021] showed that single-scattering cylinders can efficiently create forest-like echo patterns, and Kaneko and Gamper [2022] showed their usefulness for bird localization with distributed arrays. Still, these models have limited control over details like exact tree locations, tree height, branch and leaf scattering, ground conditions, and the state of the atmosphere, such as temperature, relative humidity, and air pressure. Given this background, we introduce ForestIR, a reproducible path-based simulator for array-based bioacoustic remote sensing. ForestIR creates source–microphone impulse responses with adjustable tree geometry, ground effects, atmospheric absorption, and optional branch and leaf scattering. It then makes multichannel recordings by convolving these impulse responses with dry bird calls or test signals and adding controlled background noise. Forest scenes can be 2built from mapped tree locations or generated synthetically using uniform or repulsive sampling, allowing experiments to change vegetation structure while keeping the scene easy to understand. We run four experiments to illustrate that ForestIR captures important effects for localiza-tion. First, we check if SRP (with phase transform) localization error changes with different vegetation layouts while keeping the source, array, and weather the same. Second, we test if mismatches in atmospheric conditions, especially changes in sound speed due to tempera-ture, affect localization when the system assumes a fixed speed. Third, we compare simulated impulse responses to measured ones from exponential sine sweeps recorded in the snow field in Konnevesi, Finland. Finally, we compare simulated and real bird vocalizations under the same geometry using Mel-Frequency Cepstral Coefficients (MFCC) cosine similarity, spectro-gram cross-correlation (SPCC), Acoustic Complexity Index (ACI), and Acoustic Evenness Index (AEI) [Davis and Mermelstein, 1980, Somervuo et al., 2006, Clark et al., 1987, Pieretti et al., 2011, Villanueva-Rivera et al., 2011]. These experiments together test if ForestIR matches field-measured decay and is sensitive to environmental and geometric changes that matter for localization. Because ForestIR lets users change forest structure, ground conditions, atmosphere, array layout, and noise separately, it supports reproducible studies on how these factors affect array recordings and localization. This helps guide decisions about microphone-array design and deployment for biodiversity monitoring. 
+
+# 2 Materials and Methods 
+
+2.1 ForestIR: simulator overview 
+
+ForestIR is an open and reproducible simulation framework that connects forest structure, ground and atmospheric conditions, and microphone-array geometry to multichannel bioacous-tic recordings for localization research. The simulator implements a lightweight, scriptable pipeline: forest impulse responses (direct path, ground reflection, trunk scattering, and optional canopy scatterers) convolved with dry source waveforms, followed by configurable ambient noise. The pipeline is exposed through a consistent command-line interface and a Python API, both of which support large-scale batch rendering and controlled ablation studies under matched geometry and acoustic settings. Implementation details, including CLI usage, package entry points, input formats, output manifests, and reproducibility metadata, are provided in Supporting Information. 
+
+2.2 Acoustic Propagation Model 
+
+Figure 1 summarizes the propagation components used by ForestIR and illustrates how indi-vidual delayed and filtered path contributions are assembled into a source–microphone impulse response. 
+
+Impulse response and forward model 
+
+ForestIR adopts a linear time-invariant (LTI) forward model between each sound source s and microphone m at sampling rate fs, characterized by a discrete-time impulse response (IR) 
+
+hm,s [n]. For a dry source waveform xs[n], the simulated microphone signal is 
+
+ym[n] = 
+
+> S
+
+X
+
+> s=1
+
+(xs ∗ hm,s )[ n] + vm[n], (1) where ∗ denotes discrete convolution and vm[n] is an additive noise term (Section 2.3). This IR-based formulation enables reusing a fixed propagation channel hm,s [n] to render arbitrary 3Figure 1: Overview of the ForestIR acoustic propagation model. For each bird source-microphone pair, the simulator assembles an impulse response from delayed and frequency-shaped path contributions, including the direct path, an image-source ground reflection, single scattering from tree trunks, and optional branch and leaf scattering. Each path is attenuated by atmospheric absorption, and the resulting impulse response can be convolved with a dry source signal to generate a simulated microphone recording. The configurable branch and leaf scattering layer can be used to represent aloft canopy scattering, dense undergrowth, shrubs, or other small-scale vegetation structures depending on the simulated scene. source signals under the same geometry and atmospheric state, a standard strategy in acoustic simulation [Allen and Berkley, 1979]. ForestIR computes hm,s [n] as the simulated response to a unit-sample excitation, i.e., by setting xs[n] = δ[n] in Equation (1). The IR is assembled by accumulating a set of path contributions, each implemented as a delayed and frequency-shaped version of the unit impulse. Denoting the source and microphone positions by rs and rm, ForestIR constructs 
+
+hm,s [n] = hdir 
+
+> m,s
+
+[n] + hgnd 
+
+> m,s
+
+[n] + X
+
+> i∈T
+
+htr 
+
+> m,s,i
+
+[n] + X
+
+> j∈B
+
+hbl  
+
+> m,s,j
+
+[n], (2) where hdir  
+
+> m,s
+
+is the direct path, hgnd  
+
+> m,s
+
+is the dominant early ground-reflected path (image-source), 
+
+{htr 
+
+> m,s,i
+
+} are single-scattered contributions from tree stems indexed by T , and {hbl  
+
+> m,s,j
+
+} are op-tional stochastic scattering contributions from branch and leaf elements indexed by B.Each contribution is synthesized by combining a 3D path length, a propagation delay 
+
+τ = d/c , frequency-dependent atmospheric attenuation from ISO 9613-1, and, when relevant, a directionality or scattering filter determined by the interaction type [International Organiza-tion for Standardization, 1993]. This path-sum representation makes the propagation model spatially explicit while remaining efficient enough for repeated source–microphone simulations. Implementation details, including filter-bank precomputation and batching over scatterers, are provided in Supporting Information. 4The trunk-scattering component follows the single-scattering-cylinder (SSC) philosophy used for fast forest reverberation simulation [Kaneko and Gamper, 2021, 2022], but ForestIR is de-signed for localization-oriented experiments with interpretable scene configuration. In particu-lar, (i) all geometric path lengths used for delays and ISO 9613-1 attenuation are computed in full 3D; (ii) scattering elements correspond to either mapped stems (site-specific tree CSVs) or explicitly defined synthetic forests; (iii) finite tree-height gating is applied to trunk scattering; and (iv) scattering from aloft foliage is represented by an explicit branch and leaf layer that can be enabled or disabled independently. 
+
+Speed of sound model 
+
+Microphone-array localization methods commonly convert measured time differences of arrival into range-difference constraints using an assumed propagation speed [Brandstein and Ward, 2001]. This assumption can become inaccurate outdoors because sound speed varies with at-mospheric state, and uncertainty in sound speed can degrade time-difference-based localization [Rabenstein and Annibale, 2017]. ForestIR therefore computes the propagation delay τ = d/c 
+
+using a speed of sound c determined by the configured temperature, relative humidity, and air pressure, rather than treating c as a fixed constant. We use a lightweight moist-air mixture approximation based on the ideal-gas expression 
+
+c = pγ R spec T , (3) where T is absolute temperature, Rspec is the mixture-specific gas constant, and γ is the ratio of specific heats. Following standard thermodynamic treatments of sound speed in moist air [Cramer, 1993, Gavioso et al., 2025], ForestIR allows the mixture composition, and hence Rspec 
+
+and γ, to vary with humidity and pressure. The detailed calculation is given in Supporting Information. This atmospheric dependence is important for TDoA- and SRP-based localization because even small biases in c can shift the predicted inter-microphone delays over tens of meters. 
+
+Direct path 
+
+The direct-path distance is ddir  
+
+> m,s
+
+= ∥rm −rs∥2, with delay τ dir  
+
+> m,s
+
+= ddir 
+
+> m,s
+
+/c . The direct contribution is constructed by filtering the unit impulse by the ISO 9613-1 atmospheric attenuation associated with ddir 
+
+> m,s
+
+, then applying the corresponding time shift. 
+
+Ground-reflected path and simplified ground-type parameterization 
+
+ForestIR models the dominant early ground reflection using an image-source construction, with a mirrored source r′ 
+
+> s
+
+reflected across the ground plane. The reflected-path distance is dgnd  
+
+> m,s
+
+=
+
+∥rm − r′
+
+> s
+
+∥2, and the contribution is time-shifted by dgnd 
+
+> m,s
+
+/c . The reflected component is scaled by a ground-type-specific amplitude multiplier, denoted by αg(type), determined by a user-selected ground type. This parameter is used as a simple proxy for the net reflectivity of the ground-reflected path, rather than as a full impedance based reflection coefficient depending on frequency. This parameterization is motivated by outdoor propagation standards and acoustics treatments of ground interaction [International Organization for Standardization, 1996, M¨ oser, 2009]. The choice of αg(type) is guided by standard outdoor acoustics ground classifications and by specific material absorption studies. Following ISO 9613-2, concrete, water, and ice are treated as hard ground , i.e. low-porosity and strongly reflective surfaces, whereas grass and other vegetated surfaces are treated as porous ground . For normal concrete, published reviews report a sound absorption coefficient of approximately 0.02, consistent with a highly reflective surface [Fediuk et al., 2021]. For grass, measurements have shown that acoustic absorption 5varies substantially with grass length and soil moisture, supporting the use of a lower effective reflection factor than for hard ground [Londhe et al., 2009]. Snow is likewise a porous and acoustically absorptive medium, with experimentally measured absorption depending strongly on snow structure and frequency [Datt et al., 2016]. We approximate these differences using fixed ground-type-specific amplitude multipliers.We use αg(type)=0.99 for concrete, water, and ice, αg(type)=0.80 for grass, and αg(type)=0.70 for snow. These values should be interpreted as simplified approximations for comparing broad classes of ground conditions, rather than as universal physical reflection coefficients. 
+
+Trunk scattering 
+
+Trees are represented by mapped stems with per-tree radius ai and height Hi specified by the user. ForestIR supports both site-specific and synthetic tree layouts. For site-specific simulations, tree stems are read from a user-provided CSV with per-tree position, radius, and height. For synthetic forests, stem locations can be generated either by uniform sampling over the horizontal simulator domain, or by a repulsive point process implemented via rejection sampling, which enforces a user-specified minimum inter-tree spacing. The repulsive option produces more realistic non-overlapping stem configurations and avoids unrealistically clustered trunks, at the cost of occasional rejections when the requested density is high. All stochastic sampling steps are controlled by an explicit random seed recorded in the output manifest. Trunk scattering is modeled as single scattering from rigid cylinders. For each tree i included in the scattering set, ForestIR constructs a broken path s → i → m with 3D distance 
+
+dtr  
+
+> m,s,i
+
+= ∥ri − rs∥2 + ∥rm − ri∥2, (4) and delay τ tr  
+
+> m,s,i
+
+= dtr 
+
+> m,s,i
+
+/c .To represent variability in trunk size while keeping simulations efficient, ForestIR supports per-tree trunk diameters either provided directly in the input stem map or sampled from a user-specified diameter range. Because rigid-cylinder scattering filters depend on trunk radius, we discretize diameters into a small number of radius bins and precompute one directional scattering filter bank per bin; each tree is assigned to the nearest bin and uses the corresponding precomputed filter. Each trunk contribution is then attenuated by geometric spreading and ISO 9613-1 air absorption along the broken path. To handle finite tree height in 3D configurations, ForestIR applies a geometric gating rule: trunk scattering from tree i is included only when both the source and microphone heights lie below the tree height, i.e., zs < H i and zm < H i. When this condition is not satisfied, the trunk contribution from that tree is omitted. 
+
+Optional branch and leaf scattering 
+
+ForestIR includes an optional scattering layer to represent stochastic interactions with aloft branches and leaves. When enabled, we generate a set of scatterers with 3D positions sampled uniformly over the horizontal simulator domain ( x, y ) ∈ [x min , xmax ] × [y min , ymax ] and within a user-specified vertical band z ∈ [zmin , z max ]. Each scatterer j induces a broken path s → j → m
+
+with 3D path length dbl  
+
+> m,s,j
+
+= ∥rj − rs∥2 + ∥rm − rj ∥2 and corresponding delay dbl  
+
+> m,s,j
+
+/c .We model each branch and leaf element as an approximately omnidirectional secondary scatterer with a controllable amplitude parameter, implemented as an impulse-shaped scattering filter. This component can be toggled independently. 62.3 Microphone Array Recording Simulation 
+
+Given source signals {xs[n]}Ss=1 and simulated impulse responses {hm,s [n]}, ForestIR renders clean microphone-array recordings by convolution, ˜ym[n] = 
+
+> S
+
+X
+
+> s=1
+
+(xs ∗ hm,s )[ n], (5) where m indexes microphones. Input waveforms are resampled to the simulation sampling rate when needed so that time delays and frequency-dependent attenuation are applied consistently. Additive background noise can then be included as 
+
+ym[n] = ˜ym[n] + vm[n]. (6) ForestIR supports both synthetic noise models and recorded environmental noise, with a user-controlled noise level. Details of the available noise types, channel normalization, and recorded-noise sampling procedure are provided in Supporting Information. 
+
+2.4 Acoustic Simulator Validation Data and Metrics 
+
+We validate ForestIR at two complementary levels: (i) impulse-response (IR) fidelity under matched source–receiver geometries, and (ii) rendered bird-audio similarity when dry bird calls are propagated through the simulated forest scene. Throughout, we compare simulated outputs against field recordings from the Konnevesi snow-field playback experiment. Separately, the Konginkangas Trotting Center site provides the measured tree-position map shown in Figure 2, which is used in the localization sensitivity experiment. 
+
+Konnevesi snow-field playback recordings 
+
+Validation data were obtained from controlled playback experiments conducted on a frozen lake at the Konnevesi Research Station, Finland, in February 2026. Audio playback included sine sweeps and bird vocalizations emitted from a known source location, with and without back-ground audio. Recordings were acquired using a three-microphone array with an approximately equilateral geometry and inter-microphone spacing of approximately 50 m. Audio was played from five speaker positions within and slightly outside of the array triangle. All microphones and speakers were positioned at a height of 1.2 m. Raw audio streams were synchronized across devices to an accuracy corresponding to ap-proximately 1 cm in acoustic propagation distance using PPS (pulse-per-second) timing signals. The synchronized recordings were subsequently segmented into clips ranging from 2.18 to 11.00 s in duration (mean: 5.07 s), each containing a single target signal: either a sine sweep or bird vocalization. Hourly weather covariates, including temperature, relative humidity, pressure, snow depth, and wind speed, were obtained from Open-Meteo. 
+
+Measured impulse responses from exponential sine sweeps (ESS) 
+
+Measured IRs were recovered from exponential sine sweep (ESS) recordings using inverse fil-tering following Farina [2000]. Each recovered per-channel IR provides a measured source– microphone transfer function that can be compared directly with the simulated IR generated under the matched geometry. 7IR-level comparison via energy decay curves (EDC) 
+
+To assess whether ForestIR reproduces the temporal decay characteristics of the forest, we compute energy decay curves (EDCs) from both measured and simulated IRs using Schroeder backward integration [Schroeder, 1965]. For an IR h[n], the (unnormalized) EDC is 
+
+E[n] =  
+
+> N−1
+
+X
+
+> k=n
+
+h2[k], (7) and we normalize E[n] to unit value at n = 0 for comparability across channels and conditions. Similarity between measured and simulated decay profiles is summarized by the Pearson corre-lation between their normalized EDCs, computed per microphone channel and then aggregated across channels. 
+
+Rendered bird-audio similarity 
+
+To evaluate whether ForestIR preserves perceptual and ecological characteristics of bird calls after propagation, we use audio of 30 dry bird sounds from the BirdNet-derived dataset (dura-tion 2 .55 s) and compare simulated and measured array recordings under matched geometries. For each clip, we compute a set of complementary similarity measures between the measured and simulated waveforms, and report aggregated statistics across all microphone geometries: (i) MFCC cosine similarity , computed from Mel-frequency cepstral coefficients (MFCCs) to capture perceived timbre and spectral envelope [Davis and Mermelstein, 1980, Somervuo et al., 2006]; (ii) spectrogram cross-correlation (SPCC) , which measures similarity in time–frequency structure between the two signals [Clark et al., 1987]; (iii) Acoustic Com-plexity Index (ACI) [Pieretti et al., 2011]; and (iv) Acoustic Evenness Index (AEI) 
+
+[Villanueva-Rivera et al., 2011]. These metrics jointly quantify perceptual similarity (MFCC, SPCC) and soundscape-style structure (ACI, AEI), providing a practical evaluation of the sim-ulator for downstream bioacoustic monitoring applications. 
+
+Use of AI 
+
+Gemini was used only to assist with the preparation and visual refinement of the illustrative elements in Figure 1, a non-data schematic overview figure. 
+
+# 3 Results 
+
+3.1 Localization sensitivity to tree spatial layout 
+
+To investigate whether vegetation geometry alone can influence acoustic localization perfor-mance under identical atmospheric conditions, we conducted a controlled simulation study using ForestIR and compared the results against the legacy simulator of Kaneko and Gam-per [2021]. One scenario used a measured Konginkangas tree-position map as structural tree geometry input to the simulator, as shown in Figure 2. Unless otherwise stated, localization experiments used the same setup: T = 20 ◦C, RH= 50%, 
+
+p = 1013 .25 hPa, sampling rate fs = 384 kHz, no additive noise, and the BirdNET clip 
+
+BirdNET 01 XC169082.wav (American Goldfinch , Spinus tristis ). Localization used three mi-crophones (F3, F4, and F12) from the Konnevesi playback array at height z = 1 .2 m. Source locations formed an 11 × 11 grid with x ∈ {− 10 , 0, . . . , 90 }, y ∈ { 0, −10 , . . . , −100 }, and source height z = 1 .5 m, yielding 121 positions. All runs used SRP-PHAT with fixed assumed sound speed 343 m/s, search-grid resolution 0 .05 m, and 2D Euclidean localization error as the per-formance metric. For ForestIR tree-layout experiments, branch and leaf scattering used 5000 8scatterers sampled over z ∈ [2 , 5] m, all trunks had diameter dtrunk = 0 .5 m, and stochastic components used fixed random seeds for reproducibility. We evaluated five tree-layout scenarios: 1. the measured Konginkangas tree map; 2. a synthetic repulsive-layout forest with 43 trees; 3. an extreme “crowded” configuration in which all 43 trees were artificially collapsed onto the microphone location F4 at (0 , 0); 4. the legacy simulator of Kaneko and Gamper [2021] with 43 trees; 5. the same legacy simulator with 100000 trees distributed over the same forest bounds. The legacy simulator does not support explicit tree-coordinate specification or branch and leaf scattering, whereas ForestIR allows direct control over tree locations and scattering geometry. 
+
+Figure 2: Konginkangas tree-position map used as the measured-tree-layout input in Scenario 1. Red dots indicate manually identified tree locations from the LiDAR-derived site map, and green dots represent the microphone geometry used for the corresponding simulation setup. Table 1 summarizes how localization performance changes when only the vegetation-scatterer layout is varied. Scenario Tree layout Branch leaf scattering Mean error (m) Median error (m) Max error (m) ForestIR: Konginkangas layout Konginkangas tree map Yes 0.8141 0.2236 17.9790 ForestIR: Repulsive layout Repulsive process (43 trees) Yes 0.8145 0.2236 17.9790 ForestIR: Crowded layout 43 trees collapsed at F4 Yes 97.5471 100.4988 162.7882 Legacy model: 43 trees Implicit/random forest No 0.1762 ≈ 0 15.7590 Legacy model: 100000 trees Implicit/random forest No 0.1493 ≈ 0 16.2117 Table 1: Localization performance under identical atmospheric conditions but different tree spatial layouts. The two ForestIR layouts produced similar errors, and collapsing 43 trees at microphone F4 caused a large localization failure as expected in real forest. In contrast, the legacy model showed limited sensitivity to increasing tree count. These results illustrate why localization experiments benefit from a physically interpretable simulator with explicit vegeta-tion geometry: tree placement, not only tree count, can substantially alter the propagation field and localization outcome. 9The two realistic ForestIR layouts (measured Finland map and repulsive synthetic forest) produced similar localization behavior, with mean localization error approximately 0 .81 m. When 43 trees were artificially concentrated near one microphone, localization performance degraded substantially, with mean error increasing to 97 .5 m. These results demonstrate that localization behavior can depend strongly on vegetation ge-ometry. This is consistent with the interpretation that strong, spatially concentrated scattering near one microphone can distort inter-channel timing cues and thereby degrade the SRP-PHAT objective. By contrast, the legacy simulator showed comparatively limited sensitivity. Even when the number of trees increased to 100000, the mean localization error remained below 0 .15 m. This shows that simplified forest scattering models without explicit spatial control may underestimate localization degradation induced by complex vegetation structure. Overall, these experiments support the central motivation of ForestIR: physically inter-pretable and spatially controllable forest acoustic simulation is important for evaluating local-ization robustness under realistic environmental variability. 
+
+3.2 Localization sensitivity to atmospheric temperature 
+
+To test whether atmospheric state alone can influence localization performance, we repeated the same SRP-PHAT localization setup described above while varying only the simulated atmo-spheric temperature. The tree layout, microphone geometry, 121-position source grid, BirdNET vocalization, rendering pipeline, and localization settings were held fixed. ForestIR computed the propagation speed csim from the atmospheric state, whereas SRP-PHAT used the same fixed assumed speed 343 m/s. This isolates the effect of sound-speed mismatch between the simulated acoustic propagation and the localization model. We additionally evaluated one fixed source position, (14 .94 , −64 .23), using 30 BirdNET vocalizations to test sensitivity to acoustic content.                                                                                           
+
+> Panel A: 121 source positions, single BirdNET vocalization
+> Temperature ( ◦C) csim (m/s) Trials Mean error (m) Median error (m) Std. deviation (m) Max error (m) 0331.45 121 4.763 2.602 8.075 53.652 5334.54 121 2.507 1.651 2.329 10.470 10 337.63 121 1.763 0.985 2.191 15.963 15 340.72 121 0.947 0.500 1.476 9.216 20 343.84 121 0.739 0.224 2.019 17.979 25 346.99 121 1.666 0.791 4.373 46.345 30 350.18 121 3.556 1.412 10.916 107.255
+> Panel B: source position (14.9, -64.2), 30 BirdNET vocalizations
+> Temperature ( ◦C) csim (m/s) Mean estimate (ˆ x, ˆy)Mean error (m) Std. deviation (m) 0331.45 (13 .75 ,−65 .87) 2.33 8.4 5334.54 (21 .10 ,−55 .76) 26.0 23.4 10 337.63 (16 .44 ,−62 .17) 8.14 22.0 15 340.72 (14 .83 ,−64 .38) 0.48 1.2 20 343.84 (14 .86 ,−64 .34) 0.14 0.03 25 346.99 (15 .00 ,−64 .05) 0.19 0.0 30 350.18 (15 .10 ,−64 .00) 0.28 0.0
+
+Table 2: Localization sensitivity to atmospheric temperature. ForestIR used the temperature-dependent sound speed csim , while SRP-PHAT used a fixed 343 m/s. Panel A reports 121 source positions for one BirdNET call; Panel B reports 30 BirdNET calls at one fixed source position. Errors were smallest near the matched sound-speed condition and increased under stronger temperature mismatch, highlighting the importance of simulators that expose atmo-spheric temperature as a configurable input rather than assuming a fixed sound speed. Localization error was smallest near 20 ◦C, where csim was closest to the sound speed assumed by SRP-PHAT. Error increased as temperature moved away from this matched condition, with 10 maximum errors reaching 53.7 m at 0 ◦C and 107.3 m at 30 ◦C. The 30-call experiment showed the same pattern but also revealed call-dependent failures: at 5 ◦C, mean error increased to 26.0 m with standard deviation 23.4 m. Thus, atmospheric mismatch can interact with signal content, causing severe SRP-PHAT errors for some vocalizations. Although the localization experiment above varies temperature, ForestIR also allows relative humidity and air pressure to affect sound speed. At T = 20 ◦C and p = 101 .325kPa, the legacy temperature-only approximation gives a constant value of c, whereas the updated moist-air calculation increases with relative humidity. The detailed calculation and example validation values are provided in Supporting Information. Together, these experiments demonstrate that a simulator that exposes temperature, hu-midity, and pressure as controllable parameters is necessary for evaluating when localization algorithms are robust to atmospheric variation and when they require compensation or recali-bration. 
+
+3.3 Propagation fidelity against field measurements 
+
+We then evaluated whether ForestIR reproduces the broad decay characteristics of measured impulse responses under matched source–receiver geometries. Measured IRs were recovered from ESS recordings collected in the February 2026 Finland field experiment, and were com-pared against simulated IRs generated with the corresponding scene geometry. The simulated scene was configured to approximate the winter snow-field conditions: ForestIR used branch and leaf scattering module with 5000 near-surface scatterers over the height range z ∈ [0 , 0.5] m to approximate snow piles and small-scale snow-surface roughness, and used the recorded at-mospheric state ( T = −12 .8◦C, RH= 32%, p = 1013 .25 hPa) together with the snow ground type. No additional background noise was added to the simulated IRs. For comparison, we also considered a baseline diffuse-scattering configuration with 1000 randomly sampled near-surface scatterers over the same height range, intended as a simpler approximation to unmodeled ter-rain and surface irregularities, and the legacy trunk-scattering model of Kaneko and Gamper [2021]. Method Number of pairs Mean EDC Pearson Median EDC Pearson EDC Pearson range ForestIR 7 0.837 0.843 0.774–0.871 Legacy model 7 0.251 0.221 0.178–0.466 Table 3: Matched-pair EDC agreement between measured IRs and simulated IRs for seven source–receiver geometries. Pearson correlation was computed between normalized EDCs. Fore-stIR produced consistently higher EDC agreement than the legacy model, indicating that the explicit near-surface scattering configuration better reproduced the measured decay structure in this winter field setting. 
+
+Measured vs simulated IRs under matched geometry 
+
+Figure 3 compares normalized EDCs for seven matched measured–simulated IR pairs spanning source–receiver distances from 7.6 m to 50.2 m. The time axis is shown on a logarithmic scale to make both the early arrival region and the late decay tail visible, and the vertical 50ms reference line marks the boundary used in the clarity measure C50 . Across these matched geometries, ForestIR reproduces the overall decay structure of the measured IRs, including both the early decay and the long-tail behavior. This visual agreement is supported by the matched-pair EDC correlations in Table 3, where ForestIR achieved a mean Pearson correlation of 0.837 and a median correlation of 0.843. 11 By contrast, the legacy model exhibited substantially faster EDC decay and much weaker agreement with the measured IRs, with mean Pearson correlation of 0.251 and median corre-lation of 0.221. In this winter snow-field setting, the legacy decay curves drop too rapidly to match the measured long-tail behaviour. A likely reason is that the legacy model is centered on trunk-based scattering and does not explicitly represent near-surface snow piles, small-scale snow roughness, or snow-ground conditions in the same configurable way as ForestIR. Some discrepancy between measured and simulated IRs remains even for ForestIR, which is expected for an efficient geometric path-based simulator. ForestIR represents reflections and scattering from explicitly modeled objects or scatterer populations, but real outdoor environ-ments contain many sources of diffuse scattering, including fine-scale snow roughness, small branches, terrain irregularities, and device response effects. There may also have been atmo-spheric layering or local microclimatic effects affecting propagation, potentially influenced by nearby running water. These unmodeled effects mainly influence the detailed late-reverberation tail. For localization-oriented applications, the direct path and early arrivals carry the primary timing information used by TDoA- and SRP-based methods, making exact reproduction of all late diffuse scattering less critical than preserving broad decay behaviour and early-arrival structure. 10 4 10 3 10 2 10 1 10 0
+
+> Time (s, log scale)
+> 50
+> 40
+> 30
+> 20
+> 10
+> 0
+> EDC (dB)
+> Energy decay curves for matched IR pairs
+> D=7.6 m
+> D=20.4 m
+> D=21.7 m
+> D=29.5 m
+> D=31.5 m
+> D=38.2 m
+> D=50.2 m
+> measured
+> ForestIR (sim)
+> Legacy (sim)
+> 50 ms
+
+Figure 3: Normalized energy decay curves (EDCs) for seven matched measured and simulated IR pairs spanning source–receiver distances from 7.6 m to 50.2 m. ForestIR follows the measured decay profiles more closely across the matched geometries, whereas the legacy model exhibits substantially faster decay and fails to reproduce the measured long-tail energy. Energy decay curves show good agreement in overall shape and reverberation time, though the simulator overestimates early-time energy relative to field measurements, likely reflecting the anomalous absorption properties of the snow-covered ice surface. 
+
+Baseline comparison and distance dependence 
+
+To compare the decay behavior across representative propagation distances, we selected three matched geometries corresponding to short ( D = 7 .6 m), intermediate ( D = 21 .7 m) and long ( D = 50 .2m) source–receiver separations. Figure 4 compares the measured EDCs with two simulated configurations: the baseline diffuse-scattering configuration with 1000 randomly sampled scatterers over z ∈ [0 , 0.5] m, and the legacy trunk-scattering model. The baseline diffuse-scattering configuration is included as a simple reference for unresolved environmental terrain effects. The measured EDCs decay more slowly as source–receiver distance increases, indicating that late-arriving energy becomes relatively more prominent at larger separations. The baseline 12 diffuse-scattering ForestIR model partially increases late energy and remains close to the mea-sured EDCs. By contrast, the legacy model decays substantially faster across the representative distances, consistent with its lack of an explicit near-surface diffuse-scattering mechanism for this snow-field setting. 10 4 10 3 10 2 10 1 10 0                  
+
+> Time (s, log scale)
+> 50
+> 40
+> 30
+> 20
+> 10
+> 0
+> EDC (dB)
+> Energy decay curves of measured and simulated IR
+> short D=7.6 m measured
+> short D=7.6 m ForestIR
+> short D=7.6 m Legacy
+> mid D=21.7 m measured
+> mid D=21.7 m ForestIR
+> mid D=21.7 m Legacy
+> long D=50.2 m measured
+> long D=50.2 m ForestIR
+> long D=50.2 m Legacy
+> 50 ms
+
+Figure 4: Baseline comparison of normalized EDCs at three representative source–receiver dis-tances. ForestIR better follows the measured distance-dependent decay behaviour, whereas the legacy model exhibits substantially faster decay and underestimates the measured long-tail en-ergy. The time axis is logarithmic, and the vertical 50 ms line marks the early/late energy boundary used in C50 .
+
+Scatterer-count sensitivity 
+
+We further examined how the number of near-surface scatterers affects the simulated decay behaviour in ForestIR. Figure 5 compares ForestIR simulations using 3000, 5000, and 8000 scat-terers at the same three representative distances. Increasing the number of scatterers generally slows the simulated energy decay, consistent with the interpretation that additional near-surface scattering increases the relative contribution of later-arriving energy. This sensitivity analysis illustrates how the branch and leaf scattering module, repurposed here as near-surface scatterers for snow piles, provides a tunable mechanism for matching broad measured decay behaviour while retaining explicit control over the simulated scene. 
+
+Early-to-late energy balance 
+
+The clarity measure C50 provides a scalar summary of early versus late energy (Figure 6). Both measured and simulated IRs show decreasing C50 with distance, indicating that late energy becomes relatively more prominent at larger source–receiver separations. ForestIR captures this directional trend, although a systematic offset remains. Together, the EDC and C50 results suggest that ForestIR captures both matched-pair decay behaviour, and the expected directional trend of distance-dependent reverberation structure. 13 10 4 10 3 10 2 10 1 10 0
+
+> Time (s, log scale)
+> 50
+> 40
+> 30
+> 20
+> 10
+> 0
+> EDC (dB)
+
+Energy decay curves of IRs with different scatterer counts                         
+
+> short D=7.6 m measured
+> short D=7.6 m simulated, N=3000
+> short D=7.6 m simulated, N=5000
+> short D=7.6 m simulated, N=8000
+> mid D=21.7 m measured
+> mid D=21.7 m simulated, N=3000
+> mid D=21.7 m simulated, N=5000
+> mid D=21.7 m simulated, N=8000
+> long D=50.2 m measured
+> long D=50.2 m simulated, N=3000
+> long D=50.2 m simulated, N=5000
+> long D=50.2 m simulated, N=8000
+> 50 ms
+
+Figure 5: Sensitivity of ForestIR EDCs to the number of near-surface scatterers used to approx-imate snow piles and small-scale snow-surface roughness. Simulations are shown for 3000, 5000, and 8000 scatterers at short, intermediate, and long source–receiver distances. Increasing the number of scatterers generally slows the simulated energy decay, reflecting stronger late-energy contributions from near-surface scattering. The time axis is logarithmic, and the vertical 50 ms line marks the early/late energy boundary used in C50 .10 20 30 40 50 
+
+Source receiver distance D (m) 
+
+25 
+
+30 
+
+35 
+
+40 
+
+> C50 (dB)
+
+Clarity C50 vs distance 
+
+Measured 
+
+Simulated (ForestIR) 
+
+Figure 6: Clarity C50 as a function of source–receiver distance for measured and ForestIR-simulated IRs. C50 quantifies the ratio of early energy arriving within the first 50 ms to later energy arriving after 50 ms. Both measured and simulated IRs show decreasing C50 with increasing distance, indicating that late energy becomes relatively more prominent at larger source–receiver separations. ForestIR captures this directional trend, although a systematic offset remains. 14 3.4 Validation with field bird calls data 
+
+Finally, we compared ForestIR-rendered bird-call snippets with field recordings from the snow-covered open site. Because the propagation region contained no trees, both ForestIR and the legacy model were run with zero trees; ForestIR used snow ground and Konnevesi back-ground noise with noise level =0.3. We evaluated three microphones, six source positions, and 30 BirdNET clips, yielding 540 simulated–recorded comparisons per method. Each pair was aligned by cross-correlation and truncated to a common duration before computing MFCC cosine similarity, SPCC, ACI absolute difference, and AEI absolute difference. Method MFCC cosine ↑ SPCC ↑ ACI abs. diff. ↓ AEI abs. diff. ↓
+
+Dry source 0.94090 0.42512 0.10190 0.06799 
+
+Kaneko et al. baseline 0.95691 0.26942 0.09599 0.07272 ForestIR 0.98377 0.47845 0.06686 0.07284 Table 4: Mean similarity between simulated and field-recorded bird-call snippets across 540 comparisons. The comparison used three microphones, six source positions, and 30 BirdNET vocalizations under the same alignment and metric pipeline. Higher values indicate better agree-ment for MFCC cosine similarity and SPCC, whereas lower values indicate better agreement for ACI and AEI absolute differences. ForestIR achieved the best agreement on three of the four metrics, suggesting improved reproduction of spectral envelope, time–frequency structure, and short-timescale acoustic variability relative to the dry-source and legacy-model baselines. ForestIR achieved the best agreement on three of the four metrics, with the highest MFCC cosine similarity and SPCC and the lowest ACI absolute difference (Table 4). These indicate closer agreement in average spectral envelope, time–frequency structure, and short-timescale acoustic variability. AEI was similar across methods and was slightly best for the dry-source baseline, suggesting that broad spectral evenness in this setting may be driven more by the original bird-call spectrum than by propagation. 
+
+# 4 Discussion 
+
+ForestIR was developed to make forest sound simulation useful for microphone array localiza-tion studies. In the validation experiments, ForestIR reproduced the broad decay behavior of measured impulse responses more closely than the legacy trunk-scattering model. It also pro-duced rendered bird call snippets that matched field recordings more closely in MFCC similarity, SPCC, and ACI. These results suggest that the model captures propagation effects visible in both IR decay and propagated bioacoustic signals. The localization experiments show why this control is useful. When the array geometry, source grid, and localization method were held fixed, changing either the vegetation layout or the atmospheric temperature changed SRP-PHAT localization error. The tree-layout experiment shows that scatterer placement can matter as much as the number of scatterers, as concentrating trees near a single microphone strongly distorted the localization results. The temperature experiment shows that a mismatch in propagation speed can largely affect localization when the localizer assumes a fixed sound speed. These results show that localization studies can miss important failure modes if they use simulators with fixed atmosphere assumptions or only coarse control over forest geometry. ForestIR still makes simplifying assumptions. Trunk scattering is modeled with first-order scattering only. The model does not fully capture multiple scattering or fine-scale diffuse scat-tering from snow and small vegetation. The ground model is also simplified by using amplitude multipliers specific to ground types, rather than a full impedance model that accounts for 15 frequency. However, these approximations mainly affect detailed late reverberation. For local-ization and array-design studies, the direct path and early arrivals carry the dominant cues, so exact reproduction of every late diffuse component is less critical than preserving the main delay structure and broad decay behavior. Overall, ForestIR provides a useful tool for controlled experiments in array-based bioacous-tic monitoring. By allowing vegetation geometry, ground condition, atmospheric state, array layout, and noise to be varied independently, it supports microphone-array design, localization stress testing, and synthetic training-data generation for biodiversity monitoring applications. 
+
+# Acknowledgments 
+
+The authors thank Patrik Lauha for his helpful discussions. We also thank Ala-Keiteleen Hevosyst¨ av¨ ain seura and the Konginkangas Trotting Center for granting permission to conduct the field experiment at their premises. This work was supported in part by the U.S. National Science Foundation under Grant No. 2426762, the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (Grant agreement No. 856506), the Research Council of Finland under the Grants No. 336212, 345110 and 367674, and by the Jane and Aatos Erkko Foundation. 
+
+# Declaration on the Use of AI 
+
+Gemini was used only to assist with the preparation and visual refinement of the illustrative elements in Figure 1, a non-data schematic overview figure. No AI tools were used to perform data analysis, alter data visualizations, write manuscript text, or generate scientific conclusions. 
+
+# Author contributions 
+
+Conceptualization, X.S.; Methodology, X.S., J.K., C.L., and D.B.D.; Software, X.S.; Validation, X.S.; Formal analysis, X.S.; Investigation, X.S.; Data curation, X.S., J.K., C.L., B.S, P.S, A.L., S.vB.; Writing—original draft preparation, X.S.; Writing—review and editing, X.S., C.L., B.S., J.K., O.O. and D.B.D.; Supervision, D.B.D.; Funding acquisition, D.B.D., O.O.; Field data design and implementation by A.L., O.N., P.S., S.vB., O.O. All authors have read and agreed to the published version of the manuscript. 
+
+# Data and Code Availability 
+
+Code for the ForestIR simulator is available at GitHub https://github.com/TIPColin/ForestIR .Processed site-recorded data necessary to reproduce the main analyses can be requested from authors. 
+
+# Conflict of interest 
+
+The authors declare no potential conflict of interests. 
+
+# References 
+
+Brian M. Allan, Dale G. Nimmo, Daniel Ierodiaconou, Jeremy VanDerWal, Lian Pin Koh, and Euan G. Ritchie. Futurecasting ecological research: The rise of technoecology. Ecosphere , 9 (5):e02163, 2018. doi: 10.1002/ecs2.2163. 16 Jont B. Allen and David A. Berkley. Image method for efficiently simulating small-room acoustics. The Journal of the Acoustical Society of America , 65(4):943–950, 1979. doi: 10.1121/1.382599. Oded Berger-Tal and Jos´ e J. Lahoz-Monfort. Conservation technology: The next generation. 
+
+Conservation Letters , 11(6):e12458, 2018. doi: 10.1111/conl.12458. Dick Botteldooren. Finite-difference time-domain simulation of low-frequency room acoustic problems. The Journal of the Acoustical Society of America , 98(6):3302–3308, 1995. doi: 10.1121/1.413817. Michael Brandstein and Darren Ward, editors. Microphone Arrays: Signal Processing Tech-niques and Applications . Springer, 2001. doi: 10.1007/978-3-662-04619-7. Christopher W. Clark, Peter Marler, and Kim Beeman. Quantitative analysis of animal vocal phonology: An application to swamp sparrow song. Ethology , 76(2):101–115, 1987. doi: 10.1111/j.1439-0310.1987.tb00676.x. Owen Cramer. The variation of the specific heat ratio and the speed of sound in air with temperature, pressure, humidity, and CO 2 concentration. The Journal of the Acoustical Society of America , 93(5):2510–2516, 1993. doi: 10.1121/1.405827. Kevin Darras, P´ eter Bat´ ary, Benjamin J. Furnas, Ingo Grass, Y. A. Mulyani, and Teja Tscharntke. Autonomous sound recording outperforms human observation for sampling birds: A systematic map and user guide. Ecological Applications , 29(6):e01954, 2019. doi: 10.1002/eap.1954. P. Datt, J. C. Kapil, A. Kumar, and P. K. Srivastava. Experimental measurements of acous-tical properties of snow and inverse characterization of its geometrical parameters. Applied Acoustics , 101:15–23, 2016. doi: 10.1016/j.apacoust.2015.07.015. S. Davis and P. Mermelstein. Comparison of parametric representations for monosyllabic word recognition in continuously spoken sentences. IEEE Transactions on Acoustics, Speech, and Signal Processing , 28(4):357–366, 1980. doi: 10.1109/TASSP.1980.1163420. Angelo Farina. Simultaneous measurement of impulse response and distortion with a swept-sine technique. In 108th AES Convention . Audio Engineering Society, 2000. Preprint 5093. Roman Fediuk, Mugahed Amran, Nikolai Vatin, Yuriy Vasilev, Valery Lesovik, and Togay Ozbakkaloglu. Acoustic properties of innovative concretes: A review. Materials , 14(2):398, 2021. doi: 10.3390/ma14020398. R. M. Gavioso, Milena Astrua, M. Zucco, and Marco Pisani. Speed of sound in humid air: Ac-curate thermodynamic model and experimental validation. Journal of Physical and Chemical Reference Data , 54(4):043101, 2025. doi: 10.1063/5.0294663. Rory Gibb, Ella Browning, Paul Glover-Kapfer, and Kate E. Jones. Emerging opportunities and challenges for passive acoustics in ecological assessment and monitoring. Methods in Ecology and Evolution , 10(2):169–185, 2019. doi: 10.1111/2041-210X.13101. Sylvain Haupert, Fr´ ed´ eric S` ebe, and J´ erˆ ome Sueur. Physics-based model to predict the acoustic detection distance of terrestrial autonomous recording units over the diel cycle and across seasons: Insights from an alpine and a neotropical forest. Methods in Ecology and Evolution ,14(3):614–630, 2023. doi: 10.1111/2041-210X.14020. 17 International Organization for Standardization. Acoustics — attenuation of sound during prop-agation outdoors — part 1: Calculation of the absorption of sound by the atmosphere. ISO 9613-1:1993, 1993. International Organization for Standardization. International Organization for Standardization. Acoustics — attenuation of sound during prop-agation outdoors — part 2: General method of calculation. ISO 9613-2:1996, 1996. URL 
+
+https://www.iso.org/standard/20649.html . Withdrawn; superseded by ISO 9613-2:2024. Shoken Kaneko and Hannes Gamper. A fast forest reverberator using single scattering cylinders. In IEEE 23rd International Workshop on Multimedia Signal Processing (MMSP) , pages 1– 6, 2021. doi: 10.1109/MMSP53017.2021.9733601. URL https://ieeexplore.ieee.org/ document/9733601 . Tampere, Finland. Shoken Kaneko and Hannes Gamper. Large-scale simulation of bird localization systems in forests with distributed microphone arrays. JASA Express Letters , 2(10):101201, 2022. doi: 10.1121/10.0014809. URL https://doi.org/10.1121/10.0014809 .N. Jeremy Kasdin. Discrete simulation of colored noise and stochastic processes and 1/f α power law noise generation. Proceedings of the IEEE , 83(5):802–827, 1995. doi: 10.1109/5.381848. Adam Kujawski, Art J. R. Pelling, Simon Jekosch, and Ennes Sarradj. A framework for gener-ating large-scale microphone array data for machine learning. Multimedia Tools and Appli-cations , 83:31211–31231, 2024. doi: 10.1007/s11042-023-16947-w. Jos´ e J. Lahoz-Monfort and Michael J. L. Magrath. A comprehensive overview of technologies for biodiversity monitoring. BioScience , 71(10):1038–1062, 2021. doi: 10.1093/biosci/biab073. N. Londhe, M. D. Rao, and J. R. Blough. Application of the iso 13472-1 in situ technique for measuring the acoustic absorption coefficient of grass and artificial turf surfaces. Applied Acoustics , 70(1):129–141, 2009. doi: 10.1016/j.apacoust.2007.12.011. Michael M¨ oser. Engineering Acoustics: An Introduction to Noise Control . Springer, 2009. doi: 10.1007/978-3-540-92724-0. Damian T. Murphy and Simon Shelley. Openair: An interactive auralization web resource and database. In Audio Engineering Society Convention 129 . Audio Engineering Society, 2010. Vladimir E. Ostashev, D. Keith Wilson, and Michael B. Muhlestein. Effective wavenumbers for sound scattering by trunks, branches, and the canopy in a forest. The Journal of the Acoustical Society of America , 142(2):EL177, 2017. doi: 10.1121/1.4996696. Nathalie Pettorelli, Martin Wegmann, Andrew Skidmore, Leonardo Mu˜ noz, Mariela Fernandez, Richard Lucas, Michael E. Schaepman, Tiejun Wang, Brendan O’Connor, Robert H. G. Jongman, and et al. Framing the concept of satellite remote sensing essential biodiversity variables: challenges and future directions. Remote Sensing in Ecology and Conservation , 2 (3):122–131, 2016. doi: 10.1002/rse2.15. Nadia Pieretti, Almo Farina, and Danilo Morri. A new methodology to infer the singing activity of an avian community: The acoustic complexity index (aci). Ecological Indicators , 11(3): 868–873, 2011. doi: 10.1016/j.ecolind.2010.11.005. Rudolf Rabenstein and Paolo Annibale. Acoustic source localization under variable speed of sound conditions. Wireless Communications and Mobile Computing , 2017:9524943, 2017. doi: 10.1155/2017/9524943. 18 Nikunj Raghuvanshi, Rahul Narain, and Ming C. Lin. Precomputed wave simulation for real-time sound propagation of dynamic sources in complex scenes. In ACM SIGGRAPH 2010 Papers , pages 68:1–68:11, 2010. doi: 10.1145/1778765.1778805. Tessa A. Rhinehart, Lauren M. Chronister, Trieste Devlin, and Justin Kitzes. Acoustic localiza-tion of terrestrial wildlife: Current practices and future opportunities. Ecology and Evolution ,10(13):6794–6818, 2020. doi: 10.1002/ece3.6216. Lauri Savioja and U. Peter Svensson. Overview of geometrical room acoustic modeling tech-niques. The Journal of the Acoustical Society of America , 138(2):708–730, 2015. doi: 10.1121/1.4926438. Manfred R. Schroeder. New method of measuring reverberation time. The Journal of the Acoustical Society of America , 37(3):409–412, 1965. doi: 10.1121/1.1909343. Panu Somervuo, Aki Harma, and Seppo Fagerlund. Parametric representations of bird sounds for automatic species recognition. IEEE Transactions on Audio, Speech, and Language Pro-cessing , 14(6):2252–2263, 2006. doi: 10.1109/TASL.2006.872624. Peter J. Stephenson. Technological advances in biodiversity monitoring: applicability, opportu-nities and challenges. Current Opinion in Environmental Sustainability , 45:36–41, 2020. doi: 10.1016/j.cosust.2020.08.005. Dan Stowell and J´ erˆ ome Sueur. Ecoacoustics: acoustic sensing for biodiversity monitoring at scale. Remote Sensing in Ecology and Conservation , 6(3):217–219, 2020. doi: 10.1002/rse2. 174. Larissa S. M. Sugai, Thiago S. F. Silva, Jos´ e W. Ribeiro Jr., and Diego Llusia. Terrestrial passive acoustic monitoring: review and perspectives. BioScience , 69(1):15–25, 2019. doi: 10.1093/biosci/biy147. Joachim Thiemann, Nobutaka Ito, and Emmanuel Vincent. DEMAND: a collection of multi-channel recordings of acoustic noise in diverse environments. Zenodo, 2013. URL https: //doi.org/10.5281/zenodo.1227121 .Erik Verreycken, Ralph Simon, Brandt Quirk-Royal, Walter Daems, Jesse R. Barber, and Jan Steckel. Bio-acoustic tracking and localization using heterogeneous, scalable microphone arrays. Communications Biology , 4:1275, 2021. doi: 10.1038/s42003-021-02746-2. Luis J. Villanueva-Rivera, Bryan C. Pijanowski, Jarrod Doucette, and Burak Pekin. A primer of acoustic analysis for landscape ecologists. Landscape Ecology , 26(9):1233–1246, 2011. doi: 10.1007/s10980-011-9636-9. Michael Vorl¨ ander. Auralization: Fundamentals of Acoustics, Modelling, Simulation, Algorithms and Acoustic Virtual Reality . Springer, 2008. doi: 10.1007/978-3-540-48830-9. Thomas Wiens. Forest reverb generator – matlab central file exchange. http://www. mathworks.com/matlabcentral/fileexchange/20764-forest-reverb-generator , 2008. 19 Supporting Information 
+
+S1. Moist-air speed-of-sound calculation 
+
+ForestIR computes the speed of sound from the configured atmospheric state rather than using a fixed constant. The implementation uses a lightweight ideal-mixture approximation for humid air, following standard thermodynamic treatments of sound speed in moist air [Cramer, 1993, Gavioso et al., 2025]. For an ideal gas mixture, the speed of sound can be expressed as 
+
+c = pγ R spec T , (S1) where T is the absolute temperature, Rspec is the mixture-specific gas constant, and γ = cp/c v is the ratio of specific heats, where cp is the constant-pressure specific heat, and cv is the constant-volume specific heat [M¨ oser, 2009]. Following established thermodynamic treatments of sound speed in moist air [Cramer, 1993, Gavioso et al., 2025], we allow both γ and Rspec to vary with humidity and pressure through the composition of humid air. Given temperature T (K), pressure p (kPa), and relative humidity RH (%), we first compute the saturation vapour pressure psat (T ) using the ISO 9613-1 formulation (expressed here as a ratio to the reference pressure pref = 101 .325 kPa), 
+
+psat (T )
+
+pref 
+
+= 10 −6.8346  
+
+> T01
+> T
+> 1.261
+> +4 .6151
+
+, T01 = 273 .15 + 0 .01 K , (S2) where T01 is a fixed reference temperature appearing in the empirical saturation-vapour-pressure approximation used in ISO 9613-1 implementations, and obtain the water-vapour partial pres-sure pw = (RH /100) psat (T ). Under the ideal-mixture approximation, the water-vapour mole fraction is then 
+
+xw = pw
+
+p . (S3) Using the mole-fraction-weighted molar mass, 
+
+Mmix = (1 − xw)Md + xwMw, (S4) with Md and Mw denoting the molar masses of dry air and water vapour, the mixture-specific gas constant is Rspec = R/M mix , where R is the universal gas constant. Let Yw denote the water-vapour mass fraction implied by xw,
+
+Yw = xwMw
+
+Mmix 
+
+, Yd = 1 − Yw. (S5) We then approximate the mixture heat capacity as a mass-fraction-weighted average, 
+
+cp ≈ Yd cp,d + Yw cp,w , cv = cp − Rspec , γ = cp
+
+cv
+
+, (S6) where cp,d and cp,w are the mass-specific constant-pressure heat capacities of dry air and wa-ter vapour, respectively. This yields a humidity- and pressure-dependent c. While Cramer [1993] provides a high-precision calculation and interpolating expressions for γ and c over typ-ical atmospheric ranges, the above mixture-based construction captures the same qualitative dependencies and is consistent with the simulator’s use of temperature, humidity, and pressure in ISO 9613-1 air-absorption calculations. 
+
+S2. Humidity dependence of the speed of sound 
+
+Table S1 provides a numerical check of the moist-air speed-of-sound calculation at fixed tem-perature and pressure. At T = 20 ◦C and p = 101 .325 kPa, the legacy temperature-only ap-proximation remains constant, whereas the updated calculation varies with relative humidity: it is slightly lower at RH=0% and increases monotonically as humidity rises. 20 Table S1: Example validation of humidity dependence in the speed of sound at T = 20 ◦C and 
+
+p = 101 .325 kPa. Relative humidity Legacy c(T ) (m/s) Updated c(T, RH , p ) (m/s) 0% 343.4200 343.2077 20% 343.4200 343.4595 40% 343.4200 343.7121 60% 343.4200 343.9654 80% 343.4200 344.2196 100% 343.4200 344.4746 
+
+S3. Microphone Array Simulation 
+
+To simulate realistic forest background conditions, ForestIR optionally adds additive noise to each microphone channel, 
+
+ym[n] = ˜ym[n] + vm[n]. (S7) We implement a set of noise models vm[n] designed for controlled robustness tests as well as field-realistic masking: (i) additive white Gaussian noise (AWGN), (ii) pink noise (approximately 1/f power-law), (iii) recorded environmental background noise segments, (iv) Brown (random-walk) noise, and (v) band-limited noise produced by FIR filtering. The colored-noise variants follow standard power-law noise constructions [Kasdin, 1995]. For synthetic noise (AWGN, pink, Brown, band-limited), ForestIR generates independent realizations per channel and normalizes each channel to unit RMS before scaling [Kasdin, 1995]. For recorded environmental noise, we provide an example configuration using the DEMAND multichannel noise database [Thiemann et al., 2013] and extract per-channel noise by sam-pling non-overlapping segments from a single long recording (with resampling if needed), then normalizing each channel to unit RMS. This non-overlap strategy avoids introducing artificial inter-channel coherence that can unrealistically benefit localization methods. Noise magnitude is controlled by a user parameter noise level that maps to a fixed absolute noise gain (in dBFS), independent of the clean signal amplitude. Concretely, ForestIR first generates a “unit” noise realization and then rescales it to the target level; this design makes the resulting SNR vary across microphones according to geometry and propagation, matching the fact in reality that for one source sound, different propagation distances would lead to different SNR level at different sensors. 
+
+S4. ForestIR Code Configuration 
+
+Interface and execution modes. ForestIR provides a batch command-line interface and a programmatic Python API, both built on the same simulation core in code/ForestReverb.py .Batch rendering iterates over all rows in a source-location CSV and, for each scene, pro-duces (i) a multichannel mixture WAV, (ii) separate mono per-microphone WAVs (written to a 
+
+per mic {tag }/ subdirectory), and (iii) one row in a CSV manifest ( manifest.csv ) recording metadata for that render. Batch mode is invoked as 
+
+python code/render_batch.py --bird-wav <path/to/clean/bird.wav> [options] 
+
+Relative file paths are resolved from the repository root; bundled presets live under 
+
+dataset/ . Alternatively, the modules in code/ expose the same underlying functions— e.g., simulateForestIR (forest IR synthesis), render array from source (source–IR convo-lution), and synthesize array observation (end-to-end render with optional noise and WAV export)—for single-scene rendering or custom pipelines. The programmatic API does not in-voke the CLI and does not automatically perform batch iteration or write manifest.csv unless 21 the user implements that loop. Dependencies are listed in requirements.txt (pip install -r requirements.txt ). 
+
+Inputs and configuration. A ForestIR run is specified by (i) source audio and positions, (ii) array geometry, (iii) forest structure, and (iv) environmental and noise settings. 
+
+Source audio and positions. The batch CLI requires a clean source WAV ( --bird-wav ), which is convolved with the simulated array impulse response at each source location. Source positions are read from a CSV with columns x,y,z (metres). Built-in layouts are selected with 
+
+--src (custom [default], finland konnevesi , or finland konginkangas ), or overridden with a user CSV via --src-csv .
+
+Array geometry. Array geometry is set with --mic or --mic-csv . Built-in micro-phone layouts correspond to field deployments: finland konnevesi (Konnevesi BPH array), 
+
+finland konginkangas 11 , and finland konginkangas 11 1.2m (Konginkangas array, option-ally filtered to z = 1 .2 m). Custom layouts use a CSV with header device,x,y,z ; row order defines channel order, and device labels per-channel output files (e.g., F3 –F13 or BPH1 –BPH3 ). 
+
+Forest structure. Forest structure is configured with --tree-csv : measured tree loca-tions ( default or finland , mapping to dataset/treeloc finland.csv ), a user-provided tree CSV, a treeless scene ( none ), or a synthetic forest ( random with --nTrees > 0). For 
+
+random trees, sampling is controlled by --tree-sampling-algo (uniform or repulsive ) and 
+
+--min-tree-spacing . Trunk geometry uses --tree-height and a trunk-diameter range (--trunk-diameter-min/max ). Optional branch/leaf scattering ( --apply-branch-leaf ) adds diffuse scatterers whose count and vertical bounds are set by --n-branch-leaf-scatterers 
+
+and --branch-leaf-z-min/max , with horizontal extent from --forest-range-x/y . Ground reflection on the floor-reflection path is set by preset ( --ground-type : default , concrete ,
+
+water , ice , grass , snow ) or by a manual coefficient ( --floor-reflection-coef ). 
+
+Environment, sampling, and noise. Environmental parameters—temperature ( --temp-c ), relative humidity ( --rh-percent ), and pressure ( --pressure-hpa )—and the output sampling rate ( --fs ; default 384 kHz) are exposed as CLI arguments. Reproducibility of stochastic com-ponents uses two seeds: --scene-seed governs geometric randomness (random tree placement, trunk parameters, and branch/leaf scatterer placement), and --noise-seed governs additive noise (in batch mode, source index i uses noise seed + i ). Background noise is added af-ter the clean render via selectable models ( white , pink , real forest [recorded environmental noise], brown , or bandlimited ) with level control ( --noise-level ), defined as the target ratio RMS(noise) /RMS(signal) after rendering (0 disables added noise). For real forest , recorded-noise presets ( --noise-source nriver or konnevesi ) or an explicit noise-audio path or direc-tory ( --noise-path ) may be supplied. 
+
+Outputs and reproducibility. ForestIR batch mode produces convolved array recordings 
+
+rather than exported impulse-response WAV files: for each source location, (i) one multichan-nel WAV, (ii) mono per-microphone WAVs, and (iii) a manifest row linking outputs to the full experimental configuration. The manifest stores output paths ( mc wav , per mic dir ), a stable source identifier ( src uid ), source coordinates, microphone/source preset identifiers and CSV paths, the input bird WAV, forest configuration ( tree mode , tree CSV or random-sampling set-tings, branch/leaf scattering toggle), environmental parameters, ground-reflection settings, the chosen noise model and its parameters, and both scene seed and the per-source noise seed .This design supports systematic benchmarking of localization pipelines and scalable synthetic training-data generation while preserving full provenance of each rendered example. 22
