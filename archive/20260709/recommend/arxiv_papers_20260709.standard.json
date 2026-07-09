@@ -1,0 +1,167 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-09T21:58:19.693476+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2607.03208v1",
+      "source": "arxiv",
+      "title": "Data-driven multi-objective optimization for alloy recycling using factorization machines and quantum annealing",
+      "abstract": "Quantum annealing has the potential to provide practical quantum advantage for complex optimization tasks. Here, we present a systematic assessment of an integrated factorization-machine and quantum-annealing workflow (FM+QA) for a technologically relevant application: multi-objective Pareto optimization in metal up-cycling through alloy design. To address the non-convex nature of the Pareto front, we employ the recently proposed data-driven Tchebycheff scalarization (DDTS) scheme. Our results show that FM+QA extends the applicability of QUBO-based optimization to data-driven materials discovery problems with multiple competing objectives. In particular, we analyze the scaling behavior of the approach and compare quantum annealing with classical simulated annealing using both regular binary encoding and one-hot encoding. Finally, we provide a critical perspective on the problem sizes and encoding strategies for which quantum-annealing-based optimization may become practically beneficial in the near future.",
+      "authors": [
+        "Thomas Plehn",
+        "Katrin Bugelnig",
+        "Silvana Tumminello",
+        "Daniel Barragan-Yani",
+        "David Melching"
+      ],
+      "primary_category": "cond-mat.mtrl-sci",
+      "categories": [
+        "cond-mat.mtrl-sci",
+        "quant-ph"
+      ],
+      "published": "2026-07-03T11:23:55+00:00",
+      "link": "https://arxiv.org/pdf/2607.03208v1",
+      "tags": [
+        "keyword:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "addresses non-convex Pareto front optimization using factorization machines and quantum annealing, relevant to non-convex optimization in machine learning",
+      "llm_evidence_cn": "使用分解机和量子退火解决非凸Pareto前沿优化，与机器学习中的非凸优化相关",
+      "llm_evidence": "使用分解机和量子退火解决非凸Pareto前沿优化，与机器学习中的非凸优化相关",
+      "canonical_evidence": "使用分解机和量子退火解决非凸Pareto前沿优化，与机器学习中的非凸优化相关",
+      "llm_tldr_en": "Integrates factorization machines with quantum annealing for multi-objective non-convex Pareto optimization in alloy recycling, demonstrating the approach on non-convex problems.",
+      "llm_tldr_cn": "针对合金回收中的多目标Pareto优化问题，本文提出了分解机与量子退火结合的FM+QA工作流。为处理非凸Pareto前沿，采用数据驱动Tchebycheff标量化方案。实验表明该方法将QUBO优化扩展到多目标材料发现，并分析其扩展性。其处理非凸优化的思路可迁移至机器学习领域。",
+      "llm_tldr": "针对合金回收中的多目标Pareto优化问题，本文提出了分解机与量子退火结合的FM+QA工作流。为处理非凸Pareto前沿，采用数据驱动Tchebycheff标量化方案。实验表明该方法将QUBO优化扩展到多目标材料发现，并分析其扩展性。其处理非凸优化的思路可迁移至机器学习领域。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "non-convex optimization problems in machine learning",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.07506v1",
+      "source": "arxiv",
+      "title": "Structure-Guided Gauss-Network Method: Linear Advection-Reaction Equation",
+      "abstract": "The least-squares neural network (LSNN) method introduced in [5] for linear advection-reaction equations is capable of accurately approximating discontinuous solutions without a priori knowledge of the interface location. However, the resulting discretization is a non-convex optimization problem that is computationally intensive and complex. In this paper, we propose a structure-guided Gauss-Newton (SgGN) method that alternates between the linear (output) and the nonlinear (hidden layer) parameters. At each outer iteration, the linear parameters are computed by a linear solver, and the nonlinear parameters are updated by a modified Gauss-Newton (GN) method that explicitly removes the singularities of the GN matrix. Numerical experiments for all test problems presented in [5] show that the SgGN method is superior to the Adam optimizer [13], the commonly used first-order optimization algorithm, not only in computational cost but, more importantly, in accuracy",
+      "authors": [
+        "Zhiqiang Cai",
+        "César Herrera"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-07-08T15:02:02+00:00",
+      "link": "https://arxiv.org/pdf/2607.07506v1",
+      "tags": [
+        "keyword:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "non-convex optimization in neural network for PDE",
+      "llm_evidence_cn": "神经网络求解PDE中的非凸优化问题",
+      "llm_evidence": "神经网络求解PDE中的非凸优化问题",
+      "canonical_evidence": "神经网络求解PDE中的非凸优化问题",
+      "llm_tldr_en": "Proposes a structure-guided Gauss-Newton method to solve the non-convex optimization in least-squares neural networks for advection-reaction equations.",
+      "llm_tldr_cn": "最小二乘神经网络求解线性对流反应方程时面临非凸优化难题，计算复杂。本文提出结构引导高斯-牛顿（SgGN）方法，交替更新线性与非线性参数，其中线性参数通过求解器计算，非线性参数用改进的Gauss-Newton法更新，并显式移除奇异性。数值实验表明该方法高效且准确，为非凸优化问题在科学计算中的应用提供了新思路。",
+      "llm_tldr": "最小二乘神经网络求解线性对流反应方程时面临非凸优化难题，计算复杂。本文提出结构引导高斯-牛顿（SgGN）方法，交替更新线性与非线性参数，其中线性参数通过求解器计算，非线性参数用改进的Gauss-Newton法更新，并显式移除奇异性。数值实验表明该方法高效且准确，为非凸优化问题在科学计算中的应用提供了新思路。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "non-convex optimization problems in machine learning",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "biorxiv-10-64898-2026-06-29-734758-v1",
+      "source": "biorxiv",
+      "title": "Neural Tracking of Speech Envelope as an Index of Spatial Release from Masking",
+      "abstract": "Understanding speech in noisy environments relies strongly on binaural cues such as interaural time and level differences (ITDs and ILDs), which support spatial hearing and the segregation of competing sound sources. When these cues are degraded, listeners experience substantial difficulty in complex acoustic environments.\n\nBehavioural measures of binaural benefit, such as binaural masking level differences, binaural intelligibility level differences, and spatial release from masking (SRM), are well established in normal-hearing (NH) listeners, but they require an active behavioural response. Neural speech tracking using electroencephalography (EEG) has emerged as a promising approach for quantifying neural processing of continuous speech, yet its sensitivity to spatial hearing cues remains insufficiently characterised.\n\nWe investigated the neural correlates of spatial release from masking in NH listeners using EEG-based neural speech tracking. Nineteen participants listened to continuous Dutch speech stories presented with masking noise under two spatial configurations, collocated (S0N0) and spatially separated (S0N90), across multiple signal-to-noise ratios (SNRs). Neural tracking of the speech envelope was quantified using both envelope reconstruction and temporal response function (TRF) analyses.\n\nSpatial separation enhanced neural tracking of the target speech envelope, particularly at challenging SNRs where behavioural SRM was also observed. TRF analysis further revealed increased amplitudes and decreased latencies of late cortical components consistent with spatial unmasking effects.\n\nThese findings demonstrate that neural speech tracking captures cortical signatures of spatial unmasking and closely reflects behavioural improvements in speech understanding. Establishing these relationships in NH listeners supports the development of objective neural measures for evaluating binaural benefit in difficult-to-test populations.",
+      "authors": [
+        "Galeano-Otalvaro, J.-D.",
+        "Dieudonne, B.",
+        "Francart, T.",
+        "Wouters, J."
+      ],
+      "primary_category": "neuroscience",
+      "categories": [
+        "neuroscience"
+      ],
+      "published": "2026-07-02T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2026.06.29.734758v1.full.pdf",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "neural tracking of speech envelope for spatial hearing and source localization",
+      "llm_evidence_cn": "语音包络神经跟踪用于空间听觉与声源定位",
+      "llm_evidence": "语音包络神经跟踪用于空间听觉与声源定位",
+      "canonical_evidence": "语音包络神经跟踪用于空间听觉与声源定位",
+      "llm_tldr_en": "This paper uses EEG neural tracking of speech envelope to index spatial release from masking (SRM), which is closely related to acoustic source localization in complex environments.",
+      "llm_tldr_cn": "该论文针对嘈杂环境中言语理解困难的问题，提出利用脑电图（EEG）神经跟踪语音包络的方法，作为空间释放掩蔽（SRM）的指标。SRM依赖于双耳时间差和强度差等空间线索，与声源定位密切相关。实验表明，神经跟踪可以有效量化双耳听觉优势，为研究听觉场景中的声源分离提供了神经生理学工具。",
+      "llm_tldr": "该论文针对嘈杂环境中言语理解困难的问题，提出利用脑电图（EEG）神经跟踪语音包络的方法，作为空间释放掩蔽（SRM）的指标。SRM依赖于双耳时间差和强度差等空间线索，与声源定位密切相关。实验表明，神经跟踪可以有效量化双耳听觉优势，为研究听觉场景中的声源分离提供了神经生理学工具。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.06222v1",
+      "source": "arxiv",
+      "title": "APVI-SLAM: Real-Time Acoustic-Pressure-Visual-Inertial Localization and Photorealistic Mapping System in Complex Underwater Environment",
+      "abstract": "Extreme subsea environments often cause severe feature de-gradation and estimator divergence in underwater visual-inertial SLAM. Although sensors like Doppler Velocity Logs (DVL) and pressure gauges provide auxiliary constraints, robust multi-sensor fusion during intermittent visual failure remains challenging. To address this, we present APVI-SLAM, a real-time multi-sensor fusion SLAM system that achieves both accurate underwater localization and photorealistic mapping. Our approach introduces a reliability-aware localization framework that dynamically reweights sensor estimators and employs a sliding-window freezing strategy to recover from tracking failures, substantially enhancing system robustness. Furthermore, for high-fidelity scenes reconstruction, we propose an efficient quadtree-guided mapping module that facilitates incremental water-medium modeling and 3D Gaussian optimization. Recognizing the lack of benchmark for underwater mapping evaluation, we also contribute a coral reef surveying dataset with synchronized multi-modality data. Extensive experiments on public and our proposed benchmarks demonstrate that APVI-SLAM achieves state-of-the-art localization and reconstruction quality at real-time speeds.",
+      "authors": [
+        "Hanwen Zhang",
+        "Yipeng Zhu",
+        "Xiaopeng Guo",
+        "Huajian Huang",
+        "Sai-Kit Yeung"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-07T12:45:57+00:00",
+      "link": "https://arxiv.org/pdf/2607.06222v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "multi-sensor fusion SLAM with acoustic-pressure-visual-inertial sensors requiring geometric calibration",
+      "llm_evidence_cn": "多传感器融合SLAM系统涉及声学压力视觉惯性传感器校准",
+      "llm_evidence": "多传感器融合SLAM系统涉及声学压力视觉惯性传感器校准",
+      "canonical_evidence": "多传感器融合SLAM系统涉及声学压力视觉惯性传感器校准",
+      "llm_tldr_en": "Proposes a real-time multi-sensor fusion SLAM system for underwater environments with a reliability-aware localization framework and sliding-window freezing to recover from tracking failures.",
+      "llm_tldr_cn": "针对水下极端环境视觉惯性SLAM中特征退化与估计发散问题，本文提出APVI-SLAM实时多传感器融合SLAM系统。该方法引入可靠性感知定位框架动态重加权传感器估计，并采用滑动窗口冻结策略从跟踪失败中恢复，实现了精确的水下定位与逼真地图构建。实验表明该方法显著增强了系统鲁棒性。",
+      "llm_tldr": "针对水下极端环境视觉惯性SLAM中特征退化与估计发散问题，本文提出APVI-SLAM实时多传感器融合SLAM系统。该方法引入可靠性感知定位框架动态重加权传感器估计，并采用滑动窗口冻结策略从跟踪失败中恢复，实现了精确的水下定位与逼真地图构建。实验表明该方法显著增强了系统鲁棒性。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

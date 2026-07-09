@@ -1,0 +1,2055 @@
+Title: Neural Tracking of Speech Envelope as an Index of Spatial Release from Masking
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.06.29.734758v1.full.pdf
+
+Number of Pages: 30
+
+Markdown Content:
+Neural Tracking of Speech Envelope as an Index of Spatial 
+
+# Release from Masking 
+
+Juan -Daniel Galeano -Otálvaro 1, Benajmin Dieudonné 1,2 , Tom Francart 1, Jan Wouters 1
+
+> 1
+
+KU Leuven, Dept. Neurosciences, ExpORL, Leuven, Belgium 
+
+> 2
+
+Brainphonics BV , Leuven, Belgium 
+
+Abstract 1
+
+Understanding speech in noisy environments relies strongly on binaural cues such as 2
+
+interaural time and level differences (ITDs and ILDs), which support spatial hearing and the 3
+
+segregation of competing sound sources. When these cues are degraded, listeners experience 4
+
+substantial difficulty in complex acoustic environments. 5
+
+Behavioural measures of binaural benefit , such as binaural masking level differences , binaural 6
+
+intelligibility level differences , and spatial release from masking (SRM) , are well established in 7
+
+normal -hearing (NH) listeners, but they require an active behavioural response. Neural speech 8
+
+tracking using electroencephalography (EEG) has emerged as a promising approach for 9
+
+quantifying neural  processing of continuous speech, yet its sensitivity to spatial hearing cues 10 
+
+remains insufficiently characterised. 11 
+
+We investigated the neural correlates of spatial release from masking in NH listeners using 12 
+
+EEG -based neural speech tracking. Nineteen participants listened to continuous Dutch speech 13 
+
+stories presented with masking noise under two spatial configurations , collocated (S0N0) and 14 
+
+spatially separated (S0N90) , across multiple signal -to -noise ratios (SNRs). Neural tracking of 15 
+
+the speech envelope was quantified using both envelope reconstruction and temporal 16 
+
+response function (TRF) analyses. 17 
+
+Spatial separation enhanced neural tracking of the target speech envelope, particularly at 18 
+
+challenging SNRs where behavioural SRM was also observed. TRF analysis further revealed 19 
+
+increased amplitudes and decreased latenc ies  of late cortical components consistent with 20 
+
+spatial unmasking effects. 21 
+
+These findings demonstrate that neural speech tracking captures cortical signatures of spatial 22 
+
+unmasking and closely reflects behavioural improvements in speech understanding. 23 
+
+Establishing these relationships in NH listeners supports the development of objective neural 24 
+
+measures for evaluating binaural benefit in difficult -to -test populations. 25 
+
+26 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Introducti on 27 
+
+Spatial hearing —the ability to perceive, localize, and segregate sounds based on their spatial 28 
+
+origin —is a fundamental function of the auditory system. It relies on the neural processing of 29 
+
+binaural cues such as interaural time differences (ITDs) and interaural level differences (ILDs), 30 
+
+together with monaural spectral cues shaped by the head and pinnae (Blauert, 1997) . Through 31 
+
+the integration of these cues, spatial hearing supports the formation of auditory objects and 32 
+
+enables the parsing of complex acoustic scenes, particularly in natural, multi -source listening 33 
+
+environments (Blauert, 1997; Litovsky et al., 2021) .34 
+
+A central functional role of spatial hearing lies in its contribution to speech understanding in 35 
+
+everyday listening conditions. Speech communication rarely occurs in quiet; instead, listeners 36 
+
+must typically extract a target talker from background noise or competing speakers. Spatial 37 
+
+separation between sound sources allows the auditory system to exploit binaural unmasking 38 
+
+and spatial release from masking, thereby improving access to the target speech signal and 39 
+
+facilitating selective auditory attention (Dieudonné & Francart, 2019; Litovsky et al., 2021; 40 
+
+Plomp, 1976) . These benefits reflect not only peripheral acoustic advantages but also central 41 
+
+and cortical mechanisms that integrate spatial and linguistic information over time (Li et al., 42 
+
+2024; Zobel et al., 2022) .43 
+
+The behavioural advantages of spatial hearing for speech perception are well established. 44 
+
+Improved speech intelligibility with spatially separated sources has been demonstrated across 45 
+
+a wide range of acoustic conditions, including varying signal -to -noise ratios (SNRs) and 46 
+
+masker types (Best et al., 2012; Biberger & Ewert, 2019; Blauert, 1997; Litovsky et al., 2021) .47 
+
+At the neural level, electrophysiological studies have shown that cortical activity more strongly 48 
+
+tracks attended than unattended speech, particularly when spatial cues support perceptual 49 
+
+segregation (Das et al., 2018; Hausfeld et al., 2020; Kerlin et al., 2010) . Together, these 50 
+
+findings point to a close relationship between binaural hearing, selective attention, and cortical 51 
+
+speech processing. 52 
+
+In parallel, electrophysiological approaches have been used to investigate neural sensitivity to 53 
+
+binaural cues, employing event -related potentials (ERPs), frequency -following responses 54 
+
+(FFRs), auditory steady -state responses (ASSRs), and auditory change complexes (ACCs). 55 
+
+These studies have targeted specific mechanisms such as interaural phase differences, 56 
+
+binaural interaction components, and envelope -based cues (e.g., Clinard et al., 2016; Fan & 57 
+
+Gifford, 2024; Gransier et al., 2017; Haywood et al., 2015; Laumen et al., 2016; McAlpine et 58 
+
+al., 2016; Undurraga et al., 2016; Van Eeckhoutte et al., 2018; Vercammen et al., 2017) . While 59 
+
+these electrophysiological approaches provide valuable insight into binaural cue encoding 60 
+
+under controlled conditions, they often rely on simplified stimuli and probe isolated cue 61 
+
+processing rather than continuous, ecologically valid speech perception. Establishing how 62 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+these electrophysiological measures reflect binaural processing in normal -hearing listeners is 63 
+
+therefore  a necessary first step toward e xtending them to continuous, ecologically valid speech 64 
+
+and, ultimately, to populations that cannot be tested behaviourall y. 65 
+
+More recently, neural speech tracking paradigms have emerged as a powerful tool for studying 66 
+
+auditory processing under naturalistic listening conditions. Using electroencephalography 67 
+
+(EEG) combined with system identification techniques such as temporal response functions 68 
+
+(TRFs), the brain can be modelled as a linear or quasi -linear system that transforms continuous 69 
+
+speech features —most commonly the speech envelope —into time -locked neural responses 70 
+
+(Crosse et al., 2016, 2021) . Both encoding (forward/TRF) and decoding (backward/envelope 71 
+
+reconstruction) approaches have demonstrated that neural tracking strength correlates with 72 
+
+speech intelligibility (Vanthornhout et al., 2018) , attentional focus and listening effort (Decruy 73 
+
+et al., 2020; He et al., 2025; Lesenfants & Francart, 2020) , and can be robustly measured in 74 
+
+cochlear implant users as well (Somers, Verschueren, et al., 2018; Verschueren et al., 2019) .75 
+
+Importantly, neural speech tracking has also begun to be applied to research spatial and 76 
+
+binaura l hearing.  Previous work has reported spatial modulation of TRFs and envelope 77 
+
+reconstruction accuracy in multi -talker environments (Bednar et al., 2017; Bednar & Lalor, 78 
+
+2018) , speech -in -noise paradigms with manipulated binaural cues (Dieudonné et al., 2024) ,79 
+
+and extensions across developmental populations and competing -speech conditions (Ahmed 80 
+
+et al., 2026; Song et al., 2020) . These studie s, however , have not specifically examined how 81 
+
+spatial separation and signal -to -noise ratio relate to neural speech tracking of continuous, 82 
+
+natural speech in normal -hearing listeners. 83 
+
+Characterising this relationship is an important step toward a mechanistic understanding of 84 
+
+spatial hearing at the cortical level and toward  objective neural markers grounded in normal 85 
+
+auditory processing.  In the present study, we therefore focus exclusively on normal -hearing 86 
+
+listeners and investigate how spatial hearing manipulations —specifically spatial separation 87 
+
+and variations in signal -to -noise ratio —affect EEG -based neural tracking of continuous, natural 88 
+
+speech . By studying these factors in a normal auditory system, this work takes a step toward 89 
+
+a neurophysiological reference framework for interpreting spatial hearing effects in more 90 
+
+complex or clinical populations .91 
+
+Signal -to -noise ratio was systematically varied across spatial listening conditions . We92 
+
+hypothesi sed that spatially driven enhancements in neural speech tracking would be most 93 
+
+pronounced at challenging SNRs. Under these conditions, spatial separation is expected to 94 
+
+yield measurable increases in envelope reconstruction accuracy, reflecting spatial release from 95 
+
+masking at the cortical level. In addition, we (specifically ) hypothesi sed that spatial unmasking 96 
+
+would be reflected in the morphology of the TRFs, with increased amplitude s and de creased 97 
+
+latenc ies for spatially separated compared to collocated conditions, particularly at low SNRs. 98 
+
+This prediction is motivated by previous auditory evoked potential and envelope tracking 99 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+studies showing that reductions in masking are associated with increase d response amplitudes 100 
+
+and decreased latencies, reflecting more robust and temporally resolved cortical 101 
+
+representations of the target signal (Dieudonné et al., 2024; Song et al., 2020; Van Hirtum, 102 
+
+Somers, Dieudonné, et al., 2023; Van Hirtum, Somers, Verschueren, et al., 2023; Zobel et al., 103 
+
+2022) . In contrast, at higher SNRs —where speech is already well represented acoustically —104 
+
+spatial configuration is expected to exert reduced or negligible effects on neural tracking 105 
+
+metrics, potentially reflecting ceiling effects or diminished reliance on binaural cues when 106 
+
+acoustic clarity is high (He et al., 2025; Rennies & Kidd, 2018) .107 
+
+Methods 108 
+
+Participants 109 
+
+Nineteen adults (1 7 female, median age 20 years, min = 19, max=33 ) participated in the study. 110 
+
+All participants were native Dutch speakers with  pure -tone hearing  thresholds at or below 20 111 
+
+dB HL at all octave audiometric frequencies from 250 to 8000 Hz. This study was approved by 112 
+
+the Medical Ethics Committee Research UZ/KU Leuven (project number S70169 ). All 113 
+
+participants gave written informed consent for their participation in the s tudy. 114 
+
+115 
+
+Experimental set -up 116 
+
+The experiment took place in a double -walled  soundproof  room . Stimuli were presented 117 
+
+through Genelec loudspeakers (Genelec Oy, Iisalmi, Finland) positioned approximately one 118 
+
+met re away from the centre of the head of the participant at 0° and 90° or −90° azimuth. Stimuli 119 
+
+were presented via an RME Fireface UCX soundcard (Audio AG, Haimhausen, Germany), 120 
+
+using the software platform APEX 4 (Francart et al., 2008) . We recorded EEG using a BioSemi 121 
+
+ActiveTwo system (Amsterdam, The Netherlands), with 64 active electrodes, at a sampling 122 
+
+frequency of 8192 Hz. 123 
+
+124 
+
+Stimuli 125 
+
+Target speech wa s always presented from a loudspeaker located in front of the participant (0° 126 
+
+azimuth). Stationary speech -weighted noise was presented either from the same frontal 127 
+
+loudspeaker (0° azimuth , referred to as collocated ) or from a lateral loudspeaker (90° or −90° 128 
+
+azimuth , referred to as separated ), creating collocated and spatially separated masking 129 
+
+conditions. The position of the masker in the separated condition was kept constant for the 130 
+
+duration of the session. The mask ing noise spectrum was derived from the long -term average 131 
+
+spectrum (LTAS S) of the speech material.  Target speech was presented at 55 dB A, and the 132 
+
+signal -to -noise ratio (SNR) was manipulated by adjusting the masker level. 133 
+
+134 
+
+135 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Procedure 136 
+
+Participants completed t wo parts . In the first one, purely behavioural, they completed an 137 
+
+adaptive speech -in -noise procedure using the Flemish Matrix Sentence Test (Luts et al., 2014) .138 
+
+The test consists of lists of 20 sentences spoken by a female speaker. Each sentence lasts 139 
+
+approximately 2 s and follows a fixed grammatical structure (name, verb, numeral, adjective, 140 
+
+object). The adaptive procedure started at −4 dB SNR and after each sentence the participants 141 
+
+selected the words they heard from a matrix displayed on a screen in front of them. The SNR 142 
+
+was adapted based on the number of correctly identified words according to the procedure 143 
+
+described by Brand and Kollmeier (2002) .144 
+
+145 
+
+In the second part participants listened to fragments of stories in Dutch while we recorded EEG 146 
+
+responses . Fragments were presented in trials lasting 2.5 –5 min. SNR  was set to −13, −10, 147 
+
+−8, −6, −4, and −1 dB and remained constant throughout each trial. These levels were 148 
+
+determined in pilot testing to capture a wide range of performance while avoiding ceiling and 149 
+
+floor effects. Trials were presented in pairs, with both trials in a pair sharing the same SNR. 150 
+
+Within each pair, the order of the two spatial conditions (separated and co llocated) was 151 
+
+random ised. The sequence in which the six SNRs were presented was likewise randomi sed. 152 
+
+In total, e ach participant listened to 5–7.5 minutes of material for each unique combination of 153 
+
+SNR and speaker loc ation. Three participants completed single trials of approximately 5 min 154 
+
+per SNR and spatial condition (≈60 min EEG total). Two participants completed two trials of 155 
+
+2.5 min each per SNR and spatial condition (≈60 min EEG total). The remaining 13 participants 156 
+
+completed three trials of 2.5 min each (≈90 min EEG total). Due to technical reasons data 157 
+
+collection failed for  one participant at −1 dB SNR;  therefore, data for this condition are reported 158 
+
+for n = 18 , whereas all other SNR conditions include data from n = 19 participants. 159 
+
+160 
+
+Behavioural Measures 161 
+
+Speech reception thresholds (SRT) were obtained using the Flemish Matrix Sentence Test 162 
+
+(Luts et al., 2014) . The SRT corresponded to the signal -to -noise ratio (SNR) at which 163 
+
+participants correctly identified 50% of the target words and was estimated from the final SNR 164 
+
+of the adaptive track (Brand & Kollmeier, 2002) . Spatial release from masking was quantified 165 
+
+as the difference in SRT (in dB) between the separated and collocated masking conditions. 166 
+
+To complement the behavioural SRT measure, subjective speech understanding was 167 
+
+assessed after each story trial. Participants were asked to estimate the percentage of the story 168 
+
+they understood by answering the question: "How m any of the  words  did you understand (in 169 
+
+percent)?" 170 
+
+171 
+
+172 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+EEG Preprocessing and Envelope Extraction 173 
+
+EEG signals were digitized at 8192 Hz and initially high -pass filtered at 0.1 Hz. The data were 174 
+
+then downsampled to 512 Hz. Eyeblinks and other artifacts were automatically removed using 175 
+
+a Multi -Channel Wiener Filter (Somers, Francart, et al., 2018) . Subsequently, the EEG signal 176 
+
+was further downsampled to 128 Hz to reduce computational load. 177 
+
+Channels were band -pass filtered between 0.5 and 8 Hz using a linear -phase FIR filter ,178 
+
+implemented as separately designed high - and low -pass filters. Each filter was designed with 179 
+
+the least -squares method to achieve a stopband attenuation of at least 10 dB and a stopband 180 
+
+ripple below 0.25 dB, and the resulting group delay was compensated for so that no phase 181 
+
+distortion was introduced . Signals were subsequently re -referenced to the average of all 182 
+
+channels and normali sed so that each channel ha d zero mean and unit standard deviation .183 
+
+Trials corresponding to the same SNR × spatial location combination were concatenated for 184 
+
+further analysis. 185 
+
+The speech stimuli were processed through a 28 -channel gammatone filter bank with 186 
+
+equivalent rectangular bandwidth  spacing. The envelope of each frequency band was obtained 187 
+
+by ta king its absolute value and then compressing it using a 0.6 power law  (Biesmans et al., 188 
+
+2015). Like the EEG, the envelopes were band -pass filtered between 0.5 and 8 Hz, normali sed, 189 
+
+and trials corresponding to the same SNR × spatial location combination were concatenated. 190 
+
+The resulting signals were then normalised for subsequent neural tracking analyses. 191 
+
+192 
+
+Backward model 193 
+
+In the neural tracking framework, the stimulus feature —here the speech envelope —is 194 
+
+modelled as a linear function of the EEG . Neural tracking of the speech envelope was 195 
+
+quantified by computing the Spearman correlation between the original acoustic envelope  𝑠 (𝑡 )196 
+
+and a reconstructed envelope  𝑠 ̂ (𝑡 ) derived from the EEG recorded during stimulus 197 
+
+presentation (Crosse et al., 2016, 2021) .198 
+
+The reconstructed envelope  𝑠 ̂ (𝑡 ) was obtained by linearly combining the EEG responses 199 
+
+𝑟 (𝑡 , 𝑛 ) measured at time  𝑡  and channel  𝑛 , using a linear decoder  𝑔 (𝑛 , τ). Because neural 200 
+
+responses are not instantaneous, EEG data were included over a post -stimulus integration 201 
+
+window of latencies  τ. The reconstruction is therefore defined as: 202 
+
+203 
+
+𝑠 ̂ = ∑ ∑ 𝑔 (𝑛 , 𝜏 )𝑟 (𝑡 + 𝜏 , 𝑛 )  
+
+> 500 ms
+> 𝜏 =0ms
+> 64
+> 𝑛 =1
+
+(1)204 
+
+205 
+
+In matrix notation, this can be written as: 206 
+
+𝑺 = 𝑮 T ⋅ 𝑹 ′ (2)207 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+where  𝑅 ′ represents the matrix of EEG data expanded over channels and time -lagged versions 208 
+
+within the integration window,  𝑆  is the speech envelope, and  𝐺  is the decoder vector with 209 
+
+dimensions (channels×latencies ). The linear decoder thus acts as a spatio -temporal filter that 210 
+
+combines information across EEG channels and their delayed responses to optimally 211 
+
+reconstruct the speech envelope. 212 
+
+The decoder coefficients were estimated using ridge regression on a training dataset: 213 
+
+𝑮 = (𝑹 ′𝑹 ′T + 𝜆 𝑰 )−1 (𝑹 ′𝑺 T) (3)214 
+
+215 
+
+where  𝜆  is the regularization parameter, set to the maximum absolute value of the auto -216 
+
+correlation matrix  𝑹 ′𝑹 ′T, and  𝐼  denotes the identity matrix. 217 
+
+For each participant and each listening condition (defined by SNR and spatial location), a 218 
+
+condition -specific linear decoder was computed and evaluated using cross -validation. EEG 219 
+
+and stimulus data corresponding to each condition were concatenated and divided into 20 -220 
+
+seconds folds. For each fold, the speech envelope was reconstructed from the EEG using a 221 
+
+decoder trained on all remaining folds. The reconstructed envelopes from all folds were then 222 
+
+concatenated to obtain a single reconstructed envelope  ŝ (t) per condition, which was 223 
+
+subsequently used for neural tracking analysis. 224 
+
+225 
+
+Forward model 226 
+
+The TRF describes the linear mapping between the stimulus envelope  𝑠 (𝑡 ) and the EEG 227 
+
+response  𝑟 (𝑡 , 𝑛 ) at electrode  𝑛 , across a range of temporal delays  𝜏 . To also include the pre -228 
+
+response integration window, we evaluated lags between -100 to 600 ms. The predicted EEG 229 
+
+signal  𝑟 ̂ (𝑡 , 𝑛 ) can be expressed as the convolution of the stimulus envelope with the TRF 230 
+
+weights :231 
+
+232 
+
+𝑟 ̂ (𝑡 , 𝑛 ) = ∑ TRF (𝜏 , 𝑛 )𝑠 (𝑡 − 𝜏 )
+
+> 600 𝑚𝑠
+> 𝜏 =−100 ms
+
+(4)233 
+
+or in matrix notation (for each electrode  𝑛  separately): 234 
+
+𝑅 𝑛 = 𝑇 𝑛  
+
+> T
+
+⋅ 𝑆 ′ (5)235 
+
+with  𝑆 ′ as the matrix of the time -lagged versions of the stimulus envelope with dimensions 236 
+
+(latencies, time),  𝑅 𝑛  the EEG signal at electrode  𝑛  with dimensions (1, time), and  𝑇 𝑛  the TRF 237 
+
+coefficients (latencies, 1) . The TRF weights were estimated using a regularized regression, as 238 
+
+described by Crosse et al. (2016) :239 
+
+240 
+
+𝑇 𝑛 = (𝑆 ′𝑆 ′T + 𝜆𝐼 )−1 (𝑅 ′𝑆 T) (6)241 
+
+242 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Where  λ is the regularization parameter . Here it was set to the maximum absolute value of the 243 
+
+autocorrelation matrix  𝑆 ′𝑆 ′T of the time -shifted stimulus envelope .244 
+
+For the forward model, we combined the data in the way described for the backward model. 245 
+
+Consequently , one TRF was computed per participant, condition, and electrode . Because the 246 
+
+analysis focused on the TRF weights themselves rather than reconstruction accuracy, all 247 
+
+available data for a given condition were used to estimate the model, no cross -validation 248 
+
+procedure was applied. 249 
+
+After calculating the TRFs for each electrode (per participant, per condition), we applied a 250 
+
+spatial filter to match the polarity of the TRFs over electrodes following the method applied by 251 
+
+Dieudonné et al. (2024) . The filter was estimated in two steps. First, reconstruction accuracy 252 
+
+was computed per electrode in a cross -validated way , independently for each subject and 253 
+
+condition. Second, to estimate a single, common spatial filter, we identified the electrode with 254 
+
+the highest average reconstruction accuracy across all subjects and conditions. For each 255 
+
+remaining electrode, we computed the correlation between its average TRF and the TRF of 256 
+
+this reference electrode. If this correlation was negative, the sign of that electrode's TRFs was 257 
+
+flipped for all subjects and all conditions. 258 
+
+The resulting filte r, with coefficients of +1 or −1 , was then applied uniformly across all subjects 259 
+
+and conditions by averaging over all polarity -matched electrodes, yielding one TRF per subject 260 
+
+per condition. 261 
+
+262 
+
+Peak analysis 263 
+
+Latencies showing consistent effects across subjects were identified using cluster -based 264 
+
+permutation testing. At each time point, TRF values across subjects were tested against zero 265 
+
+using a cluster -based permutation test (5000 permutations) with sign -flipping across subjects. 266 
+
+Consecutive samples exceeding a cluster -forming threshold (cluster α = 0.01) were grouped 267 
+
+into clusters, and cluster significance was evaluated using the maximum cluster -sum statistic. 268 
+
+Clusters surviving the corrected significance threshold ( α = 0.025, two -tailed) were considered 269 
+
+significant . Time window showing significant effects that were preserved across condition pairs 270 
+
+were selected for further analysis (Gillis et al., 2021; Maris & Oostenveld, 2007) .271 
+
+Within each selected time window, we aimed to characterize the dominant TRF deflection. 272 
+
+When a clearly defined local extremum was present, the dominant peak was identified as the 273 
+
+local maximum (for positive components) or minimum (for negative components) within the 274 
+
+window of interest. To improve the temporal resolution of peak latency estimates 275 
+
+(approximately 8 ms at a sampling rate of 128 Hz), a parabola was fitted through the extremum 276 
+
+and its two neighbouring samples, and peak amplitude and latency were defined as the 277 
+
+amplitude and timing of the extremum of the fitted parabola. 278 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+In cases where a clearly defined local extremum could not be reliably identified across all 279 
+
+subjects and conditions, peak responses were additionally quantified using a window -based 280 
+
+extrema approach. Specifically, peak amplitude and latency were defined as the maximum (for 281 
+
+positive components) or minimum (for negative components) TRF value within the predefined 282 
+
+analysis window, without imposing constraints on local peak morphology. The search windows 283 
+
+were defined as b etween 0 and 100 ms for P1, 50 and 150 ms for N1, 100 and 250 ms for P2 284 
+
+and 250 to 400 ms for N 2. These ranges were chosen based on previous internal datasets 285 
+
+(Dieudonné et al., 2024) as well as time windows previously found and used in the literature in 286 
+
+continuous speech tasks (Borges et al., 2025; Ihara et al., 2021; Karunathilake et al., 2023) .287 
+
+This proxy measure was used to enable consistent quantification across subjects and 288 
+
+conditions and was treated as complementary to the dominant -peak analysis. 289 
+
+Finally, we examined the s patial distribution of the TRF weights. This analysis was carried out 290 
+
+separately for each SNR. Within each pre -defined given window and SNR, we retained only 291 
+
+the time points at which a cluster survived the permutation test in both conditions — that is, 292 
+
+the intersection of the two surviving clusters within that window. TRF weights were then 293 
+
+averaged across these retained time points, and the resulting scalp distributions were 294 
+
+compared between the separated and collocated condi tions. 295 
+
+296 
+
+Statistical analysis 297 
+
+Signal processing and neural tracking calculations were performed in MATLAB (version 2025b, 298 
+
+The Mathworks Inc., 2025) . Cluster permutation test for analysis of temporal and spatial effects 299 
+
+in the TRFs were performed using FieldTrip (Oostenveld et al., 2011) . All the other statistical 300 
+
+analysis was performed in R. 301 
+
+Neural tracking of speech has previously been used to estimate speech reception thresholds 302 
+
+(SRTs) by modelling it as a sigmoid function of SNR and identifying its midpoint (Vanthornhout 303 
+
+et al., 2018) . Unlike linear model s, the sigmoid provides interpretable parameters — a304 
+
+midpoint, a slope, and a location -dependent midpoint shift — the last of which yields a direct 305 
+
+estimate of the spatial release from masking in decibels , in the same units as the behavioural 306 
+
+SRM . Because spatial release from masking would manifest as a horizontal shift of this sigmoid 307 
+
+along the SNR axis — equivalent to a shift in SRT — we fitted a non -linear mixed -effects model 308 
+
+in which the midpoint of the sigmoid was allowed to vary with listening condition, using the 309 
+
+nlme package (Pinheiro et al., 2025) :310 
+
+𝛽 0 + 𝛽 1 ⋅ 1
+
+1 + exp  (− 𝑆𝑁𝑅  − (𝑥 mid  + 𝛿  ⋅ ℓ)
+
+𝜎 )
+
+(7)
+
+311 
+
+where  𝛽 0is a baseline offset,  𝛽 0 + 𝛽 1is th e asymptotic amplitude,  𝑥 mid  is the SNR midpoint in 312 
+
+the reference condition,  𝛿 quantifies the shift in midpoint per unit of location effect,  ℓ is the 313 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+effect -coded location regressor ( ℓ = 1 for collocated,  ℓ = −1 for spatially separated), and  𝜎 314 
+
+controls the steepness of the function. The parameters  𝛽 0, 𝛽 1, 𝑥 mid , and  𝛿  were modelled as 315 
+
+fixed effects. Under this coding, the sigmoid midpoint is  𝑥 mid + 𝛿  in the collocated condition and 316 
+
+𝑥 mid − 𝛿  in the spatially separated condition, such that spatial release from masking 317 
+
+corresponds to a horizontal shift of  2𝛿  along the SNR axis. 318 
+
+The model was fitted separately for neural tracking and behavioural self -reported speech 319 
+
+intelligibility scores. For behavioural scores, which are bounded between 0 and 100%,  𝛽 0 and 320 
+
+𝛽 1were fixed to 0 and 100 % respectively, and a by -subject random effect was placed on  𝑥 mid 321 
+
+to capture individual differences in SRT. This specification is appropriate because individual 322 
+
+differences in the asymptotic amplitude are constrained by the measurement scale, leaving 323 
+
+the midpoint as the primary locus of between -subject variability. For neural tracking,  𝛽 1 reflects 324 
+
+the overall magnitude of cortical speech tracking, which varies substantially across participants 325 
+
+due to individual differences in signal quality and neural responsiveness; a by -subject random 326 
+
+effect on  𝛽 1was therefore used instead. In both cases, the chosen random effect structure was 327 
+
+verified to provide the best fit to the data by comparing alternative specifications .328 
+
+To validate that the sigmoid model provided a better characterisation of the data than a simpler 329 
+
+linear relationship, we compared it against linear mixed -effects models fit to the same data. 330 
+
+For pairwise comparisons we used Two -sided Wilcoxon sign -rank tests as implemented in the 331 
+
+rstatix package (Kassambara, 2023) . When necessary , multiple comparison correction was 332 
+
+performed through the Benjamini -Hochberg procedure (Benjamini & Hochberg, 1995) . Effect 333 
+
+sizes  were calculated  as the z -scores divided by the number of observations (Field et al., 334 
+
+2012) . Effect sizes greater than 0.5 indicate a large effect (Cohen, 1992) .335 
+
+336 
+
+Results 337 
+
+Adaptive SRT estimation 338 
+
+We determined speech reception threshold s for each masker location with the Matrix sentence 339 
+
+test through a behavioural ada ptive procedure . All values are reported as average ± 1 standard 340 
+
+deviation (s.d.) . Individual SRTs are shown in  Figure 1. As expected, subjects showed a 341 
+
+decrease in speech reception threshold between the collocated and separated conditions. 342 
+
+Average SRT for the collocated condition was  −9. 3 ± 0.9 dB SNR , while in the separated 343 
+
+condition it was −15.7 ± 1. 5 dB SNR . All subjects showed a decrease in SRT after separating 344 
+
+target and masker ( Wilcoxon sign -rank test p < 0.001 , effect size = 0.877 ).345 
+
+Average spatial release from masking was determined as the average difference between the 346 
+
+separated and collocated condition across subjects and was 6. 7 ± 1.7 dB.347 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+We also analysed the effect of masker position (Left vs Right) in our setup. Results showed a 348 
+
+smaller release from masking when the masker was in the right (+90 ° azimuth; mean SRM = 349 
+
+5.6 ± 1.5 dB ) compared to when the masker was positioned in the left (−90° azimuth; mean 350 
+
+SRM = 7.8 ± 1.3 dB) . However, differences were not significant between corresponding 351 
+
+conditions (Wilcoxon rank -sum test , p=0. 079 for col located , p=0. 065 for separated ). Although 352 
+
+SRT in corresponding configurations were not significantly different, the release from masking 353 
+
+measured in each subject that had the configuration S0N90 was lower than subjects that 354 
+
+listened to S0N −90 (Wilcoxon rank -sum test, p < 0.01, effect size = 0.618 ).355 
+
+356 
+
+Self -reported speech understanding 357 
+
+We obtained self -reported percentage of speech understanding for each of the story fragments 358 
+
+presented in trials with constant SNRs. To capture the bounded, saturating relationship 359 
+
+between speech intelligibility and SNR, we fitted a logistic nonlinear mixed -effects model in 360 
+
+which self -reported percentage of understood words followed a sigmoid function of SNR with 361 
+
+a location -dependent midpoint. Th is model provided a substantially better fit than a linear 362 
+
+mixed -effects model with the same predictors ( ΔAIC = 151.5) modelled as ~SNR*location + 363 
+
+(1|subject). The estimated midpoint in the reference condition was  𝑥 mid = −8. 6 dB SNR, and the 364 
+
+location -dependent shift was  𝛿 = −2.6 dB SNR, such that the midpoint was −11. 2 dB SNR in 365 
+
+the spatially separated condition and − 6.0 dB SNR in the collocated condition. Spatial release 366 
+
+from masking thus corresponded to a shift of  2𝛿 = 5.2 dB SNR along the SNR axis. The location 367 
+
+shift was significant ( 𝑡 (205) = −30.82, p < 0.001), as was the steepness parameter ( 𝜎  = 1.93 368 
+
+dB , 𝑡 (205) = 24.22, p < 0.001). Pairwise comparisons on self -reported intelligibility , shown in 369 
+
+Figure 2A, showed that intelligibility was significantly higher in the separated condition at every 370 
+
+SNR tested (−13 to −4 dB: p < 0.001; −1 dB: p = 0.002), with consistently large effect sizes (≥ 371 
+
+0.84), strongest at the lowest SNRs (−13, −10, and −8 dB). 372 
+
+373 -15     
+
+> -10
+> Co llocated Separated
+> SRT  (dB SNR )
+> Figure 1SRTs per subject for the collocated and separated conditions obtained with the Matrix sentence test (Two -
+> sided Wilcoxon sign -rank test; p<0.001).
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Backward model results 374 
+
+Envelope tracking was obtained for each of the 12 SNR x spatial -location combinations, 375 
+
+leading to 226 values (2 conditions × 6 SNRs × 19 subjects; one subject contributed 10 rather 376 
+
+than 12 values due to a missing SNR) . Significant envelope tracking was defined as correlation 377 
+
+values exceeding a 95% significance threshold derived from a permutation -based null 378 
+
+distribution. This null distribution was obtained by correlating the original pre -processed 379 
+
+speech envelope with circularly time -shifted versions of itself, thereby preserving the temporal 380 
+
+structure and autocorrelation of the signals, estimated from 1,000 resamplings. This procedure 381 
+
+was performed independently for each of the 12 combinations within each subject. Only 5 out 382 
+
+of the 226 neural tracking values fell below this threshold. All five were in the collocated 383 
+
+condition, at −13 dB SNR (n = 2) and −10 dB SNR (n = 3). 384 
+
+We modelled neural envelope tracking with the same logistic nonlinear mixed -effects model 385 
+
+introduced above, with tracking following a sigmoid function of SNR with a location -dependent 386 
+
+midpoint. This model provided a substantially better fit to the tracking data than a linear mixed -387 
+
+effects model with the same predictors (ΔAIC = 50.4, modelled as ~SNR*location +388 
+
+(1|subject) ). The fitted group -level sigmoid functions for both neural tracking and self -reported 389 
+
+scores are shown in  Figure 2A.390 
+
+The sigmoid model provided a good fit to the neural tracking data. The estimated SNR midpoint 391 
+
+in the reference condition was  𝑥 mid = −10. 9 dB SNR, and the location -dependent shift was  𝛿 =392 
+
+−2.4 dB SNR, such that the sigmoid midpoint was −13.3 dB SNR in the spatially separated 393 
+
+condition and −8. 5 dB SNR in the collocated condition. Spatial release from masking thus 394 
+
+corresponded to a shift of  2𝛿 = 4.8 dB SNR along the SNR axis. The location shift was 395 
+
+significant ( 𝑡 (203) = −10.17, p < 0 .001), as were the baseline offset ( 𝛽 0 = 0.049,  𝑡 (203) = 5.31, 396 
+
+p < 0.001), asymptotic amplitude ( 𝛽 1 = 0.105,  𝑡 (203) = 7.19, p < 0.001), and steepness 397 
+
+parameter ( 𝜎  = 1.40  dB , 𝑡 (203) = 4.14, p < 0.001). 398 
+
+The horizontal shift between the two sigmoid curves implies that the benefit of spatial 399 
+
+separation is largest in the SNR range bracketed by the two midpoints (−13.3 to −8. 5 dB) and 400 
+
+diminishes at more extreme SNRs where both conditions either saturate or fall to baseline. To 401 
+
+examine this SNR -specific pattern directly, we conducted pairwise comparisons between 402 
+
+conditions at each SNR level . Significantly higher envelope tracking was observed in the 403 
+
+Separated than for the Collocated conditions at SNRs of −13, −10, −8, and −6 dB. The largest 404 
+
+effects occurred at −13, −10, and −8 dB (effect sizes = 0.80, 0.77, and 0.87, respectively), 405 
+
+while the effect at −6 dB was moderate (0.55). No significant differences were observed at −4 406 
+
+or −1 dB.  Table 1 contains the detailed results for this comparison. Importantly the increase 407 
+
+between Collocated and Separated was consistent in almost all subjects for −8 dB (n=18 out 408 
+
+of 19) and −10 dB (n=17 out of 19).  Figure 2A also shows the pairwise comparison between 409 
+
+spatial conditions across SNRs. 410 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+411 
+
+Relationship between behavioural and neural measures 412 
+
+We examined the relationship between behavioural performance and neural envelope tracking 413 
+
+in two ways: first using the spatial -separation benefit (the difference between the separated 414 
+
+and collocated conditions ) and second using the absolute scores within each condition .415 
+
+The behavioural benefit, quantified as the percentage difference in self -reported word 416 
+
+recognition between spatially separated and col located conditions for each SNR and subject, 417 
+
+showed a significant positive linear relationship with the corresponding increase in neural 418 
+
+tracking (Pearson’s r = 0.31, t(105) = 3.29, p < 0.001). This relationship is illustrated in  Figure 419 
+
+2B.420 
+
+421 
+
+We also examined the direct relationship between the behavioural scores and neural tracking, 422 
+
+rather than the spatial -separation benefit. Both measures are bounded variables whose raw 423 
+
+distributions are compressed near their limits, violating the assumptions of linear analysis; both 424 
+
+were therefore transformed before examining their relationship. The self -reported scores are 425 
+
+percentages bounded between 0 and 100 and showed ceiling and floor effects , so they were 426 
+
+logit -transformed. The neural -tracking values are Spearman correlation coefficients, whose 427 
+
+sampling distribution is skewed and bounded at ±1; they were therefore Fisher -transformed to 428 
+
+place them on an unbounded, variance -stabilised scale. Behavioural scores were positively 429 
+
+correlated with neural tracking in both conditions, with a stronger relationship in the collocated 430 
+
+condition (Pearson’s r = 0.57, p < 0.001) than in the separated condition (Pearson’s r = 0.26, 431 
+
+p = 0.005) . These correlations are shown in  Figure 2C. Because ceiling effects were still found 432 
+
+after the transformations, we also calculated the correlation between all the obtained 433 
+
+behavioural and neural scores after ignoring results for SNR = −1 dB (Pearson’s r = 0. 54, p <434 
+
+0.001). This can be seen in  Supplementary Figure 1.435 
+
+436 
+
+SNR 
+
+(dB) 
+
+N-pairs  Statistic 
+
+(W) 
+
+p-value  Effect Size  p-value 
+
+(FDR corrected )
+
+−13  19 8 <10 -4 0.803  <0.001 
+
+−10  19 12  <0.001  0.766  <0.001 
+
+−8  19 1 <10 -5 0.86 8 <10 -4
+
+−6  19 36 0.0 16  0.54 5 0.024 
+
+−4  19 63  0. 210  0.295  0.252 
+
+−1  18 92  0.7 99  0.06 7 0.799      
+
+> Table 1.Statistical values for pairwise comparison between envelope tracking values for separated and collocated
+
+437 conditions per SNR (Two -sided Wilcoxon sign -rank test). 438 
+
+439 
+
+440 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+441 Self -reported speech 
+
+> understanding  (%)
+> Envelope tracking
+> (Spearman corr .)
+
+-13 -10 -8 -6 -4 -1
+
+0
+
+30 
+
+60 
+
+90 
+
+0.0
+
+0.1
+
+0.2
+
+0.3
+
+SNR (dB )
+
+Co ndition Collocated Separated 
+
+A
+
+R = 0.31 , p = 0.00073 
+
+-0.05 0.00 0.05 0.10 0.15 
+
+Env . Tracking (Spearman 's corr .) 
+
+Objective SRM 
+
+0
+
+20 
+
+40 
+
+60 
+
+80 
+
+> Behavioural SRM
+> Behavioural score  (%)
+
+SNR (dB ) -13 -10 -8 -6 -4 -1
+
+B
+
+R = 0.57 , p = 3.8e-11 
+
+R = 0.26 , p = 0.0054 
+
+-3
+
+0
+
+3
+
+6
+
+0.0 0.1 0.2 0.3
+
+Env . Tracking (Fisher Z )
+
+> Behavioural score  (Logits )
+
+Co ndition Collocated Separated 
+
+C
+
+Figure 2 A. Behavioural scores and envelope tracking for each SNR and spatial condition. Points show individual -
+
+subject averages, and dashed lines indicate the predictive trends from a sigmoidal nonlinear mixed -effects model. 
+
+( p < 0.05, p < 0.01, p < 0.001; two -sided Wilcoxon signed -rank test, FDR corrected). B. Differences between 
+
+separated and collocated conditions for both untransformed measures, shown per SNR and subject. R and p -values 
+
+correspond to Pearson’s correlation. C. Relationship between behavioural scores and envelope tracking for 
+
+collocated and separated conditions. Behavioural scores were logit -transformed to reduce ceiling effects, and 
+
+envelope tracking (Spearman correlations) was normali sed using a Fisher Z transform. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+442 
+
+TRF results 443 
+
+Cluster -based permutation testing revealed significant TRF response clusters across 444 
+
+conditions, with the most consistent effects across SNRs occurring between approximately 445 
+
+150 ms and 250 ms. These clusters motivated the focus on this latency range, which 446 
+
+corresponds to the standard mid -latency TRF components.  Figure 3A shows the average 447 
+
+shape of the TRFs across subjects for each tested condition as well as the latencies in which 448 
+
+the cluster permutation test showed a consistent deflection . In addition, increasing SNR was 449 
+
+associated with more consistent responses both at early latencies following stimulus onset 450 
+
+(40 –60 ms) and at later latencies around 300 ms. 451 
+
+Peak amplitude and latency were operationally defined as the maximum (for positive 452 
+
+components) or minimum (for negative components) TRF value within predefined time 453 
+
+windows of interest corresponding to the standard components P1, N1, P2, and N2 (see 454 
+
+Methods) . These window -based extrema were extracted for each subject and condition and 455 
+
+entered into linear mixed -effects models  with SNR and spatial condition ( collocated vs. 456 
+
+separated) as fixed effects and subject as a random intercept, explicitly acknowledging that for 457 
+
+some components the extracted value may not reflect a clearly identifiable physiological peak. 458 
+
+SNR = −1 dB was excluded to include all subjects (n = 1 9). 459 
+
+All four components showed significant amplitude growth with SNR (P1: p < 0.001; N1: p = 460 
+
+0.018; P2: p < 0.001; N2: p < 0.001). P2 and N2 latencies decreased significantly with SNR 461 
+
+(P2: p = 0.002; N2: p = 0.030), while P1 and N1 latencies were SNR -invariant. Regarding 462 
+
+spatial condition, P1 showed greater amplitude (p = 0.017) and later latency (p = 0.007) in the 463 
+
+separated condition, and P2 peaked earlier when noise was separated (p < 0.001). N1 and N2 464 
+
+were insensitive to spatial condition in both amplitude and latency. A significant SNR × location 465 
+
+interaction was found only for P2 amplitude (p = 0.040), indicating attenuated SNR -dependent 466 
+
+amplitude growth in the separated condition. 467 
+
+Post -hoc analyses were deliberately restricted to components exhibiting consistent 468 
+
+morphology across subjects. Accordingly, pairwise comparisons were performed only for the 469 
+
+P2 component, which was the only peak that could be reliably identified across all subjects 470 
+
+and conditions. For the remaining components, peak identification was inconsistent, and the 471 
+
+window -based extrema should be interpreted as descriptive rather than reflecting robust, 472 
+
+physiologically distinct peaks.  Supplementary Figure 2 therefore reports amplitudes and 473 
+
+latencies for P1, N1, P2, and N2 obtained using the window -based extrema approach, 474 
+
+illustrating that only P2 exhibits consistent and interpretable trends across conditions. No 475 
+
+further pairwise analyses were conducted for P1, N1, or N2. 476 
+
+Pairwise comparisons across SNRs for the P2 component revealed a significant decrease in 477 
+
+latency with spatial separation for all conditions except −13 and −1 dB  as shown in  Figure 3C.478 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+With respect to amplitude, P2 peaks were significantly larger in the separated condition at −8 479 
+
+dB .480 
+
+Finally, we examined the spatial distribution of TRF weights across the scalp.  Figure 3B481 
+
+indicates the window across which the channel amplitudes were averaged which corresponded 482 
+
+to the time lags in which both conditions showed a significant effect . Significant condition -483 
+
+dependent effects were observed at −10, −8, −6, and −4 dB. These effects were driven by a 484 
+
+cluster of central electrodes showing increased amplitudes, accompanied by a decrease in 485 
+
+amplitude over left -lateralized and posterior electrodes. 486 
+
+487 
+
+SNR (dB)  N-pairs  Statistic (W)  p-value  Effect Size  p-value 
+
+(FDR corrected )
+
+Latencies 
+
+−13  19 88  0.798  0. 066  0. 798 
+
+−10  19 153  0.018  0. 535  0.0 27 
+
+−8  19 164  0.00 4 0.6 37  0.0 16 
+
+−6  19 159  0.008  0. 591  0.0 16 
+
+−4  19 159  0.008  0. 591  0.0 16 
+
+−1  18 11 4 0.229  0. 293  0. 275 
+
+Amplitudes 
+
+−13  19 61  0.182  0.31 4 0.33 8
+
+−10  19 64  0.225  0.286  0.33 8
+
+−8  19 6 <10 -4 0.82 2 <0.001 
+
+−6  19 85  0.709  0.092  0.734 
+
+−4  19 46  0.049  0.452  0.148 
+
+−1  18 94  0.734  0.087  0.734 
+
+Table 2. Statistical values for pairwise comparison for P2 latencies and amplitudes for separated and collocated 488 conditions per SNR (Two -sided Wilcoxon sign -rank test, FDR corrected). 489 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+490 1 ms 
+
+1 ms 1 ms 
+
+1 1 ms 
+
+1 ms 
+
+1 ms 1 ms 
+
+1 ms 1 ms 
+
+1 ms 1 ms 
+
+1 ms            
+
+> -13 dB -10 dB -8dB -6dB -4dB -1dB
+
+0 200 400 0 200 400 0 200 400 0 200 400 0 200 400 0 200 400 
+
+-0.002 
+
+-0.001 
+
+0.000 
+
+0.001 
+
+0.002 
+
+0.003 
+
+Latency (ms )
+
+> TRF Amplitude  (a.u.)
+
+Condition Collocated Separated A                        
+
+> -13 dB
+> 141 -219 ms
+> -10 dB
+> 100 -211 ms
+> -8dB
+> 141 -203 ms
+> -6dB
+> 110 -211 ms
+> -4dB
+> 118 -196 ms
+> -1dB
+> 102 -188 ms Amplitude
+> Sep -Col
+> (a.u.)
+> -0.002
+> -0.001
+> 0.000
+> 0.001
+
+B           
+
+> -13 dB -10 dB -8dB -6dB -4dB -1dB
+> Amplitude  (a.u.) Latency  (ms )
+
+-0.002 
+
+0.000 
+
+0.002 
+
+0.004 
+
+0.006 
+
+100 
+
+200 
+
+300 
+
+Condition Collocated Separated C
+
+Figure 3 A. Average TRFs across subjects for each SNR and spatial condition. Shaded ribbons indicate the 
+
+standard error of the mean. The marked peak corresponds to P2, with its latency (ms) indicated separately for the 
+
+collocated and separated conditions. Coloured h orizontal bars indicate time windows where the TRF amplitude 
+
+differed reliably from zero across subjects (cluster -permutation test); grey bars mark the overlap between 
+
+conditions, identifying windows where both retained a significant cluster around the P2 pe ak. These windows were 
+
+used to define the time regions for the spatial analysis shown in the bottom panel. 
+
+B. Topographic amplitude differences of the TRF averaged within the P2 window (grey segment in Top). Markers 
+
+indicate clusters that remained significant after cluster -permutation correction. 
+
+C. Subject p airwise comparison of P2 latencies across conditions ( p < 0.05, p < 0.01, p < 0.001; two -sided 
+
+Wilcoxon signed -rank test, FDR corrected). 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint Discussion 491 
+
+Behavioural results and spatial release from masking 492 
+
+The present study confirmed that SRM is robustly observed in normal -hearing listeners. 493 
+
+Participants showed decreased speech reception thresholds when target and masker were 494 
+
+spatially separated, with an average SRM of 6. 7 dB as measured in the adaptive procedure .495 
+
+Th ese results also agree with the self -reported percentage of understood words for the stories: 496 
+
+as expected, the largest benefits occurred at the lowest SNRs , highlighting the SNR -497 
+
+dependent nature of binaural unmasking. Subtle asymmetries between left - and right -side 498 
+
+maskers may reflect potential right -ear  advantage effects or small acoustic asymmetries in the 499 
+
+experimental setup, consistent with prior behavioural findings (Garadat et al., 2009; Williges et 500 
+
+al., 2015) . Across all tested SNRs, self -reported speech understanding was consistently higher 501 
+
+in the separated condition, with effect sizes strongest at the lowest SNRs, emphasi sing the 502 
+
+functional importance of spatial cues in challenging listening conditions. 503 
+
+504 
+
+Neural envelope tracking 505 
+
+Building on these behavioural observations, backward -model analyses show that spatial 506 
+
+separation enhances cortical speech tracking, especially at low SNRs (−13 to −6 dB), with the 507 
+
+SNR –tracking function shifted toward lower SNRs in the spatially separated condi tion . Notably, 508 
+
+these effects were observed in  17 out of 19  subject s at intermediate low SNRs, suggesting 509 
+
+the potential subject -specific  reliability  of neural tracking measures as indicators of spatial 510 
+
+unmasking. These results suggest that neural SRM parallels behavioural SRM, highlighting 511 
+
+the potential value of envelope tracking as an objective marker of spatial unmasking. In 512 
+
+contrast, previous work by Song et al. (2020) reported no overall effect of spatial separation 513 
+
+on envelope tracking. In their study, which investigated the effects of masker type , spatial 514 
+
+location and language experience, the collocated and separated conditions were presented at 515 
+
+different SNRs in order to equate behavioural performance, which may explain the absence of 516 
+
+a spatial -separation effect. By testing across a broad SNR range (−13 to −1 dB) under 517 
+
+energetic masking, we consistently observed neural benefits at challenging SNRs, revealing 518 
+
+spatial unmasking effects that narrower designs may miss. These findings align with 519 
+
+Dieudonné et al. (2024) , who reported increased neural tracking linked to binaural release from 520 
+
+masking, and with Ahmed et al.  (2026) who found that adults show stronger track ing of target 521 
+
+speech when competing talkers were spatially separated . Converging evidence comes from 522 
+
+EEG -based auditory attention -detection paradigms, in which decoding accuracy calculated 523 
+
+from envelope tracking improves as competing talkers are more separated in space (Das et 524 
+
+al., 2018) . Collectively, these studies suggest that spatial separation enhances neural tracking 525 
+
+under adverse listening conditions,  and that this neural benefit reflects the speech -526 
+
+understanding gains associated with spatial hearing. 527 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+TRFs and cortical dynamics 528 
+
+TRF analyses revealed condition -dependent modulation of both timing and amplitude, with 529 
+
+prominent deflections between 150 –250 ms corresponding to canonical N1 –P2 –N2 530 
+
+components. P2 amplitude and latency emerged as particularly sensitive to spatial 531 
+
+configuration and SNR, showing larger amplitudes and earlier latencies in separated, low -SNR 532 
+
+conditions. At higher SNRs, the clusters in which the TRF differed from zero across subjects 533 
+
+(i.e. the time windows surviving the permutation threshold) were more extensive in both spatial 534 
+
+conditions. The relatively short recording durations per condition likely contributed to inter -535 
+
+subject variability and may have limited sensitivity to more subtle spatial effects , including the 536 
+
+resolution of individual peaks ; extending recording times and increasing the number of trials 537 
+
+would improve reliability and allow for better separation of early sensory versus later integrative 538 
+
+components (Crosse et al., 2021) .539 
+
+Spatial distribution analyses demonstrated central electrode activity increases with spatial 540 
+
+separation, consistent with engagement of broader cortical networks . Such redistribution 541 
+
+parallels findings from ERP and ACC studies, indicating recruitment of additional cortical 542 
+
+resources under complex listening scenarios. These results support the interpretation of TRFs 543 
+
+as continuous -speech counterparts of classical AEPs, capturing hierarchical processing from 544 
+
+early acoustic encoding to later integrative stages sensitive to spatial unmasking  (Dieudonné 545 
+
+et al., 2024; Kim & Epp, 2023; Li et al., 2024; Zobel et al., 2022) . The observed TRF patterns 546 
+
+align with literature on cortical auditory evoked potentials, where spatial separation increases 547 
+
+P2 amplitudes, shortens latencies, and reflects perceptually relevant unmasking (Fan & 548 
+
+Gifford, 2024; Papesh et al., 2017) . TRFs extend this framework to continuous speech, with 549 
+
+later components such as P2 showing sensitivity to speech intelligibility beyond purely acoustic 550 
+
+representation. Binaural unmasking effects observed in TRFs, such as decreased latencies 551 
+
+and increased P2 amplitudes, mirror findings from comparable neural -tracking and evoked -552 
+
+potential  studies under both low SNR and masked conditions (Dieudonné et al., 2024; Kim & 553 
+
+Epp, 2023; Zobel et al., 2022) , suggesting that TRFs are sens itive to the same effects as those 554 
+
+measures . Consistent with these TRF observations, earlier studies suggest that binaural 555 
+
+unmasking arises primarily at cortical stages.  Brainstem ASSRs show minimal BMLDs, 556 
+
+whereas cortical ASSRs and FFRs reflect sensitivity to binaural cues and perceptual SRM 557 
+
+(Clinard et al., 2016; Koerner et al., 2020; Wong & Stapells, 2004) . The present results 558 
+
+reinforce this hierarchy, as spatial separation enhanced cortical tracking selectively under 559 
+
+adverse conditions rather than producing uniform gains across the auditory pathway, indicating 560 
+
+the potential role of higher -level cortical mechanisms in exploiting spatial cues.  It should be 561 
+
+noted, however, that brainstem responses are generally harder to record than cortical 562 
+
+responses (Bidelman et al., 2018; Maddox & Lee, 2018) ; the observation that binaural -563 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+unmasking effects emerge mainly at the cortical level may therefore stem in part from this 564 
+
+difference in measurement sensitivity rather than from a true cortical origin of the effects. 565 
+
+566 
+
+Implications for difficult -to -test populations 567 
+
+The convergence of behavioural and neural SRM supports the use of neural tracking as a 568 
+
+flexible and objective framework for assessing spatial hearing. An objective measure is 569 
+
+especially valuable for populations that are difficult to test behaviourally, such as young 570 
+
+children or listeners who cannot provide reliable responses, where neural tracking can probe 571 
+
+how auditory pathways transmit spatial cues without requiring an overt behavioural task . By 572 
+
+establishing normative patterns in normal -hearing listeners, these findings provide 573 
+
+benchmarks for evaluating both cortical processing and binaural benefits in clinical and device -574 
+
+based interventions  (Balkenhol et al., 2020; Dieudonné et al., 2024; Gillis et al., 2022; Sasaki 575 
+
+et al., 2009) . Building on the observed correspondence between behavioural and neural SRM, 576 
+
+beyond TRFs, neural tracking metrics could be used to assess continuous speech processing 577 
+
+under varying SNRs and spatial configurations, capturing unmasking, redundancy, and 578 
+
+squelch effects, and may serve as a useful tool for evaluating binaural listening and informing 579 
+
+hearing -device assessments. Employing more diverse acoustic scenarios and SNRs could 580 
+
+further elucidate how cortical speech tracking adapts to complex and realistic listening 581 
+
+environments, refining our understanding of the neural mechanisms underlying spatial 582 
+
+unmasking and SRM. 583 
+
+584 
+
+Conclusion 585 
+
+In summary, the study demonstrates that spatial separation robustly enhances cortical speech 586 
+
+tracking and closely mirrors behavioural SRM. TRFs serve as continuous -speech analog on of 587 
+
+AEPs, capturing hierarchical auditory processing influenced by SNR and spatial configuration. 588 
+
+These findings support neural tracking as a sensitive and objective measure of spatial hearing 589 
+
+and provide a foundation for future work in clinical populations and hearing -device research, 590 
+
+offering both mechanistic insights and practical avenues for assessment and intervention. 591 
+
+592 
+
+Acknowledgements 593 
+
+This work is part of Horizon -MSCA -2022 -DN -01: CherISH; a European Doctorate Network 594 
+
+project funded by the European Union’s Horizon 2020 framework program for research and 595 
+
+innovation under the Marie Sklodowska -Curie Grant Agreement No: 101120054. 596 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+References 597 
+
+Ahmed, F., Zheng, Q., Mcllwain, J., Jabeen, T., & Lau, B. K. (2026). Infant cortical tracking of 598 
+
+speech shows emerging spatial release from masking in the first year of life (p. 599 
+
+2026.01.20.700695). bioRxiv. https://doi.org/10.64898/2026.01.20.700695 600 
+
+Balkenhol, T., Wallhäusser -Franke, E., Rotter, N., & Servais, J. J. (2020). Cochlear Implant and 601 
+
+Hearing Aid: Objective Measures of Binaural Benefit. Frontiers in Neuroscience , 14 .602 
+
+https://doi.org/10.3389/fnins.2020.586119 603 
+
+Bednar, A., Boland, F. M., & Lalor, E. C. (2017). Different spatio ‐temporal 604 
+
+electroencephalography features drive the successful decoding of binaural and 605 
+
+monaural cues for sound localization. European Journal of Neuroscience , 45 (5), 679 –606 
+
+689. https://doi.org/10.1111/ejn.13524 607 
+
+Bednar, A., & Lalor, E. C. (2018). Neural tracking of auditory motion is reflected by delta phase 608 
+
+and alpha power of EEG.  NeuroImage , 181 , 683 –691. 609 
+
+https://doi.org/10.1016/j.neuroimage.2018.07.054 610 
+
+Benjamini, Y., & Hochberg, Y. (1995).  Controlling the False Discovery Rate: A Practical and 611 
+
+Powerful Approach to Multiple Testing. Journal of the Royal Statistical Society. Series 612 
+
+B (Methodological) , 57 (1), 289 –300. JSTOR. 613 
+
+Best, V., Marrone, N., Mason, C. R., & Kidd, G., Jr. (2012). The influence of non -spatial factors 614 
+
+on measures of spatial release from masking. The Journal of the Acoustical Society of 615 
+
+America , 131 (4), 3103 –3110. https://doi.org/10.1121/1.3693656 616 
+
+Biberger, T., & Ewert, S. D. (2019).  The effect of room acoustical parameters on speech 617 
+
+reception thresholds and spatial release from masking. The Journal of the Acoustical 618 
+
+Society of America , 146 (4), 2188 –2200. https://doi.org/10.1121/1.5126694 619 
+
+Bidelman, G. M., Pousson, M., Dugas, C., & Fehrenbach, A. (2018).  Test ‐Retest Reliability of 620 
+
+Dual -Recorded Brainstem versus Cortical Auditory -Evoked Potentials to Speech. 621 
+
+Journal of the American Academy of Audiology , 29 (2), 164 –174. 622 
+
+https://doi.org/10.3766/jaaa.16167 623 
+
+Blauert, J. (1997). Spatial hearing . MIT Press. 624 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Borges, H. B., Zaar, J., Alickovic, E., Christensen, C. B., & Kidmose, P. (2025). Speech 625 
+
+Reception Threshold Estimation via EEG -Based Continuous Speech Envelope 626 
+
+Reconstruction. European Journal of Neuroscience , 61 (6), e70083. 627 
+
+https://doi.org/10.1111/ejn.70083 628 
+
+Brand, T., & Kollmeier, B. (2002). Efficient adaptive procedures for threshold and concurrent 629 
+
+slope estimates for psychophysics and speech intelligibility tests. The Journal of the 630 
+
+Acoustical Society of America , 111 (6), 2801 –2810. https://doi.org/10.1121/1.1479152 631 
+
+Clinard, C. G., Hodgson, S. L., & Scherer, M. E. (2016).  Neural Correlates of the Binaural 632 
+
+Masking Level Difference in Human Frequency -Following Responses. Journal of the 633 
+
+Association for Research in Otolaryngology , 18 (2), 355 –369. 634 
+
+https://doi.org/10.1007/s10162 -016 -0603 -7635 
+
+Cohen, J. (1992). Statistical Power Analysis.  Current Directions in Psychological Science , 1(3), 636 
+
+98 –101. https://doi.org/10.1111/1467 -8721.ep10768783 637 
+
+Crosse, M. J., Di Liberto, G. M., Bednar, A., & Lalor, E. C. (2016). The Multivariate Temporal 638 
+
+Response Function (mTRF) Toolbox: A MATLAB Toolbox for Relating Neural Signals to 639 
+
+Continuous Stimuli. Frontiers in Human Neuroscience , 10 .640 
+
+https://doi.org/10.3389/fnhum.2016.00604 641 
+
+Crosse, M. J., Zuk, N. J., Di Liberto, G. M., Nidiffer, A. R., Molholm, S., & Lalor, E. C. (2021). 642 
+
+Linear Modeling of Neurophysiological Responses to Speech and Other Continuous 643 
+
+Stimuli: Methodological Considerations for Applied Research. Frontiers in 644 
+
+Neuroscience , 15 . https://www.frontiersin.org/articles/10.3389/fnins.2021.705621 645 
+
+Das, N., Bertrand, A., & Francart, T. (2018). EEG -based auditory attention detection: Boundary 646 
+
+conditions for background noise and speaker positions . Journal of Neural Engineering ,647 
+
+15 (6), 066017. https://doi.org/10.1088/1741 -2552/aae0a6 648 
+
+Decruy, L., Lesenfants, D., Vanthornhout, J., & Francart, T. (2020). Top -down modulation of 649 
+
+neural envelope tracking: The interplay with behavioral, self -report and neural 650 
+
+measures of listening effort. European Journal of Neuroscience , 52 (5), 3375 –3393. 651 
+
+https://doi.org/10.1111/ejn.14753 652 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Dieudonné, B., Decruy, L., & Vanthornhout, J. (2024). Neural tracking of the speech envelope 653 
+
+predicts binaural unmasking. European Journal of Neuroscience , 61 (1), e16638. 654 
+
+https://doi.org/10.1111/ejn.16638 655 
+
+Dieudonné, B., & Francart, T. (2019). Redundant Information Is Sometimes More Beneficial 656 
+
+Than Spatial Information to Understand Speech in Noise. Ear and Hearing , 40 (3), 545. 657 
+
+https://doi.org/10.1097/AUD.0000000000000660 658 
+
+Fan, Y., & Gifford, R. H. (2024). Objective measure of binaural processing: Acoustic change 659 
+
+complex in response to interaural phase differences. Hearing Research , 448 , 109020. 660 
+
+https://doi.org/10.1016/j.heares.2024.109020 661 
+
+Field, A., Miles, J., & Field, Z. (2012). Discovering Statistics Using R .662 
+
+Francart, T., van Wieringen, A., & Wouters, J. (2008). APEX 3: A multi -purpose test platform 663 
+
+for auditory psychophysical experiments. Journal of Neuroscience Methods , 172 (2), 664 
+
+283 –293. https://doi.org/10.1016/j.jneumeth.2008.04.020 665 
+
+Garadat, S. N., Litovsky, R. Y., Yu, G., & Zeng, F. -G. (2009). Role of binaural hearing in speech 666 
+
+intelligibility and spatial release from masking using vocoded speech. The Journal of 667 
+
+the Acoustical Society of America , 126 (5), 2522 –2535. 668 
+
+https://doi.org/10.1121/1.3238242 669 
+
+Gillis, M., Van Canneyt, J., Francart, T., & Vanthornhout, J. (2022). Neural tracking as a 670 
+
+diagnostic tool to assess the auditory pathway. Hearing Research , 426 , 108607. 671 
+
+https://doi.org/10.1016/j.heares.2022.108607 672 
+
+Gillis, M., Vanthornhout, J., Simon, J. Z., Francart, T., & Brodbeck, C. (2021). Neural Markers 673 
+
+of Speech Comprehension: Measuring EEG Tracking of Linguistic Speech 674 
+
+Representations, Controlling the Speech Acoustics. The Journal of Neuroscience ,675 
+
+41 (50), 10316 –10329. https://doi.org/10.1523/JNEUROSCI.0812 -21.2021 676 
+
+Gransier, R., van Wieringen, A., & Wouters, J. (2017). Binaural Interaction Effects of 30 –50 Hz 677 
+
+Auditory Steady State Responses. Ear and Hearing , 38 (5), e305 –e315. 678 
+
+https://doi.org/10.1097/AUD.0000000000000429 679 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Hausfeld, L., Shiell, M. M., Formisano, E., & Riecke, L. (2020). Cortical processing of 680 
+
+distracting speech in noisy auditory scenes depends on perceptual demand. 681 
+
+NeuroImage , 228 . https://doi.org/10.1016/j.neuroimage.2020.117670 682 
+
+Haywood, N. R., Undurraga, J. A., Marquardt, T., & McAlpine, D. (2015).  A Comparison of Two 683 
+
+Objective Measures of Binaural Processing. Trends in Hearing , 19 , 233121651561903. 684 
+
+https://doi.org/10.1177/2331216515619039 685 
+
+He, X., Raghavan, V. S., & Mesgarani, N. (2025). Neural speech tracking in noise reflects the 686 
+
+opposing influence of SNR on intelligibility and attentional effort. Imaging 687 
+
+Neuroscience , 3. https://doi.org/10.1162/imag.a.126 688 
+
+Ihara, A. S., Matsumoto, A., Ojima, S., Katayama, J., Nakamura, K., Yokota, Y., Watanabe, H., 689 
+
+& Naruse, Y. (2021). Prediction of Second Language Proficiency Based on 690 
+
+Electroencephalographic Signals Measured While Listening to Natural Speech. 691 
+
+Frontiers in Human Neuroscience , 15 . https://doi.org/10.3389/fnhum.2021.665809 692 
+
+Karunathilake, I. M. D., Dunlap, J. L., Perera, J., Presacco, A., Decruy, L., Anderson, S., 693 
+
+Kuchinsky, S. E., & Simon, J. Z. (2023). Effects of aging on cortical representations of 694 
+
+continuous speech. Journal of Neurophysiology , 129 (6), 1359 –1377. 695 
+
+https://doi.org/10.1152/jn.00356.2022 696 
+
+Kassambara, A. (2023). rstatix: Pipe -Friendly Framework for Basic Statistical Tests (Version R 697 
+
+package version 0.7.2) [Computer software]. https://cran.r -project.org/package=rstatix 698 
+
+Kerlin, J. R., Shahin, A. J., & Miller, L. M. (2010).  Attentional Gain Control of Ongoing Cortical 699 
+
+Speech Representations in a “Cocktail Party”. The Journal of Neuroscience , 30 , 620 –700 
+
+628. https://doi.org/10.1523/jneurosci.3631 -09.2010 701 
+
+Kim, H., & Epp, B. (2023). Intensity discrimination and neural representation of a masked tone 702 
+
+in the presence of three types of masking release. Frontiers in Neuroscience , 17 .703 
+
+https://doi.org/10.3389/fnins.2023.1102350 704 
+
+Koerner, T. K., Muralimanohar, R. K., Gallun, F. J., & Billings, C. J. (2020). Age -Related Deficits 705 
+
+in Electrophysiological and Behavioral Measures of Binaural Temporal Processing. 706 
+
+Frontiers in Neuroscience , 14 . https://doi.org/10.3389/fnins.2020.578566 707 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Laumen, G., Ferber, A. T., Klump, G. M., & Tollin, D. J. (2016). The Physiological Basis and 708 
+
+Clinical Use of the Binaural Interaction Component of the Auditory Brainstem 709 
+
+Response. Ear and Hearing , 37 (5), e276 –e290. 710 
+
+https://doi.org/10.1097/AUD.0000000000000301 711 
+
+Lesenfants, D., & Francart, T. (2020). The interplay of top -down focal attention and the cortical 712 
+
+tracking of speech.  Scientific Reports , 10 (1), Article 1. https://doi.org/10.1038/s41598 -713 
+
+020 -63587 -3714 
+
+Li, J. -Y., Wang, X., Nie, S., Zhu, M. -Y., Liu, J. -X., Wei, L., Li, H., Wang, N. -Y., & Zhang, J. 715 
+
+(2024).  Neural encoding for spatial release from informational masking and its 716 
+
+correlation with behavioral metrics. Journal of Neurophysiology , 132 (4), 1265 –1277. 717 
+
+https://doi.org/10.1152/jn.00279.2024 718 
+
+Litovsky, R. Y., Goupell, M. J., Fay, R. R., & Popper, A. N. (Eds). (2021). Binaural Hearing (Vol. 719 
+
+73). Springer International Publishing. https://doi.org/10.1007/978 -3-030 -57100 -9720 
+
+Luts, H., Jansen, S., Dreschler, W., & Wouters, J. (2014). Development and normative data for 721 
+
+the Flemish/Dutch Matrix test .722 
+
+Maddox, R. K., & Lee, A. K. C. (2018). Auditory Brainstem Responses to Continuous Natural 723 
+
+Speech in Human Listeners.  Eneuro , 5(1), ENEURO.0441 -17.2018. 724 
+
+https://doi.org/10.1523/ENEURO.0441 -17.2018 725 
+
+Maris, E., & Oostenveld, R. (2007).  Nonparametric statistical testing of EEG - and MEG -data. 726 
+
+Journal of Neuroscience Methods , 164 (1), 177 –190. 727 
+
+https://doi.org/10.1016/j.jneumeth.2007.03.024 728 
+
+McAlpine, D., Haywood, N., Undurraga, J., & Marquardt, T. (2016). Objective Measures of 729 
+
+Neural Processing of Interaural Time Differences. Advances in Experimental Medicine 730 
+
+and Biology , 894 , 197 –205. https://doi.org/10.1007/978 -3-319 -25474 -6_21 731 
+
+Oostenveld, R., Fries, P., Maris, E., & Schoffelen, J. -M. (2011). FieldTrip: Open Source 732 
+
+Software for Advanced Analysis of MEG, EEG, and Invasive Electrophysiological Data. 733 
+
+Computational Intelligence and Neuroscience , 2011 , 1–9. 734 
+
+https://doi.org/10.1155/2011/156869 735 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Papesh, M. A., Folmer, R. L., & Gallun, F. J. (2017). Cortical Measures of Binaural Processing 736 
+
+Predict Spatial Release from Masking Performance. Frontiers in Human Neuroscience ,737 
+
+11 . https://doi.org/10.3389/fnhum.2017.00124 738 
+
+Pinheiro, J., Bates, D., & R Core Team. (2025). nlme: Linear and Nonlinear Mixed Effects 739 
+
+Models (p. 3.1 -168) [Computer software]. 740 
+
+https://doi.org/10.32614/CRAN.package.nlme 741 
+
+Plomp, R. (1976). Binaural and monoaural speech intelligibility of connectted discourse in 742 
+
+reverberation as a function of azimuth of a single competing sound source (speech and 743 
+
+noise). Acustica , 34 , 200 –211. 744 
+
+Rennies, J., & Kidd, G. (2018). Benefit of binaural listening as revealed by speech intelligibility 745 
+
+and listening effort. The Journal of the Acoustical Society of America , 144 4.746 
+
+https://doi.org/10.1121/1.5057114 747 
+
+Sasaki, T., Yamamoto, K., Iwaki, T., & Kubo, T. (2009). Assessing binaural/bimodal advantages 748 
+
+using auditory event -related potentials in subjects with cochlear implants.  Auris Nasus 749 
+
+Larynx , 36 (5), 541 –546. https://doi.org/10.1016/j.anl.2008.12.001 750 
+
+Somers, B., Francart, T., & Bertrand, A. (2018).  A generic EEG artifact removal algorithm based 751 
+
+on the multi -channel Wiener filter. Journal of Neural Engineering , 15 (3), 036007. 752 
+
+https://doi.org/10.1088/1741 -2552/aaac92 753 
+
+Somers, B., Verschueren, E., & Francart, T. (2018). Neural tracking of the speech envelope in 754 
+
+cochlear implant users. Journal of Neural Engineering , 16 (1), 016003. 755 
+
+https://doi.org/10.1088/1741 -2552/aae6b9 756 
+
+Song, J., Martin, L., & Iverson, P. (2020). Auditory neural tracking and lexical processing of 757 
+
+speech in noise: Masker type, spatial location, and language experience. The Journal 758 
+
+of the Acoustical Society of America , 148 (1), 253 –264. 759 
+
+https://doi.org/10.1121/10.0001477 760 
+
+The Mathworks Inc. (2025). MATLAB (Version 25.2.0.3042426 (R2025b)) [Computer 761 
+
+software]. The Mathworks Inc. 762 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Undurraga, J. A., Haywood, N. R., Marquardt, T., & McAlpine, D. (2016). Neural Representation 763 
+
+of Interaural Time Differences in Humans —An Objective Measure that Matches 764 
+
+Behavioural Performance. Journal of the Association for Research in Otolaryngology ,765 
+
+17 (6), 591 –607. https://doi.org/10.1007/s10162 -016 -0584 -6766 
+
+Van Eeckhoutte, M., Spirrov, D., Wouters, J., & Francart, T. (2018). Objective Binaural 767 
+
+Loudness Balancing Based on 40 -Hz Auditory Steady -State Responses. Part II: 768 
+
+Asymmetric and Bimodal Hearing. Trends in Hearing , 22 , 2331216518805363. 769 
+
+https://doi.org/10.1177/2331216518805363 770 
+
+Van Hirtum, T., Somers, B., Dieudonné, B., Verschueren, E., Wouters, J., & Francart, T. (2023). 771 
+
+Neural envelope tracking predicts speech intelligibility and hearing aid benefit in 772 
+
+children with hearing loss. Hearing Research , 439 , 108893. 773 
+
+https://doi.org/10.1016/j.heares.2023.108893 774 
+
+Van Hirtum, T., Somers, B., Verschueren, E., Dieudonné, B., & Francart, T. (2023). Delta -band 775 
+
+neural envelope tracking predicts speech intelligibility in noise in preschoolers. Hearing 776 
+
+Research , 434 , 108785. https://doi.org/10.1016/j.heares.2023.108785 777 
+
+Vanthornhout, J., Decruy, L., Wouters, J., Simon, J. Z., & Francart, T. (2018). Speech 778 
+
+Intelligibility Predicted from Neural Entrainment of the Speech Envelope. Journal of the 779 
+
+Association for Research in Otolaryngology , 19 (2), 181 –191. 780 
+
+https://doi.org/10.1007/s10162 -018 -0654 -z781 
+
+Vercammen, C., van Wieringen, A., Wouters, J., & Francart, T. (2017). Desynchronisation of 782 
+
+auditory steady -state responses related to changes in interaural phase differences: An 783 
+
+objective measure of binaural hearing. International Journal of Audiology , 56 (7), 464 –784 
+
+471. https://doi.org/10.1080/14992027.2017.1288304 785 
+
+Verschueren, E., Somers, B., & Francart, T. (2019). Neural envelope tracking as a measure of 786 
+
+speech understanding in cochlear implant users. Hearing Research , 373 , 23 –31. 787 
+
+https://doi.org/10.1016/j.heares.2018.12.004 788 
+
+Williges, B., Dietz, M., Hohmann, V., & Jürgens, T. (2015). Spatial Release From Masking in 789 
+
+Simulated Cochlear Implant Users With and Without Access to Low -Frequency 790 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Acoustic Hearing. Trends in Hearing , 19 , 2331216515616940. 791 
+
+https://doi.org/10.1177/2331216515616940 792 
+
+Wong, W. Y. S., & Stapells, D. R. (2004). Brain Stem and Cortical Mechanisms Underlying the 793 
+
+Binaural Masking Level Difference in Humans: An Auditory Steady -State Response 794 
+
+Study. Ear and Hearing , 25 (1), 57 –67. 795 
+
+https://doi.org/10.1097/01.AUD.0000111257.11898.64 796 
+
+Zobel, B. H., Freyman ,Richard L., & and Sanders, L. D. (2022). Spatial Release from 797 
+
+Informational Masking Enhances the Early Cortical Representation of Speech Sounds. 798 
+
+Auditory Perception & Cognition , 5(3 –4), 211 –237. 799 
+
+https://doi.org/10.1080/25742442.2022.2088329 800 
+
+801 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint
+
+Supplementary figures 802 
+
+803 R = 0.54 , p = 1.2e-15 
+
+-3
+
+0
+
+3
+
+0.0 0.1 0.2 0.3
+
+Env . Tracking (Fisher Z )
+
+> Behavioural score  (Logits )
+
+Co ndition Colocated Separated 
+
+SNR (dB ) -13 -10 -8 -6 -4
+
+Supplementary Figure 1 Average scores per SNR and location (Logit transformed) vs envelope tracking (Fisher 
+
+Z transformed) for each subject. SNR= -1 dB was removed in this figure as ceiling effects were present in both 
+
+conditions for the behavioural score across all subjects. Dif ferent shapes indicate collocated or separated 
+
+conditions. Pearson’s R corresponds to the linear correlation between behavioural and envelope tracking scores. 
+
+P-value corresponds to the t -statistic associated with the R value. 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint 804 F Fisher (4.85 , 87 .25 ) = 6.01    
+
+> p=9.43 e-05
+> FFisher
+
+(5.52 , 99 .43 ) = 3.60    
+
+> p=3.68 e-03
+> FFisher
+
+(5.77 , 103 .79 ) = 7.07    
+
+> p=3.41 e-06
+> FFisher
+
+(5.69 , 102 .49 ) = 3.55    
+
+> p=3.64 e-03
+> FFisher
+
+(6.09 , 109 .56 ) = 1.32    
+
+> p=0.25
+> FFisher
+
+(5.13 , 92 .28 ) = 0.86    
+
+> p=0.51
+> FFisher
+
+(5.36 , 96 .5) = 5.42    
+
+> p=1.36 e-04
+> FFisher
+
+(5.29 , 95 .14 ) = 1.07   
+
+> p=0.38
+
+P1 N1 P2 N2
+
+> Amplitude  (a.u.) Latency  (ms )
+
+-0.002 
+
+0.000 
+
+0.002 
+
+0.004 
+
+0.006 
+
+0
+
+100 
+
+200 
+
+300 
+
+400 
+
+500 
+
+SNR (dB )
+
+Condition Collocated Separated 
+
+Supplementary Figure 2 Amplitude and latency of the first two negative and positive peaks of the TRFs across 
+
+SNR and location. Peaks were defined as the maximum or minimum amplitude within predefined time windows of 
+
+interest. Statistical annotations show results from repeated -me asures ANOVAs, included for descriptive purposes. 
+
+Full inferential analyses using linear mixed -effects models are reported in the main text. 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.734758 doi: bioRxiv preprint

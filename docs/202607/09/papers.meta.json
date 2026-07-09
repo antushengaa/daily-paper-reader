@@ -1,0 +1,69 @@
+{
+  "label": "2026-07-09",
+  "date": "2026-07-09",
+  "generated_at": "2026-07-09T22:01:45",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202607/09/2607.03208v1-data-driven-multi-objective-optimization-for-alloy-recycling-using-factorization-machines-and-quantum-annealing",
+      "section": "deep",
+      "title_en": "Data-driven multi-objective optimization for alloy recycling using factorization machines and quantum annealing",
+      "authors": "Thomas Plehn, Katrin Bugelnig, Silvana Tumminello, Daniel Barragan-Yani, David Melching",
+      "date": "2026-07-03",
+      "pdf": "https://arxiv.org/pdf/2607.03208v1",
+      "score": "8.0",
+      "evidence": "使用分解机和量子退火解决非凸Pareto前沿优化，与机器学习中的非凸优化相关",
+      "tldr": "合金回收中的多目标优化面临非凸帕累托前沿的挑战。本文提出因子分解机结合量子退火（FM+QA）的工作流，并采用数据驱动切比雪夫标量化（DDTS）解决非凸问题。实验表明该方法能有效扩展QUBO优化在数据驱动材料发现中的应用。与经典模拟退火相比，量子退火在特定编码和问题规模下展现出潜力。",
+      "tags": "query:gso",
+      "abstract_en": "Quantum annealing has the potential to provide practical quantum advantage for complex optimization tasks. Here, we present a systematic assessment of an integrated factorization-machine and quantum-annealing workflow (FM+QA) for a technologically relevant application: multi-objective Pareto optimization in metal up-cycling through alloy design. To address the non-convex nature of the Pareto front, we employ the recently proposed data-driven Tchebycheff scalarization (DDTS) scheme. Our results show that FM+QA extends the applicability of QUBO-based optimization to data-driven materials discovery problems with multiple competing objectives. In particular, we analyze the scaling behavior of the approach and compare quantum annealing with classical simulated annealing using both regular binary encoding and one-hot encoding. Finally, we provide a critical perspective on the problem sizes and encoding strategies for which quantum-annealing-based optimization may become practically beneficial in the near future.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/09/2607.07506v1-structure-guided-gauss-network-method-linear-advection-reaction-equation",
+      "section": "deep",
+      "title_en": "Structure-Guided Gauss-Network Method: Linear Advection-Reaction Equation",
+      "authors": "Zhiqiang Cai, César Herrera",
+      "date": "2026-07-08",
+      "pdf": "https://arxiv.org/pdf/2607.07506v1",
+      "score": "8.0",
+      "evidence": "神经网络求解PDE中的非凸优化问题",
+      "tldr": "线性对流-反应方程的现有最小二乘神经网络方法虽能逼近不连续解，但非凸优化导致计算成本高且复杂。本文提出结构引导的Gauss-Newton方法，通过交替更新线性输出层参数和非线性隐藏层参数，并显式移除GN矩阵奇异性。数值实验表明，该方法在计算效率和求解精度上均优于Adam优化器，为高效训练PDE神经网络提供了新途径。",
+      "tags": "query:gso",
+      "abstract_en": "The least-squares neural network (LSNN) method introduced in [5] for linear advection-reaction equations is capable of accurately approximating discontinuous solutions without a priori knowledge of the interface location. However, the resulting discretization is a non-convex optimization problem that is computationally intensive and complex. In this paper, we propose a structure-guided Gauss-Newton (SgGN) method that alternates between the linear (output) and the nonlinear (hidden layer) parameters. At each outer iteration, the linear parameters are computed by a linear solver, and the nonlinear parameters are updated by a modified Gauss-Newton (GN) method that explicitly removes the singularities of the GN matrix. Numerical experiments for all test problems presented in [5] show that the SgGN method is superior to the Adam optimizer [13], the commonly used first-order optimization algorithm, not only in computational cost but, more importantly, in accuracy",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/09/biorxiv-10-64898-2026-06-29-734758-v1-neural-tracking-of-speech-envelope-as-an-index-of-spatial-release-from-masking",
+      "section": "quick",
+      "title_en": "Neural Tracking of Speech Envelope as an Index of Spatial Release from Masking",
+      "authors": "Galeano-Otalvaro, J.-D., Dieudonne, B., Francart, T., Wouters, J.",
+      "date": "2026-07-02",
+      "pdf": "https://www.biorxiv.org/content/10.64898/2026.06.29.734758v1.full.pdf",
+      "score": "7.0",
+      "evidence": "语音包络神经跟踪用于空间听觉与声源定位",
+      "tldr": "在嘈杂环境中言语理解依赖双耳线索，空间释放掩蔽可显著改善语音感知。本研究采用EEG神经语音跟踪技术，通过包络重建和时域响应函数分析，比较了共位与空间分离条件下不同信噪比的神经响应。结果发现，空间分离增强了目标语音包络的神经跟踪，尤其在挑战性信噪比下，TRF晚期皮质成分幅度增大、潜伏期缩短，与行为SRM高度一致。这表明神经语音跟踪可客观量化空间去掩蔽效应，为评估难以测试人群的双耳益处提供了可靠神经标记。",
+      "tags": "query:gso",
+      "abstract_en": "Understanding speech in noisy environments relies strongly on binaural cues such as interaural time and level differences (ITDs and ILDs), which support spatial hearing and the segregation of competing sound sources. When these cues are degraded, listeners experience substantial difficulty in complex acoustic environments.\n\nBehavioural measures of binaural benefit, such as binaural masking level differences, binaural intelligibility level differences, and spatial release from masking (SRM), are well established in normal-hearing (NH) listeners, but they require an active behavioural response. Neural speech tracking using electroencephalography (EEG) has emerged as a promising approach for quantifying neural processing of continuous speech, yet its sensitivity to spatial hearing cues remains insufficiently characterised.\n\nWe investigated the neural correlates of spatial release from masking in NH listeners using EEG-based neural speech tracking. Nineteen participants listened to continuous Dutch speech stories presented with masking noise under two spatial configurations, collocated (S0N0) and spatially separated (S0N90), across multiple signal-to-noise ratios (SNRs). Neural tracking of the speech envelope was quantified using both envelope reconstruction and temporal response function (TRF) analyses.\n\nSpatial separation enhanced neural tracking of the target speech envelope, particularly at challenging SNRs where behavioural SRM was also observed. TRF analysis further revealed increased amplitudes and decreased latencies of late cortical components consistent with spatial unmasking effects.\n\nThese findings demonstrate that neural speech tracking captures cortical signatures of spatial unmasking and closely reflects behavioural improvements in speech understanding. Establishing these relationships in NH listeners supports the development of objective neural measures for evaluating binaural benefit in difficult-to-test populations.",
+      "source": "biorxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/09/2607.06222v1-apvi-slam-real-time-acoustic-pressure-visual-inertial-localization-and-photorealistic-mapping-system-in-complex-underwater-environment",
+      "section": "quick",
+      "title_en": "APVI-SLAM: Real-Time Acoustic-Pressure-Visual-Inertial Localization and Photorealistic Mapping System in Complex Underwater Environment",
+      "authors": "Hanwen Zhang, Yipeng Zhu, Xiaopeng Guo, Huajian Huang, Sai-Kit Yeung",
+      "date": "2026-07-07",
+      "pdf": "https://arxiv.org/pdf/2607.06222v1",
+      "score": "6.0",
+      "evidence": "多传感器融合SLAM系统涉及声学压力视觉惯性传感器校准",
+      "tldr": "水下极端环境导致视觉惯性SLAM特征退化，现有方法在视觉失效时鲁棒性不足。为此，提出APVI-SLAM，通过可靠性感知框架动态重加权传感器并采用滑动窗口冻结策略恢复跟踪，同时利用四叉树引导的高效映射模块进行增量水介质建模与3D高斯优化。在公开及自建数据集上实现实时性能与最先进的定位和重建质量，并贡献了同步多模态珊瑚礁数据集。",
+      "tags": "query:gso",
+      "abstract_en": "Extreme subsea environments often cause severe feature de-gradation and estimator divergence in underwater visual-inertial SLAM. Although sensors like Doppler Velocity Logs (DVL) and pressure gauges provide auxiliary constraints, robust multi-sensor fusion during intermittent visual failure remains challenging. To address this, we present APVI-SLAM, a real-time multi-sensor fusion SLAM system that achieves both accurate underwater localization and photorealistic mapping. Our approach introduces a reliability-aware localization framework that dynamically reweights sensor estimators and employs a sliding-window freezing strategy to recover from tracking failures, substantially enhancing system robustness. Furthermore, for high-fidelity scenes reconstruction, we propose an efficient quadtree-guided mapping module that facilitates incremental water-medium modeling and 3D Gaussian optimization. Recognizing the lack of benchmark for underwater mapping evaluation, we also contribute a coral reef surveying dataset with synchronized multi-modality data. Extensive experiments on public and our proposed benchmarks demonstrate that APVI-SLAM achieves state-of-the-art localization and reconstruction quality at real-time speeds.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
