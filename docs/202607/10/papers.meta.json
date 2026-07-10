@@ -1,0 +1,69 @@
+{
+  "label": "2026-07-10",
+  "date": "2026-07-10",
+  "generated_at": "2026-07-10T21:14:39",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202607/10/2607.04127v1-real-time-lidar-gaussian-splatting-slam",
+      "section": "deep",
+      "title_en": "Real-Time LiDAR Gaussian Splatting SLAM",
+      "authors": "Seungjun Tak, Yewon Jeon, Jaeik Hwang, SukMin Hwang, Seongbo Ha, Hyeonwoo Yu",
+      "date": "2026-07-05",
+      "pdf": "https://arxiv.org/pdf/2607.04127v1",
+      "score": "8.0",
+      "evidence": "实时LiDAR SLAM涉及几何配准，直接与传感器对齐的几何校准相关",
+      "tldr": "针对大尺度场景中实时建图精度与效率难以兼顾的问题，本文提出一种基于LiDAR的实时高斯泼溅SLAM框架，通过快速G-ICP配准与球形栅格化稠密建图紧耦合。方法利用LiDAR几何特性，重用跟踪估计的局部协方差初始化距离感知尺度的高斯体，并推导表面法线进行几何感知地图优化；引入协方差导出的几何得分驱动平面区域剪枝与结构丰富区选择性增密，同时将优化后高斯体和置信度反馈提升跟踪鲁棒性。在Newer College数据集上以纯在线轨迹达到86.78% F-score，速度超20 FPS，并在多数据集上验证稳定性与可扩展性。",
+      "tags": "query:gso",
+      "abstract_en": "We present a real-time LiDAR-based framework for Gaussian Splatting SLAM that tightly couples fast G-ICP registration with spherical rasterization-based dense mapping for large-scale sequences. Leveraging LiDAR geometry rather than appearance, we reuse tracking-estimated local covariances to initialize Gaussians with range-aware scales and to derive surface normals for geometry-aware map optimization. We further introduce a covariance-derived geometry score that measures local complexity and drives pruning in planar regions and selective densification in structurally rich areas, while optimized Gaussians and LiDAR-specific confidence cues are fed back to improve tracking robustness. On the Newer College dataset, our method achieves an F-score of 86.78\\% using purely online trajectories at real-time speed ($>$20 FPS), and additional experiments on other datasets confirm its stability and scalability.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/10/2607.08108v1-low-complexity-gridless-single-snapshot-doa-estimation-via-truncated-hankel-newton-music",
+      "section": "deep",
+      "title_en": "Low-Complexity Gridless Single-Snapshot DoA Estimation via Truncated Hankel Newton-MUSIC",
+      "authors": "Ruoxiao Cao, Wentao Yu, Yi Gong, Khaled B. Letaief",
+      "date": "2026-07-09",
+      "pdf": "https://arxiv.org/pdf/2607.08108v1",
+      "score": "8.0",
+      "evidence": "无网格单快照DoA估计用于阵列处理",
+      "tldr": "针对可重构天线阵列ISAC系统中单快拍DoA估计面临子空间秩亏和计算成本高的问题，提出截断Hankel牛顿MUSIC方法。通过固定行维构造截断Hankel矩阵恢复有效信号子空间，避免全矩阵特征分解，将复杂度降为线性于天线端口数；再利用牛顿更新消除网格量化误差。仿真表明，该方法在保持接近平方Hankel牛顿MUSIC精度的同时，运行时间降低两个数量级，适用于实时传感。",
+      "tags": "query:gso",
+      "abstract_en": "Reconfigurable antenna arrays can provide enhanced spatial Degrees of Freedom (DoFs) for Integrated Sensing And Communication (ISAC) systems, enabling high-resolution Direction of Arrival (DoA) estimation. In highly dynamic scenarios, however, DoA estimation must be performed within short coherence intervals, which often restricts processing to a single snapshot. Conventional subspace methods then suffer from rank deficiency, while Hankel-based spatial smoothing incurs high computational cost when the array size is large. This paper proposes a low-complexity gridless Truncated Hankel NewtonMUSIC framework for single-snapshot DoA estimation. The proposed method constructs a truncated Hankel matrix with a fixed row dimension to recover an effective signal subspace while reducing the cost of correlation construction and subspace decomposition. When the truncation length is independent of the array size, the dominant complexity scales linearly with the number of antenna ports. To reduce grid-induced quantization errors, coarse grid estimates are further refined by a secondorder Newton update in the continuous angular domain. Simulation results show that the proposed method achieves DoA estimation accuracy close to square Hankel Newton-MUSIC while substantially reducing runtime. For large arrays, it provides more than two orders of magnitude runtime reduction compared with conventional square Hankel MUSIC, making it suitable for realtime sensing in reconfigurable antenna-enabled ISAC systems.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/10/2607.04847v1-amplitude-independent-robust-snapshot-6-d-radio-slam-via-a-uniffed-angle-delay-formulation",
+      "section": "quick",
+      "title_en": "Amplitude-Independent Robust Snapshot 6-D Radio SLAM via a Uniffed Angle-Delay Formulation",
+      "authors": "Shengqiang Shen, Aoyun Hao, Weihao Geng, Lei Yang, Shiyin Li, Henk Wymeersch",
+      "date": "2026-07-06",
+      "pdf": "https://arxiv.org/pdf/2607.04847v1",
+      "score": "7.0",
+      "evidence": "基于角度-延迟公式的幅值无关稳健无线SLAM用于传感器位姿校准",
+      "tldr": "针对双基地快照6D无线电SLAM，现有方法依赖路径幅度信息，易受校准误差和模型失配影响。提出幅度无关的鲁棒方法，基于统一角度-时延公式处理LoS和单次弹射NLoS内点。粗阶段直接利用角度-时延测量估计状态和选择内点，随后通过Jacobian行均衡IRLS和QAIC模型比较精化并检测LoS路径。仿真表明，该方法与标定幅度依赖基线性能相当，对路径损耗模型失配具有更强鲁棒性，实现了无需幅度信息的6D SLAM。",
+      "tags": "query:gso",
+      "abstract_en": "This paper addresses bistatic snapshot radio SLAM, in which a user equipment (UE) with unknown 6-D pose and clock bias is localized and environmental landmarks are reconstructed from a single multipath channel snapshot. Under mixed line-of-sight (LoS)/non-line-of-sight (NLoS) propagation, existing robust snapshot SLAM methods are mainly developed or validated in planar/2-D settings and often use path-amplitude or path-loss information for LoS handling, which makes them sensitive to calibration errors and propagation-model mismatch. We propose an amplitude-independent robust radio SLAM method built on a uniffed angle-delay formulation for LoS and single-bounce NLoS inlier paths. In the coarse stage, the method estimates the UE state and selects geometrically consistent inliers directly from angle-delay measurements, without amplitudebased LoS preclassiffcation or path-wise latent variables; the formulation is further extended to general 3-D/6-D pose estimation through twist-swing two-stage traversal initialization and local reffnement on SO(3). A subsequent Jacobian-row-equilibrated iteratively reweighted least-squares (IRLS) reffnement, combined with quasi-Akaike information criterion (QAIC) model comparison, detects the LoS path and jointly reffnes the UE state and scattering points. We also analyze formulation-speciffc local-rank properties and their minimal-set implications under unknown path identity. Simulations show that the proposed method remains competitive with calibrated amplitude-dependent baselines and is more robust to path-loss-model mismatch.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/10/2607.04615v1-divo-continuous-time-dvl-inertial-visual-odometry-for-unmanned-underwater-vehicles",
+      "section": "quick",
+      "title_en": "DIVO: Continuous-time DVL-Inertial-Visual Odometry for Unmanned Underwater Vehicles",
+      "authors": "Kyungmin Jung, Angad Bajwa, Junha Yoo, Arturo Del Castillo Bernal, James Richard Forbes",
+      "date": "2026-07-06",
+      "pdf": "https://arxiv.org/pdf/2607.04615v1",
+      "score": "6.0",
+      "evidence": "利用DVL声学传感器的音频-视觉-惯性里程计，与声学传感器阵列的几何校准方法相关",
+      "tldr": "水下环境的光衰减、光照变化和颗粒物干扰导致视觉定位困难，需要多传感器融合。本文提出DIVO，首个基于高斯过程的连续时间轨迹估计框架，融合多普勒速度仪、立体相机和惯性测量单元的异步测量，并设计基于学习的鲁棒视觉前端。在真实水下检测数据集上，DIVO在准确性、鲁棒性和轨迹覆盖率上超越现有视觉-惯性和声学-视觉-惯性SLAM算法，即便仅利用短期视觉关联。该框架可无缝集成多模态传感器并适应不同环境，为水下自主导航提供了高效方案。",
+      "tags": "query:gso",
+      "abstract_en": "This paper presents a novel acoustic-visual-inertial odometry solution leveraging a continuous-time trajectory estimation framework for unmanned underwater vehicles. Underwater environments present unique challenges for visual localization and mapping, such as light attenuation, illumination variance, and the presence of particulate matter. This motivates the use of additional sensing modalities and a visual tracking pipeline that is robust to diverse subsea conditions. The proposed system is the first continuous-time trajectory estimation framework based on Gaussian processes to fuse asynchronous measurements from a Doppler velocity log, a stereo camera, and an inertial measurement unit. Additionally, a novel visual frontend is proposed, incorporating learning-based feature extraction and matching that is robust to the specific challenges that subsea environments present. The proposed framework enables seamless integration of additional sensor modalities in continuous-time and is adaptable to different environments without reconfiguration. The proposed system is extensively tested on real-world underwater inspection datasets, where it outperforms state-of-the-art visual-inertial and acoustic-visual-inertial SLAM algorithms in accuracy, robustness, and trajectory coverage. Notably, the proposed system outperforms the state-of-the-art despite only forming short-term visual data associations.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

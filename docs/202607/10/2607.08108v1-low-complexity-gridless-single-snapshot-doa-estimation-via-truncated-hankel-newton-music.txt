@@ -1,0 +1,476 @@
+Title: Low-Complexity Gridless Single-Snapshot DoA Estimation via Truncated Hankel Newton-MUSIC
+
+URL Source: https://arxiv.org/pdf/2607.08108v1
+
+Published Time: Fri, 10 Jul 2026 00:36:24 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Low-Complexity Gridless Single-Snapshot DoA Estimation via Truncated Hankel Newton-MUSIC 
+
+Ruoxiao Cao ∗† , Wentao Yu ‡, Yi Gong †, and Khaled B. Letaief ∗∗Dept. of ECE, The Hong Kong University of Science and Technology, Kowloon, Hong Kong 
+
+†Dept. of EEE, Southern University of Science and Technology, Shenzhen, China 
+
+‡Dept. of ECE, The University of British Columbia, Vancouver, BC, V6T 1Z4, Canada E-mail: rcaoah@connect.ust.hk, wentaoyu@ece.ubc.ca, eekhaled@ust.hk, gongy@sustech.edu.cn 
+
+Abstract —Reconfigurable antenna arrays can provide en-hanced spatial Degrees of Freedom (DoFs) for Integrated Sensing And Communication (ISAC) systems, enabling high-resolution Direction of Arrival (DoA) estimation. In highly dynamic sce-narios, however, DoA estimation must be performed within short coherence intervals, which often restricts processing to a single snapshot. Conventional subspace methods then suffer from rank deficiency, while Hankel-based spatial smoothing incurs high computational cost when the array size is large. This paper proposes a low-complexity gridless Truncated Hankel Newton-MUSIC framework for single-snapshot DoA estimation. The proposed method constructs a truncated Hankel matrix with a fixed row dimension to recover an effective signal subspace while reducing the cost of correlation construction and subspace decomposition. When the truncation length is independent of the array size, the dominant complexity scales linearly with the number of antenna ports. To reduce grid-induced quantization errors, coarse grid estimates are further refined by a second-order Newton update in the continuous angular domain. Sim-ulation results show that the proposed method achieves DoA estimation accuracy close to square Hankel Newton-MUSIC while substantially reducing runtime. For large arrays, it provides more than two orders of magnitude runtime reduction compared with conventional square Hankel MUSIC, making it suitable for real-time sensing in reconfigurable antenna-enabled ISAC systems. 
+
+I. I NTRODUCTION 
+
+Integrated Sensing And Communication (ISAC) is a key enabling technology for next-generation wireless networks [1], [2]. By sharing spectrum resources and hardware platforms, ISAC base stations can simultaneously support high-data-rate communication and high-precision target sensing [3]. In this context, reconfigurable antenna systems with electronically controlled radiating elements can enhance the spatial Degrees of Freedom (DoFs) available for sensing [4], [5]. Reconfig-urable antenna-enabled ISAC is particularly attractive because the spatial sampling pattern can be adapted through port selec-tion or element reconfiguration, providing additional flexibility beyond conventional fixed arrays [6], [7]. Such flexibility can improve angular resolution and sensing robustness without requiring fully digital radio-frequency chains at all antenna ports. However, the increased number of available ports also enlarges the dimension of the sensing data, making low-latency Direction of Arrival (DoA) estimation a critical signal processing challenge. Despite these advantages, DoA estimation remains challeng-ing in highly dynamic mobile environments. To enable real-time tracking in high-mobility scenarios, parameter estimation often needs to be completed within a short coherence interval, which may restrict processing to a single snapshot [8]. Con-ventional high-resolution subspace methods, such as MUltiple SIgnal Classification (MUSIC) [9] and Estimation of Signal Parameters via Rotational Invariance Techniques (ESPRIT) [10], rely on temporal averaging over multiple independent snapshots to construct a full-rank sample covariance matrix. When applied to a single snapshot, the sample covariance matrix becomes rank-deficient and collapses to rank one, making the signal and noise subspaces difficult to separate [8], [9]. This prevents the separation of multiple signal components and leads to the failure of subspace-based resolution for closely spaced targets. Spatial smoothing is a common approach to mitigate single-snapshot rank deficiency [11]. By rearranging one array snap-shot into a Hankel-structured matrix, multiple overlapping subarrays can be generated from spatial samples, enabling subspace recovery without temporal averaging [12], [13]. In many Hankel-MUSIC implementations, the smoothing window is chosen close to half of the array aperture to balance the row and column dimensions of the Hankel matrix. While this choice is effective for subspace restoration, it results in a large smoothed correlation matrix. The corresponding correlation construction and subspace decomposition become computationally expensive for large reconfigurable arrays. Another limitation of conventional MUSIC-based DoA es-timation is the dependence on discrete angular grid search. A dense grid is needed to reduce quantization error, but the search complexity increases linearly with the number of grid points [13]. This tradeoff is undesirable for real-time ISAC sensing, where both low latency and high angular accuracy are required. Off-grid refinement can alleviate this issue by updating coarse estimates in the continuous angular domain [14], [15], but it must be combined with a low-dimensional subspace representation to be computationally efficient. To address these limitations, this paper proposes a low-complexity truncated Hankel Newton-MUSIC framework for ISAC systems. The proposed method leverages the sparsity of arXiv:2607.08108v1 [eess.SP] 9 Jul 2026 propagation paths in the angular domain and applies structural truncation by restricting the row dimension of the Hankel smoothing operation to a small constant. This reformulates the single snapshot into a rectangular Hankel structure, resulting in a compact low-dimensional representation while preserving the effective array aperture through its extended column di-mension. Although truncation reduces the spatial DoFs, the remaining structure preserves sufficient spatial diversity for effective smoothing. To compensate for the resulting resolution loss, a second-order Newton refinement scheme is introduced to iteratively refine coarse estimates toward continuous-valued directions. Simulation results demonstrate that the proposed framework reduces computational complexity by more than two orders of magnitude compared with conventional square Hankel methods, while mitigating the high-SNR error floor caused by grid-induced quantization errors. 
+
+Notations: For any matrix A, AT, A−1 and AH denote the transpose, inverse and conjugate transpose of A, respectively. 
+
+IN represents the identity matrix of size N ×N . The Euclidean norm is written as ‖ · ‖ 2. CN (μ, Σ) denotes the complex Gaussian distribution with mean vector μ and covariance matrix Σ. U (a, b ) denotes the uniform distribution from a to 
+
+b. The operators diag( ·) and ℜ{·} generate a diagonal matrix and extract the real part, respectively. The imaginary unit is j.II. S YSTEM MODEL AND PROBLEM FORMULATION 
+
+In this section, we present the signal model for single-snapshot DoA estimation in a reconfigurable antenna system. To ensure geometric robustness and avoid specific hardware non-idealities, we consider that during the initial stage of directional sensing, the reconfigurable antenna array is dynam-ically configured into a standard Uniform Linear Array (ULA) layout, which provides optimized aperture geometry to achieve enhanced angular estimation precision. 
+
+A. Spatial Signal Model 
+
+Assume that K narrowband far-field sources transmit sig-nals simultaneously to the ISAC base station (BS) in the uplink. Under the constraint of a single temporal snapshot (T = 1) during a dedicated pilot transmission phase, let 
+
+s = [ s1, s 2, . . . , s K ]T ∈ CK×1 denote the transmitted pilot signal vector, where sk represents the deterministic and known pilot symbol of the k-th source. To model the angular char-acteristics of the propagation environment, the received signal vector captured at the N activated ports of the reconfigurable antenna system, denoted by y ∈ CN ×1, is expressed as 
+
+y = A(θ)Ps + n, (1) where A(θ) = [ a(θ1), a(θ2), . . . , a(θK )] ∈ CN ×K denotes the array response matrix, P = diag (p1, p 2, . . . , p K ) ∈ CK×K is a diagonal matrix containing the complex path gains, and n ∈
+
+CN ×1 is the complex additive white Gaussian noise (AWGN) vector distributed as n ∼ CN (0, σ 2IN ). The variance of the noise across the spatial ports is denoted by σ2, and the vector 
+
+θ = [ θ1, θ 2, . . . , θ K ]T contains the DoAs of the target paths. Let d = [ d1, d 2, . . . , d N ]T ∈ RN ×1 denote the physical spatial positions of the activated ports in the reconfigurable antenna array. To optimize the spatial resolution and establish a well-defined sensing geometry, the reconfigurable antenna system configures its electronic port components into a linear topology during the initial DoA estimation stage. By setting the array into this baseline geometry during the spatial sensing slot, the physical inter-port displacement satisfies dn −d1 = ( n−1) λ
+
+> 2
+
+for n ∈ { 1, 2, . . . , N }, where λ represents the carrier wave-length. Under this configuration, the generic geometric steering response vector a(θk ) matches the standard nonharmonic ex-ponential manifold form given by 
+
+a(θk) = 
+
+[
+
+1, e −jπ sin( θk ), e −jπ 2 sin( θk ), . . . , e −jπ (N −1) sin( θk )]T
+
+.
+
+(2) The formulated single-snapshot observation relation in (1) directly serves as the mathematical foundation for subsequent low-complexity subspace extractions over the reconfigurable antenna architecture. 
+
+B. The Single-Snapshot Rank-Deficiency Dilemma 
+
+In traditional multi-snapshot subspace estimation architec-tures, the receiver accumulates a large temporal sequence of observation vectors to form a statistical sample covariance matrix. When the source signals are temporally uncorrelated, the empirical covariance matrix asymptotically approaches a full-rank signal subspace of rank K to enable separation between the signal and noise subspaces. Conversely, in highly dynamic networks where online state optimization within the reconfigurable antenna system must be completed within a short coherence interval, the receiver is restricted to the single-snapshot vector y defined in (1). If the raw spatial correlation matrix Rraw ∈ CN ×N is constructed via direct outer-product mapping, it is given by 
+
+Rraw = yy H = ( A(θ)Ps + n) ( A(θ)Ps + n)H , (3) where rank deficiency arises due to the lack of temporal averaging. By invoking the rank properties of matrix outer products, the algebraic rank of the noise-free component of 
+
+Rraw collapses completely as expressed by rank (A(θ)Pss HPHAH(θ)) = rank (Pss HPH) ≡ 1. (4) This rank deflation implies that the true multidimensional signal subspace contracts into a single-dimensional line, ren-dering the remaining K − 1 signal components indistinguish-able from the background thermal noise. As a direct con-sequence, classical high-resolution subspace algorithms fail to resolve the individual peaks of closely spaced targets. To address the rank deficiency caused by the single-snapshot observation y, we construct a Hankel-structured matrix from its spatial samples to recover an effective signal subspace for subsequent MUSIC processing. III. P ROPOSED LOW -C OMPLEXITY NEWTON -MUSIC FRAMEWORK 
+
+To address the rank deficiency caused by single-snapshot sensing, we develop a low-complexity gridless Newton-MUSIC framework for reconfigurable antenna-enabled ISAC systems. We first formulate a general Hankel-based single-snapshot MUSIC method to recover the effective signal sub-space from spatially smoothed observations. We then introduce a truncated Hankel construction that reduces the row dimension of the smoothed data matrix while retaining a large number of overlapping subarray snapshots through its column dimension. Finally, a Newton refinement step is applied to improve the coarse grid estimates in the continuous angular domain and reduce grid-induced quantization errors. 
+
+A. General Single-Snapshot MUSIC Framework 
+
+To recover the effective rank from a single snapshot, spatial smoothing constructs overlapping subarrays from the received array snapshot. For a generic smoothing window length L
+
+satisfying 1 ≤ L < N , the received observation vector 
+
+y is mapped into a general structured Hankel data matrix 
+
+HL ∈ C(L+1) ×(N −L) which is written as 
+
+HL = Hankel (y) = 
+
+
+
+y1 y2 · · · yN −L
+
+y2 y3 · · · yN −L+1 
+
+... ... . . . ...
+
+yL+1 yL+2 · · · yN
+
+ . (5) where yi is the ith element of the received observation vector y. The corresponding spatial correlation matrix R ∈
+
+C(L+1) ×(L+1) is computed via the inner product mapping 
+
+RL = 1
+
+N − L HLHH
+
+> L
+
+. (6) Performing singular value decomposition (SVD) on RL de-composes the matrix as 1
+
+R = UΣV H
+
+= [Us Un
+
+] [Σs 00 Σn
+
+] [ VHs
+
+VHn
+
+]
+
+, (7) where Us ∈ C(L+1) ×K and Vs ∈ C(L+1) ×K contain the left and right singular vectors corresponding to the K largest singular values, which span the signal subspace. The matrices 
+
+Un ∈ C(L+1) ×(L+1 −K) and Vn ∈ C(L+1) ×(L+1 −K) contain the remaining singular vectors spanning the orthogonal noise subspace. The diagonal matrices Σs ∈ RK×K and Σn ∈
+
+R(L+1 −K)×(L+1 −K) contain the corresponding singular values sorted in descending order. The general continuous spatial spectrum function is defined as the reciprocal of the geometric                          
+
+> 1Performing the SVD on the spatial correlation matrix RLis mathemati-cally consistent with executing the SVD directly on the rectangular Hankel data matrix H=UHΣHVH
+> H. Since RLis formed by the scaled outer product of HL, the left singular vectors Uobtained from the SVD of RLalign with the left singular vectors UHobtained from the direct SVD of HL. The corresponding singular values satisfy the quadratic relation Σ=1
+> N−LΣ2
+> H.This algebraic equivalence guarantees that both formulations yield identical orthogonal signal and noise subspaces while performing SVD on RLpreserves the conventional covariance-driven analytical paradigm.
+
+projection of the steering vector onto the noise subspace, expressed as 
+
+F (θ) = 1
+
+aH
+
+> L
+
+(θ)Un UHn aL(θ) , (8) where aL(θ) ∈ C(L+1) ×1 represents the low-dimensional steering response vector configured under the truncated sub-array topology, which is explicitly given by 
+
+aL(θ) = 
+
+[
+
+1, e −jπ sin( θ), e −jπ 2 sin( θ), . . . , e −jπL sin( θ)]T
+
+. (9) MUSIC exploits the orthogonality between the steering vectors associated with the true DoAs and the estimated noise subspace. Since the signal subspace is spanned by the columns of the array response matrix AL(θ) =[aL(θ1), aL(θ2), . . . , aL(θK )] ∈ C(L+1) ×K , any true steer-ing vector must be orthogonal to the noise subspace, i.e., 
+
+aH
+
+> L
+
+(θ)Un = 0 . In the noiseless and perfectly matched case, the denominator of F (θ) vanishes at the true DoAs, producing peaks in the MUSIC spectrum. The DoA estimates are subse-quently identified by locating the K largest local peaks of the spatial spectrum over a discrete angular domain Θ as given by 
+
+ˆθk = arg max  
+
+> θ∈Θ
+
+F (θ), (10) where ˆθ =
+
+{ˆθk : k = 1 , 2, . . . , K 
+
+}
+
+is the estimated DoAs. In conventional implementations, the smoothing window parameter is typically fixed at approximately half the total port aperture such that LO ≈ N/ 2 [12], [13]. This configuration is referred to as square Hankel MUSIC in this paper. While this symmetric square configuration maximizes the available spatial DoFs and stabilizes the subspace boundaries against noise perturbations, computing a full SVD on a dense N/ 2 × N/ 2
+
+matrix introduces a prohibitive cubic computational overhead of O(N 3) complexity. In addition, the conventional discrete spectrum peak-search introduces inherent on-grid quantiza-tion errors, which can only be mitigated by employing a significantly denser angular search grid Θ that consequently intensifies the grid-search computational burden. 
+
+B. Proposed Single-Snapshot Newton-MUSIC Algorithm 
+
+To reduce the cost of high-dimensional subspace decom-position and alleviate grid mismatch, we propose a truncated Hankel Newton-MUSIC framework. The method combines a low-dimensional Hankel smoothing structure with a continuous Newton refinement step, avoiding the need for a dense angular search grid. Since the number of sources is small compared with the array size, i.e., K ≪ N , it is unnecessary to use a nearly square Hankel matrix for subspace recovery. We therefore restrict the row dimension of the Hankel matrix to a small value LN
+
+satisfying LN + 1 > K and LN ≪ N . This choice preserves a nonempty noise subspace of dimension LN + 1 − K. Although the row dimension is reduced, the column dimension N − LN
+
+still provides many overlapping subarrays, which improves the stability of the smoothed correlation estimate. The possible loss Algorithm 1 Proposed Single-Snapshot Newton-MUSIC 
+
+Input: Received single snapshot vector y, number of target sources K, coarse angular grid Θcoarse , maximum number of iterations Z, truncation window length LN. 
+
+> 1:
+
+Construct the truncated Hankel matrix HL from y accord-ing to (5).  
+
+> 2:
+
+Compute the smoothed correlation matrix RL using (6).  
+
+> 3:
+
+Perform SVD on RL and obtain the noise subspace Un
+
+via (7);  
+
+> 4:
+
+Evaluate J(θ) on Θcoarse and select the K smallest local minima as the initial estimates {ˆθ(0)  
+
+> k
+
+}Kk=1 . 
+
+> 5:
+
+for k = 1 to K in parallel do  
+
+> 6:
+
+for z = 1 to Z do  
+
+> 7:
+
+Compute aL(ˆθ(z−1)  
+
+> k
+
+), ˙aL(ˆθ(z−1)  
+
+> k
+
+), and ¨aL(ˆθ(z−1)  
+
+> k
+
+). 
+
+> 8:
+
+Evaluate ∇J(ˆθ(z−1)  
+
+> k
+
+) and ∇2J(ˆθ(z−1)  
+
+> k
+
+) using (16) and (17).  
+
+> 9:
+
+Update ˆθ(z) 
+
+> k
+
+using (13).  
+
+> 10:
+
+end for  
+
+> 11:
+
+Set ˆθk = ˆθ(z) 
+
+> k
+
+. 
+
+> 12:
+
+end for Output: Estimated off-grid DoAs ˆθ = [ ˆθ1, ˆθ2, . . . , ˆθK ]T.
+
+in resolution caused by truncation is mitigated by the subse-quent Newton refinement in the continuous angular domain. To convert the discrete search grid in (10) into a continuous optimization space, we define the MUSIC projection cost as 
+
+J(θ) = aH
+
+> L
+
+(θ)UnUHn aL(θ). (11) The DoA estimates can therefore be obtained by identifying the K local minima of J(θ), which is formulated as 
+
+ˆθk = arg min  
+
+> θ
+
+J(θ). (12) We employ a coarse grid search with large angular spac-ing Θcoarse to locate the initial rough estimates denoted by 
+
+ˆθ(0) 
+
+=
+
+{ˆθ(0)  
+
+> k
+
+: k = 1 , 2, . . . , K 
+
+}
+
+. Given these initial values, the Newton refinement updates the parameter estimates itera-tively through the second-order optimization relationship 
+
+ˆθ(z) 
+
+> k
+
+= ˆθ(z−1)  
+
+> k
+
+−∇J
+
+(ˆθ(z−1) 
+
+> k
+
+)
+
+∇2J
+
+(ˆθ(z−1) 
+
+> k
+
+) , (13) where ∇J(θ) and ∇2J(θ) denote the gradient and the Hessian of the cost function with respect to θ, respectively, and z ∈{1, 2, . . . , Z } represents the local iteration index. To calculate these optimization components analytically, the first and second derivatives of the steering manifold are derived. Applying the chain rule to the complex exponential elements yields the precise analytical derivative vectors given by 
+
+˙aL(θ) , ∂aL(θ)
+
+∂θ = −jπ cos( θ)DLaL(θ), (14) 
+
+¨aL(θ) , ∂2aL(θ)
+
+∂θ 2 = (jπ sin( θ)DL − π2 cos 2(θ)D2
+
+> L
+
+) aL(θ),
+
+(15) where DL = diag (0 , 1, . . . , L N) ∈ R(LN+1) ×(LN+1) represents the structural diagonal position matrix. By utilizing these matrix derivative vectors, the exact gradient function of the continuous cost objective is formulated as 
+
+∇J(θ) = 2 ℜ { ˙aH
+
+> L
+
+(θ)Un UHn aL(θ)} , (16) and the corresponding analytical Hessian expression is estab-lished as 
+
+∇2J(θ) = 2 ℜ { ˙aH
+
+> L
+
+(θ)UnUHn ˙aL(θ) + aH
+
+> L
+
+(θ)Un UHn ¨aL(θ)} .
+
+(17) The continuous parameter tracking updates terminate after a maximum number of local iterations Z.The complete procedure of the proposed truncated Han-kel Newton-MUSIC algorithm is summarized in Algorithm 1. Compared with conventional single-snapshot MUSIC, the proposed method avoids exhaustive search over a dense an-gular grid by refining coarse estimates through local Newton updates. This reduces the DoA extraction cost while retaining off-grid estimation capability. After the coarse initialization, each Newton refinement is performed independently for its corresponding local minimum, and the K refinement processes can therefore be parallelized. IV. C OMPUTATIONAL COMPLEXITY ANALYSIS 
+
+The computational cost is analyzed from two aspects: Hankel-based subspace construction and DoA extraction. The first part includes Hankel matrix formation, correlation con-struction, and subspace decomposition, while the second part accounts for grid-based spectrum evaluation and Newton re-finement. Table I compares the conventional square Hankel MUSIC method with the proposed truncated Hankel Newton-MUSIC method. The reduction in complexity comes from two design choices: using a truncated Hankel matrix with a fixed row dimension and replacing the dense grid search with local Newton refinement initialized from a coarse grid. 
+
+A. Hankel Dimension Reduction and Subspace Decomposition 
+
+In square Hankel MUSIC, the smoothing window is usually chosen as LO ≈ N/ 2 to balance the row and column dimen-sions of the Hankel matrix. The resulting correlation matrix has dimension (LO + 1) × (LO + 1) . With LO ≈ N/ 2, constructing 
+
+RLO = HLO HH 
+
+> LO
+
+requires O(L2O(N − LO)) , which scales as 
+
+O(N 3). The subsequent SVD of RLO requires O(( LO + 1) 3)
+
+operations, which also scales as O(N 3).In the proposed method, the row dimension is fixed to a small truncation length LN satisfying LN ≪ N . The smoothed correlation matrix then has dimension (LN + 1) × (LN + 1) .Its construction requires O(L2N(N − LN)) , which reduces to 
+
+O(L2NN ) for LN ≪ N . The SVD requires only O(( LN +1) 3) operations. Therefore, when LN is fixed independently of 
+
+N , the dominant complexity of the proposed method scales linearly with the array size. TABLE I COMPUTATIONAL COMPLEXITY COMPARISON 
+
+Processing Stage Traditional Square Hankel MUSIC Proposed Truncated Hankel Newton-MUSIC 
+
+Correlation Construction O(L2O(N − LO)) ≈ O (N 3) O(L2N(N − LN)) ≈ O (L2NN )
+
+Subspace Decomposition O((LO + 1) 3) ≈ O (N 3) O((LN + 1) 3) ≈ O (L3N)
+
+DoA Extraction O(|Θ|L2O
+
+) ≈ O (|Θ|N 2 ) O(|Θcoarse |L2N + ZL 2N
+
+)
+
+Overall Complexity O(N 3 + |Θ|N 2 ) O(L2NN + L3N + |Θcoarse |L2N + ZL 2N
+
+)
+
+B. DoA Extraction and Newton Refinement 
+
+The DoA extraction stage further reduces the search cost by replacing a dense grid search with a coarse initialization fol-lowed by Newton refinement. Conventional MUSIC evaluates the spatial spectrum over a dense angular grid Θ. Evaluating the MUSIC cost over this grid requires O(|Θ|L2O) operations when the noise-subspace projection is directly used. A finer grid reduces quantization error but increases the search cost proportionally to |Θ|.The proposed method uses a two-stage estimation procedure. First, the cost function is evaluated on a coarse grid Θcoarse ,which requires O(|Θcoarse |L2N) operations. Since |Θcoarse | ≪ |Θ|, this step is much cheaper than dense grid search. Second, each coarse estimate is refined by Z Newton iterations in the continuous angular domain. The total arithmetic cost of the refinement stage is O(KZL 2N). After coarse initialization, each local Newton refinement can be carried out independently, so the K refinement loops can be parallelized. Under a parallel implementation, the refinement latency scales as O(ZL 2N).V. S IMULATION RESULTS 
+
+We evaluate the proposed method using Monte Carlo sim-ulations. Unless otherwise specified, the number of antenna ports is set to N = 256 , and the number of far-field sources is 
+
+K = 4 . The source DoAs are randomly generated within θ ∈
+
+[−60 ◦, 60 ◦] with a minimum angular separation of ∆θ = 9 ◦.The smoothing lengths are set to LO = 128 for square Hankel methods and LN = 20 for truncated Hankel methods. Each data point is averaged over M = 2000 independent Monte Carlo trials. The path powers are generated independently as 
+
+pk ∼ U (pmin , p max ), where pmax /p min ≤ 10 . The average received Signal-to-Noise Ratio (SNR) is defined as 
+
+SNR [dB] , 10 log 10 
+
+( 1
+
+> K
+
+∑Kk=1 pk
+
+σ2
+
+)
+
+. (18) For grid-search MUSIC, the dense angular grid is defined as 
+
+Θ = {θmin : ∆ Θ : θmax }, (19) with grid spacing ∆Θ = 0 .1◦. For Newton-MUSIC, the coarse grid is defined as 
+
+Θcoarse = {θmin : ∆ Θcoarse : θmax }, (20) with ∆Θcoarse = 0.5◦. The maximum number of Newton iterations is set to Z = 20 .        
+
+> -5 0510 15 20 25 30
+> SNR (dB)
+> -50 -45 -40 -35 -30 -25 -20 -15
+> RMSE (dBrad)
+> Square Hankel MUSIC
+> Truncated Hankel MUSIC
+> Square Hankel Netown-MUSIC
+> Truncated Hankel Netown-MUSIC
+> Fig. 1. RMSE performance of DoA estimation versus SNR.
+
+To evaluate the individual effects of Hankel truncation and Newton refinement, we compare four algorithmic configura-tions:  
+
+> •
+
+Square Hankel MUSIC : the conventional Hankel-MUSIC method using a square Hankel matrix and dense angular grid search [12].  
+
+> •
+
+Truncated Hankel MUSIC : a truncated Hankel variant using the reduced row dimension LN while still perform-ing dense angular grid search.  
+
+> •
+
+Square Hankel Newton-MUSIC : a square Hankel vari-ant that applies Newton refinement to coarse grid esti-mates.  
+
+> •
+
+Truncated Hankel Newton-MUSIC : the proposed method, which combines truncated Hankel smoothing with Newton refinement in the continuous angular do-main. The Root-Mean-Square Error (RMSE) of the DoA estimates is defined as 
+
+RMSE = 
+
+√√√√ 1
+
+M K 
+
+> M
+
+∑
+
+> m=1
+
+min 
+
+> Π∈P K
+
+∥∥∥Πˆθ(m)
+
+− θ(m)∥∥∥
+
+> 22
+
+, (21) where Π is a K × K permutation matrix, and PK denotes the set of all such permutation matrices. Fig. 1 shows the RMSE performance versus SNR. In the low-SNR regime from 
+
+−5 dB to 5 dB, all four methods exhibit a threshold effect because noise dominates the single-snapshot observation. As 64 128 256 512 1024 
+
+> Number of Antennas (N)
+> 10 -3
+> 10 -2
+> 10 -1
+> 10 0
+> Runtime per Snapshot (seconds)
+> Square Hankel MUSIC
+> Truncated Hankel MUSIC
+> Square Hankel Newton-MUSIC
+> Truncated Hankel Newton-MUSIC
+
+Fig. 2. Average runtime per snapshot versus number of antennas. 
+
+the SNR increases beyond 10 dB, square Hankel MUSIC and truncated Hankel MUSIC with dense grid search reach an error floor of approximately −33 .6 dBrad . This floor is caused by the finite angular grid spacing. In contrast, the Newton-refined methods reduce the grid-induced quantization error and continue to improve in the high-SNR regime. The performance gap between truncated Hankel Newton-MUSIC and square Hankel Newton-MUSIC remains within approximately 1.5 dB over the simulated SNR range, indicating that the proposed truncation substantially reduces complexity while preserving most of the estimation accuracy. Fig. 2 shows the average runtime per snapshot versus the number of antenna ports N on a log-log scale. In this simulation, square Hankel methods use LO = N/ 2, whereas truncated Hankel methods use LN = 20 , and all other pa-rameters remain unchanged. As N increases from 64 to 1024 ,the runtime of square Hankel methods grows rapidly due to the cubic cost of high-dimensional correlation construction and subspace decomposition. In contrast, the truncated Hankel methods show a much slower growth rate because the row dimension of the smoothed matrix is fixed. The proposed truncated Hankel Newton-MUSIC method achieves the lowest average runtime among the compared methods. This reduction is mainly due to the use of a coarse grid for initialization and a small number of Newton iterations for off-grid refinement. At N = 1024 , the proposed method achieves more than two orders of magnitude runtime reduction compared with conventional square Hankel MUSIC, which is consistent with the linear scaling predicted by the complexity analysis. VI. C ONCLUSION 
+
+This paper presented a low-complexity Truncated Hankel Newton-MUSIC framework for single-snapshot DoA estima-tion in reconfigurable antenna-enabled ISAC systems. By constructing a truncated Hankel matrix with a fixed row dimension, the proposed method reduces the dimension of the smoothed correlation matrix and lowers the cost of sub-space decomposition. When the truncation length is fixed independently of the array size, the dominant complexity scales linearly with the number of antenna ports. A second-order Newton refinement step was further introduced to refine coarse grid estimates in the continuous angular domain, thereby reducing grid-induced quantization errors. Simulation results showed that the proposed method achieves accuracy close to square Hankel Newton-MUSIC while reducing the runtime by more than two orders of magnitude for large arrays. These results indicate that the proposed framework is a promising candidate for real-time DoA estimation in dynamic ISAC scenarios. REFERENCES [1] F. Liu, Y. Cui, C. Masouros, J. Xu, T. X. Han, Y. C. Eldar, and S. Buzzi, “Integrated sensing and communications: Toward dual-functional wire-less networks for 6G and beyond,” IEEE J. Sel. Areas Commun. , vol. 40, no. 6, pp. 1728–1767, Mar. 2022. [2] L. Xie, S. Song, Y. C. Eldar, and K. B. Letaief, “Collaborative sensing in perceptive mobile networks: Opportunities and challenges,” IEEE Trans. Wireless Commun. , vol. 30, no. 1, pp. 16–23, Feb. 2023. [3] L. Xie, F. Liu, J. Luo, and S. Song, “Sensing mutual information with random signals in gaussian channels,” IEEE Trans. Commun. , vol. 73, no. 10, Oct. 2025. [4] K.-K. Wong, A. Shojaeifard, K.-F. Tong, and Y. Zhang, “Fluid antenna systems,” IEEE Trans. Wireless Commun. , vol. 20, no. 3, pp. 1950–1962, Mar. 2020. [5] L. Zhu, W. Ma, and R. Zhang, “Movable antennas for wireless commu-nication: Opportunities and challenges,” IEEE Commun. Mag. , vol. 62, no. 6, pp. 114–120, Oct 2023. [6] W. Yu, K. B. Letaief, and L. Zheng, “Sensing for free: Learn to localize more sources than antennas without pilots,” IEEE J. Sel. Areas Commun. ,vol. 44, pp. 3285–3301, Jan. 2026. [7] R. Cao, W. Yu, Z. Wang, S. Song, J. Zhang, Y. Gong, and K. B. Letaief, “Sensing-assisted channel estimation for flexible-antenna systems: A unified framework,” arXiv preprint arXiv:2604.27626 , Apr. 2026. [8] H. Krim and M. Viberg, “Two decades of array signal processing research: the parametric approach,” IEEE Signal Process. Mag. , vol. 13, no. 4, pp. 67–94, Jul. 1996. [9] R. Schmidt, “Multiple emitter location and signal parameter estimation,” 
+
+IEEE Trans. Antennas Propag. , vol. 34, no. 3, pp. 276–280, Mar. 1986. [10] R. Roy and T. Kailath, “ESPRIT-estimation of signal parameters via rotational invariance techniques,” IEEE Trans. Acoust., Speech, Signal Process. , vol. 37, no. 7, pp. 984–995, Jul. 1989. [11] T.-J. Shan, M. Wax, and T. Kailath, “On spatial smoothing for direction-of-arrival estimation of coherent signals,” IEEE Trans. Acoust., Speech, Signal Process. , vol. 33, no. 4, pp. 806–811, Aug. 1985. [12] W. Liao and A. Fannjiang, “MUSIC for single-snapshot spectral esti-mation: Stability and super-resolution,” Appl. Comput. Harmon. Anal. ,vol. 40, no. 1, pp. 33–67, Jan. 2016. [13] A. Fannjiang, W. Li, and W. Liao, “Optimality of Gradient-MUSIC for spectral estimation,” arXiv preprint arXiv:2504.06842 , 2025. [14] B. Mamandipoor, D. Ramasamy, and U. Madhow, “Newtonized orthog-onal matching pursuit: Frequency estimation over the continuum,” IEEE Trans. Signal Process. , vol. 64, no. 19, pp. 5066–5081, Oct. 2016. [15] R. Cao, H. He, X. Yu, S. Song, K. Huang, J. Zhang, Y. Gong, and K. B. Letaief, “Joint channel estimation and cooperative localization for near-field ultra-massive MIMO,” arXiv preprint arXiv:2312.13683 , Dec. 2023.

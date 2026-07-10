@@ -6,34 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-09
-- 运行时间：2026-07-09 22:01:38 UTC
+- 最新运行日期：2026-07-10
+- 运行时间：2026-07-10 21:14:33 UTC
 - 运行状态：成功
 - 本次总论文数：4
 - 精读区：2
 - 速读区：2
 
 ### 今日简报（AI）
-今日精选4篇论文，其中2篇精读（合金回收多目标优化、线性对流反应方程结构法）和2篇速读（语音掩蔽释放、水下SLAM系统）。  
-合金回收方向结合因子机与量子退火实现数据驱动优化，线性方程的结构导向Gauss网络方法提供新求解思路，值得重点阅读。  
-建议优先精读这两篇8分论文，深入理解其方法对实际问题的指导价值。
-- 详情：[/202607/09/README](/202607/09/README)
+今日推荐4篇论文，聚焦实时SLAM、无网格DoA估计、6-D无线电SLAM及水下连续时间视觉里程计。精读首选《Real-Time LiDAR Gaussian Splatting SLAM》和《Low-Complexity Gridless Single-Snapshot DoA Estimation via Truncated Hankel Newton-MUSIC》，均获8.0高分。建议优先关注SLAM与信号处理领域的新方法，尤其适用于机器人实时定位与稀疏阵列处理场景。
+- 详情：[/202607/10/README](/202607/10/README)
 
 ### 精读区论文标签
-1. [Data-driven multi-objective optimization for alloy recycling using factorization machines and quantum annealing](/202607/09/2607.03208v1-data-driven-multi-objective-optimization-for-alloy-recycling-using-factorization-machines-and-quantum-annealing)  
+1. [Real-Time LiDAR Gaussian Splatting SLAM](/202607/10/2607.04127v1-real-time-lidar-gaussian-splatting-slam)  
    标签：评分：8.0/10、query:gso
-   evidence：使用分解机和量子退火解决非凸Pareto前沿优化，与机器学习中的非凸优化相关
-2. [Structure-Guided Gauss-Network Method: Linear Advection-Reaction Equation](/202607/09/2607.07506v1-structure-guided-gauss-network-method-linear-advection-reaction-equation)  
+   evidence：实时LiDAR SLAM涉及几何配准，直接与传感器对齐的几何校准相关
+2. [Low-Complexity Gridless Single-Snapshot DoA Estimation via Truncated Hankel Newton-MUSIC](/202607/10/2607.08108v1-low-complexity-gridless-single-snapshot-doa-estimation-via-truncated-hankel-newton-music)  
    标签：评分：8.0/10、query:gso
-   evidence：神经网络求解PDE中的非凸优化问题
+   evidence：无网格单快照DoA估计用于阵列处理
 
 ### 速读区论文标签
-1. [Neural Tracking of Speech Envelope as an Index of Spatial Release from Masking](/202607/09/biorxiv-10-64898-2026-06-29-734758-v1-neural-tracking-of-speech-envelope-as-an-index-of-spatial-release-from-masking)  
+1. [Amplitude-Independent Robust Snapshot 6-D Radio SLAM via a Uniffed Angle-Delay Formulation](/202607/10/2607.04847v1-amplitude-independent-robust-snapshot-6-d-radio-slam-via-a-uniffed-angle-delay-formulation)  
    标签：评分：7.0/10、query:gso
-   evidence：语音包络神经跟踪用于空间听觉与声源定位
-2. [APVI-SLAM: Real-Time Acoustic-Pressure-Visual-Inertial Localization and Photorealistic Mapping System in Complex Underwater Environment](/202607/09/2607.06222v1-apvi-slam-real-time-acoustic-pressure-visual-inertial-localization-and-photorealistic-mapping-system-in-complex-underwater-environment)  
+   evidence：基于角度-延迟公式的幅值无关稳健无线SLAM用于传感器位姿校准
+2. [DIVO: Continuous-time DVL-Inertial-Visual Odometry for Unmanned Underwater Vehicles](/202607/10/2607.04615v1-divo-continuous-time-dvl-inertial-visual-odometry-for-unmanned-underwater-vehicles)  
    标签：评分：6.0/10、query:gso
-   evidence：多传感器融合SLAM系统涉及声学压力视觉惯性传感器校准
+   evidence：利用DVL声学传感器的音频-视觉-惯性里程计，与声学传感器阵列的几何校准方法相关
 
 
 <div class="dpr-home-promo-card">
