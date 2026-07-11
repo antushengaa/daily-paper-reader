@@ -1,0 +1,782 @@
+Title: D-CLIPSE: Distributed Consensus-based Localization with Passive Listening on Shared State Exchange
+
+URL Source: https://arxiv.org/pdf/2607.07995v1
+
+Published Time: Fri, 10 Jul 2026 00:25:09 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# D-CLIPSE: Distributed Consensus-based Localization with Passive Listening on Shared State Exchange 
+
+Kyle Biron-Gricken and James Richard Forbes 
+
+Abstract — Multi-robot localization that is accurate and con-sistent is imperative for downstream tasks such as planning and control. Centralized filtering approaches optimally fuse all available sensor measurements of the team. However, a centralized solution is rarely implementable due to hardware, communication, and computational constraints. Distributed approaches deploy a filter on each robot to estimate their own state and neighbours’ states using inter-robot communication. This paper proposes a consistent, communication-efficient, and consensus-based distributed filtering framework that shares both preintegrated odometry and relevant shared states among communicating robots. The proposed method is validated in simulated and experimental scenarios, showing near centralized performance in accuracy, and especially in consistency, com-pared to the current state-of-the-art decentralized approach. 
+
+I. I NTRODUCTION 
+
+Multi-robot applications are becoming increasingly prevalent in many industries, such as infrastructure inspection, forestry, and mining [1–3]. To accomplish tasks successfully, a multi-robot team must have an accurate and consistent localization solution distributed among the team to inform downstream decisions, such as path planning and formation control. One challenge of multi-robot navigation is that robots may be equipped with different sensing modalities. In some situations, a robot may not have enough sensor information to estimate its own local state, and therefore must rely on its neighbours for additional information. A centralized 
+
+approach to solving this problem aggregates all robots’ local sensor data to a central processor, producing a state estimate of each member of the team with the lowest estimation error uncertainty. However, this approach is often unattainable in practice due to single-point-of-failure concerns, infrastruc-ture limitations, and communication constraints. Instead, a 
+
+distributed solution that is local to each robot is desirable, as it enables the use of local storage and computation, and introduces redundancy. In a distributed setting, each robot estimates its own state or its own state in addition to the state of each of its neighbours. A benefit of estimating the neighbours’ states is to inform local path planning and control decisions, while also locally tracking inter-robot cross-correlations. As shown in Fig. 1, this is real-ized through inter-robot communication, where robots share both their local sensor data and state estimates over some communication medium, such as Wi-Fi or ultra-wideband (UWB) radio. Additionally, passive listening allows non-communicating neighbours to overhear shared information. Robots that estimate the same states motivates consensus ,such that the robots agree on the subset of the states that they share. By enforcing consensus between communicating robots, each robot’s local estimate should converge toward the centralized solution, as they are updated with information from other robots’ local estimates and sensor data. 1234X 1(1 ,2) X 2(1 ,2) X 1(1 ,2) X 1(1 ,2) X 2(1 ,2) 
+
+Fig. 1: An example multi-robot communication graph, where Robot 1 and Robot 2 exchange shared states. Robots 3 and 4 passively listen in on the shared state exchange, and update their local estimates based on the overheard information. 
+
+A. Related Work 
+
+Consensus-based filtering techniques have been studied ex-tensively for problems pertaining to sensor networks and target-tracking [4–6]. In these scenarios, the estimator net-works are static sensors that come to a consensus on the state of the dynamic target through local observations and information exchange. These methods consider sensors either sharing state estimates, measurement innovations, or a hybrid of both, over multiple, all-to-all communication rounds. The above methods assume that the dynamics of the target and its associated process input and noise covariance are known to all sensors, and consensus is achieved through multiple all-to-all communication rounds. In terms of pairwise communication, [7] proposes robots locally track inter-robot cross-correlations to neighbouring poses. The work [8] further applies this to a 3D visual-inertial-odometry (VIO) setting, in which all robots’ poses are resolved in one common reference frame. The estimators in these methods only estimate and communicate their local pose estimates and neighbour cross-correlations, and do not have access to input information from other robots. Other methods that do not explicitly track inter-estimator cross-correlations tend to rely on the provably consistent arXiv:2607.07995v1 [cs.RO] 9 Jul 2026 fusion method of covariance intersection (CI) [9] when cross-correlations are unknown. The work [10] proposes a two-step fusion method that requires, at minimum, two communication rounds with all interacting neighbours, where both fusion steps employ CI. The work [11] extends upon this by considering a matrix Lie group (MLG) state definition based on VIO, where robots hold their local estimate, sharing it when relative measurements occur. In these methods, mea-surement information and local state estimates are shared, often with multiple communication rounds. The proposed method presented in this paper is motivated by the work of [12] and [13]. The former considers multi-robot relative pose estimation through sharing preintegrated odometry, or relative motion increments (RMIs), along with a passive listening-based framework for non-interacting neigh-bours to overhear shared RMIs. The latter is the closest to this paper’s proposed method and considers a general decentralized filtering framework where through user-defined pseudomeasurements, sharing RMIs, and state sharing, mul-tiple robots estimate their own state and the state of each of their neighbours. This method requires one pairwise communication transaction, but relies on the pairwise sharing of both robots’ full states and the construction of the user-defined pseudomeasurements. 
+
+B. Contributions and Paper Organization 
+
+This paper addresses the problem of distributed filtering for collaborative localization, with the main contributions being:  
+
+> •
+
+a consensus-based distributed filtering framework which only shares relevant shared states and RMIs over one pairwise communication exchange,  
+
+> •
+
+a passive listening-based consensus update for neigh-bours that overhear the shared state exchange,  
+
+> •
+
+validating the proposed approach in simulation and experiments, with results showing near centralized per-formance in consistency and accuracy compared to the state-of-the-art (SoTA) decentralized approach [13],  
+
+> •
+
+open-source implementation to be released upon accep-tance. The remainder of this paper is organized as follows. Pre-liminary material is introduced in Section II. The general problem statement is stated in Section III, followed by the presentation of the proposed consensus-based distributed filtering framework in Section IV. The simulation and exper-imental results are discussed in Section V, and conclusions and future work are discussed in Section VI. II. M ETHODOLOGY 
+
+A. Notation and Matrix Lie Groups 
+
+Throughout this paper, a bold uppercase letter such as 
+
+X ∈ Rm×n denotes a matrix and a bold lowercase letter 
+
+x ∈ Rn denotes a column matrix. Matrix Lie groups SO (d)
+
+and SE (d) represent rotations and poses in d = {2, 3},respectively. Another common MLG is the “extended” pose 
+
+SE 2(3) that encodes velocity information, in addition to position and attitude information [13]. The direction cosine matrix Cab ∈ SO (d) enables a change of basis. That is, 
+
+rzw a = Cab rzw b where rzw j ∈ Rd is the position of point z
+
+relative to point w resolved in reference frame Fj where 
+
+j = {a, b }. If G is an MLG, g is the associated Lie algebra, where exp : g → G and log : G → g are the exponential and logarithm maps, respectively. These mappings can be simplified [14] by introducing Exp : Rm → G and Log : 
+
+G → Rm, where for X ∈ G and ξ ∈ Rm, X ≜ Exp( ξ), and 
+
+ξ ≜ Log( X ). A generalized addition ⊕ : G × Rm → G
+
+and subtraction ⊖ : G × G → Rm is also defined as 
+
+X = ¯X ⊕ ξ, and ξ = X ⊖ ¯X , which can admit either a right or left perturbation definition as in [14]. The right-perturbation is used for all operations in this paper. The probability distribution of X is assumed to be a Gaussian distribution such that X = ¯X ⊕ δξ where ¯X is the mean group element and δξ ∼ N (0, P) is a zero-mean perturbation in the Lie algebra with covariance P [15]. For simplicity, the notation p(X ) ≜ NL( ¯X , P) is used to denote a Gaussian distribution of an MLG. A composite group X is defined as a concatenation of multiple Lie group states as X =(X1, . . . , XN ), where each Xi ∈ Gi with group operations occurring elementwise. 
+
+B. General Process and Measurement Models 
+
+The general process model fi(·) and measurement models 
+
+gi(·) that are local to a robot i are 
+
+Xik = fi(Xik−1 , uik−1 , wik−1 ), wik−1 ∼ N (0, Qik−1 ), (1) 
+
+yik = gi(Xik ) + vik , vik ∼ N (0, Rik ), (2) where Xik is the state of robot i at timestep k, which is dropped for brevity going forward. Here, Xi is a general Lie group element, but could also be a composite group. The local process input ui is from the robot’s interoceptive sensor such as from a wheel odometer or an inertial measurement unit (IMU), and yi is a local observation from the robot’s local exteroceptive sensor such as from GPS positioning or range measurements to known landmarks. Both the intero-ceptive and exteroceptive sensor measurements are corrupted with additive white noises, wi ∼ N (0, Qi) and vi ∼N (0, Ri), respectively. Robots are also capable of inter-robot sensing, such as from UWB inter-robot range measurements. The inter-robot measurement model hij (·) is a function of both robots i and j’s states, that is 
+
+yij k = hij (Xik , Xjk ) + nij k , nij k ∼ N (0, Rij k ), (3) where yij is the inter-robot observation between robots i and 
+
+j, that is corrupted by additive white noise nij ∼ N (0, Rij ).The inter-robot measurement can be available to either robot 
+
+i, robot j, or both. 
+
+C. Centralized vs Distributed Estimators 
+
+The definition of a centralized and distributed estimator for a team of N robots are as follows. 
+
+1) Centralized Estimators: Centralized estimators attempt to estimate the global state X = ( X1, . . . , XN ) where Xi ∈ Gi,with access to all local measurements ui, yi, and inter-robot measurements yij for all robots i, j ∈ { 1, . . . , N } at an arbitrary timestep. By fusing all available sensor information, centralized estimators are theoretically optimal in attaining the lowest estimation error covariance, but are rarely imple-mented in practice due to their demanding communication and infrastructure requirements. 
+
+2) Distributed Estimators: Distributed estimators are local to all N robots and attempt to estimate a subset of the global state X i ⊆ X , for a robot i. In this work, a robot i estimates its local state Xi;i using its local measurements ui, yi, and 
+
+the states of its one-hop neighbours Xj;i, ∀j ∈ N i using inter-robot measurements yij and information received from robot j, where Ni is the set of one-hop neighbours of robot 
+
+i. The full state of robot i is thus 
+
+X i = ( Xi;i, {X j;i}j∈N i ), (4) where the subscript notation (·);i indicates that the state 
+
+(·) is estimated by robot i. A shared state between robots 
+
+i and j is the intersection of their full states X i ∩ X j ,which includes shared neighbours. For example, consider the communication graph for N = 4 robots in Fig. 1, with global state X = ( X1, X2, X3, X4). The full state of Robot 1 is X 1 = ( X1, X2, X3, X4);1 , and the full state of Robot 2 is X 2 = ( X1, X2, X4);2 . Hence, the shared state between Robot 1 and Robot 2 as estimated by Robot 1 is X 1(1 ,2) = ( X1, X2, X4);1 . Thus, the full state of Robot 1 can be partitioned into the shared state X 1(1 ,2) and the unique state X3;1 as X 1 = ( X 1(1 ,2) , X3;1 ). This notation and partitioning can be generalized to any pair of robots i
+
+and j. The benefit of this will be apparent in Section IV-A when forming the consensus distribution of the shared states. 
+
+D. Preintegrated Odometry Sharing 
+
+For a robot i to propagate its estimate of a neighbour j’s state Xj;i, it must have access to the odometry information of robot j. As in [12, 13], robot i holds a preintegrated process model fpq (·) relating the neighbour state Xj;i at two arbitrary timestamps k = p and k = q as 
+
+Xj;iq = fpq (Xj;ip , ∆Xjpq ) ⊕ wpq , wpq ∼ N (0, Qpq ), (5) where ∆Xjpq is the preintegrated odometry, or RMI, and 
+
+Qpq is the preintegrated noise covariance, both received from robot j. When no RMI is available, the neighbour’s state is propagated with a “zero” RMI. This allows for a constant-memory, on-demand sharing of odometry information be-tween two arbitrarily long timestamps, without needing to share each individual high-rate odometry measurement. III. P ROBLEM FORMULATION 
+
+Consider a team of N robots that form an undirected communication graph G = ( V, E) where V = {1, 2, . . . , N }
+
+is the set of vertices representing the robots and E is the set of edges representing communication links between robots. For an arbitrary robot i, the goal is to estimate its full state X ik = ( Tai ;ik , {Taj ;ik }j∈N i ), comprised of its local (extended) pose Tai ;ik and neighbouring poses {Taj ;ik }j∈N i ,all relative to the inertial reference frame Fa. The local pose is propagated through local odometry, local sensing, and inter-robot measurements, while the neighbouring poses are propagated by receiving neighbouring RMIs and inter-robot measurements. Both the local and neighbouring states are also updated through either direct (Section IV-B) or passive (Section IV-C) consensus updates. The initialization procedure is assumed to be known, such that all robots hold the same initial beliefs for their shared states. It is assumed that only pairwise communication is available to minimize communication interference. It is also assumed that RMIs can be passively received by any robot that is in range of either an inter-robot measurement or a consensus exchange. Finally, the communication topology is static, with a fixed, known communication schedule, where robots are able to extract the relevant shared state information during a consensus exchange. IV. C ONSENSUS -B ASED DISTRIBUTED ESTIMATION 
+
+This section will describe updating the full state based on first forming a consensus distribution of the shared states between a pair of robots i and j, which is then used to update their unique states. The motive and goal of cyclically forming a consensus distribution among pairs of the network is for all full states to converge onto the centralized solution. 
+
+A. Consensus Distribution of Shared States 
+
+Along with sharing RMIs, it is assumed that robots can also pairwise exchange their shared state estimates. For a pair of robots i and j that estimate the same physical quantities, the shared states are in consensus if 
+
+X i(i,j ) = X j(i,j ) . (6) From robot i’s perspective prior to consensus, its marginal density of the full state p(X i) can be partitioned into the joint density of the shared and unique components as 
+
+p(X iS , X iU ) ∼ N L
+
+ ˆX iS
+
+ˆX iU
+
+
+
+,
+
+ˆPiSS ˆPiSU 
+
+ˆPiU S ˆPiU U 
+
+ 
+
+, (7) where S and U subscripts denote the shared and unique components, respectively. By Bayes’ theorem, the above joint density can be factored into the marginal density of the shared states and the conditional density of the unique states given the current shared state estimate as [16, Sec. 2.2.2] 
+
+p(X iS , X iU ) = p(X iS )p(X iU |X iS ), (8) 
+
+p(X iS ) ∼ N L( ˆX iS , ˆPiSS ), (9) 
+
+p(X iU |X iS ) ∼ N L( ˜X iU , ˜PiU U ), (10) 
+
+˜X iU = ˆX iU ⊕ M(X iS ⊖ ˆX iS ), (11) 
+
+˜PiU U = ˆ PiU U − MˆPiSU , M = ˆ PiU S ˆP−1 
+
+> iSS
+
+, (12) where the generalized addition and subtraction have over-loaded the typical vector space definition. To drive consensus between the shared states, robots i and j share their local belief of the shared states ( ˆX iS , ˆPiS ) and ( ˆX jS , ˆPjS ) to ea-chother, respectively. Hence, both robots i and j have access to both beliefs of the shared states. Note that inter-robot estimates are correlated due to double counting RMIs and possibly sharing inter-robot measurements of the form (3). This is addressed by first performing a CI step between the shared states’ covariances locally on robot i as ˆPiS ← 1
+
+> ωi
+
+ˆPiS ,
+
+ˆPjS ← 11−ωi
+
+ˆPjS where ωi ∈ [0 , 1] is robot i’s CI weight that is handpicked, or optimized by minimizing the trace or log-determinant of the fused covariance [9]. From the perspective of robot j, the subscripts are swapped as ωj = 1 − ωi.As the shared poses are states on MLGs, their fusion is performed as in [17]. From the perspective of robot i, the procedure of forming the consensus distribution of the shared states between i and j begins with the CI step. Now, robot 
+
+i has access to both ( ˆX iS , ˆPiS ) and ( ˆX jS , ˆPjS ) noting that the covariances are inflated due to CI. The goal is to form an optimization problem to solve for the optimal shared state X S , that can be executed on both robots i and j.The residual that is sought to be minimized is formed as 
+
+ei(X S ) = ˆX iS ⊖ X S . Further expanding X S into nominal and perturbation terms as X S = X op ⊕ ϵ, the residual can be rewritten in terms of the perturbation ϵ as 
+
+ei(X S ) = ˆX iS ⊖ (X op ⊕ ϵ). (13) With the assumption that the perturbation ϵ is small, by the Baker-Campbell-Hausdorff (BCH) approximation [16, Sec. 8.1.5], the fusion of MLG states is reformed as a weighted nonlinear least-squares problem of the form [17] 
+
+> (i,j )
+
+X
+
+> n
+
+ GT
+
+> n
+
+P−1 
+
+> nS
+
+Gn
+
+ ϵ =
+
+> (i,j )
+
+X
+
+> n
+
+GT
+
+> n
+
+P−1 
+
+> nS
+
+en(X op ). (14) Here, Gn is the (left or right, depending on chosen perturba-tion direction) inverse group Jacobian evaluated at en(X op ).The problem is iteratively updated by Gauss-Newton with 
+
+X op ← X op ⊕ ϵ until a convergence criterion is met. The consensus distribution is formed at convergence as 
+
+ˆX ∗ 
+
+> S
+
+= X op , ˆP∗ 
+
+> S
+
+= ( GT 
+
+> i
+
+P−1 
+
+> iS
+
+Gi + GT 
+
+> j
+
+P−1 
+
+> jS
+
+Gj )−1, (15) where p(X ∗ 
+
+> S
+
+) ∼ N ( ˆX ∗ 
+
+> S
+
+, ˆP∗ 
+
+> S
+
+) on both robots i and j. In this paper, from the perspective of robot i, X op is initialized as 
+
+X op = ˆX iS ⊕ (α( ˆX iS ⊖ ˆX jS )) , (16) where α serves to perturb the local shared state estimate towards the neighbour’s shared state estimate. For simplicity, 
+
+α = 0 .5 to give equal weight to both estimates, but the CI weight ωi could also be used to weigh by uncertainty. 
+
+B. Updating the Local Joint Distribution with Consensus 
+
+Herein lies a novel contribution of the proposed method in reconditioning the local joint distribution using the newly formed consensus distribution of the shared states. From the perspective of robot i, the local joint density is updated by fusing the newly formed marginal consensus distribution 
+
+p(X ∗ 
+
+> S
+
+) and the conditional distribution (10) as 
+
+p(X ∗ 
+
+> i
+
+) = p(X ∗ 
+
+> S
+
+, X ∗ 
+
+> iU
+
+) = p(X ∗ 
+
+> S
+
+)p(X iU |X ∗ 
+
+> S
+
+). (17) The random variables representing the shared and unique states of robot i can be expressed as 
+
+X ∗ 
+
+> S
+
+= ˆX ∗ 
+
+> S
+
+⊕ δξS , δξS ∼ N (0, ˆP∗ 
+
+> S
+
+), (18) 
+
+X ∗ 
+
+> iU
+
+= ˆX iU ⊕ (M (( ˆX ∗ 
+
+> S
+
+⊕ δξS ) ⊖ ˆX iS )
+
+| {z }
+
+> δξ∗
+> S
+
++δξU ), (19) where δξU ∼ N (0, ˜PiU U ). Note that here the conditional noise δξU is added to the consensus noise term Mδξ∗ 
+
+> S
+
+in the tangent space of the unique states. The means of the marginal consensus distribution and the conditional distributions are 
+
+E[X ∗ 
+
+> S
+
+] = ˆX ∗ 
+
+> S
+
+, ¯X iU ≜ E[X ∗ 
+
+> iU
+
+] = ˆX iU ⊕ Mδ¯x, (20) where δ¯x = ˆX ∗ 
+
+> S
+
+⊖ ˆX iS . When updating a covariance component that includes the unique states, the term 
+
+X ∗ 
+
+> iU
+
+⊖ ¯X iU = ( ˆX iU ⊕ (Mδξ∗ 
+
+> S
+
++ δξU )) ⊖ ¯X iU , (21) must be computed. As perturbations are small, δξ∗ 
+
+> S
+
+is ap-proximated using the BCH approximation as 
+
+δξ∗ 
+
+> S
+
+= ( ˆX ∗ 
+
+> S
+
+⊕ δξS ) ⊖ ˆX iS ≈ δ¯x + J −1 
+
+> r
+
+(δ¯x)δξS , (22) where J r (·) is the right group Jacobian of the MLG. When substituting (22) into (21), the term 
+
+Exp( Mδ¯x + MJ −1 
+
+> r
+
+(δ¯x)δξS + δξU ) (23) emerges and can be further approximated by the BCH approximation as 
+
+Exp( Mδ¯x + MJ −1 
+
+> r
+
+(δ¯x)δξS + δξU )
+
+≈Exp( Mδ¯x)Exp( J r (Mδ¯x)( MJ −1 
+
+> r
+
+(δ¯x)δξS + δξU )) . (24) After substituting (24) back into (21) and simplifying, the final approximation can be retrieved as 
+
+X ∗ 
+
+> iU
+
+⊖ ¯X iU ≈ JS δξS + JU δξU , (25) where JS = J r (Mδ¯x)MJ −1 
+
+> r
+
+(δ¯x) and JU = J r (Mδ¯x).Now, assuming δξS and δξU are independent, the recondi-tioned unique states and covariances of robot i are 
+
+ˆX i =
+
+ ˆX ∗
+
+> S
+
+¯X iU
+
+
+
+, ˆPi =
+
+ ˆP∗ 
+
+> S
+
+ˆP∗ 
+
+> S
+
+JT
+
+> S
+
+JS ˆP∗ 
+
+> S
+
+JS ˆP∗ 
+
+> S
+
+JT 
+
+> S
+
++ JU ˜PiU U JT
+
+> U
+
+
+
+. (26) If the local shared state ˆX iS and the consensus shared state ˆX ∗ 
+
+> iS
+
+are equal, there will be no change in the unique component of the local estimate. That is, if δ¯x ≈ 0, J r (·) ≈
+
+1 the updated covariance can be further approximated as 
+
+ˆPi ≈
+
+ ˆP∗ 
+
+> S
+
+ˆP∗ 
+
+> S
+
+MT
+
+MˆP∗ 
+
+> S
+
+MˆP∗ 
+
+> S
+
+MT + ˜ PiU U 
+
+
+
+. (27) 
+
+C. Passive Listening on Shared State Exchange 
+
+Motivated by the passive listening approach, another novel contribution of the proposed method is to allow non-communicating robots (herein passive robots) to passively listen in on the shared state exchange between communicat-ing robots. In doing so, passive robots can update their local belief on the subset of broadcasted shared states that they also estimate. For example, in Fig. 1, Robot 3 and Robot 4 are passive robots that have full state X 3 = ( X1, X3, X4);3 and X 4 = ( X1, X2, X3, X4);4 , respectively. When Robot 1 and Robot 2 broadcast their shared states X 1(1 ,2) and X 2(1 ,2) , the passive robots can update their relevant shared state estimates locally as per the proposed method described in Section IV-A and Section IV-B. This can benefit the passive robots if the communication schedule is long and infrequent, as they can still benefit from the information being communicated. V. S IMULATION AND EXPERIMENTAL RESULTS 
+
+The proposed method outlined in Section IV is evaluated us-ing both simulated and experimental data. In all simulations and experiments, the results are compared to the centralized estimator as a baseline, and the SoTA decentralized approach proposed in [13]. When implementing [13], a consensus-style pseudomeasurement like (6) is used, with handset CI weight 
+
+ω = 0 .99 and Ψ = 0. For simulation results, the proposed method solves for ω dynamically by minimizing the trace of the fused covariance matrix, whereas it is fixed at ω = 0 .5 for all experimental results to maintain a static comparison. Un-less specified otherwise, the proposed and SoTA methods use the passive listening approach described in Section IV-C. All methods use an on-manifold extended Kalman filter for state estimation [14], where outlier measurements are rejected by the normalized-innovation-squared test [16, Sec. 5.1.2]. 
+
+A. Evaluation Metrics 
+
+All estimators are evaluated based on accuracy and consis-tency. The distributed estimators are also evaluated on how closely they match the centralized estimates. a) Accuracy: The accuracy of the estimators are evaluated based on the root mean squared error (RMSE) of the estimates, ˆX , compared to the groundtruth, X . For M
+
+total Monte Carlo (MC) trials, the estimation error for trial m at timestep k is computed as em,k = X m,k ⊖
+
+ˆX m,k , the (per-component) M -trial averaged RMSE and temporally averaged RMSE (aRMSE) are computed as aRMSE k =
+
+q 1
+
+> M
+
+PMm=1 1 
+
+> n
+
+eT
+
+> m,k
+
+em,k and aRMSE =
+
+> 1
+> K+1
+
+PKk=0 aRMSE k, for n component (position, attitude, etc.) degrees of freedom and K + 1 total timesteps. b) Consistency: A consistent estimator is one that produces covariance estimates that properly captures the true un-certainty of the estimation errors. The consistency of the estimators are qualitatively evaluated based on the ±3σ
+
+bounds enveloping the estimation errors, and quantita-tively evaluated based on the temporally averaged nor-malized estimation error squared (NEES) [18, Sec. 5.4], which is computed as NEES = 1(K+1) n
+
+PKk=0 eT 
+
+> k
+
+Σ−1 
+
+> k
+
+ek,where a consistent estimator should have a NEES close to one. c) Comparability to Centralized Estimates: The distributed estimators are compared to the relevant centralized es-timates based on the 2-Wasserstein distance between their distributions [19, Sec. 2.6]. For Gaussian distri-butions, the (squared) 2-Wasserstein distance between 
+
+x ∼ N (μx, Σx) and y ∼ N (μy , Σy ) is W2(x, y)2 =
+
+∥μx ⊖ μy ∥22 + B(Σx, Σy )2, where the normal vector space definition has been overloaded. The first term is the (squared) Euclidean distance between both distributions’ means and the second term is the (squared) Bures metric between their covariances. Explicitly the (squared) Bures 
+
+metric is B(Σx, Σy )2 = tr (Σx + Σy − 2( Σ 12 
+
+> y
+
+ΣxΣ 12 
+
+> y
+
+) 12 ).
+
+B. Simulation Results 
+
+The proposed method is first validated in simulation, which considers N robots moving in 2D. The robots are equipped with gyroscopes and wheel odometers, generating angular and forward body frame velocity measurements. All robots are also equipped with two UWB transceivers at known lever arms, generating attitude-coupled inter-robot range measure-ments [20]. Some robots are equipped with GPS, generating global position measurements. It is only through inter-robot communication that non-GPS-equipped robots can estimate their global poses. For all simulations, odometry measure-ments occur at 100 Hz , all-to-all UWB-range measurements at 50 Hz , and GPS measurements at 10 Hz . Regardless of the size of the communication schedule, it is cycled through at 10 Hz . The following simulation scenarios are considered. 1) S1: N ∈ { 3, 5, 9, 17 }, where only Robot 1 is equipped with GPS. The communication graph is sparse, where only Robot 1 can communicate with all other robots. 2) S2: N = 4 , where Robots 1 and 4 are equipped with GPS. The communication graph is equivalent to the one shown in Fig. 1. The ±3σ error plots for one trial of S1 with N = 3
+
+is shown in Fig. 2, comparing both methods. While both solutions are accurate, it is clear that the proposed method is more precise in the uncertainty estimate of the neighbouring states, particularly in Robot 2 and 3’s estimate of Robot 1. Moreover, the distributed estimates of the proposed approach are in consensus as the errors and shaded ±3σ regions are tightly overlapping, nearing the centralized solution. This increase in consistency is further shown in the NEES boxplot in Fig. 3, where all estimators of the proposed method are more consistent than the SoTA method, also nearing the centralized solution. Fig. 4 shows the temporally averaged component-wise 2-Wasserstein metrics, and it is clear that both the mean and covariance estimates of the proposed method are closer to the centralized solution compared to the SoTA method. To show the benefit of passive listening, TABLE I: Position aRMSE [ m] of Robot 1 as estimated by itself, and its neighbours, with and without passive listening. Percentages show relative difference from the self-estimate.                                  
+
+> Self Averaged Neighbour Value Number of Neighbours w/o Psv. w/ Psv. w/o Psv. w/ Psv. 20.0054 0.0054 0.0061 (13.0%) 0.0054 (0.0%) 40.0053 0.0053 0.0070 (32.1%) 0.0054 (1.9%) 80.0051 0.0051 0.0085 (66.7%) 0.0053 (3.9%) 16 0.0049 0.0049 0.0108 (120.4%) 0.0051 (4.1%) −5
+> 0
+> 5
+> δξ φ [deg]
+> Robot 1
+> −5
+> 0
+> 5
+> Robot 2
+> −5
+> 0
+> 5
+> Robot 3
+> −0.05
+> 0.00
+> 0.05
+> δξ x [m]
+> −0.2
+> 0.0
+> 0.2
+> −0.1
+> 0.0
+> 0.1
+> 0510 15
+> Time [s]
+> −0.05
+> 0.00
+> 0.05
+> δξ y [m]
+> 0510 15
+> Time [s]
+> −0.2
+> 0.0
+> 0.2
+> 0510 15
+> Time [s]
+> −0.1
+> 0.0
+> 0.1
+> 1 TR 2 TR 3 TR CEKF
+
+(a) Proposed Method −5             
+
+> 0
+> 5
+> δξ φ [deg]
+> Robot 1
+> −5
+> 0
+> 5
+> Robot 2
+> −5
+> 0
+> 5
+> Robot 3
+> −0.05
+> 0.00
+> 0.05
+> δξ x [m]
+> −0.2
+> 0.0
+> 0.2
+> −0.1
+> 0.0
+> 0.1
+> 0510 15
+> Time [s]
+> −0.05
+> 0.00
+> 0.05
+> δξ y [m]
+> 0510 15
+> Time [s]
+> −0.2
+> 0.0
+> 0.2
+> 0510 15
+> Time [s]
+> −0.1
+> 0.0
+> 0.1
+> 1 SoTA 2 SoTA 3 SoTA CEKF
+
+(b) SoTA Method 
+
+Fig. 2: Error plots and ±3σ bounds (shaded region) of all distributed estimators for S1 with N = 3 robots, comparing (a) proposed and (b) SoTA methods. Subplots share the same axis limits for a qualitative comparison. CEKF 
+
+> 1 SoTA
+> 1 TR
+> 2 SoTA
+> 2 TR
+> 3 SoTA
+> 3 TR
+> Estimator
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> NEES
+> Expected NEES
+
+Fig. 3: Comparison of the NEES between proposed (TR) and SoTA [13] estimators for S1, with N = 3 over M = 200 
+
+MC runs. The white dot indicates the mean whereas the black line indicates the median. Table I compares the positioning aRMSE of Robot 1’s position as estimated by Robot 1 and the average of all its neighbours’ estimates. Without passive listening, neighbour estimates must wait the entire communication schedule to perform a consensus update, which results in longer delays as the teamsize increases. During this time, neighbours can only deadreckon their belief of Robot 1’s state using received RMIs, indicated by the increasing averaged neigh-bour aRMSE with increasing team size. However, when passive listening is enabled, neighbours can perform passive consensus updates more frequently, which results in more accurate estimates of Robot 1’s state even with increasing team size. It should also be observed that the neighbours’ accuracy tends to converge to the self-estimate of Robot 1, indicating that the neighbours are in consensus with Robot 1’s estimate. For this simulation, passive listening does not impact the accuracy of Robot 1’s self-estimate due to the communication topology. Fig. 5 shows the position RMSEs 1 SoTA 
+
+> 1 TR
+> 2 SoTA
+> 2 TR
+> 3 SoTA
+> 3 TR
+> 1 SoTA
+> 1 TR
+> 2 SoTA
+> 2 TR
+> 3 SoTA
+> 3 TR
+> Estimator
+> 10 −4
+> 10 −3
+
+‖μd μc‖22
+
+> 1 SoTA
+> 1 TR
+> 2 SoTA
+> 2 TR
+> 3 SoTA
+> 3 TR
+> 1 SoTA
+> 1 TR
+> 2 SoTA
+> 2 TR
+> 3 SoTA
+> 3 TR
+> Estimator
+> 10 −8
+> 10 −7
+> 10 −6
+> 10 −5
+> 10 −4
+
+B(Σd, Σc)2  
+
+> Robot 1 Robot 2 Robot 3
+
+Fig. 4: Component-wise comparison of the 2-Wasserstein metrics between proposed (TR) and SoTA [13] estimators for S1, with N = 3 over M = 200 MC runs. of Robot 1 and Robot 2 from all estimators for S2 over a 1.5 s 
+
+window. For both robot estimates, it is clear that the proposed method produces estimates that are more in consensus than the SoTA, as the RMSEs overlap more. It is also clear that the proposed method produces more accurate estimates than the SoTA method, as they are closer to the centralized solution. The exception to this is Robot 1’s estimate of itself, where the SoTA method performs marginally better than the proposed, at the expense of a poorer estimate of Robot 2’s position. This is due to Robot 1 being capable of observing its global pose as it is equipped with GPS, and ω = 0.99 giving little weight to the neighbouring estimates during consensus updates for the SoTA method. This trend occurs throughout the entire trajectory. 
+
+C. Experimental Results 
+
+The MILUV dataset [21] is used to experimentally validate the proposed method. The dataset consists of a team of three 8.0 8.5 9.0 9.5       
+
+> Time [s]
+> 0.005
+> 0.006
+> 0.007
+> 0.008
+> 0.009
+> 0.010
+> 0.011
+> Position RMSE [m]
+> Robot 1
+> 8.08.59.09.5
+> Time [s]
+> 0.014
+> 0.015
+> 0.016
+> 0.017
+> 0.018
+> Robot 2
+> Robot 1 Robot 2 Robot 3 Robot 4 CEKF
+
+Fig. 5: The S2 position RMSEs of Robot 1 and Robot 2 as estimated by the proposed (solid) and SoTA (dashed) distributed estimators, over M = 200 trials, zoomed into a 1.5 s window to differentiate the methods. quadrotors flying in an indoor environment, each equipped with an IMU, an altimeter, and two UWB transceivers per robot, enabling robot-to-anchor and inter-robot ranging. In this scenario, the same inter-robot range measurement is available to both robots. Robots 2 and 3 are set to range to six anchors of known positions, while Robot 1 only gets global positioning information through shared state exchange. The edges of the communication graph are E = {(1 , 2) , (1 , 3) }.The robots perform inter-robot ranging and communication based on the communication graph. The local state of each robot i is Xi;i = ( Tai , bi) ∈ SE 2(3) × R6, where Tai is the extended pose and bi is the gyroscope and accelerometer biases. The full state includes the neighbour states, Xj;i ∀j ∈Ni. Fig. 6 shows a 20 s window of the ±3σ error plots of all robots’ estimate of Robot 1’s yaw and planar position, for the proposed method with and without passive listening at a con-sensus frequency of 3 Hz . For both methods, the estimates are accurate as the errors are enveloped by the ±3σ bounds. However, it is clear that the proposed method with passive listening produces more consistent estimates, particularly for the position, than without, as the ±3σ bounds are tighter and grow less frequently. This is attributed to the passive consensus updates, as without it, neighbouring estimators can only deadreckon their belief of Robot 1’s state using received RMIs until their next scheduled consensus update. The benefit of passive listening is evident at lower communication frequencies, as there is a longer delay between consensus updates. For this particular sequence, it was observed that with a communication frequency of 2 Hz , all distributed estimators diverged without passive listening, whereas with passive listening, the distributed estimates remained accu-rate and consistent. Additionally, Fig. 7 shows Robot 3’s component-wise 2-Wasserstein metric for the proposed and SoTA methods over a 20 s window. For both the mean and covariance metrics, Robot 3’s estimate from the proposed method is closer to the centralized solution. Additionally, the with passive case shows an improvement compared to without, as there is less time deadreckoning neighbour states without a consensus update. This shows that the proposed method produces more accurate and consistent estimates that are in consensus, and are closer to the centralized solution than the SoTA method. This is similarly seen for the other robots’ estimates, which are not shown. 
+
+D. Comparison to State-of-the-Art 
+
+The main difference between the proposed and SoTA [13] methods is that the proposed only shares relevant shared states, whereas the latter shares the full state during a con-sensus update. The SoTA method performs a CI step on the 
+
+full state, inflating unique states that are not a function of the consensus pseudomeasurement, producing more conservative estimates. The proposed method is thus lighter weight in communication, more scalable to larger teams and produces more accurate and consistent estimates, while not needing to implement user-defined pseudomeasurements. VI. C ONCLUSION 
+
+In this paper, a novel communication-efficient consensus-based distributed filtering framework for collaborative lo-calization on MLGs was developed, utilizing both prein-tegrated odometry sharing and state sharing through inter-robot communication. Additionally, a novel passive listening-based consensus update was also introduced for non-communicating neighbours to update their local estimates based on overhearing shared state exchanges, showing im-provements to distributed estimates from more frequent con-sensus updates. The proposed method was validated in both simulation and experimental settings, showing near central-ized performance in accuracy and particularly in consistency compared to the SoTA approach [13]. Future work includes extending the framework to an optimization-based approach, and handling dynamic communication graphs. ACKNOWLEDGMENTS 
+
+Microsoft Copilot was used in a limited capacity to provide technical suggestions and draft review. All suggestions were carefully vetted. The authors take full responsibility for the paper’s content. REFERENCES [1] A. J. I. Foster, M. Gianni, A. Aly, H. Samani, and S. Sharma, “Multi-robot coverage path planning for the inspection of offshore wind farms: A review,” Drones , vol. 8, no. 1, 2024. [2] J. Chen, M. Chen, J. Wang, Q. Mao, F. Xie, and P. Dames, “Distributed multi-robot active gathering for non-uniform agriculture and forestry information,” Frontiers in Plant Science , vol. 16, 2025. [3] V. Vigara Puche, K. Verma, and M. Fumagalli, “Underground multi-robot systems at work: A Revolution in Mining,” Applied Sciences ,vol. 16, no. 3, 2026. [4] R. Olfati-Saber, “Distributed Kalman Filter with Embedded Consen-sus Filters,” in IEEE Conf. Deci. Cont. , 2005, pp. 8179–8184. [5] R. Olfati-Saber, “Kalman-Consensus Filter : Optimality, stability, and performance,” in IEEE Conf. Deci. Cont. , 2009, pp. 7036–7042. [6] G. Battistelli, L. Chisci, G. Mugnai, A. Farina, and A. Graziano, “Consensus-Based Linear and Nonlinear Filtering,” IEEE Trans. Automatic Cont. , vol. 60, no. 5, pp. 1410–1415, 2015. −50            
+
+> 0
+> 50
+> ψ Error [deg]
+> −2
+> 0
+> 2
+> x Error [m]
+> 35 .037 .540 .042 .545 .047 .550 .052 .555 .0
+> Time [s]
+> −2
+> 0
+> 2
+> y Error [m]
+> Robot 1 Robot 2 Robot 3 CEKF
+
+(a) Proposed w/o Passive −50             
+
+> 0
+> 50
+> ψ Error [deg]
+> −2
+> 0
+> 2
+> x Error [m]
+> 35 .037 .540 .042 .545 .047 .550 .052 .555 .0
+> Time [s]
+> −2
+> 0
+> 2
+> y Error [m]
+> Robot 1 Robot 2 Robot 3 CEKF
+
+(b) Proposed w/ Passive 
+
+Fig. 6: Error plots and ±3σ bounds of Robot 1 by all estimators for experiment default 3 random 0b , comparing the proposed method with and without passive listening over a 20 s window, for a consensus frequency of 3 Hz .0          
+
+> 2
+> 4
+> 6
+> 8
+> 10
+> ‖μd μc‖22
+> 35 .037 .540 .042 .545 .047 .550 .052 .555 .0
+> Time [s]
+> 0.0
+> 0.5
+> 1.0
+> B(Σd, Σc)2
+> Prop w/o Passive Prop w/ Passive SoTA
+
+Fig. 7: A 20 s window comparing the component-wise 2-Wasserstein metrics of Robot 3’s estimates between the pro-posed and SoTA methods for the default 3 random 0b 
+
+experiment, for a communication frequency of 3 Hz .
+
+[7] L. Luft, T. Schubert, S. I. Roumeliotis, and W. Burgard, “Recursive decentralized localization for multi-robot systems with asynchronous pairwise communication,” Int. J. Robot. Res. , vol. 37, no. 10, pp. 1152–1167, 2018. [8] R. Jung, C. Brommer, and S. Weiss, “Decentralized Collaborative State Estimation for Aided Inertial Navigation,” in IEEE Int. Conf. Robot. Autom. , 2020, pp. 4673–4679. [9] S. Julier and J. Uhlmann, “A non-divergent estimation algorithm in the presence of unknown correlations,” in Amer. Cont. Conf. , vol. 4, 1997, pp. 2369–2373. [10] N. Hao, F. He, Y. Hou, W. Song, D. Xu, and Y. Yao, “Decentralized Cooperative Localization: A Communication-Efficient Dual-Fusion Consistent Approach,” IEEE Robot. Autom. Lett. , vol. 10, no. 1, pp. 636–643, 2025. [11] Y. Zhou, Y. Liu, and X. Wang, “Distributed 3-D Multi-Robot Cooperative Localization: An Efficient and Consistent Approach,” 
+
+IEEE Robot. Autom. Lett. , vol. 11, no. 2, pp. 2306–2313, 2026. [12] M. A. Shalaby, C. C. Cossette, J. Le Ny, and J. R. Forbes, “Multi-robot Relative Pose Estimation and IMU Preintegration Using Passive UWB Transceivers,” IEEE Trans. Robot. , vol. 40, pp. 2410– 2429, 2024. [13] C. C. Cossette, M. A. Shalaby, D. Saussi´ e, and J. R. Forbes, “Decentralized state estimation: An approach using pseudomeasure-ments and preintegration,” Int. J. Robot. Res. , vol. 43, no. 10, pp. 1573–1593, 2024. [14] J. Sol` a, J. Deray, and D. Atchuthan, A micro lie theory for state estimation in robotics , 2021. arXiv: 1812.01537 [cs.RO] .[15] G. Bourmaud, R. M´ egret, A. Giremus, and Y. Berthoumieu, “From Intrinsic Optimization to Iterated Extended Kalman Filtering on Lie Groups,” J. Math. Imaging & Vision , vol. 55, no. 3, pp. 284–303, 2016. [16] T. D. Barfoot, State Estimation for Robotics: Second Edition . Cam-bridge University Press, 2024. [17] T. D. Barfoot and P. T. Furgale, “Associating Uncertainty With Three-Dimensional Poses for Use in Estimation Problems,” IEEE Trans. Robot. , vol. 30, no. 3, pp. 679–693, 2014. [18] Y. Bar-Shalom, X.-R. Li, and T. Kirubarajan, Estimation with Applications to Tracking and Navigation: Theory, Algorithms and Software . Wiley, Jan. 2002. [19] G. Peyr´ e and M. Cuturi, Computational Optimal Transport , 2020. arXiv: 1803.00567 [stat.ML] .[20] M. Shalaby, C. C. Cossette, J. R. Forbes, and J. Le Ny, “Relative Position Estimation in Multi-Agent Systems Using Attitude-Coupled Range Measurements,” IEEE Robot. Autom. Lett. , vol. 6, no. 3, pp. 4955–4961, 2021. [21] M. A. Shalaby, N. Dahdah, S. S. Ahmed, C. C. Cossette, J. L. Ny, and J. R. Forbes, “MILUV: A Multi-UAV Indoor Localization dataset with UWB and Vision,” Int. J. Robot. Res. , vol. 0, no. 0, 2026.

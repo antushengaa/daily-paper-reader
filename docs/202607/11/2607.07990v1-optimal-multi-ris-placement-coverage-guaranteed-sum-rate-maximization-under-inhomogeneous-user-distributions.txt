@@ -1,0 +1,1374 @@
+Title: Optimal Multi-RIS Placement: Coverage-Guaranteed Sum Rate Maximization Under Inhomogeneous User Distributions
+
+URL Source: https://arxiv.org/pdf/2607.07990v1
+
+Published Time: Fri, 10 Jul 2026 00:17:24 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+> 1
+
+# Optimal Multi-RIS Placement: Coverage-Guaranteed Sum Rate Maximization Under Inhomogeneous User Distributions 
+
+Abhishek Rajasekaran , Member, IEEE , Mehdi Karbalayghareh , Member, IEEE ,Xiaoyan Ma , Member, IEEE , David J. Love , Fellow, IEEE ,and Christopher G. Brinton , Senior Member, IEEE 
+
+Abstract —The realization of the full potential of Reconfig-urable Intelligent Surfaces (RIS) in a wireless system is tied to their strategic spatial deployment. While existing literature primarily focuses on enabling fairness by maximizing coverage to navigate through obstacles, these approaches often fail to exploit the spatial distribution of user density to maximize throughput. Thus, to enable fairness without loss in throughput, we formulate a novel hierarchical problem that maximizes the expected sum rate of the system while guaranteeing probabilistic coverage with the least possible number of RISs deployed. To solve this multi-layered non-convex problem, firstly, we obtain optimal regions where we can deploy RISs to provide the coverage guarantee by solving a constrained set-cover problem on a visibility graph. Then, the minimum number of RISs we require to satisfy the coverage guarantee is obtained by a greedy minimum partitioning on an intersection hypergraph formed using the optimal regions. Finally, a Bayesian Optimization based approach is used to compute the final optimal RIS placement. Numerical results are provided to show that the proposed framework consistently identifies placements that jointly achieve good coverage and throughput, without impractical system assumptions. 
+
+Index Terms —Reconfigurable Intelligent Surfaces (RIS), op-timal positioning, coverage, set cover, intersection hypergraphs, minimum partitioning, Bayesian optimization. 
+
+I. I NTRODUCTION 
+
+# THE ITU-R Recommendation M.2160-0 envisions 6G (IMT-2030) to further advance enhanced Mobile Broad-band (eMBB) and move towards immersive communication with a massive increase in data rates [2]. Reconfigurable Intelligent Surface (RIS) is typically a planar surface with numerous passive reflecting elements made of a metamate-rial [3], [4] and connected to a smart controller. The nature of the metamaterial is such that these elements can help alter the amplitude and/or phase shifts of the reflected signal in an intelligent manner [5], [6], due to which RIS has convincingly emerged as a tool to improve the throughput of the system [7], [8]. Another role that an RIS can play in a network is to en-hance the coverage of a base station (BS) in wireless network by overcoming blockages created by obstacles [9], [10]. This capability is particularly valuable since the next-generation 
+
+A. Rajasekaran, M. Karbalayghareh, X. Ma, D. J. Love, and C. G. Brinton are with Electrical and Computer Engineering, Purdue Univer-sity, IN 47907, USA (e-mail: rajasek1@purdue.edu; mkarbala@purdue.edu; ma946@purdue.edu; djlove@purdue.edu; cgb@purdue.edu). A preliminary version of this work has been accepted to the 2026 WiOpt Conference [1]. 
+
+networks are moving towards higher-carrier-frequencies [2], which exhibit severe blockage issues [11], [12]. Given that enhancing coverage and system performance are the major use cases for an RIS in a wireless network, its optimal placement in the network is the most crucial step that enables both these enhancements [13], [14]. This problem is challenging for many reasons, most notably the practical conundrum that optimal RIS locations must be determined prior to deployment in order to maximize post-deployment throughput and coverage. Once the system is deployed with RISs at their optimal locations, then it is necessary to de-sign optimal transmit beamformers and RIS phase shifts to maximize the throughput of an RIS-assisted system. Both these problems – placement and beamforming have been investigated previously as reviewed in the next subsection. 
+
+A. Related Works 
+
+Many existing works that discuss RIS placement use cov-erage maximization approaches listed in [15], [16]. These works propose to use geometric approaches to help the desired signals navigate around obstacles by positioning RIS(s) at relevant positions. But they do not have the capability to choose a location that maximizes the sum rate of the system. On the other hand, [17] presents an algorithm that maximizes sum rate by jointly optimizing RIS placement, CSI error, transmit beamformers, and RIS phase coefficients. This real-time optimization of RIS placement (means RIS placement should change in real-time) using a simplified closed form solution works only for fixed number of users and fixed user locations. A similar method – another closed form solution for optimal placement using an outage probability approach (followed by a series of simplifications) is discussed in [18]. It is shown later that we can do better than such purely-distance dependent closed form solutions for RIS placement. Certain works including [19]–[25] have also discussed op-timization of RIS placement for specific applications like Unmanned Aerial Vehicles (UAV) based communication, high-speed train communication, VLC (Visual Light Communica-tion) and communication between autonomous vehicles and for spectrum co-existence with radars. Because the objectives of these approaches are tailored to specific requirements of each application, none of them offer generality of the proposed method, which can be applied universally. arXiv:2607.07990v1 [eess.SP] 8 Jul 2026 2
+
+The other important problem, throughput maximization, is typically dealt with by jointly optimizing the transmit beamformer and RIS coefficients in real-time. Let us define this problem as the joint beamforming problem. By definition, to perform joint beamforming for the current ‘channel state’, we need to obtain the corresponding channel state information (CSI). To address this, [26]–[29] present various channel es-timation approaches for RIS-assisted systems. These methods can be extended for the multi-RIS case by sequentially turning off and on each of the RISs. A recent work has been proposed to use Orthogonal Complement Projection to reduce this overhead [30]. Since the proposed RIS placement algorithm remains effective for any channel estimation technique, it provides room to assume these or even future approaches. With estimated CSI for the RIS-assisted system, we can perform joint beamforming. [31] presents a well-accepted fractional programming approach to maximize the weighted sum rate of the system for a single RIS-assisted wireless system. As an extension, [17], [32] present a similar fractional programming based beamforming for a multi-RIS assisted system. [33] presents another similar approach while also con-sidering hardware impairments and channel uncertainties. On the other hand, [34] presents a hybrid beamforming approach to maximize the sum rate of an RIS-assisted system. Some recent works [35], [36] even use Machine Leaning. In summary, based on the survey, we see that although the RIS-assisted system is well-studied, there is a practically rele-vant problem that remains untouched. The existing coverage-based RIS placement approaches ensure fairness by reaching all users, but aren’t capable of maximizing throughput (sum rate) and the sum rate maximization approaches requires RIS location to change in real-time which isn’t practical. Therefore, there is a clear scope to propose an RIS placement technique that does both – to maximize expected system throughput while ensuring a level of fairness, making use of minimum resources. B. Contributions 
+
+Motivated by the research gap, we propose a novel scheme to maximize the expected sum rate of the system with a prob-abilistic coverage guarantee, while using minimum number of RISs. The key contributions include:  
+
+> •
+
+Firstly, a detailed justification is provided to show that a simple coverage maximization or a sum rate maximiza-tion is an oversimplification. Then, a unique hierarchical softly-coupled formulation is proposed to better deal with the placement problem. More specifically, we propose to first compute the minimum number of RISs and a search space to provide a probabilistic coverage guarantee. Then, we propose to optimize RIS placement by maximizing the expected sum rate performance on this space. This formulation, to the best of our knowledge, is the first attempt to simultaneously consider expected throughput, probabilistic coverage and number of RISs.  
+
+> •
+
+To solve for the search space where RISs can be placed to satisfy the probabilistic coverage requirement, firstly, we propose and prove a lemma to reduce this global prob-abilistic coverage guarantee to simpler local conditions that can be applied to the regions shadowed by each of the obstacles. To reduce the number of computations, instead of handling each obstacle and the areas they shadow individually, we propose to form clusters among obstacles. Then, a theorem is proposed and proved to define candidate sets for RIS placement that satisfy the derived local coverage requirements. Finally, we propose to solve a constrained set-cover problem on a visibility graph to calculate these candidate sets for placement.  
+
+> •
+
+Then, to solve for the minimum number of RISs we require to satisfy the coverage requirement, we construct an intersection hypergraph [37] using these candidate sets. Taking inspiration from [38], we propose a greedy maximal hypergraph partitioning algorithm to reduce the number of candidate sets to the lowest possible. Thus, we get the minimum number of RISs and also compute the corresponding reduced search space for RIS placement.  
+
+> •
+
+Finally, we propose a novel technique that combines user distribution-driven learning and conventional joint beamforming techniques to calculate the optimal RIS placement. Assuming that the deployed system would use a joint beamforming strategy after the deployment of the RIS-assisted system, we use a two-dimensional Bayesian Optimization (2D-BO) based approach to maximize the expected sum rate over the user distribution [39]. [1] was our preliminary paper that introduced this idea. In this work, we address its limitations with a more general formulation for multiple RISs that provides explicit control over the throughput-coverage tradeoff and incorporates both resource minimization and search space determination (to re-duce computational cost). Furthermore, we use a more efficient 2D-BO for throughput maximization, which converges faster. 
+
+C. Organization and Notations 
+
+The rest of the paper is organized as follows. Section II sets up the system model for the proposed problem. Then, Section III provides a detailed discussion on the problem formulation. In Section IV, the computation of the search space for RIS placement and optimization of the number of RISs are dis-cussed. In Section V, the proposed novel method to maximize the expected system throughput is discussed. Then, Section VI lays down the detailed numerical and analytical findings of the work. Finally, Section VII presents the conclusion. The notations used in this paper as listed as follows. All scalar valued variables are listed normally (e.g.: a) whereas vectors and matrices are listed in bold (e.g.: a). Throughout this work, the brackets {·} would denote a mathematical set of values. | · | and Re(·) denotes the absolute value and real part of the enclosed value respectively. All norms in this paper are assumed to be L2 norms. (·)T , (·)∗, (·)H indicate the transpose, conjugate, and conjugate transpose of the enclosed matrix, respectively. IN indicates an identity matrix of size N . diag( ·)
+
+denotes a diagonal matrix with the enclosed vector as the set of diagonal elements. z1 ∼ CN (μ1, σ 21 ) and z2 ∼ CN (μ2, R2)
+
+denotes that z1 and z2 are scalar and vector versions of circular symmetric complex Gaussian (CSCG) random variables with mean μ1, variance σ21 and mean vector μ2, covariance matrix 3RIS  𝑔                         
+
+> Use r𝑘
+> 𝑥
+> 𝑦
+> BS
+> (𝒐 𝒃 (𝟎 ),𝒐 𝒃 (𝟏 ))
+> (𝒐 𝒓 𝒈 (𝟎 ),𝒐 𝒓 𝒈 (𝟏 ))
+> (𝒐 𝒖 𝑘 (𝟎 ),𝒐 𝒖 𝑘 (𝟏 )))
+> Obstacle 𝑖
+> (𝒐 𝒐 𝒊 (𝟎 ),𝒐 𝒐 𝒊 (𝟏 ))
+> User 𝑘 +1
+> (𝒐 𝒖 𝒌 +𝟏 (𝟎 ),𝒐 𝒖 𝒌 +𝟏 (𝟏 ))
+> RIS 𝑔 +1
+> 𝒉 𝒈 +𝟏 ,𝒌 +𝟏
+> 𝒉 𝒈 ,𝒌 +𝟏
+> 𝒉 𝒈 +𝟏 ,𝒌
+> (𝒐 𝒓 𝒈 +1(𝟎 ),𝒐 𝒓 𝒈 +1(𝟏 ))
+
+Fig. 1: Multi-RIS-assisted MU-MISO system with obstacles. 
+
+R2 respectively. E[·] denotes the statistical expectation opera-tor. R and C stands for the real and complex sets respectively. 
+
+1{·} stands for an indicator function that takes value 1 when enclosed condition stands true and 0 when not. G = ( V, E )
+
+denotes a graph with the set of vertices V and set of edges E.II. S YSTEM MODEL 
+
+We consider a multi-cell wireless network served by a BS located at ob ∈ R2 as illustrated in Fig. 1. To eliminate inter-cell interference and simplify the analysis, we assume an orthogonal frequency reuse scheme among adjacent cells. Hence, without loss of generality, we focus our investigation on a single representative cell. Let us denote the cell using 
+
+O ⊂ R2. Within this cell, the scenario is modeled as a downlink multi-user multiple-input single-output (MU-MISO) system, where the M -antenna BS serves K single-antenna users. The communication is assisted by J RISs. As shown in Fig. 1, the propagation environment is charac-terized by the presence of I obstacles, some of which obstruct the Line-of-Sight (LoS) links between the BS and the users. For modeling purposes, these obstacles are represented by two types: (1) circular such as pillars and (2) wall-type such as buildings [15]. Let {oo} ⊂ O denote the set of centers of all obstacles. Circular-type obstacles are also associated with their radii {rci }. On the other hand, the wall-type obstacles are associated with their lengths {lwi } and orientations {θwi }.Furthermore, we assume that all obstacles are identical about the z-axis (which makes it sufficient to investigate just with their x and y coordinates). Thus, ({oo}, {rci }, {lwi }, {θwi })
+
+together is defined as the obstacle configuration, which is assumed to be static and known in the region 1.On the other hand, practically, the exact locations of users would not be available pre-deployment. However, using his-toric data, one can deduce the spatial variability in user density across the cell, which is mathematically captured by 
+
+> 1From the practical standpoint, this information is fully available to us once the region of deployment (like a specific school) is decided (then the positions of the buildings, stadiums, etc. in the school are known). Therefore, assuming knowledge of the obstacle configuration at the deployment stage is reasonable.
+
+the user distribution, fu(o) for o ∈ O . Unlike conventional spatial distributions like a 2D Gaussian or uniform models, the Poisson Point Process (PPP) provides greater versatility in representing the spatial variability in dense environments [16]. Hence, the positions of the users are represented by a PPP 
+
+Ψu = {o(k) 
+
+> u
+
+} ⊂ O with spatially varying density λu(o). For this section, let K = || Ψu|| denote the number of users in the system corresponding to a specific instance of this PPP. The direct link from BS to user k ∈ { 1, . . . , K } is modeled using the Rayleigh fading model as 
+
+hd,k = pβd,k ˜hd,k , (1) where βd,k denote path loss and ˜hd,k ∈ CM ×1 ∼ CN (0, IM ).Let the RISs with N passive reflecting elements each be located at Or = {o(1)  
+
+> r
+
+, . . . , o(J) 
+
+> r
+
+} ⊂ O . The links between BS and RIS j ∈ { 1, . . . , J } and between RIS j and the kth user follow Rician fading model, which are respectively given as 
+
+Gj = pβj
+
+r T1
+
+1 + T1
+
+¯Gj +
+
+r 11 + T1
+
+˜Gj
+
+!
+
+, (2) 
+
+hj,k = pβj,k 
+
+r T2
+
+1 + T2
+
+¯hj,k +
+
+r 11 + T2
+
+˜hj,k 
+
+!
+
+, (3) where βj , β j,k denote the path loss components. ˜Gj ∈ CN ×M
+
+and ˜hj,k ∈ CN ×1 ∼ CN (0, IN ), ¯Gj = aN (ϑ)aH 
+
+> M
+
+(ψ) and 
+
+¯hj,k = aN (ζk) respectively denote the CSCG and determinis-tic components of the links. Here, ai is the steering vector of size i for i ∈ { N, M } and ϑ, ψ, ζ k are the angular parameters. 
+
+T1 and T2 are the Rician parameters that govern the balance between the steering vector and the CSCG components of the channel. Furthermore, the reflection matrix of RIS j is 
+
+Θj = diag( θj ), (4) where θj = [θj, 1, . . . , θ j,N ]T , such that θj,n = eiφ j,n is the phase-shift introduced at the nth element of RIS j, for all 1 ≤ n ≤ N . Let the combined signal transmitted from the BS be x = PKi=1 wisi where wi ∈ CM ×1 is the transmit beamformer and si the unit-power transmit symbol corresponding to the ith user, for each 1 ≤ i ≤ K. The signal received at user k can be expressed as 
+
+yk =
+
+hH 
+
+> d,k
+
++
+
+> J
+
+X
+
+> j=1
+
+θTj Hj,k 
+
+
+
+> K
+
+X
+
+> i=1
+
+wisi + zk. (5) where zk ∼ CN (0 , σ 2) is the AWGN at the kth user and 
+
+Hj,k = diag( hH
+
+> j,k
+
+)G. Let hk ≜ (hH 
+
+> d,k
+
++ PJj=1 θTj Hj,k )
+
+denote the end-to-end channel for user k. Thus, the signal-to-interference-plus-noise ratio (SINR) at user k is 
+
+γk = |hkwk|2
+
+P 
+
+> i̸=k
+
+|hkwi|2 + σ2 . (6) 
+
+Remark 1. Notably, in the aforementioned model, we have assumed that the links that involve reflections off more than one RIS simultaneously before landing at one of the users are low in power and thus negligible in modeling [15]–[17]. 4
+
+III. P ROBLEM FORMULATION 
+
+For the multi-RIS-assisted wireless system discussed above, to fill the research gap found in the detailed review in Section I, we formulate an expected sum rate maximization problem subject to a probabilistic a coverage guarantee while deploying the least possible number of RISs as shown 
+
+P1 : max  
+
+> J, Or,Θ,W
+
+Efu
+
+"
+
+1 − τov 
+
+τtot 
+
+ KX
+
+> k=1
+
+log(1 + γk)
+
+#
+
+− ηJ 
+
+s.t. P
+
+n
+
+L(k)net ≥ 1
+
+o
+
+≥ pcth , ∀ k, (7a) 
+
+L
+
+
+
+ob, o(j)r
+
+
+
+= 1 , ∀ j, (7b) 
+
+θ(n) 
+
+> j
+
+= 1 , ∀ j, n, (7c) 
+
+> K
+
+X
+
+> k=1
+
+∥wk∥22 ≤ PT . (7d) The first part of the proposed objective is the expected achiev-able sum rate performance (over user distribution). The achiev-able rate can be lower than the actual sum rate due to channel estimation where τov and τtot denote the channel estimation overhead and total coherence interval length, respectively. The expectation operator, on the other hand, reflects the random-ness introduced by the PPP and the channel model. The cov-erage requirement is given in Eq. (7a) for each of the K users where L(k)net = L(ob, o(k)u ) + PJj=1 L(ob, o(j)r )L(o(j)r , o(k) 
+
+> u
+
+)
+
+represents the number of paths available to reach a particular user k from the BS (directly and/or via one of the RISs). Here, L(o1, o2) is an indicator that takes 1 and 0 when an LoS path exists and does not exist respectively between o1
+
+and o2 and pcth is the minimum probability of coverage that is to be guaranteed. Eq. (7b) further clarifies the search space for the placement by necessitating a clear LoS link from the BS to these RISs. Let us denote these two constraints together as the dual-visibility requirement. To maximize the system performance, we also propose optimization of the accumulated phase matrices of RISs, Θ = [θ1, . . . , θJ ] ∈ CN ×J and the accumulated beamformer matrix, W = [ w1, . . . , wK ] ∈
+
+CM ×K . The feasibility set for the generation of phases at each of the N elements of each of the J passive RISs is given in Eq. (7c). And, Eq. (7d) presents the total power constraint for the beamformer design where PT is the maximum total transmit power. η represents the tradeoff between minimization of J and maximization of expected performance. Clearly, this problem cannot be solved directly owing to its complexity (non-convex, multi-objective optimization with an integer optimization). Additionally, as discussed in Section I, an issue with sum rate maximization with RIS placement as a variable of optimization (in our ideal formulation and in [17]) is the practical conundrum that we actually need to solve the RIS placement problem before physically deploying these RISs, but there does not exist one set of transmit beamformers and RIS coefficients that maximize performance for all expected channel conditions in the future. Thus, this ideal problem, even if solved, would involve varying RIS deployment in real-time which is not practical. Owing to this conundrum, many works simplify the same by considering simple coverage maximization [15], [16]. But this oversim-plification reduces the problem to merely navigating obstacle configurations, neglecting the spatial heterogeneity in user density and its direct impact on system throughput. Therefore, we propose to modularize the ideal formulation into softly-coupled subproblems: P2 .1 − P2 .3 as given below. 
+
+P2 .1 : J∗ = min 
+
+> J, Or
+
+J
+
+s.t. P
+
+n
+
+L(k)net ≥ 1
+
+o
+
+≥ pcth , ∀ k, (8a) 
+
+L
+
+
+
+ob, o(j)r
+
+
+
+= 1 , ∀ j. (8b) 
+
+P2 .2 : Θ∗, W ∗ = max 
+
+> J, Θ,W
+
+
+
+1 − τov 
+
+τtot 
+
+ KX
+
+> k=1
+
+log(1 + γk)
+
+s.t. J = J∗ (9a) 
+
+θ(n) 
+
+> j
+
+= 1 , ∀ j, n, (9b) 
+
+> K
+
+X
+
+> k=1
+
+∥wk∥22 ≤ PT . (9c) 
+
+P2 .3 : max  
+
+> J, Or,Θ,W
+
+Efu
+
+"
+
+1 − τov 
+
+τtot 
+
+ KX
+
+> k=1
+
+log(1 + γk)
+
+#
+
+s.t. J = J∗, (10a) 
+
+Θ = Θ∗, (10b) 
+
+W = W ∗, (10c) 
+
+P
+
+n
+
+L(k)net ≥ 1
+
+o
+
+≥ pcth , ∀ k, (10d) 
+
+L
+
+
+
+ob, o(j)r
+
+
+
+= 1 , ∀ j. (10e) We define P2 .1 to compute the minimum number of RISs needed and the corresponding search space where we can deploy RISs to guarantee a coverage level. Notably, the search space and the number of RISs required are interdependent on each other (the way we define one decides the other). Then, we define P2 .2 to be the standard joint beamforming problem to maximize performance of an RIS-assisted wireless system. This modularity gives us the capability to adopt any type of (or future) joint beamforming technique as needed. Finally, P2 .3
+
+is defined to maximize expected sum rate of the system on the search space determined from P2 .1, assuming that a joint beamforming technique P2 .2 is adopted after deployment. Thus, the proposed formulation maximizes expected system performance while minimizing J subject to a dual-visibility requirement. It is noteworthy that the proposed formulation 
+
+P2 is general that can be used to maximize both sum rate performance and coverage based on the tradeoff parameter, 
+
+pcth . If set close to 100%, then problem mimics a simple coverage maximization problem and while if we set close to 
+
+0%, it turns into a purely throughput based placement problem. 
+
+Remark 2. The above formulation is a ‘softly-coupled’ one unlike a joint optimization like P1 . In a tightly-coupled joint formulation, every variable of optimization is re-optimized to maximize a single objective based on the optimal values of 5
+
+every other one while alternatively optimizing them. On the other hand, in our formulation, in problem P2 .3, while the optimal RIS placement Or gets re-optimized based on J, Θ
+
+and W but J, Θ and W are not re-optimized based on Or . Θ
+
+and W are set to independently maximize throughput without coverage constraints in P2 .2 and J is set to independently optimize coverage in problem P2 .1. As a result, though Or is used in determining J while maximizing coverage, we allow it to be re-optimized with respect to throughput, allowing the optimal RIS positions to align itself in order to not only provide coverage to overcome the obstacle distribution, but also to exploit the spatial variation in user density to maximize throughput. But on the other hand, we set Θ and W to be optimized to only maximize throughput and J is set to only the minimum value while ensuring a coverage threshold. 
+
+IV. S EARCH SPACE DETERMINATION AND RESOURCE 
+
+MINIMIZATION 
+
+Firstly, a technique is proposed to compute the search space spanned by constraints from Eqs. (8a) and (8b). Then, an elegant method is proposed to solve the subproblem, P2 .1.
+
+A. Preliminary Processing 1) Discretization of the Space: To optimize the placement of the RISs, we first discretize the continuous cell O into S ⊂ 
+
+R2 representing a finite grid of points S = {s1, s2, . . . , sL}. A subset of these points correspond to the obstacle configuration. Let us denote this set as Q ⊂ S . And let us also define sb ∈ S 
+
+to be the discretized version of ob defined earlier. Let us define ‘visible set’ as the set of vertices that have a direct LoS to the BS, V = {s ∈ S \ Q | L(sb, s) = 1 }.Finally, let us also define S∗ = {s∗ ∈ S| λu(s∗)̸ = 0 } ⊂ S 
+
+to be a subset of S which have a non-zero probability of user existence as per the defined user distribution fu. This is the set of points we need to extend coverage from the BS. Further, let us also define S′ = S \ S ∗ which are those points which have a zero probability of user existence. 
+
+2) Obstacle Clusters: Then, instead of handling I obstacles and the areas they shadow individually, we form T ≪ I
+
+clusters among the discretized obstacle set, Q. This allows us to treat each of these clusters as “large obstacles” and considerably reduces the number of computations for the over-all solution. To form physically meaningful clusters among these obstacle points, we adopt the Density-Based Spatial Clustering of Applications with Noise (DBSCAN) algorithm [40]. DBSCAN is particularly effective here as it does not require the number of clusters to be pre-defined and can identify clusters among a variety of shapes. In this algorithm, each obstacle cluster Qi, ∀1 ≤ i ≤ T is identified based on a neighborhood radius parameter and a lower bound on the number of points in a cluster. This procedure yields dis-joint obstacle clusters {Q 1, Q2, . . . , QT } such that Qi ⊆ Q ,
+
+Qi ∩ O j = ∅ for all i̸ = j, 1 ≤ i, j ≤ T , and STi=1 Qi = Q .
+
+B. Search Space Determination 
+
+Consider an undirected visibility graph [41] 
+
+Gvis = (Vvis , E vis ) with Vvis = S∗ \ Q and 
+
+Evis = {(s1, s2), (s2, s1) | L(s1, s2) = 1 , s1, s2 ∈ Vvis }.The vertex set consists of the part of the discretized cell where we have a non-zero probability of user existence and non-existence of obstacles. Further, an edge exists between two vertices if no obstacle lies in the LoS path between them. The set U = Vvis \ V indicates the set of points where an obstacle is absent and a user can exist with a non-zero probability, but is not yet reachable from the BS. In other words, this is the set of grid points to which we need to maximize extension of coverage. Adopting a targeted miti-gation strategy, let us partition this set by cause of blockage. We know that the cause of blockage of visibility from the BS has to be one of the T obstacle clusters {Q i}. Let this partition be define as {U 1, . . . , UT } such that each Ui ⊂ U ,
+
+Ui ∩ U j = ∅ for i̸ = j ∀1 ≤ i, j ≤ T , STi=1 Ui = U, and at least one obstacle point q ∈ Q i lies on the Los link captured by the edge (sb, u) for every u ∈ U i ∀1 ≤ i ≤ T .Since we have T regions shadowed by T “large obstacles”, it is easy to show that we need a maximum of T RISs to extend coverage to each of these regions [16]. Firstly, let us assume we need all T RISs. Thus, we need to compute T preliminary candidate sets, each of which denote the set of all possible locations where one can deploy the corresponding RIS to be able to extend coverage to a ‘considerable percentage’ of the respective shadowed region. Eq. (8a) defines the constraint for deciding the percentage. We have the following proposition to achieve the coverage constraint mentioned above. 
+
+Lemma 1. Assuring pcth % coverage in each shadowed region 
+
+Ui, 1 ≤ i ≤ T as given by 
+
+Z
+
+> Ui
+
+1{Lnet( s)≥1}fu(s)ds ≥ pcth 
+
+Z
+
+> Ui
+
+fu(s)ds (11) 
+
+guarantees the global constraint Eq. (8a) .Proof: Refer Appendix A. Thus, we propose the following theorem to compute the T
+
+preliminary candidate sets using Lemma 1. 
+
+Theorem 1. The computation of the preliminary candidate set C′ 
+
+> i
+
+to extend coverage to Ui for each 1 ≤ i ≤ T is a Constrained Set Cover problem on a subgraph of Gvis with vertices Ui with a dual-visibility constraint as given in 
+
+C′ 
+
+> i
+
+=
+
+(
+
+s ∈ V 
+
+P 
+
+> ui∈U i
+
+1{(s,ui)∈Evis }λu(ui)
+
+P 
+
+> ui∈U i
+
+λu(ui) ≥ pcth 
+
+)
+
+.
+
+(12) 
+
+Proof: Refer Appendix B. This set can be manually computed by searching over the set V by checking for the local coverage requirement. 
+
+C. Minimizing the number of RISs 
+
+Although these preliminary candidate sets individually rep-resent the list of positions where we can deploy RISs to extend coverage to each Ui, most of these RISs not only extend coverage to the respective Ui but also to other shadowed regions Uj , i ̸ = j. We aim to reduce this spatial redundancy in the collection of candidate sets to the lowest possible level, while also achieving the same coverage in each shadowed 6
+
+region. In other words, now that the constraint space of P2 .1
+
+is calculated in Section IV-B, we solve the corresponding resource minimization problem over this space. A hypergraph is a generalization of a graph consisting of hyperedges which can exist between more than two vertices unlike edges [37]. Also, a graph with vertices as sets and edges between them indicating the existence of a non-empty intersection between the two sets is called an intersection graph [41]. Let us define an intersection hypergraph Gint =(Vint , E int ) with the vertex set as the collection of preliminary candidate sets, Vint = {C′
+
+> 1
+
+, C ′
+
+> 2
+
+, . . . , C ′ 
+
+> T
+
+} and a hyperedge 
+
+(C′ 
+
+> j1
+
+, . . . , C ′ 
+
+> jf
+
+) ∈ Eint if Tjf 
+
+> i=j1
+
+C′
+
+> i
+
+̸ = ∅. Using this notation, we define the following theorem to solve P2 .1.
+
+Theorem 2. To solve P2 .1, one can solve a minimum parti-tioning problem on the intersection hypergraph Gint . Specif-ically, we partition the vertex set Vint into a set of mutually disjoint subsets P = {e1, . . . , e J } such that SJi=1 ei = Vint .The goal is to minimize the number of partitions J = |P| 
+
+while ensuring each subset ei, 1 ≤ i ≤ J corresponds to a hyperedge in the graph, i.e., has a non-zero intersection between the vertices in the subset. This problem is given by 
+
+min  
+
+> P
+
+|P| (13) 
+
+s.t. ei ∈ Eint , ∀ei ∈ P (14) 
+
+Then, the corresponding final candidate sets Ci, 1 ≤ i ≤ J is 
+
+Ci = \
+
+> j∈ei
+
+C′ 
+
+> j
+
+(15) 
+
+Proof: Refer Appendix C. Taking inspiration from the Greedy Maximal Scheduling (GMS) algorithm from network theory [38], we go for a greedy approach to compute this partition is listed in Al-gorithm 1. Firstly, we pick the hyperedge that has the most number of vertices indicating the largest intersection existing among preliminary candidate sets. We compute this inter-section and set it as the first final candidate set for RIS placement. Notably, when we place an RIS in this region, we simultaneously extend coverage to atleast pcth % of all the shadowed regions corresponding to the vertices in the selected hyperedge. Then, similar to GMS, we remove all the vertices in this hyperedge from the graph Gint and repeat the aforementioned steps until we have an empty graph with no vertices. Thus, we end up with the final candidate sets for RIS placement (after removing redundancies). The number of candidate sets we end up with indicates the minimum number of RISs we require to achieve Eqs. (8a) and (8b). V. E XPECTED SUM RATE MAXIMIZATION AND THE 
+
+OVERALL ALGORITHM 
+
+In this section, firstly, we discuss P2 .2 by considering a joint beamforming technique to maximize system performance in real-time. Finally, we consider P2 .3 to optimize placement of RISs to maximize expected system performance. 
+
+Algorithm 1 Greedy minimum hypergraph partitioning 
+
+Input: 
+
+(i) The intersection hypergraph, Gint ,
+
+Output: 
+
+(i) Optimal number of RISs J,(ii) Corresponding candidate sets: {C i}, 1 ≤ i ≤ J 
+
+> 1:
+
+Set i = 0  
+
+> 2:
+
+while Gint has at least one vertex do  
+
+> 3:
+
+Set i = i + 1  
+
+> 4:
+
+Pick hyperedge emax in Gint with most vertices  
+
+> 5:
+
+Compute the candidate set Ci = T 
+
+> j∈emax
+
+C′ 
+
+> j
+> 6:
+
+Remove the vertices j ∈ emax from Gint  
+
+> 7:
+
+end while  
+
+> 8:
+
+Set J = i 
+
+A. Imperfect CSI, Channel Estimation, and RIS Training 
+
+To implement the beamforming solution in real-time after system deployment, CSI must be acquired. We propose a low-complexity estimation and RIS training for the multi-RIS network assuming Frequency Division Duplexing (FDD). 
+
+1) Direct Link Estimation: With RISs in “zero state,” let the BS transmit M orthogonal pilots, Xp = IM . User k receives 
+
+yd,k =
+
+r PT
+
+M hH 
+
+> d,k
+
++ zd,k , (16) where zd,k ∼ CN (0, σ 2IM ). Following standard Minimum Mean Square Error (MMSE) estimation and analog feedback over the uplink [42], the BS obtains the MMSE estimate, 
+
+ˆhd,k =
+
+√βfb PT
+
+> M
+
+q PT 
+
+> M
+
++ σ2
+
+  βbf PT 
+
+> M
+
++ σ2 ˜yH
+
+> d,k
+
+, (17) where ˜yd,k is the feedback signal corrupted by AWGN ˜zd,k .The actual channel is hd,k = ˆhd,k +ed,k , where the estimation error ed,k is Gaussian and independent of the estimate [42]. 
+
+2) Indirect Link Estimation: To estimate Hj,k , RIS j is activated while others remain in the zero state. We use an N ×
+
+N unitary DFT matrix V j = [ θj, 1, . . . , θj,N ]T for training [43], [44]. In each of the N iterations, the RIS configuration 
+
+θj is set to a row of V j , and M pilots are transmitted. Thus, the received signal at user k through RIS j is, 
+
+y(n) 
+
+> j,k
+
+=
+
+r PT
+
+M (hH 
+
+> d,k
+
++ θTj,n Hj,k ) + z(n) 
+
+> j,k
+
+, 1 ≤ n ≤ N. 
+
+(18) After feedback, the BS isolates the indirect link by subtracting the contribution of the estimated direct link, ¯y(n) 
+
+> j,k
+
+= ˜ y(n) 
+
+> j,k
+
+−
+
+q PT 
+
+> M
+
+ˆhH
+
+> d,k
+
+. Concatenating all N iterations yields ¯Y j,k =  
+
+> √βfb
+> PTMqPTM+σ2
+
+V H j,k + ¯Zj,k . Using the unitary property V HV =
+
+N IN , the MMSE estimate of the indirect link is given as 
+
+ˆHj,k =
+
+√βfb PT
+
+> M
+
+(
+
+q PT 
+
+> M
+
++ σ2)( βfb PT 
+
+> M
+
++ σ2)
+
+V H ¯Y j,k 
+
+N . (19) This process is repeated sequentially for all J RISs, providing the full end-to-end estimated channel hk = ˆhk + ek.7
+
+B. Joint Beamforming 
+
+Once we have estimated CSI, we can solve P2 .2. Firstly, we identify that (1 − τov  
+
+> τtot
+
+) is independent of W and Θ and thus be removed from the objective during optimization. Then, to begin with, we use the Lagrangian dual transform [45], to reduce P2 .2 into a sum-of-ratios problem by intro-ducing a set of auxiliary variables α = {α1, . . . , α K }
+
+P2 .2a : max  
+
+> α,J, W,Θ
+> K
+
+X
+
+> k=1
+
+h
+
+log(1 + αk) − αk + (1 + αk)γk
+
+1 + γk
+
+i
+
+s.t. αk ≥ 0, ∀k, (20a) 
+
+J = J∗, (20b) 
+
+θ(n) 
+
+> j
+
+= 1 , ∀ j, n, (20c) 
+
+> K
+
+X
+
+> k=1
+
+∥wk∥22 ≤ PT . (20d) Clearly, the problem is equivalent to P2 .2 as long as 
+
+αk = γk. Then, the quadratic transform [46] is applied to decouple the ratios (SINR) in P2 .2a by introducing another set of auxiliary variables β = {β1, . . . , β K }
+
+P2 .2b : max 
+
+> α,β,J, W,Θ
+> K
+
+X
+
+> k=1
+
+h
+
+(log(1 + αk) − αk)+2 p(1 + αk)Re
+
+n
+
+β∗ 
+
+> k
+
+ˆhkwk
+
+o
+
+−| βk|2 KX
+
+> i=1
+
+|ˆhkwi|2 + σ2i 
+
+s.t. αk ≥ 0, ∀k, (21a) 
+
+J = J∗ (21b) 
+
+|θ(n) 
+
+> j
+
+| = 1 , ∀j, n, (21c) 
+
+> K
+
+X
+
+> k=1
+
+∥wk∥22 ≤ PT . (21d) In order to solve P2 .2b , we adopt an alternative optimiza-tion (AO) strategy. The auxiliary variables are updated with optimal values by setting their partial derivatives to zero [32] 
+
+αk = γk, (22) 
+
+βk =
+
+p(1 + αk) ˆhkwk
+
+PKi=1 |ˆhkwi|2 + σ2 . (23) Looking at the well-studied optimal transmit beamforming problem with constant phases, one can derive the update rule for W to be the WMMSE solution which is given by 
+
+wk = p(1 + αk)βk
+
+
+
+κopt IM +
+
+> K
+
+X
+
+> i=1
+
+|βi|2 ˆhi ˆhHi
+
+−1
+
+hk, (24) 
+
+κopt = min 
+
+(
+
+κopt ≥ 0 |
+
+> K
+
+X
+
+> i=1
+
+∥wk∥22 ≤ PT
+
+)
+
+, (25) where κopt is obtained by solving Eq. (25) using a bisection search over a finite interval that begins at 0. Finally, retaining the phase dependent terms in the objective in P2 .2b and grouping the quadratic and linear terms [17], 
+
+P2 .2c min 
+
+> θj
+
+f3(Θ) = 
+
+> J
+
+X
+
+> j=1
+
+(θHj U j θj − 2Re{vHj θj } (26) where U j =
+
+> K
+
+X
+
+> k=1
+
+|βk|2
+
+> K
+
+X
+
+> i=1
+
+ˆHj,k wiwHi ˆHHj,k , (27) 
+
+vj =
+
+> K
+
+X
+
+> k=1
+
+p(1 + αk)β∗ 
+
+> k
+
+( ˆHj,k wk)
+
+− | βk|2
+
+> K
+
+X
+
+> i=1
+
+(( ˆhHd,k + X 
+
+> j̸=j
+
+θHj ˆHj,k )wi)∗ ˆHj,k wi.
+
+(28) Hence, to optimize phases with constant transmit beamform-ing, we adopt the gradient projection algorithm 
+
+θ(t+1)  
+
+> j
+
+=
+
+
+
+θ(t) 
+
+> j
+
+− μ∇f3
+
+
+
+θ(t)
+
+> j
+
+ +
+
+(29) where (.)+ denotes the projection of the enclosed set of phases into the region |θ(n) 
+
+> j
+
+| = 1, ∀j, n . Also, μ is dynamically updated in each iteration for faster convergence. We alternatively optimize (α, β, W, Θ) using Eq. (22), (23), (24) and (29) iteratively to solve the subproblem. 
+
+Remark 3. The core part of the proposed formulation and algorithm only requires the obstacle configuration, the user distribution, and other channel parameters. Owing to the separable structure of the problem formulation P2 .1 − P2 .3,the algorithm is capable of using any proposed or future channel estimation techniques like [28]–[30] and any joint beamforming technique [17], [32], [33], [35], [36]. Though in Sections V-A and V-B, we have listed a variation of the most well-accepted channel estimation, RIS training, and joint beamforming techniques [31], [42], the proposed approach remains effective for any other or future CSI acquisition, RIS training, and joint beamforming technique. C. User Distribution driven 2D-BO for Optimal RIS place-ment 
+
+Finally, to solve problem P2 .3, we consider optimization of placement of RISs to maximize expected sum rate. No-tably, as per Eq. (10a), the optimal number of RISs and the corresponding search spaces are computed from P2 .1.This can be readily computed before solving P2 .3, ahead of deployment of RISs. But on the other hand, even though Eqs. (10b), (10c) place a constraint that the RIS coefficients and transmit beamformers are to be obtained by solving P2 .2,since closed-form solutions for W and Θ as functions of the channel is intractable, solving P2 .2 for all possible scenarios before solving P2 .3 is practically impossible. Therefore, we are instead required to approximate the expectation over multiple realizations of the user distribution. There are multiple ways to do this such as monte carlo or a recursive clustering method suggested in [1], etc. Due to the high computational cost of computing expected sum rate 8
+
+TABLE I: Computational Complexity Analysis of the Proposed RIS Placement.                                                                       
+
+> Phase Step Complexity Deployment
+> Discretization O(|S| )
+> DBSCAN O(|Q| log |Q| )
+> Construct Gvis ,V+ Theorem 1 O(|(S∗∪ V )\ Q||S ∗\ Q| +|V||U| )≈ O (|(S∗∪ V )\ Q||S ∗\ Q| )
+> Construct Gint + Algorithm 1 O(T(2 T+T|C ′
+> max |)) ≈ O (T2|C ′
+> max |)
+> BO-based RIS Placement O(J·IBO (CCE +CJB ))
+> Operation Channel Estimation O(CCE =JKN log N·M)
+> Joint Beamforming O(CJB =IJB ·K(M2+JN 2min {M, K }))
+> Deployment Overall O(|(S∗∪ V )\ Q||S ∗\ Q| +J·IBO (CCE +CJB ))
+> Operation Overall O(CCE +CJB )
+
+(by performing joint beamforming each time and averaging over user distribution) and the non-convex nature of the search space, we employ 2D-BO [39] for efficient searching of the best possible position for each RIS i, for 1 ≤ i ≤ J from each candidate set Ci. More specifically, in BO, we assume a gaus-sian process surrogate to approximate the objective function and use the expected improvement (EI) acquisition function to balance exploitation and exploration. The optimization is performed for a large number of instantiations from the user distribution. The number of {Ci} is J, satisfying Eq. (10a). Since we use joint beamforming for calculating the phases and beamformers in the BO and satisfy Eqs. (10b), (10c). All locations in each candidate set Ci directly satisfy Eqs. (10d) and (10e) by construction. 
+
+Remark 4. It is noteworthy that this idea of combining user distribution-driven learning with conventional beamforming techniques to estimate and hence maximize the expected post-deployment throughput of the system to intelligently deploy the RIS-assisted system is a very novel and powerful idea. D. Complexity Analysis 
+
+A detailed summary of the time complexity of each step of the proposed method is listed in Table I. Notably, DBSCAN as in [40] and in the implementation available across pro-gramming languages has a complexity O(|Q| log( |Q| )) . The construction of Gint and V is O(|(S∗ ∪ V ) \ Q||S ∗ \ Q| )
+
+which is the costliest operation before BO. On the other hand, construction of preliminary candidate sets is O(|V||U| ). The redundancy reduction and final candidate set construction is 
+
+O(T 2|C ′
+
+> max
+
+|) where C′ 
+
+> max
+
+is the largest preliminary candidate set. Though BO has multiple steps, sum rate evaluation clearly outweighs all others as a function of the complexity of the chosen channel estimation CCE and joint beamforming tech-nique CJB . We provide expansions for the listed algorithms. Channel estimation is dominated by the J · K indirect links. For these, FFT implementation of multiplication of DFT matrices reduces complexity from O(N 2M ) to O(N log( N )) .Efficient implementation and complexity discussion for the adopted joint beamforming algorithm is in [1]. Thus, the over-all complexity of the proposed one-time RIS deployment is dominated by the construction of the visibility graph and joint beamforming. In the table, IBO and IJB respectively indicate the total number of BO and joint beamforming iterations. 
+
+Remark 5. The number of iterations required to obtain an optimal RIS placement while adopting a Monte Carlo or a recursive clustering [1] is much more than BO, which explains the choice. Also, choosing to form ‘large obstacles’ instead of looking at each obstacle (reduces a factor of I2 to T 2)and considering only those grid points that aren’t obstacles, aren’t already covered, and have a non-zero probability of user existence in U = S∗ \ Q \ V and similarly, Vvis = S∗ \ Q 
+
+reflects a clear reduction in the overall complexity. 
+
+VI. R ESULTS AND DISCUSSION 
+
+The path loss parameters are assumed to obey the 3GPP standard for Urban Micro cell (Table B.1.2.1-1 in [47]), 
+
+βi = 22 log 10 (di) + 28 + 20 log 10 (fc), i ∈ { br, ru k}, (30) 
+
+βbu k = 36 .7 log 10 (dbu k ) + 22 .7 + 26 log 10 (fc), (31) where di represents the Euclidean distance traversed by each link in meters (m) and fc is the carrier frequency in GHz. fc
+
+is set as 5 GHz. For example, we get a loss of βbr = βru k =63 .98 dB and βbu k = 77 .57 dB for dbr = dru k = dbu k =10 m. Then the Rician factors are set to T1 = T2 = 10 dB. The transmit power is set to PT = 0 dB and noise level σ2 =
+
+−100 dBm [4] unless mentioned otherwise. We also assume that when a link hits an obstacle, the link power is reduced to a negligible level due to the penetration loss. Across all simulations, other system parameters are set to M = 16 , N =100 . Also, we choose the default pcth to be 0.75 .
+
+A. Obstacle Configurations and User distributions 
+
+The BS is assumed to be at ob = (80 m, 30 m) at a corner of the cell as in Fig. 1 and the cell radius is fixed as R = 20 m. To analyze the proposed algorithm under various types of environments, we consider 3 different obstacle configurations as depicted in Fig. 2. We also consider three user distributions, i.e., f1, f2 and f3 as defined in Table II. f1
+
+is a uniform distribution over the whole cell. f2 and f3 both are inhomogeneous distributions – where the former involves three user hotspots and the latter a two-dimensional gaussian. It is notable that the densities are defined across distributions such that the average number of users in the cell remains 5.Based on the user distributions and obstacle configurations, four scenarios are defined as in Table III and Fig. 2. 9
+
+(a) Scenario 1. (b) Scenario 2. (c) Scenario 3. (d) Scenario 4. 
+
+Fig. 2: Obstacle Configurations, User distributions, and RIS placement in all scenarios. 
+
+(a) Obstacle Clusters. (b) Preliminary Candidate Sets. (c) Bayes. Opti. for RIS2. (d) Convergence Behavior. 
+
+Fig. 3: Proposed Algorithm through Scenario 1. TABLE II: User Distributions. 
+
+Distribution Definition Parameters 
+
+f1 λ(s) = λ0, ∀s ∈ S λ0 = 0 .003 users/m 2
+
+f2 λ(s) = 
+
+(
+
+λi s ∈ H i, i = 1 , 2, 30 otherwise H1 = Circle ((99 , 42) , 4) , λ1 = 0 .03 users/m 2
+
+where Hi ≜ Circle (ci, r i) is a disk of H2 = Circle ((100 , 30) , 8) , λ2 = 0 .015 users/m 2
+
+radius ri centered at ci H3 = Circle ((100 , 15) , 5) , λ3 = 0 .015 users/m 2
+
+f3 λ(s) = λ0 exp 
+
+
+
+− ∥s − μ∥2
+
+2σ2
+
+
+
+, ∀s ∈ S λ0 = 7 .5 × 10 −3 users/m 2
+
+μ = (100 , 30) m, σ = 15 m
+
+TABLE III: Results across Scenarios.                                         
+
+> Scenario Obstacle User JOptimal RIS Locations Sum rate Coverage Config. Dist. (m,m) (bps/Hz) (%)
+> 11f12(106 .40 ,26 .00) 29 .2375 96 .52 (116 .20 ,41 .83) 21f21(101 .34 ,27 .18) 28 .0848 94 .96
+> 32f21(105 .00 ,25 .40) 28 .2473 98 .83
+> 43f32(105 .61 ,26 .00) 30 .2920 99 .28 (89 .99 ,40 .15)
+
+B. Performance metrics 
+
+Across this section, Average sum rate denotes the sample mean of sum rate of system over multiple realizations of the users from its distribution. Also, Coverage ¯pc denotes the density-weighted fraction of the cell that is reachable from the BS that can be calculated using 
+
+¯pc =
+
+P 
+
+> s∈S\Q
+
+λu(s) 1{L(k)net ≥1}
+
+P 
+
+> s∈S\Q
+
+λu(s) , (32) where the grid resolution is 0.4 m. This serves as a standard empirical estimate of the spatially averaged coverage proba-bility Efu [P {L(k)net ≥ 1 | o(k) 
+
+> u
+
+∼ fu}] [15]. Furthermore, unless stated otherwise, all simulations as-sume perfect CSI ( τov = 0 ) by default. For imperfect CSI simulations, the degree of imperfection is quantified using Normalized Mean Square Error (NMSE), defined as 
+
+ϱ =
+
+E
+
+h
+
+|h − ˆh|2
+
+i
+
+E
+
+h
+
+|ˆh|2
+
+i , (33) where h and ˆh denote the true and estimated value of both hd
+
+and Hj,k , respectively. The estimation error h − ˆh is assumed to follow a zero-mean complex Gaussian distribution. Finally, for a fair comparison across all simulations and baselines presented, we assume that the channel remains constant over a sufficiently large coherence interval ( τtot → ∞ ). 
+
+Remark 6. Though we present results for τtot → ∞ , since the factor (1 − τov  
+
+> τtot
+
+) is independent of both W and Θ, the proposed algorithm holds even when τtot is finite. 
+
+Remark 7. Though a gaussian error of ϱ is introduced to each direct and indirect link, the realized net NMSE of the 10 
+
+Fig. 4: Conventional Performance analysis of proposed algo-rithm in Scenario 2. 
+
+cascaded BS-RIS-user channel Hj,k may slightly differ from 
+
+ϱ due to error propagation from the direct-link estimation. C. Illustration of the proposed method using Scenario 1 
+
+We illustrate the procedure of the proposed method in Fig. 3 for Scenario 1. Fig. 3a illustrates the discretization of the space and the formation of “large obstacles” by clustering them. Then, Fig. 3b depicts the preliminary candidate sets. Figs. 3c, 3d depict the BO employed to search over the reduced search space. Finally, Fig. 2a depicts converged solution. 
+
+D. Results across scenarios 
+
+Fig. 2 presents the optimal RIS placement obtained for each scenario and Table III lists the corresponding performance summary. From these results, we infer that even though Scenarios 1 and 2 have the same obstacle configuration, unlike a purely coverage based approach like [15] and many others, our algorithm uses the user distribution to reduce the number of RISs needed from 2 to 1, to further optimize locations based on the same, and produces a similar sum rate and coverage performance. In Scenario 2 and 3, the non-homogeneity reduces the area we need to extend coverage to, reducing the number of RISs we need to achieve target coverage and throughput. On the other hand, Scenario 4 with a 2D Gaussian user distribution (with standard deviation of 
+
+15 m) under a new obstacle configuration, requires 2 RISs like Scenario 1 since the user density is non-zero throughout. Since the Gaussian density function concentrates users in a region that is well-served by the RISs, it results in the highest sum rate of 30 .29 bps/Hz and coverage of 99 .28% across all scenarios. Furthermore, for our default pcth = 0 .75 , we achieve a coverage of about 95% across scenarios. 
+
+E. Conventional Communication Metrics 
+
+For throughput analysis, we assume 3 baselines - (i) A greedy placement that maximizes coverage without a through-put guarantee [15], (ii) Sum rate maximization for placement with no coverage guarantee [17], and (iii) Without an RIS, with WMMSE beamforming. We discuss results for our im-plementation of these ideas in our simulation environment. 
+
+Fig. 5: J and N characteristic for Scenario 2. More specifically, for [15], we manually search for the best RIS placement that maximizes coverage and add an additional RIS till pcth is achieved. We implement [17] by using a similar 2D-BO to search for the best RIS placement that maximizes throughput without any coverage constraint. 
+
+1) PT characteristic: Average sum rate Performance and Coverage results are discussed for Scenario 2 in Fig. 4. We see that even with WMMSE beamforming, there is a large gap between the throughput of the system without an RIS and the other cases. Though we use a similar simulation environment as [4], this gap is much wider in our implementation because of the introduction of obstacles. Without an RIS, only 40% of users are covered. Since only these users produce a non-zero SINR, it reduces sum rate. Thus, we infer that maximizing cov-erage of an obstacle-deterred system, helps in maximizing its sum rate performance. However, if we adopt a purely coverage based approach (without any consideration for throughput), then we observe that even though 100% coverage is achieved, a lesser throughput is observed. Similarly, when we use a simple sum rate maximization for RIS placement, the location does not necessarily have nice coverage. Consequently, we observe that even a purely throughput based approach results in a worse sum rate performance than the proposed method, on average. Thus, from the above analysis, we infer that both coverage and sum rate performance are closely tied to each other for an obstacle deterred system, i.e, RIS in a location that has a much better coverage than another, results in a better sum rate performance too. But the pattern saturates at a certain coverage. Attempting to enhance coverage beyond this results in a decrease in throughput. Thus, the proposed algorithm that provides a coverage guarantee by restricting the search space for RIS placement, but also maximizes sum rate in that restricted space is observed to perform the best. 
+
+2) J vs N : To analyze the tradeoff between the number of RISs and the number of reflecting surfaces in Fig. 5, we repeat the proposed method 5 times 2 for Scenario 2and simultaneously consider these independently converged solutions for varying J. We also vary the number of elements in each of these RISs, N . We observe that across J, we see        
+
+> 2Notably, the range of Jis chosen to be [1 ,5] based on the considered scenario. Addition of more RISs beyond 4as illustrated doesn’t yield much of an improvement in performance. 11
+
+an improvement in throughput when we add more elements to each RIS. On the other hand, we observe that adding an additional RIS does not always result in an improvement in throughput. Even though J = 2 has a similar coverage as 
+
+J = 1 , we see that J = 2 has a slightly improved throughput than J = 1 case because the number of reflecting surfaces have doubled. On the other hand, we observe a considerable improvement in sum rate when a third RIS is added because we see that this RIS increases coverage to a full 100%. This adds value to our earlier inference that coverage is tied to throughput. A slight increase in throughput is observed when increasing J = 3 to J = 4 like from J = 1 to J = 2 because of the increase in number of reflecting surfaces. Finally, we observe that sum rate saturates as J is increased beyond 4
+
+because full coverage is already attained. 
+
+Remark 8. Although there are multiple works [4], [48], [49] that prove that theoretically, γk ∝ N 2, [4] shows mathematically and analytically that the 3GPP Microcell pathloss environment (that we have adopted) has strong direct path and weak RIS links, resulting in a gain of 3 bps/Hz in an obstacle free environment by increasing N from 100 to 900. As a result, our achieved gain of about 1.8 bps/Hz for N = 100 
+
+to N = 500 in an obstacle filled environment is justified. Also, works like [50] compare a centralized deployment of RISs with a distributed one. Conclusions indicate that the distributed placement approach that maximizes coverage, also yields an improvement in sum rate performance in an obstacle-deterred environment whereas a centralized deployment performs better in an obstacle free environment. This aligns with and validates the inferences made that coverage and throughput are tied to each other in an obstacle filled environment like ours. F. Paramteric sweep of pcth 
+
+Having established the superior performance of the pro-posed scheme across baselines, we want to further investigate the choice of an important parameter, the coverage threshold, 
+
+pcth . In Fig. 6b, we observe that as we increase this threshold from 0% to 100% , the search space for RIS placement reduces from the set of all reachable points from the BS to a much smaller set. In Fig. 6a, we see that increasing the threshold leads to a clear increase in the coverage of the system. On the other hand, we also observe that the sum rate performance also increases considerably till the threshold reaches a 50% 
+
+or a 75% . But when we restrict the search space further to achieve a higher coverage, then it leads to a decrease in sum rate performance. This observation aligns perfectly with the inferences and remarks made in Section VI-E. Thus, the suggested choice of pcth would be 50% to 75% , unless a specific application requires it to be more one-sided. VII. C ONCLUSION 
+
+A novel, practically relevant problem formulation and an elegant solution were proposed. The proposed work tackled typical practical requirements of an RIS-assisted system, such as exploiting the user distribution to maximize performance, exploiting the obstacle configuration to maximize the coverage 
+
+> (a) Average sum rate performance and Coverage.
+> (b) Search Space.
+
+Fig. 6: Parametric Sweep of pcth in Scenario 2. of the system, and handling user randomness. This is the first work, to the best of our knowledge, to handle the ideal hierarchical optimization directly - maximizing coverage, while also ensuring good throughput. Also, in the proposed solution, a new and powerful approach that combined prior-driven learning with conventional beamforming to maximize expected post-deployment throughput was introduced. Results indicated an improvement in sum rate performance when there was a considerable increase in the coverage of the system, but this trend reversed beyond a certain coverage level. This behavior underscored a fundamental tradeoff in the design of an obstacle-deterred RIS-assisted system: a purely coverage-driven placement strategy narrows the search to regions that achieve near-complete coverage, but at the cost of placing RISs in locations that are suboptimal for signal enhance-ment, degrading sum rate performance. Conversely, a purely performance-driven strategy risks placing RISs at locations that maximize sum rate for only those users it can reach already. The proposed algorithm navigated this tradeoff by jointly accounting for both objectives, arriving at a placement that achieved strong coverage without sacrificing in sum rate gains. This balance between coverage and performance is what practical RIS deployment demands, and results validate that the proposed framework reliably achieves this balance across a variety of obstacle configurations and user distributions. In future works, we will expand the idea for RIS-assisted ISAC systems to place RIS to maximize communication throughput and sensing accuracy. 12 
+
+APPENDIX APROOF OF LEMMA 1
+
+Proof: We want to prove that ensuring that pcth % cover-age in each shadowed region Ui guarantees Eq. (8a) when the user positions follow the inhomogeneous PPP Ψu = {o(k) 
+
+> u
+
+}
+
+with the user distribution fu. The global coverage constraint Eq. (8a) is computed by integrating over the whole cell S
+
+P {Lnet ≥ 1} =
+
+Z
+
+> S
+
+1{Lnet (s)≥1}fu(s)ds. (34) From the definitions, S = Q ∪ S ′ ∪ V ∪ U and U = STi=1 Ui.It is important to note that a small subset of grid points in 
+
+Q that trace the perimeter of these obstacles have an non-zero intersection with V. For convenience of calculations, let us define ˜Q = Q \ V . Similarly, let us remove those visible points where users do not have a non-zero probability of user existence V∗ = V \ S ′. Thus we get S = ˜Q ∪ S ′ ∪ V ∗ ∪ U 
+
+P (Lnet ≥ 1) ≥
+
+Z
+
+> ˜Q
+
+1{Lnet( s)≥1}fu(s)ds (35) 
+
++
+
+Z
+
+> S′
+
+1{Lnet( s)≥1}fu(s)ds (36) 
+
++
+
+Z
+
+> V∗
+
+1{Lnet( s)≥1}fu(s)ds (37) 
+
++
+
+> T
+
+X
+
+> i=1
+
+Z
+
+> Ui
+
+1{Lnet (s)≥1}fu(s)ds. (38) Since it still a disjoint union by definition (non-zero inter-section exists across first two sets), we have an inequality. Also, by definition, for all s1 ∈ V ∗, L (sb, s1) = 1 and for all s2 ∈ ˜Q, L (sb, s2) = 0. Therefore, 1{Lnet( s1)≥1} = 1
+
+for all s1 ∈ V ∗ and 1{Lnet( s2)≥1} = 0 for all s2 ∈ ˜Q. On the other hand, by definition, fu(s) = 0 ∀s ∈ S ′. Finally, in each shadowed region Ui, the deployment of the corre-sponding RIS is done ensuring the local coverage constraint, R 
+
+> Ui
+
+1{Lnet( s)≥1}fu(s)ds ≥ pcth 
+
+R 
+
+> Ui
+
+fu(s)ds from Theorem 1 where the integral R 
+
+> Ui
+
+fu(s)ds represents the probability of user existence in Ui and pcth is the probability threshold conditioned on existence in Ui. Substituting these we have 
+
+P {Lnet ≥ 1} ≥ 
+
+Z
+
+> V∗
+
+fu(s)ds +
+
+> T
+
+X
+
+> i=1
+
+pcth 
+
+Z
+
+> Ui
+
+fu(s)ds. (39) Let pV∗ = R 
+
+> V∗
+
+fu(s)ds and pUi = R 
+
+> Ui
+
+fu(s)ds. Since, V∗ ∪
+
+(STi=1 Ui) = S∗ is a disjoint union, pV∗ + PTi=1 pUi = 1 ,
+
+P (Lnet ≥ 1) ≥ pV∗ + pcth (1 − pV∗ ), (40) 
+
+= pcth + pV∗ (1 − pcth ). (41) Since 0 ≤ pcth , p V ≤ 1, it follows that P {Lnet ≥ 1} ≥ pcth .APPENDIX BPROOF OF THEOREM 1
+
+Proof: Firstly, every candidate location s ∈ V satisfies Eq. (8b). Then, from Lemma 1, R 
+
+> Ui
+
+1{Lnet ≥1}fu(s)ds ≥
+
+pcth 
+
+R 
+
+> Ui
+
+fu(s)ds in each Ui guarantees Eq. (8a). Though we have proved Lemma 1 for general shadow regions that can be continuous, we know in our method, Ui is a discrete set. Therefore, the local coverage requirement reduces to 
+
+R 
+
+> S
+
+1{Lnet ≥1}
+
+ P  
+
+> ui∈U i
+
+δ(s − ui) fu(s)ds
+
+R 
+
+> S
+
+fu(s)  P  
+
+> ui∈U i
+
+δ(s − ui) ds ≥ pcth , (42) 
+
+⇒
+
+P 
+
+> ui∈U i
+
+1{Lnet ≥1}fu(ui)
+
+P 
+
+> ui∈U i
+
+fu(ui) ≥ pcth . (43) Thus, combining the two conditions – s ∈ V and Eq. (43), we get the ith RIS candidate set to be, 
+
+C′ 
+
+> i
+
+=
+
+(
+
+s ∈ V 
+
+P 
+
+> ui∈U i
+
+1{(s,ui)∈Evis }fu(ui)
+
+P 
+
+> ui∈U i
+
+fu(ui) ≥ pcth 
+
+)
+
+.
+
+(44) For an inhomogeneous PPP with density λ(s) and PDF fu(s),
+
+f (s) = λ(s)Λ( S) = λ(s)
+
+R 
+
+> S
+
+λ(u)du . (45) Thus we get the candidate set in Eq. (12). APPENDIX CPROOF OF THEOREM 2
+
+Proof: The existence of a hyperedge (C′ 
+
+> j1
+
+, . . . , C ′ 
+
+> jf
+
+) in 
+
+Gint signifies the existence of spatial redundancy which we want to minimize. In other words, the existence of a non-empty intersection between multiple candidate sets, Tjf 
+
+> i=j1
+
+C′
+
+> i
+
+̸ = ∅
+
+signifies that there exists a set that can simultaneously cover 
+
+pcth % of all the shadow regions Uj1 , . . . , Ujf . This set is the non-empty intersection itself, Tjf 
+
+> i=j1
+
+C′
+
+> i
+
+. This is exactly the definition of the reduced candidate set, Ci in Theorem 2. Therefore, if we partition the hypergraph into a set of hyper-edges such that cardinality of the partition is the minimized, we get the least possible number of RISs we can deploy that satisfies pcth % coverage for all T shadowed regions. As an extension, we get each reduced candidate set to be the intersection of all vertices of the corresponding hyperedge. REFERENCES [1] A. Rajasekaran, M. Karbalayghareh, X. Ma, D. J. Love, and C. G. Brinton, “Optimal RIS placement in multi-user MISO systems with user randomness,” in Proc. 24th Int. Symp. Modeling Optim. Mobile, Ad Hoc, Wireless Netw. (WiOpt), Columbus, OH, USA , 2026, accepted. [2] International Telecommunications Union, “Framework and overall ob-jectives of the future development of IMT for 2030 and beyond,” Rec. ITU-R M.2160-0, Geneva, Switzerland, Tech. Rep., 2023. [3] E. Basar, M. Di Renzo, J. De Rosny, M. Debbah, M.-S. Alouini, and R. Zhang, “Wireless communications through reconfigurable intelligent surfaces,” IEEE Access , vol. 7, pp. 116 753–116 773, 2019. [4] Z. Zhang et al. , “Active RIS vs. passive RIS: Which will prevail in 6G?” 
+
+IEEE Trans. Commun. , vol. 71, no. 3, pp. 1707–1725, 2023. [5] Q. Wu, S. Zhang, B. Zheng, C. You, and R. Zhang, “Intelligent reflecting surface-aided wireless communications: A tutorial,” IEEE Trans. Commun. , vol. 69, no. 5, pp. 3313–3351, 2021. [6] C. Liaskos, S. Nie, A. Tsioliaridou, A. Pitsillides, S. Ioannidis, and I. Akyildiz, “A new wireless communication paradigm through software-controlled metasurfaces,” IEEE Commun. Mag. , vol. 56, no. 9, pp. 162– 169, 2018. [7] M. A. ElMossallamy, H. Zhang, L. Song, K. G. Seddik, Z. Han, and G. Y. Li, “Reconfigurable intelligent surfaces for wireless communi-cations: Principles, challenges, and opportunities,” IEEE Trans. Cogn. Commun. and Netw. , vol. 6, no. 3, pp. 990–1002, 2020. 13 
+
+[8] Q. Wu and R. Zhang, “Towards smart and reconfigurable environment: Intelligent reflecting surface aided wireless network,” IEEE Commun. Mag. , vol. 58, no. 1, pp. 106–112, 2020. [9] S. Zeng, H. Zhang, B. Di, Z. Han, and L. Song, “Reconfigurable intelli-gent surface (RIS) assisted wireless coverage extension: RIS orientation and location optimization,” IEEE Commun. Lett. , vol. 25, no. 1, pp. 269–273, 2021. [10] M. Nemati, J. Park, and J. Choi, “RIS-assisted coverage enhancement in millimeter-wave cellular networks,” IEEE Access , vol. 8, pp. 188 171– 188 185, 2020. [11] C.-X. Wang et al. , “On the road to 6G: Visions, requirements, key technologies, and testbeds,” IEEE Commun. Surv. Tut. , vol. 25, no. 2, pp. 905–974, 2023. [12] C. G. Brinton et al. , “Key focus areas and enabling technologies for 6G,” IEEE Commun. Mag. , vol. 63, no. 3, pp. 84–91, 2025. [13] Y. Ren et al. , “On deployment position of RIS in wireless commu-nication systems: Analysis and experimental results,” IEEE Wireless Commun. Lett. , vol. 12, no. 10, pp. 1756–1760, 2023. [14] N. U. Saqib, S. Hou, S. H. Chae, and S.-W. Jeon, “RIS-aided wireless indoor communication: Sum rate maximization via ris placement opti-mization,” in Proc. IEEE Int. Conf. Commun. (ICC), Rome, Italy , 2023, pp. 511–516. [15] N. U. Saqib, S. Hou, S. H. Chae, and S.-W. Jeon, “Reconfigurable intelligent surface aided hybrid beamforming: Optimal placement and beamforming design,” IEEE Trans. Wireless Commun. , vol. 23, no. 9, pp. 12 003–12 019, 2024. [16] Y. Ma, K. Ota, and M. Dong, “Multi-RIS deployment location opti-mization for coverage enhancement in outdoor wireless communication networks,” IEEE Trans. Veh. Technol. , vol. 73, no. 10, pp. 15 332–15 344, 2024. [17] Z. Chen, J. Tang, X. Y. Zhang, Q. Wu, G. Chen, and K.-K. Wong, “Robust hybrid beamforming design for multi-RIS assisted MIMO system with imperfect CSI,” IEEE Trans. Wireless Commun. , vol. 22, no. 6, pp. 3913–3926, 2023. [18] S. Ghose, D. Mishra, S. P. Maity, and G. C. Alexandropoulos, “Jointly optimal RIS placement and power allocation for underlay D2D commu-nications: An outage probability minimization approach,” IEEE Trans. Cogn. Commun. and Netw. , vol. 10, no. 2, pp. 622–633, 2024. [19] M. Saif and S. Valaee, “RIS alignment via virtual partitioning for resilient uplink multi-RIS–assisted UAV communications,” IEEE Trans. Commun. , vol. 73, no. 8, pp. 6764–6779, 2025. [20] H.-B. Jeon, S.-H. Park, J. Park, K. Huang, and C.-B. Chae, “An energy-efficient aerial backhaul system with reconfigurable intelligent surface,” 
+
+IEEE Trans. Wireless Commun. , vol. 21, no. 8, pp. 6478–6494, 2022. [21] Y. U. Ozcan, O. Ozdemir, and G. K. Kurt, “Reconfigurable intelligent surfaces for the connectivity of autonomous vehicles,” IEEE Trans. Veh. Technol. , vol. 70, no. 3, pp. 2508–2513, 2021. [22] C. Liu et al. , “Reconfigurable intelligent surface assisted high-speed train communications: Coverage performance analysis and placement optimization,” IEEE Trans. Veh. Technol. , vol. 73, no. 3, pp. 3750–3766, 2024. [23] Y. Cang et al. , “Joint deployment and resource management for VLC-enabled RISs-assisted UAV networks,” IEEE Trans. Wireless Commun. ,vol. 22, no. 2, pp. 746–760, 2023. [24] G. Singh, A. Srivastava, and V. A. Bohara, “Visible light and reconfig-urable intelligent surfaces for beyond 5G V2X communication networks at road intersections,” IEEE Trans. Veh. Technol. , vol. 71, no. 8, pp. 8137–8151, 2022. [25] M. Kafafy, A. S. Ibrahim, and M. H. Ismail, “Optimal placement of reconfigurable intelligent surfaces for spectrum coexistence with radars,” 
+
+IEEE Trans. Veh. Technol. , vol. 71, no. 6, pp. 6574–6585, 2022. [26] A. L. Swindlehurst, G. Zhou, R. Liu, C. Pan, and M. Li, “Channel esti-mation with reconfigurable intelligent surfaces—-a general framework,” 
+
+Proceedings of the IEEE , vol. 110, no. 9, pp. 1312–1338, 2022. [27] B. Zheng, C. You, W. Mei, and R. Zhang, “A survey on channel estimation and practical passive beamforming design for intelligent reflecting surface aided wireless communications,” IEEE Commun. Surv. Tut. , vol. 24, no. 2, pp. 1035–1071, 2022. [28] L. Wei, C. Huang, G. C. Alexandropoulos, C. Yuen, Z. Zhang, and M. Debbah, “Channel estimation for RIS-empowered multi-user MISO wireless communications,” IEEE Trans. Commun. , vol. 69, no. 6, pp. 4144–4157, 2021. [29] J. Mirza and B. Ali, “Channel estimation method and phase shift design for reconfigurable intelligent surface assisted mimo networks,” IEEE Trans. Cogn. Commun. and Netw. , vol. 7, no. 2, pp. 441–451, 2021. [30] J. Lee, H. Seo, and W. Choi, “Orthogonal complement-driven channel estimation for multi-RIS wireless systems,” IEEE Trans. Wireless Com-mun. , vol. 25, pp. 10 209–10 224, 2026. [31] H. Guo, Y.-C. Liang, J. Chen, and E. G. Larsson, “Weighted sum-rate maximization for reconfigurable intelligent surface aided wireless networks,” IEEE Trans. Wireless Commun. , vol. 19, no. 5, pp. 3064– 3076, 2020. [32] X. Ma, Y. Fang, H. Zhang, S. Guo, and D. Yuan, “Cooperative beamforming design for multiple RIS-assisted communication systems,” 
+
+IEEE Trans. Wireless Commun. , vol. 21, no. 12, pp. 10 949–10 963, 2022. [33] Y. Xu et al. , “Robust secure beamforming design for multi-RIS-aided MISO systems with hardware impairments and channel uncertainties,” 
+
+IEEE Trans. Commun. , vol. 73, no. 3, pp. 1517–1530, 2025. [34] J. Wang, H. Wang, Y. Han, S. Jin, and X. Li, “Joint transmit beamform-ing and phase shift design for reconfigurable intelligent surface assisted mimo systems,” IEEE Trans. Cogn. Commun. and Netw. , vol. 7, no. 2, pp. 354–368, 2021. [35] T. Wei, B. Zheng, K. Tang, W. Feng, W. Che, and Q. Xue, “Machine learning-enabled RIS-assisted mmwave multi-hop communications: Path scheduling and beamforming design,” IEEE Trans. Wireless Commun. ,vol. 24, no. 12, pp. 10 424–10 439, 2025. [36] J. Kim, S. Hosseinalipour, T. Kim, D. J. Love, and C. G. Brinton, “Multi-IRS-assisted multi-cell uplink MIMO communications under imperfect CSI: A deep reinforcement learning approach,” in Proc. IEEE Int. Conf. Commun. Workshops (ICC Workshops), Montreal, QC, Canada , 2021, pp. 1–7. [37] C. Berge, Hypergraphs: Combinatorics of Finite Sets , ser. North-Holland Mathematical Library. Amsterdam: North-Holland, 1989, vol. 45. [38] C. Joo, X. Lin, and N. B. Shroff, “Understanding the capacity region of the greedy maximal scheduling algorithm in multihop wireless networks,” IEEE/ACM Trans. Netw. , vol. 17, no. 4, pp. 1132–1145, 2009. [39] B. Shahriari, K. Swersky, Z. Wang, R. P. Adams, and N. de Freitas, “Taking the human out of the loop: A review of bayesian optimization,” 
+
+Proceedings of the IEEE , vol. 104, no. 1, pp. 148–175, 2016. [40] M. Ester et al. , “A density-based algorithm for discovering clusters in large spatial databases with noise,” in Proc. 2nd Int. Conf. Knowl. Discovery Data Mining (KDD), Portland, OR , 1996, pp. 226–231. [41] J. A. Bondy and U. S. R. Murty, Graph Theory , ser. Graduate Texts in Mathematics. New York, NY: Springer, 2008. [42] G. Caire, N. Jindal, M. Kobayashi, and N. Ravindran, “Multiuser MIMO achievable rates with downlink training and channel state feedback,” 
+
+IEEE Trans. Inf. Theory , vol. 56, no. 6, pp. 2845–2866, 2010. [43] B. Zheng and R. Zhang, “Intelligent reflecting surface-enhanced OFDM: Channel estimation and reflection optimization,” IEEE Wireless Com-mun. Lett. , vol. 9, no. 4, pp. 518–522, 2020. [44] B. Zheng, C. You, and R. Zhang, “Fast channel estimation for IRS-assisted OFDM,” IEEE Wireless Commun. Lett. , vol. 10, no. 3, pp. 580– 584, 2021. [45] K. Shen and W. Yu, “Fractional programming for communication systems—Part II: Uplink scheduling via matching,” IEEE Trans. Signal Process. , vol. 66, no. 10, pp. 2631–2644, 2018. [46] K. Shen and W. Yu, “Fractional programming for communication systems—Part I: Power control and beamforming,” IEEE Trans. Signal Process. , vol. 66, no. 10, pp. 2616–2630, 2018. [47] 3rd Generation Partnership Project (3GPP), “Further advancements for E-UTRA physical layer aspects (release 9),” 3GPP, Tech. Rep. TS 36.814, 2010. [48] E. Bj¨ ornson, H. Wymeersch, B. Matthiesen, P. Popovski, L. Sanguinetti, and E. de Carvalho, “Reconfigurable intelligent surfaces: A signal processing perspective with wireless applications,” IEEE Signal Process. Mag. , vol. 39, no. 2, pp. 135–158, 2022. [49] K. Zhi, C. Pan, H. Ren, and K. Wang, “Power scaling law analysis and phase shift optimization of ris-aided massive MIMO systems with statistical CSI,” IEEE Trans. Commun. , vol. 70, no. 5, pp. 3558–3574, 2022. [50] Y. Zhang, J. Zhang, M. Di Renzo, H. Xiao, and B. Ai, “Reconfigurable intelligent surfaces with outdated channel state information: Centralized vs. distributed deployments,” IEEE Trans. Commun. , vol. 70, no. 4, pp. 2742–2756, 2022.

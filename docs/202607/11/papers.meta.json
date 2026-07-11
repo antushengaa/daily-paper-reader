@@ -1,0 +1,54 @@
+{
+  "label": "2026-07-11",
+  "date": "2026-07-11",
+  "generated_at": "2026-07-11T21:07:34",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202607/11/2607.07995v1-d-clipse-distributed-consensus-based-localization-with-passive-listening-on-shared-state-exchange",
+      "section": "deep",
+      "title_en": "D-CLIPSE: Distributed Consensus-based Localization with Passive Listening on Shared State Exchange",
+      "authors": "Kyle Biron-Gricken, James Richard Forbes",
+      "date": "2026-07-09",
+      "pdf": "https://arxiv.org/pdf/2607.07995v1",
+      "score": "8.0",
+      "evidence": "基于被动侦听的一致分布式定位",
+      "tldr": "多机器人定位中，集中式滤波精度最优但实际难以实现，现有分布式方法一致性较差。本文提出D-CLIPSE框架，基于分布式共识与被动监听，机器人间共享预积分里程计和局部状态，实现通信高效且一致的定位。仿真和实验表明，其精度和一致性接近集中式方法，优于现有分散方案。该工作为多机器人系统提供了实用的分布式定位解决方案。",
+      "tags": "query:gso",
+      "abstract_en": "Multi-robot localization that is accurate and consistent is imperative for downstream tasks such as planning and control. Centralized filtering approaches optimally fuse all available sensor measurements of the team. However, a centralized solution is rarely implementable due to hardware, communication, and computational constraints. Distributed approaches deploy a filter on each robot to estimate their own state and neighbours' states using inter-robot communication. This paper proposes a consistent, communication-efficient, and consensus-based distributed filtering framework that shares both preintegrated odometry and relevant shared states among communicating robots. The proposed method is validated in simulated and experimental scenarios, showing near centralized performance in accuracy, and especially in consistency, compared to the current state-of-the-art decentralized approach.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/11/2607.08306v1-circular-expectiles",
+      "section": "quick",
+      "title_en": "Circular Expectiles",
+      "authors": "Bernhard Klar",
+      "date": "2026-07-09",
+      "pdf": "https://arxiv.org/pdf/2607.08306v1",
+      "score": "7.0",
+      "evidence": "非凸圆形优化",
+      "tldr": "方向数据中的期望分位数扩展至圆形数据面临非凸优化挑战。本文提出基于弦距离的非对称损失定义圆形期望分位数，证明其存在唯一性，并给出几何解释。经验估计量具有一致性和渐近正态性。该工作为方向数据提供了新的稳健统计量，支持散度、偏度和对称性分析。",
+      "tags": "query:gso",
+      "abstract_en": "In this work, we introduce circular expectiles as minimizers of an asymmetric circular loss function based on chord distance. In contrast to the linear expectile criterion, the resulting circular optimization problem is non-convex, so existence and uniqueness require a separate analysis. The construction extends linear expectiles to directional data while preserving the circular mean as the symmetric case corresponding to $α=1/2$. We derive basic representations of the objective function and the associated identification function, and give a geometric interpretation that generalizes the corresponding representation for the circular mean. Furthermore, we prove the existence and uniqueness of the minimizers for distributions with positive density on the circle. The empirical circular expectile is defined by using the sample circular mean as reference direction for the induced linear order on the circle. We prove the uniqueness of the empirical expectile, as well as its consistency and finite-dimensional asymptotic normality. Finally, we indicate possible applications to circular measures of dispersion, skewness, and symmetry diagnostics.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/11/2607.07990v1-optimal-multi-ris-placement-coverage-guaranteed-sum-rate-maximization-under-inhomogeneous-user-distributions",
+      "section": "quick",
+      "title_en": "Optimal Multi-RIS Placement: Coverage-Guaranteed Sum Rate Maximization Under Inhomogeneous User Distributions",
+      "authors": "Abhishek Rajasekaran, Mehdi Karbalayghareh, Xiaoyan Ma, David J. Love, Christopher G. Brinton",
+      "date": "2026-07-08",
+      "pdf": "https://arxiv.org/pdf/2607.07990v1",
+      "score": "6.0",
+      "evidence": "提出多层非凸优化问题求解RIS部署",
+      "tldr": "现有RIS部署方法多聚焦最大化覆盖以绕过障碍，但未充分利用用户密度不均特性来提升吞吐量。本文提出一种层次优化框架，先通过约束集覆盖问题在可见性图上确定最优部署区域，再使用贪心最小划分从超图中求出最少RIS数量，最后利用贝叶斯优化精确定位。数值结果显示该方案在保证概率覆盖的同时显著提高和速率，且无需不切实际的系统假设。该工作首次将用户空间分布信息融入RIS部署优化，实现了公平与吞吐量的兼得。",
+      "tags": "query:gso",
+      "abstract_en": "The realization of the full potential of Reconfigurable Intelligent Surfaces (RIS) in a wireless system is tied to their strategic spatial deployment. While existing literature primarily focuses on enabling fairness by maximizing coverage to navigate through obstacles, these approaches often fail to exploit the spatial distribution of user density to maximize throughput. Thus, to enable fairness without loss in throughput, we formulate a novel hierarchical problem that maximizes the expected sum rate of the system while guaranteeing probabilistic coverage with the least possible number of RISs deployed. To solve this multi-layered non-convex problem, firstly, we obtain optimal regions where we can deploy RISs to provide the coverage guarantee by solving a constrained set-cover problem on a visibility graph. Then, the minimum number of RISs we require to satisfy the coverage guarantee is obtained by a greedy minimum partitioning on an intersection hypergraph formed using the optimal regions. Finally, a Bayesian Optimization based approach is used to compute the final optimal RIS placement. Numerical results are provided to show that the proposed framework consistently identifies placements that jointly achieve good coverage and throughput, without impractical system assumptions.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

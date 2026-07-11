@@ -6,32 +6,31 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-10
-- 运行时间：2026-07-10 21:14:33 UTC
+- 最新运行日期：2026-07-11
+- 运行时间：2026-07-11 21:07:26 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：2
+- 本次总论文数：3
+- 精读区：1
 - 速读区：2
 
 ### 今日简报（AI）
-今日推荐4篇论文，聚焦实时SLAM、无网格DoA估计、6-D无线电SLAM及水下连续时间视觉里程计。精读首选《Real-Time LiDAR Gaussian Splatting SLAM》和《Low-Complexity Gridless Single-Snapshot DoA Estimation via Truncated Hankel Newton-MUSIC》，均获8.0高分。建议优先关注SLAM与信号处理领域的新方法，尤其适用于机器人实时定位与稀疏阵列处理场景。
-- 详情：[/202607/10/README](/202607/10/README)
+今日精读《D-CLIPSE: 基于分布式共识与被动监听的定位方法》（8.0分），速读《圆形期望值》（7.0分）与《多RIS优化部署：不均匀用户分布下的覆盖保证和速率最大化》（6.0分）。  
+最值得关注的方向是分布式共识与被动监听结合的定位新范式，以及圆形期望值在统计中的新理论。  
+建议读者优先研读精读论文的源码和实验设定，再结合速读论文中的RIS部署方法，思考融合定位与通信的潜在应用。
+- 详情：[/202607/11/README](/202607/11/README)
 
 ### 精读区论文标签
-1. [Real-Time LiDAR Gaussian Splatting SLAM](/202607/10/2607.04127v1-real-time-lidar-gaussian-splatting-slam)  
+1. [D-CLIPSE: Distributed Consensus-based Localization with Passive Listening on Shared State Exchange](/202607/11/2607.07995v1-d-clipse-distributed-consensus-based-localization-with-passive-listening-on-shared-state-exchange)  
    标签：评分：8.0/10、query:gso
-   evidence：实时LiDAR SLAM涉及几何配准，直接与传感器对齐的几何校准相关
-2. [Low-Complexity Gridless Single-Snapshot DoA Estimation via Truncated Hankel Newton-MUSIC](/202607/10/2607.08108v1-low-complexity-gridless-single-snapshot-doa-estimation-via-truncated-hankel-newton-music)  
-   标签：评分：8.0/10、query:gso
-   evidence：无网格单快照DoA估计用于阵列处理
+   evidence：基于被动侦听的一致分布式定位
 
 ### 速读区论文标签
-1. [Amplitude-Independent Robust Snapshot 6-D Radio SLAM via a Uniffed Angle-Delay Formulation](/202607/10/2607.04847v1-amplitude-independent-robust-snapshot-6-d-radio-slam-via-a-uniffed-angle-delay-formulation)  
+1. [Circular Expectiles](/202607/11/2607.08306v1-circular-expectiles)  
    标签：评分：7.0/10、query:gso
-   evidence：基于角度-延迟公式的幅值无关稳健无线SLAM用于传感器位姿校准
-2. [DIVO: Continuous-time DVL-Inertial-Visual Odometry for Unmanned Underwater Vehicles](/202607/10/2607.04615v1-divo-continuous-time-dvl-inertial-visual-odometry-for-unmanned-underwater-vehicles)  
+   evidence：非凸圆形优化
+2. [Optimal Multi-RIS Placement: Coverage-Guaranteed Sum Rate Maximization Under Inhomogeneous User Distributions](/202607/11/2607.07990v1-optimal-multi-ris-placement-coverage-guaranteed-sum-rate-maximization-under-inhomogeneous-user-distributions)  
    标签：评分：6.0/10、query:gso
-   evidence：利用DVL声学传感器的音频-视觉-惯性里程计，与声学传感器阵列的几何校准方法相关
+   evidence：提出多层非凸优化问题求解RIS部署
 
 
 <div class="dpr-home-promo-card">

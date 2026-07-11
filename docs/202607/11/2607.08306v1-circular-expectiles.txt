@@ -1,0 +1,2325 @@
+Title: Circular Expectiles
+
+URL Source: https://arxiv.org/pdf/2607.08306v1
+
+Published Time: Fri, 10 Jul 2026 00:43:31 GMT
+
+Number of Pages: 32
+
+Markdown Content:
+# Circular Expectiles 
+
+# Bernhard Klar ∗
+
+Institute of Stochastics, Karlsruhe Institute of Technology (KIT), Germany. 
+
+# July 10, 2026 
+
+In this work, we introduce circular expectiles as minimizers of an asymmet-ric circular loss function based on chord distance. In contrast to the linear expectile criterion, the resulting circular optimization problem is non-convex, so existence and uniqueness require a separate analysis. The construction ex-tends linear expectiles to directional data while preserving the circular mean as the symmetric case corresponding to α = 1 /2. We derive basic represen-tations of the objective function and the associated identification function, and give a geometric interpretation that generalizes the corresponding rep-resentation for the circular mean. Furthermore, we prove the existence and uniqueness of the minimizers for distributions with positive density on the circle. The empirical circular expectile is defined by using the sample cir-cular mean as reference direction for the induced linear order on the circle. We prove the uniqueness of the empirical expectile, as well as its consistency and finite-dimensional asymptotic normality. Finally, we indicate possible applications to circular measures of dispersion, skewness, and symmetry di-agnostics. 
+
+Keywords: Circular statistics; directional data; circular mean; expectiles; asymmetric loss; identification functions; asymptotic normality. 
+
+1. Introduction 
+
+Directional and circular data analysis has a long history, and comprehensive background on measures of location, spread and shape on the circle can be found in the monographs by Fisher (1993), Jammalamadaka and SenGupta (2001), and Mardia and Jupp (2000). These references cover the classical circular mean, median-type notions, measures of 
+
+> ∗bernhard.klar@kit.edu
+
+1arXiv:2607.08306v1 [stat.ME] 9 Jul 2026 concentration and dispersion, as well as descriptive quantities such as circular skewness and kurtosis. Among measures of circular location, the most prominent notion is the circular mean ,also called the extrinsic mean, which is characterized by the direction of the mean resul-tant vector. Its large-sample theory is standard; see, for example, Jammalamadaka and SenGupta (2001, p.76) and Mardia and Jupp (2000, p.76), as well as Pewsey (2004) for joint asymp-totics of several key circular statistics, including skewness and kurtosis. Beyond the extrinsic mean, intrinsic or Fr´ echet-type means on the circle have been studied in detail by Bhattacharya and Patrangenaru (2003, 2005), by McKilliam et al. (2012), by Hotz (2013), and by Hotz and Huckemann (2015), with particular emphasis on existence, uniqueness and asymptotic properties. A second line of work concerns median-type location functionals based on arc distance. On the circle, this includes the Mardia-Fisher median and related spherical medians; relevant references are Fisher (1985), Fisher (1993, p.35), Liu and Singh (1992), and Purkayastha (1995). These papers also connect circular location with notions of depth and ordering for directional data. In particular, Liu and Singh introduced circular and spherical depth concepts, thereby providing a framework in which location, centrality and ordering can be treated simultaneously. More recently, quantile-type methodology for directional data has been developed in several directions. Ley et al. (2014) proposed a notion of quantiles for directional data together with an angular Mahalanobis depth, thereby extending spatial-quantile ideas to the circular setting. On the regression side, Di Marzio et al. (2016) developed nonparametric circular quantile regression. Thus, in the literature on circular statistics there is by now a substantial body of work on location functionals based on means, medians, depth and quantiles. In contrast, expectiles have so far been studied almost exclusively in the linear setting. Introduced by Newey and Powell (1987) as minimizers of an asymmetric quadratic loss function, they form a one-parameter family of non-central location functionals that in-terpolates through the mean and has attractive analytical and statistical properties. In particular, Bellini et al. (2014) studied expectiles as generalized quantiles and coherent risk measures, Holzmann and Klar (2016) developed their asymptotic theory in detail, and Bellini et al. (2018) related expectiles to omega ratios and stochastic ordering. This paper extends the idea to the circular setting. Starting from the circular mean as the symmetric benchmark, we introduce circular expectiles as minimizers of an asym-metric circular loss function based on chord distance. As in the linear case, expectiles are therefore measures of location related to circular means and medians, as well as to circular quantiles and depths. However, unlike linear expectiles, the circular criterion is not convex in the location parameter. Even the symmetric loss function 1 −cos( x−ν) has second derivative cos( x − ν), which changes sign on the circle. Consequently, the stan-dard arguments in convex M-estimation cannot be used to derive existence, uniqueness and asymptotic properties directly, and a direct analysis of the circular identification function is required instead. The paper is organized as follows. The remainder of the introduction recalls the cir-cular mean and the basic definition of linear expectiles. Section 2 introduces circular 2expectiles, derives basic representations and identification functions, and establishes ex-istence and uniqueness results under suitable regularity assumptions. Section 3 studies the empirical version, including existence and uniqueness. Section 4 derives consis-tency and finite-dimensional asymptotic normality of empirical circular expectiles and concludes with a discussion of possible applications to circular measures of dispersion, skewness, and symmetry diagnostics. 
+
+1.1. Circular mean 
+
+Throughout the paper, the circular mean plays a fundamental role. We therefore recall its definition and basic properties in this subsection. Consider a circular random variable X, i.e. a random angle with values in [ −π, π ). We identify every angle φ ∈ [−π, π ) with the point z = ζ(φ) = (cos φ, sin φ) on the unit circle S1 = {z ∈ C : |z| = 1 }. Let crd( φ) denote the chord of φ. The population circular mean set of X or Z = eiX is defined as 
+
+M = arg min 
+
+> ν∈[−π,π )
+
+E
+
+(crd 2(X − ν)
+
+2
+
+)
+
+= arg min 
+
+> ν∈[−π,π )
+
+E [1 − cos ( X − ν)] . (1) It is well known that M is a singleton if and only if EeiX 6 = 0. In this case we denote its unique element by μ = Arg [−π,π )(EZ). The direction μ satisfies E sin( X − μ) = 0; the antipodal direction also satisfies this first-order equation, but corresponds to the maximum of the criterion. Consider independent random variables θ1, . . . , θ n ∼ X, and write Zi = eiθ i , i =1, . . . , n . The circular sample mean set is ̂
+
+Mn = arg min 
+
+> ν∈[−π,π )
+> n
+
+∑
+
+> i=1
+
+(1 − cos ( θi − ν)) . (2) If ¯Zn = 1
+
+> n
+
+∑ni=1 Zi 6 = 0, then this set is a singleton and its element ˆ μn is determined by 
+
+eiˆμn = ¯Zn
+
+| ¯Zn| , ˆμn = Arg [−π,π )( ¯Zn).
+
+For completeness, and since we will use the resulting representation below, we briefly recall a standard argument based on (1). Define 
+
+g(ν) = 1 − E[cos( X − ν)] , C = E[cos( X)] , S = E[sin( X)] Assuming R = |EZ| = √C2 + S2 > 0, and using cos( x − y) = cos x cos y + sin x sin y
+
+twice, we obtain 
+
+g(ν) = 1 − C cos( ν) − S sin( ν) (3) = 1 − R cos( ν − φ),
+
+3where φ = Arg [−π,π )(C + iS ) . Thus the unique minimum is attained at ν = φ, whereas the unique maximum is attained at the antipodal direction. A geometrical argument directly considers (3). Minimizing g is equivalent to max-imizing the dot product C cos( ν) + S sin( ν) between ( C, S ) and (cos( ν), sin( ν)). The maximum is attained if both vectors point in the same direction, which leads to the solution (cos φ, sin φ) = (C, S )
+
+R , (4) the projection of ( C, S ) onto the unit circle. 
+
+1.2. Linear expectiles 
+
+In this subsection, let X be a real-valued random variable having a finite mean (denoted as X ∈ L1). For X ∈ L2, expectiles were introduced by Newey and Powell (1987) as minimizers of an asymmetric quadratic loss: 
+
+eX (α) = arg min  
+
+> t∈R
+
+{Eℓ α(X − t)} , (5) where 
+
+ℓα(x) = 
+
+{
+
+αx 2, if x ≥ 0,
+
+(1 − α)x2, if x < 0,
+
+and α ∈ (0 , 1). For X ∈ L1, the objective in (5) is replaced by the centered version 
+
+eX (α) = arg min  
+
+> t∈R
+
+{E [ℓα(X − t) − ℓα(X)] } . (6) The minimizer in (5) or (6) is always unique and is identified by the first order condition 
+
+αE (X − eX (α)) + = (1 − α)E (X − eX (α)) − ,
+
+where x+ = max {x, 0}, x− = max {− x, 0}. This is equivalent to characterizing expectiles via an identification function, which, for any α ∈ (0 , 1) is defined by 
+
+Iα(x, y ) = α(y − x)1{y≥x} − (1 − α)( x − y)1{y<x }
+
+for x, y ∈ R. The α-expectile of a random variable X ∈ L1 is then the unique solution of 
+
+EI α(t, X ) = 0 , t ∈ R.
+
+For α = 1 /2, this gives eX (1 /2) = EX. Further properties of expectiles, in particu-lar their monotonicity, continuity and interpretation as generalized quantiles and risk measures, can be found in Bellini et al. (2014), Bellini et al. (2018), and Ziegel (2016). For asymptotic results on empirical expectiles, we refer to Newey and Powell (1987), Holzmann and Klar (2016), and Kr¨ atschmer and Z¨ ahle (2017); see also Sobotka and Kneib 4(2012) for related work on expectile regression. 
+
+2. Circular expectiles 
+
+In this section, we introduce circular expectiles as minimizers of an asymmetric circular loss, and develop their basic representations and structural properties. 
+
+Definition 1. Let X be a circular random variable with values in [ −π, π ). Assume 
+
+R = |EeiX | > 0 and let μ = arg( Ee iX ) denote the (unique) circular mean direction. Assume further that 
+
+P (eiX = −eiμ ) = 0 . (7) Let Xμ denote the unique representative of X modulo 2 π belonging to ( μ − π, μ + π). For α ∈ (0 , 1), the circular α-expectile of X is defined as 
+
+Eα = arg min 
+
+> ν∈(μ−π,μ +π)
+
+gα(ν),
+
+where 
+
+gα(ν) = E[α(1 − cos( Xμ − ν)) 1{Xμ∈(ν,μ +π)} + (1 − α)(1 − cos( Xμ − ν)) 1{Xμ∈(μ−π,ν ]}
+
+].
+
+If Eα is a singleton, we denote its element by μα.
+
+Remark 2. (i) The assumption in (7) avoids ambiguity in the definition at the an-tipodal point. It is automatically satisfied for absolutely continuous distributions, which are the main focus of this paper. (ii) We have μ1/2 = μ as in the linear case. The motivation behind this definition is also analogous: since 1 − cos( θ − ν) measures the distance between angles θ
+
+and ν, the quantity 1 − E[cos( X − ν)] is a measure of the variability of X about the direction ν. In contrast to the (circular) variance, these deviations are priced asymmetrically, depending on the sign of the deviation. 
+
+2.1. Definition and basic representations 
+
+In the remainder of this section, all random angles are interpreted via their unique representatives in the interval ( μ − π, μ + π). For simplicity, we write X instead of 
+
+Xμ. Accordingly, all inequalities are understood with respect to the linear order on (μ − π, μ + π). Define 
+
+F (ν) = E[1{X≤ν}], C = E[cos X], S = E[sin X],
+
+and 
+
+C− 
+
+> ν
+
+= E[cos( X)1{X≤ν}], S− 
+
+> ν
+
+= E[sin( X)1{X≤ν}],
+
+5together with 
+
+C+ 
+
+> ν
+
+= C − C− 
+
+> ν
+
+, S+ 
+
+> ν
+
+= S − S− 
+
+> ν
+
+.
+
+Then the objective function can be written as 
+
+gα(ν) = α + (1 − 2α)F (ν) − Cα(ν) cos ν − Sα(ν) sin ν, 
+
+where 
+
+Cα(ν) = αC + (1 − 2α)C− 
+
+> ν
+
+, Sα(ν) = αS + (1 − 2α)S− 
+
+> ν
+
+.
+
+The boundary values are lim  
+
+> ν↓μ−π
+
+gα(ν) = α(1 + R), lim  
+
+> ν↑μ+π
+
+gα(ν) = (1 − α)(1 + R),
+
+where R = E[cos( X − μ)] = C cos μ + S sin μ = √C2 + S2 denotes the mean resultant length. 
+
+2.2. Identification function 
+
+Assume that X has a density f . Define the function 
+
+Iα(ν, x ) = α sin( ν − x)1{x>ν } + (1 − α) sin( ν − x)1{x≤ν},
+
+and 
+
+Iα(ν, F ) = E[Iα(ν, X )] .
+
+We now show that Iα(ν, F ) is the derivative of gα(ν). Differentiating under the integral sign yields 
+
+g′
+
+> α
+
+(ν) = αE[ sin( ν − X)1{X>ν }
+
+] + (1 − α)E[ sin( ν − X)1{X≤ν}
+
+],
+
+since d 
+
+> dν
+
+(1 − cos( x − ν)) = sin( ν − x) and the contribution from the moving boundary 
+
+x = ν vanishes because 1 − cos(0) = 0. Hence, 
+
+g′
+
+> α
+
+(ν) = Iα(ν, F ).
+
+Thus, Iα(ν, F ) serves as an identification function for the circular α-expectile. In par-ticular, any minimizer satisfies the first-order condition 
+
+Iα(ν, F ) = 0 .
+
+We next derive alternative representations of Iα(ν, F ). Using integration by parts, we obtain 
+
+Iα(ν, F ) = −α
+
+∫ μ+πν
+
+(1 − F (x)) cos( x − ν) dx + (1 − α)
+
+∫ νμ−π
+
+F (x) cos( x − ν) dx. 
+
+6A further representation is obtained by expressing the integrals in terms of the trigono-metric partial moments: 
+
+Iα(ν, F ) = α(C+ 
+
+> ν
+
+sin ν − S+ 
+
+> ν
+
+cos ν) + (1 − α)(C− 
+
+> ν
+
+sin ν − S− 
+
+> ν
+
+cos ν)
+
+= Cα(ν) sin ν − Sα(ν) cos ν. (8) The boundary values are lim  
+
+> ν↓μ−π
+
+Iα(ν, F ) = 0 , lim  
+
+> ν↑μ+π
+
+Iα(ν, F ) = 0 .
+
+Indeed, 
+
+Cα(ν) → αC, Sα(ν) → αS as ν ↓ μ − π, Cα(ν) → (1 − α)C, Sα(ν) → (1 − α)S as ν ↑ μ + π, 
+
+and 
+
+C sin( μ ± π) − S cos( μ ± π) = − (C sin μ − S cos μ) = 0 .
+
+2.3. Geometric interpretation 
+
+By (8), the equation Iα(ν, F ) = 0 is equivalent to (Cα(ν), S α(ν)) · (sin ν, − cos ν) = 0 ,
+
+i.e., ( Cα(ν), S α(ν)) is orthogonal to (sin ν, − cos ν). Since (sin ν, − cos ν) is obtained by a 90 ◦ rotation of (cos ν, sin ν), it follows that ( Cα(ν), S α(ν)) is collinear with (cos ν, sin ν). At a stationary point with (Cα(ν), S α(ν)) = λ(cos ν, sin ν),
+
+one has (compare (9) below) 
+
+g′′ 
+
+> α
+
+(ν) = I′
+
+> α
+
+(ν, F ) = Cα(ν) cos( ν) + Sα(ν) sin( ν) = λ. 
+
+Since g′′ 
+
+> α
+
+(ν) = λ, a strict local minimizer therefore requires λ > 0, so the vectors point in the same direction. Hence μα satisfies (Cα(μα), S α(μα)) 
+
+√Cα(μα)2 + Sα(μα)2 = (cos μα, sin μα),
+
+provided the denominator is nonzero. This representation is the counterpart of (4) for 
+
+α 6 = 1 /2. 72.4. Uniqueness of the theoretical circular expectile 
+
+The following theorem establishes existence, uniqueness, and basic structural properties of circular expectiles. Since circular expectiles are equivariant under rotations, we may assume without loss of generality that μ = 0. In this case, S = 0 and R = C ∈ [0 , 1] .
+
+Throughout, we assume 0 < α < 1/2. The case 1 /2 < α < 1 is treated in Remark 4. 
+
+Theorem 3. Let X be a circular random variable with values in [−π, π ) and circular mean μ = 0 (so that S = E[sin X] = 0 ), and let C = E[cos X] > 0. Assume that X has a density f which is positive a.e. on (−π, π ). For α ∈ (0 , 1/2) , define 
+
+Cα(ν) = αC + (1 − 2α)C− 
+
+> ν
+
+, Sα(ν) = (1 − 2α)S− 
+
+> ν
+
+,
+
+where 
+
+C− 
+
+> ν
+
+= E[cos( X)1{X≤ν}], S− 
+
+> ν
+
+= E[sin( X)1{X≤ν}],
+
+and let 
+
+Iα(ν, F ) = Cα(ν) sin ν − Sα(ν) cos ν, ν ∈ (−π, π ).
+
+Then the following hold. (a) For every α ∈ (0 , 1/2) , the equation Iα(ν, F ) = 0 has a unique solution q(α) ∈
+
+(−π, 0) . Moreover, q(α) is the unique minimizer of gα or, in terms of the expectile notation, Eα = {q(α)}.(b) The function q : (0 , 1/2) → (−π, 0) is strictly increasing. (c) Define 
+
+α∗ := inf 
+
+{
+
+α ∈ [0 , 1/2] : Cα(−π/ 2) ≥ 0
+
+}
+
+.
+
+Then α∗ ∈ (0 , 1/2) is given by 
+
+α∗ = − C−−π/ 2
+
+C − 2C−−π/ 2
+
+.
+
+Moreover, q(α) ∈ (−π, −π/ 2) for α < α ∗, q(α∗) = −π/ 2, and q(α) ∈ (−π/ 2, 0) 
+
+for α > α ∗.(d) One has lim α↑1/2 q(α) = 0 and lim α↓0 q(α) = −π.Proof. Preliminary identities. We have 
+
+C′
+
+> α
+
+(ν) = (1 − 2α) cos( ν)f (ν), S′
+
+> α
+
+(ν) = (1 − 2α) sin( ν)f (ν),
+
+and 
+
+I′
+
+> α
+
+(ν, F ) = Cα(ν) cos( ν) + Sα(ν) sin( ν). (9) 8The identities for C′ 
+
+> α
+
+and S′ 
+
+> α
+
+hold a.e.; the displayed expression for I′ 
+
+> α
+
+follows every-where by differentiating the representation of Iα in (8), since the moving-boundary term vanishes. Since ( S− 
+
+> ν
+
+)′ = sin( ν)f (ν) and f > 0 a.e., the function S− 
+
+> ν
+
+is strictly decreasing on (−π, 0), strictly increasing on (0 , π ), and satisfies S−−π = S− 
+
+> π
+
+= 0. Hence 
+
+Sα(ν) < 0 for all ν ∈ (−π, π ). (10) Moreover, Cα is strictly decreasing on ( −π, −π/ 2), strictly increasing on ( −π/ 2, π/ 2), and strictly decreasing on ( π/ 2, π ). (a) Existence and uniqueness. 
+
+On the interval ( −π/ 2, π/ 2), define 
+
+Jα(ν) := Iα(ν, F )
+
+cos( ν) = Cα(ν) tan( ν) − Sα(ν).
+
+Since cos( ν) > 0 there, Iα and Jα have the same zeros. A direct calculation yields 
+
+J′
+
+> α
+
+(ν) = Cα(ν)
+
+cos 2(ν).
+
+Case 1: Cα(−π/ 2) > 0.
+
+Then Cα(ν) > 0 for all ν ∈ (−π, π ), and hence Jα is strictly increasing on (−π/ 2, π/ 2). Since 
+
+Jα(ν) → −∞ (ν ↓ − π/ 2) , Jα(0) = −Sα(0) > 0by (10), there exists exactly one zero in ( −π/ 2, 0). On ( −π, −π/ 2), one has sin( ν) < 0, cos( ν) < 0, Cα(ν) > 0, and Sα(ν) < 0, hence 
+
+Iα(ν, F ) = Cα(ν) sin( ν) − Sα(ν) cos( ν) < 0.
+
+On (0 , π/ 2), we have sin( ν) > 0, cos( ν) > 0, Cα(ν) > 0, and Sα(ν) < 0, hence 
+
+Iα(ν, F ) > 0. On ( π/ 2, π ), 
+
+I′
+
+> α
+
+(ν, F ) < 0, lim  
+
+> ν↑π
+
+Iα(ν, F ) = 0 ,
+
+so Iα(ν, F ) > 0 there as well. Hence the zero is unique. 
+
+Case 2: Cα(−π/ 2) = 0 .
+
+Then Iα(−π/ 2, F ) = 0. Since Cα is strictly increasing on ( −π/ 2, π/ 2), we have 
+
+Cα(ν) > 0 for all ν ∈ (−π/ 2, π/ 2). On ( −π/ 2, 0), 
+
+I′
+
+> α
+
+(ν, F ) = Cα(ν) cos ν + Sα(ν) sin ν > 0,
+
+9because Cα(ν) > 0, cos ν > 0, Sα(ν) < 0, and sin ν < 0. Hence Iα(ν, F ) > 0 on (−π/ 2, 0). On (0 , π/ 2), the representation 
+
+Iα(ν, F ) = Cα(ν) sin ν − Sα(ν) cos ν
+
+shows directly that Iα(ν, F ) > 0. Also Iα(0 , F ) = −Sα(0) > 0. Therefore there are no further zeros in ( −π/ 2, π/ 2). Exactly the same arguments as in Case 1 show that Iα(ν, F ) < 0 on ( −π, −π/ 2) and Iα(ν, F ) > 0 on [ π/ 2, π ). 
+
+Case 3: Cα(−π/ 2) < 0.
+
+Then Cα has a unique zero τα ∈ (−π, −π/ 2) and a unique zero σα ∈ (−π/ 2, π/ 2). On ( −π, τ α], one has Cα(ν) ≥ 0, sin( ν) < 0, cos( ν) < 0, and Sα(ν) < 0, hence 
+
+Iα(ν, F ) < 0. On ( τα, −π/ 2), we have Cα(ν) < 0, Sα(ν) < 0, cos( ν) < 0, and sin( ν) < 0, so 
+
+I′
+
+> α
+
+(ν, F ) > 0. Moreover, 
+
+Iα(τα, F ) < 0, Iα(−π/ 2, F ) > 0,
+
+so there is exactly one zero in ( τα, −π/ 2). On ( −π/ 2, π/ 2), Jα decreases on ( −π/ 2, σ α) and increases on ( σα, π/ 2). Since 
+
+Jα(σα) = −Sα(σα) > 0,
+
+it follows that Jα(ν) > 0 for all ν ∈ (−π/ 2, π/ 2), hence no further zero exists. Again, Iα(ν, F ) > 0 on ( π/ 2, π ). This proves uniqueness. In all three cases, Iα(ν, F ) changes sign exactly once, from negative to positive, at its unique zero q(α) ∈ (−π, 0). Since g′
+
+> α
+
+(ν) = Iα(ν, F ), it follows that q(α) is the unique minimizer of gα.(b) Monotonicity. 
+
+By (a), q(α) is well-defined by Iα(q(α), F ) = 0. At every root, I′
+
+> α
+
+(q(α), F ) > 0, including the boundary case q(α) = −π/ 2, since 
+
+I′
+
+> α
+
+(−π/ 2, F ) = − Sα(−π/ 2) > 0by (10). Hence the implicit function theorem applies, so q is continuously differ-entiable. Moreover, Proposition 5 yields q′(α) > 0 for all α ∈ (0 , 1/2). (c) Threshold. The derivative of Cα(−π/ 2) = αC + (1 − 2α)C−−π/ 2 is 
+
+d
+
+dα Cα(−π/ 2) = C − 2C−−π/ 2.
+
+10 Since C > 0 and C−−π/ 2 < 0, Cα(−π/ 2) is strictly increasing in α. Moreover, 
+
+C0(−π/ 2) = C−−π/ 2 < 0, C1/2(−π/ 2) = C/ 2 > 0.
+
+Therefore, there exists a unique α∗ ∈ (0 , 1/2) such that Cα∗ (−π/ 2) = 0, namely 
+
+α∗ = − C−−π/ 2
+
+C − 2C−−π/ 2
+
+.
+
+The remaining assertions follow directly from part (a): if α < α ∗, then Cα(−π/ 2) <
+
+0, so q(α) ∈ (−π, −π/ 2); if α = α∗, then q(α) = −π/ 2; and if α > α ∗, then 
+
+Cα(−π/ 2) > 0, so q(α) ∈ (−π/ 2, 0). (d) Limit as α ↑ 1/2.
+
+Since q(α) is increasing and bounded above by 0, the limit exists. By continuity, 
+
+I1/2(ν, F ) = C sin( ν)/2, so the only zero in ( −π, 0] is ν = 0. 
+
+Limit as α ↓ 0.
+
+Since q(α) is increasing in α and q(α) ∈ (−π, 0) for all α ∈ (0 , 1/2), the limit 
+
+q0 := lim  
+
+> α↓0
+
+q(α)exists in [ −π, 0). We claim that q0 = −π.Suppose, to the contrary, that q0 > −π. By continuity of Iα(ν, F ) in ( α, ν ), we have I0(q0, F ) = 0. But 
+
+I0(q0, F ) = 
+
+∫ q0
+
+> −π
+
+sin( q0 − x)f (x) dx > 0,
+
+since f > 0 a.e. on ( −π, q 0). This is a contradiction. Hence q0 = −π.
+
+Remark 4 (Upper circular expectiles) . For α ∈ (1 /2, 1) the result follows by reflection. Let Y = −X and denote its distribution function by FY . Then Y has circular mean 0 and satisfies the assumptions of Theorem 3. Moreover, 
+
+Iα(ν, F X ) = −I1−α(−ν, F Y ).
+
+Hence ν solves Iα(ν, F X ) = 0 if and only if −ν solves I1−α(·, F Y ) = 0. Applying The-orem 3 to Y with parameter 1 − α ∈ (0 , 1/2) shows that Iα(ν, F X ) = 0 has a unique solution q(α) ∈ (0 , π ), which is the unique minimizer of gα.More precisely, let α∗ 
+
+> Y
+
+be the threshold from Theorem 3 applied to Y , and set ˜α∗ := 1 − α∗ 
+
+> Y
+
+. Then 
+
+q(α) ∈ (0 , π/ 2) for α < ˜α∗, q(˜α∗) = π/ 2, q(α) ∈ (π/ 2, π ) for α > ˜α∗.
+
+11 Moreover, lim  
+
+> α↓1/2
+
+q(α) = 0 , lim  
+
+> α↑1
+
+q(α) = π. 
+
+The following proposition gives the derivative of the circular expectile. 
+
+Proposition 5. Let α ∈ (0 , 1/2) , and let q(α) ∈ (−π, 0) denote the unique solution of 
+
+Iα(ν, F ) = 0 . Then q is continuously differentiable and 
+
+q′(α) = 2D (q(α)) − C sin q(α)
+
+I′
+
+> α
+
+(q(α), F ) , (11) 
+
+where D(ν) = C− 
+
+> ν
+
+sin ν − S− 
+
+> ν
+
+cos ν, and I′
+
+> α
+
+(ν, F ) is given by (9) . Equivalently, one has the representation 
+
+q′(α) = −C sin q(α)
+
+(1 − 2α) I′
+
+> α
+
+(q(α), F ). (12) 
+
+In particular, q′(α) > 0 for all α ∈ (0 , 1/2) .Proof. By Theorem 3(a), the equation Iα(q(α), F ) = 0 defines q(α) uniquely for α ∈
+
+(0 , 1/2). Moreover, by the proof of Theorem 3(a), one has I′
+
+> α
+
+(q(α), F ) > 0. Hence the implicit function theorem implies that q is continuously differentiable and 
+
+q′(α) = −∂αIα(q(α), F )
+
+I′
+
+> α
+
+(q(α), F ) . (13) Writing Iα(ν, F ) = αC sin ν + (1 − 2α)D(ν), where D(ν) := C− 
+
+> ν
+
+sin ν − S− 
+
+> ν
+
+cos ν, we obtain 
+
+∂αIα(ν, F ) = C sin ν − 2D(ν).
+
+Evaluating at ν = q(α) gives (11). Using Iα(q(α), F ) = 0, we have 
+
+D(q(α)) = − α
+
+1 − 2α C sin q(α),
+
+and therefore 
+
+∂αIα(q(α), F ) = C sin q(α)
+
+1 − 2α < 0.
+
+Substituting this into (13) yields (12). Since I′
+
+> α
+
+(q(α), F ) > 0, it follows that q′(α) >
+
+0. 
+
+Remark 6. The derivative formula for circular expectiles has the same implicit-function structure as in the linear case: it is obtained as the negative ratio of the derivative of the identification function with respect to the asymmetry parameter and its derivative with respect to the location parameter. In the linear setting (see Proposition 1(iii) in Holzmann and Klar (2016)), this yields a ratio involving integrated tail functionals in the numerator and a local cdf-based weight 12 in the denominator. In the circular setting, these quantities are replaced by trigonometric moment terms and the local slope I′
+
+> α
+
+(q(α), F ) at the root. 
+
+Example 7 (Uniform distribution on an arc) . Let X ∼ Unif( −d, d ) with 0 < d < π .Then X is a circular random variable whose support is a strict subset of [ −π, π ), and its circular mean is μ = 0. In this case, C = sin d/d , and, for ν ∈ (−d, d ), 
+
+C− 
+
+> ν
+
+= sin ν + sin d
+
+2d , S− 
+
+> ν
+
+= cos d − cos ν
+
+2d .
+
+Therefore, on the support ( −d, d ), 
+
+Iα(ν, F ) = αC sin ν + (1 − 2α) (C− 
+
+> ν
+
+sin ν − S− 
+
+> ν
+
+cos ν)
+
+= 1
+
+2d (sin d sin ν + (1 − 2α) (1 − cos d cos ν)) .
+
+Introducing the substitution 
+
+t = tan ν
+
+2 , sin ν = 2t
+
+1 + t2 , cos ν = 1 − t2
+
+1 + t2 ,
+
+and multiplying by 1 + t2, the equation Iα(ν, F ) = 0 is equivalent to 2t sin d + (1 − 2α) ((1 − cos d) + (1 + cos d)t2) = 0 .
+
+Using sin d = 2 sin( d/ 2) cos( d/ 2) , 1 − cos d = 2 sin 2(d/ 2) , 1 + cos d = 2 cos 2(d/ 2), and dividing by 2 cos 2(d/ 2), we obtain the quadratic equation (1 − 2α)t2 + 2 t tan( d/ 2) + (1 − 2α) tan 2(d/ 2) = 0 .
+
+Solving the quadratic equation gives 
+
+t = tan ν
+
+2 =
+
+√α − √1 − α
+
+√α + √1 − α tan d
+
+2 ,
+
+where we select the root corresponding to ν ∈ (−d, d ). Hence 
+
+μα = 2 arctan 
+
+(√α − √1 − α
+
+√α + √1 − α tan d
+
+2
+
+)
+
+for α ∈ (0 , 1). In particular, μα ∈ (−d, d ), lim α↓0 μα = −d, lim α↑1 μα = d, and μ1−α =
+
+−μα by symmetry. There are no further zeros outside the support: for ν < −d, Iα(ν, F ) = αC sin ν < 0,
+
+whereas for ν > d , Iα(ν, F ) = (1 − α)C sin ν > 0. Hence the zero displayed above is the unique minimizer. Note that the density of X is not strictly positive on ( −π, π ), so the assumptions of Theorem 3 are not satisfied. Nevertheless, the circular expectile is uniquely defined, 13 illustrating that the full-support assumption is not essential in general. Moreover, for d > π/ 2, we obtain C−−π/ 2 = (sin d − 1) /(2 d). Thus, the threshold parameter from Theorem 3 is given by α∗ = (1 − sin d)/2 ∈ (0 , 1/2). A direct calculation shows that 0 < α < α ∗ ⇒ μα ∈ (−d, −π/ 2) , α∗ < α < 1/2 ⇒ μα ∈ (−π/ 2, 0) ,
+
+so the qualitative behavior described in Theorem 3 remains valid despite the lack of full support. 
+
+3. Empirical circular expectiles 
+
+For an iid sample θ = ( θ1, . . . , θ n), n ≥ 2, from an absolutely continuous circular distribu-tion on [ −π, π ), let ˆ μn denote the sample circular mean. We represent the observations in the interval (ˆ μn − π, ˆμn + π) and, for simplicity, keep the notation θ1, . . . , θ n for these representatives. The empirical circular α-expectile set is defined by ̂
+
+En,α = arg min 
+
+> ν∈(ˆ μn−π, ˆμn+π)
+
+gn,α (ν, θ ),
+
+where 
+
+gn,α (ν, θ ) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+{
+
+α(1 − cos( θi − ν)) 1{θi∈(ν, ˆμn +π)}
+
++ (1 − α)(1 − cos( θi − ν)) 1{θi∈(ˆ μn−π,ν )}
+
+}
+
+.
+
+If this set is a singleton, we denote its element by ˆ μn,α . Note that the definition of ˆ μn,α 
+
+depends on the sample circular mean ˆ μn, which serves as the reference point for the linearization of the circle. This dependence is inherent in the construction, since the notion of ordering on the circle requires a choice of origin. Such a reference point is standard in the directional setting. For instance, the defini-tion of projection quantiles in Ley et al. (2014) uses a consistent estimator of a spherical median, and similar constructions appear in other notions of circular quantiles. 
+
+3.1. Empirical identification function 
+
+Define the empirical identification function by 
+
+In,α (ν, θ ) = 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+(α sin( ν − θi) 1{θi∈(ν, ˆμn+π)} + (1 − α) sin( ν − θi) 1{θi∈(ˆ μn−π,ν )}
+
+) .
+
+Then the function gn,α (ν, θ ) is differentiable on (ˆ μn − π, ˆμn + π) and satisfies 
+
+∂
+
+∂ν gn,α (ν, θ ) = In,α (ν, θ ).
+
+14 Away from the sample points, the indicators remain constant as functions of ν, and differentiation of 1 − cos( θi − ν) yields sin( ν − θi). At the sample points ν = θi, the indicators change discontinuously. However, this does not destroy differentiability, since the function 1 − cos( θi − ν) vanishes quadratically at ν = θi, so that the corresponding summand has derivative zero at this point from both sides. Thus, In,α (ν, θ ) serves as the empirical identification function. For α 6 = 1 /2, the function gn,α (ν, θ ) is not twice differentiable at the sample points, reflecting the piecewise structure induced by the indicators. The proof of the following theorem is provided in the appendix. 
+
+Theorem 8 (Uniqueness of the empirical circular expectile) . Assume that θ1, . . . , θ n are sampled from an absolutely continuous circular distribution. Then, with probability one, the sample circular mean ˆμn is uniquely defined and the ordered sample satisfies 
+
+−π =: θ(0) < θ (1) < · · · < θ (n) < θ (n+1) := π. 
+
+Without loss of generality, rotate the sample so that ˆμn = 0 . In particular, 
+
+Cn := 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+cos( θi) > 0, Sn := 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+sin( θi) = 0 .
+
+For k = 0 , . . . , n , define 
+
+C− 
+
+> k
+
+:= 1
+
+n
+
+> k
+
+∑
+
+> i=1
+
+cos( θ(i)), S− 
+
+> k
+
+:= 1
+
+n
+
+> k
+
+∑
+
+> i=1
+
+sin( θ(i)),
+
+and 
+
+C(k) 
+
+> α
+
+:= αC n + (1 − 2α)C− 
+
+> k
+
+, S(k) 
+
+> α
+
+:= (1 − 2α)S− 
+
+> k
+
+.
+
+Then, for α ∈ (0 , 1/2) and ν ∈ (θ(k), θ (k+1) ),
+
+In,α (ν) = C(k) 
+
+> α
+
+sin ν − S(k) 
+
+> α
+
+cos ν. 
+
+Moreover, the empirical circular α-expectile is uniquely defined. There exists a unique zero qn(α) ∈ (−π, 0) of In,α , and this zero is the unique minimizer of gn,α (ν, θ ).Let k∗ be the unique index such that −π/ 2 ∈ (θ(k∗), θ (k∗+1) ). Then exactly one of the following holds: 
+
+C(k∗) 
+
+> α
+
+< 0 ⇒ qn(α) ∈ (−π, −π/ 2) ,C(k∗) 
+
+> α
+
+= 0 ⇒ qn(α) = −π/ 2,C(k∗) 
+
+> α
+
+> 0 ⇒ qn(α) ∈ (−π/ 2, 0) .
+
+Remark 9 (Empirical upper circular expectiles) . The case α ∈ (1 /2, 1) follows by 15 reflection. After centering at ˆ μn = 0, let ηi = −θi. Then 
+
+In,α (ν; θ) = −In, 1−α(−ν; η).
+
+Hence the equation In,α (ν; θ) = 0 has a unique solution qn(α) ∈ (0 , π ), and this solution is the unique minimizer of gn,α .
+
+Remark 10. Let qn(α) denote the empirical circular α-expectile after centering the sample so that ˆ μn = 0, and let −π < θ (1) < · · · < θ (n) < π be the ordered sample. Then lim  
+
+> α↓0
+
+qn(α) = θ(1) , lim  
+
+> α↑1
+
+qn(α) = θ(n).
+
+This follows from the same sign-change argument: as α ↓ 0, the unique zero is forced into the first interval ( θ(1) , θ (2) ) and converges to θ(1) ; the upper limit follows by reflection. Thus, in the empirical case, the extreme circular expectiles converge to the extreme sample points in the linearized order. 
+
+Remark 11 (Computation of the empirical circular expectile) . After rotating the sample so that ˆ μn = 0, let −π = θ(0) < θ (1) < · · · < θ (n) < θ (n+1) = π be the ordered sample. On each interval ( θ(k), θ (k+1) ), 
+
+In,α (ν) = C(k) 
+
+> α
+
+sin ν − S(k) 
+
+> α
+
+cos ν. 
+
+For k = 1 , . . . , n − 1, one has S(k) 
+
+> α
+
+< 0, and hence 
+
+φk = atan2 (S(k) 
+
+> α
+
+, C (k)
+
+> α
+
+) ∈ (−π, 0) .
+
+The zeros of In,α on the interval ( θ(k), θ (k+1) ) are the points satisfying 
+
+ν ≡ φk (mod π).
+
+By Theorem 8, for α ∈ (0 , 1/2) there is a unique zero in ( −π, 0). Hence there is a unique index k such that 
+
+φk ∈ (θ(k), θ (k+1) ),
+
+and this value is the empirical circular α-expectile. The upper case α ∈ (1 /2, 1) follows by reflection. The resulting algorithm has complexity O(n) for already ordered data. Figure 1 shows the empirical lower and upper circular α-expectiles for several values of α for the von Mises distribution vM (0 , κ ) with κ = 3 and κ = 1. 
+
+4. Asymptotic properties of empirical circular expectiles 
+
+First, we present a consistency result for the empirical circular α-expectile. The proof, which is deferred to the appendix, employs a sign-change argument similar to that in Lemma 5.10 of Van der Vaart (1998). Holzmann and Klar (2016) use the same sign-based consistency argument for linear expectiles. Additionally, it must be shown that 16 0 
+
+> π
+> 2
+> π
+> 3π
+> 2
+> +0
+> π
+> 2
+> π
+> 3π
+> 2
+> +
+
+Figure 1: Empirical lower and upper circular α-expectiles for α = 0 .5 (red), α = 0 .25 (green), 0.1 (orange), 0.05 (yellow), 0.01 (brown) for samples of size 100 from the von Mises distribution vM (0 , κ ) with κ = 3 (left) and κ = 1 (right). replacing the true branch center μ by ˆ μn does not affect the empirical identification function asymptotically. 
+
+Proposition 12 (Consistency of the empirical circular expectile) . Let X1, X 2, . . . be iid from an absolutely continuous circular distribution. Assume R := |EeiX | > 0, and let μ be the unique circular mean. Let α ∈ (0 , 1/2) , and suppose that the population circular α-expectile μα ∈ (μ − π, μ + π) is the unique zero of Iα(ν, F ), with sign change from negative to positive. Let ˆμn,α denote the empirical circular α-expectile defined in Section 3. Define its μ-centered representative by 
+
+ˆμ(μ) 
+
+> n,α
+
+:= μ + Arg (−π,π )
+
+(ei(ˆ μn,α −μ)) .
+
+Then 
+
+ˆμ(μ) 
+
+> n,α
+
+→ μα a.s. 
+
+Theorem 13 (Finite-dimensional CLT for empirical circular expectiles) . Let X1, X 2, . . . 
+
+be iid from an absolutely continuous circular distribution. Assume R := |EeiX | > 0, and let μ be the unique circular mean. Let 
+
+Y := Arg (−π,π )
+
+(ei(X−μ))
+
+be the μ-centered representative of X. Thus Y ∈ (−π, π ) a.s., E sin Y = 0 , R =
+
+E cos Y > 0. Assume that Y has a density f which is positive a.e. on (−π, π ). As-sume further that f is continuous at the antipode of 0, and write 
+
+fA := lim  
+
+> y↓− π
+
+f (y) = lim  
+
+> y↑π
+
+f (y).
+
+17 Let α1, . . . , α k ∈ (0 , 1) , and let qj , j = 1 , . . . , k, denote the corresponding population circular expectiles in the μ-centered chart. For j = 1 , . . . , k , define 
+
+Iαj (qj , y ) = αj sin( qj − y)1{y>q j } + (1 − αj ) sin( qj − y)1{y≤qj }, Aj = ∂
+
+∂ν Iαj (ν, F )
+
+∣∣∣ν=qj
+
+.
+
+Then Aj > 0. Equivalently, Aj = Cαj (qj ) cos qj + Sαj (qj ) sin qj . Set 
+
+Bj = (1 − 2αj ) sin qj fA.
+
+Let ˆμn,α j be the empirical circular αj -expectile defined in Section 3, and let ˆqn,j be its 
+
+μ-centered representative. Then 
+
+√n
+
+
+
+ˆqn, 1 − q1
+
+...
+
+ˆqn,k − qk
+
+ L
+
+−→ Nk(0 , Σ) ,
+
+where 
+
+Σjℓ = E[Wj (Y )Wℓ(Y )] 
+
+Aj Aℓ
+
+, j, ℓ = 1 , . . . , k, 
+
+with 
+
+Wj (Y ) = Iαj (qj , Y ) + Bj
+
+R sin Y. 
+
+Proof. By rotation invariance, we work in the μ-centered chart and assume μ = 0. Thus 
+
+Y = X ∈ (−π, π ) a.s., E sin Y = 0, R = E cos Y > 0. Let Mn denote the sample circular mean in this chart. Then Mn → 0 a.s. By Theorem 3 and Remark 4, for αj ∈ (0 , 1) , α j 6 = 1 /2, the population circular 
+
+αj -expectile qj is the unique sign-changing zero of Iαj (ν, F ), and Aj > 0 holds. For 
+
+αj = 1 /2, one has qj = 0, I1/2(ν, F ) = R sin( ν)/2, A j = R/ 2 > 0. Moreover, by Theorem 8 and Remark 9, the empirical circular expectiles are uniquely defined almost surely. Proposition 12, together with reflection for αj > 1/2 and the usual consistency of the sample circular mean for αj = 1 /2, gives ˆ qn,j → qj in probability for j = 1 , . . . , k .For a branch center m, let 
+
+y(m) = m + Arg (−π,π )
+
+(ei(y−m))
+
+denote the representative of y in ( m − π, m + π). For ν ∈ (m − π, m + π), set 
+
+ψα(m, ν ; y) = α sin( ν − y(m))1{y(m)>ν } + (1 − α) sin( ν − y(m))1{y(m)≤ν}.
+
+The sample circular mean satisfies 
+
+Pn sin( Mn − Y ) = 0 .
+
+For the empirical circular expectile, let ˜ qn,j ∈ (Mn −π, M n +π) denote the representative 18 used in the empirical criterion. By the first-order condition for the empirical expectile, 
+
+Pnψαj (Mn, ˜qn,j ; Y ) = 0 , j = 1 , . . . , k. 
+
+Since Mn → 0 and ˆ qn,j → qj ∈ (−π, π ), the μ-centered representative ˆ qn,j belongs to (Mn − π, M n + π) with probability tending to one, and hence ˜ qn,j = ˆ qn,j with probability tending to one. Therefore, in the local asymptotic argument, we may write the empirical equations as 
+
+Pn sin( Mn − Y ) = 0 , Pnψαj (Mn, ˆqn,j ; Y ) = 0 , j = 1 , . . . , k, 
+
+with probability tending to one. Here Pn denotes the empirical measure of Y1, . . . , Y n.Define ˆθn = ( Mn, ˆqn, 1, . . . , ˆqn,k ) and the vector-valued estimating function Ψn(m, ν 1, . . . , ν k) = Pn
+
+
+
+sin( m − Y )
+
+ψα1 (m, ν 1; Y )...
+
+ψαk (m, ν k; Y )
+
+ .
+
+Then the preceding equations imply Ψn(ˆθn) = 0 with probability tending to one. In particular, √n Ψn(ˆθn) = oP (1), which is the approxi-mate-zero condition in the Z-estimator expansion (Van der Vaart, 1998, Th. 5.21). Let Ψ( m, ν 1, . . . , ν k) = EΨn(m, ν 1, . . . , ν k),
+
+and put θ0 := (0 , q 1, . . . , q k). Then Ψ( θ0) = 0. Moreover, 
+
+√n Ψn(θ0) = 1
+
+√n
+
+> n
+
+∑
+
+> i=1
+
+
+
+− sin Yi
+
+Iα1 (q1, Y i)...
+
+Iαk (qk, Y i)
+
+ .
+
+The summands are centered and bounded; in particular, the finite second-moment con-dition required in the Z-estimator argument is satisfied. We next compute the derivative matrix of Ψ at θ0, obtaining 
+
+∂
+
+∂m E sin( m − Y )
+
+∣∣∣∣m=0 
+
+= E cos Y = R, and ∂
+
+∂ν Eψαj (0 , ν ; Y )
+
+∣∣∣∣ν=qj
+
+= Aj ,
+
+for j = 1 , . . . , k . It remains to compute the derivative of Eψαj (m, q j ; Y ) with respect to the branch center m. This derivative is caused only by observations crossing the branch cut at the antipode. For h > 0, the observations in ( −π, −π + h] are moved from the 19 left end of the interval to the right end. Hence 
+
+Eψαj (h, q j ; Y ) − Eψαj (0 , q j ; Y ) = (2 αj − 1) 
+
+∫ −π+h
+
+> −π
+
+sin( qj − y)f (y) dy. 
+
+Dividing by h and letting h ↓ 0, using the continuity of f at the antipode, gives (2 αj − 1) sin( qj + π)fA = (1 − 2αj ) sin qj fA.
+
+The same derivative is obtained from the left by considering the interval ( π + h, π ) for 
+
+h < 0. Therefore 
+
+∂
+
+∂m Eψαj (m, q j ; Y )
+
+∣∣∣∣m=0 
+
+= Bj := (1 − 2αj ) sin qj fA.
+
+Thus 
+
+DΨ( θ0) = 
+
+
+
+R 0 0 · · · 0
+
+B1 A1 0 · · · 0
+
+B2 0 A2 · · · 0... ... ... . . . ...
+
+Bk 0 0 · · · Ak
+
+
+
+.
+
+This matrix is nonsingular because R > 0 and Aj > 0 for all j = 1 , . . . , k .It remains to verify the stochastic equicontinuity condition used in the finite-dimensional Z-estimator argument; see Theorem 5.21 and the remarks following it in Van der Vaart (1998). Let 
+
+θ = ( m, ν 1, . . . , ν k), θ0 = (0 , q 1, . . . , q k),
+
+and write hθ for the vector-valued estimating function appearing inside Pn in the defini-tion of Ψ n. The class {hθ : θ in a neighbourhood of θ0} is bounded and of VC type, since its components are bounded trigonometric functions multiplied by indicators of inter-vals, or finite unions of intervals, with endpoints depending on finitely many parameters. Hence the class is P -Donsker. Moreover, hθ is L2(P )-continuous at θ0. The first component satisfies 
+
+| sin( m − y) − sin( −y)| ≤ | m|.
+
+For one expectile component, for ( m, ν ) sufficiently close to (0 , q j ), there is a constant 
+
+C > 0 such that 
+
+∣∣ψαj (m, ν ; y) − ψαj (0 , q j ; y)∣∣ ≤ C|ν − qj | + C1{| y−qj |≤ C|ν−qj |} + C1A|m| (y),
+
+where Aδ = ( −π, −π + δ] ∪ [π − δ, π ). Since Y has a density, 
+
+P (|Y − qj | ≤ δ) → 0, P (Y ∈ Aδ ) → 0 (δ ↓ 0) .
+
+20 Therefore 
+
+‖hθ − hθ0 ‖L2(P ) → 0 (θ → θ0).
+
+Since the class is P -Donsker, hθ is L2(P )-continuous at θ0, and ˆθn → θ0 in probability, Lemma 19.24 of Van der Vaart (1998) implies 
+
+√n(Pn − P )( hˆθn − hθ0 ) = oP (1) ,
+
+which corresponds to (5.22) in the proof of Theorem 5.21 of Van der Vaart (1998); see also the remarks following that theorem. Together with the approximate-zero condition, differentiability of Ψ at θ0, and nonsingularity of DΨ( θ0), the finite-dimensional Z-estimator expansion applies: 
+
+√n
+
+
+
+Mn
+
+ˆqn, 1 − q1
+
+...ˆqn,k − qk
+
+ = − (DΨ( θ0)) −1 1
+
+√n
+
+> n
+
+∑
+
+> i=1
+
+
+
+− sin Yi
+
+Iα1 (q1, Y i)...
+
+Iαk (qk, Y i)
+
+ + oP (1) .
+
+The first row gives 
+
+√n M n = 1
+
+R
+
+1
+
+√n
+
+> n
+
+∑
+
+> i=1
+
+sin Yi + oP (1) .
+
+For j = 1 , . . . , k , the j-th expectile row gives 
+
+Bj
+
+√n M n + Aj
+
+√n(ˆ qn,j − qj ) + 1
+
+√n
+
+> n
+
+∑
+
+> i=1
+
+Iαj (qj , Y i) = oP (1) .
+
+Substituting the expansion of √n M n, we obtain 
+
+√n(ˆ qn,j − qj ) = − 1
+
+Aj
+
+1
+
+√n
+
+> n
+
+∑
+
+> i=1
+
+[
+
+Iαj (qj , Y i) + Bj
+
+R sin Yi
+
+]
+
++ oP (1) .
+
+With 
+
+Wj (Y ) = Iαj (qj , Y ) + Bj
+
+R sin Y, 
+
+this yields the joint linearization 
+
+√n
+
+
+
+ˆqn, 1 − q1
+
+...ˆqn,k − qk
+
+ = − 1
+
+√n
+
+> n
+
+∑
+
+> i=1
+
+
+
+W1(Yi)/A 1
+
+...
+
+Wk(Yi)/A k
+
+ + oP (1) .
+
+Since 
+
+EWj (Y ) = EIαj (qj , Y ) + Bj
+
+R E sin Y = 0 ,
+
+and the vector ( W1(Y ), . . . , W k(Y )) is bounded, the multivariate central limit theorem 21 gives 
+
+√n
+
+
+
+ˆqn, 1 − q1
+
+...ˆqn,k − qk
+
+ L
+
+−→ Nk(0 , Σ) ,
+
+where Σjℓ = E[Wj (Y )Wℓ(Y )] 
+
+Aj Aℓ
+
+, j, ℓ = 1 , . . . , k. 
+
+This proves the assertion. 
+
+Remark 14. For αj = 1 /2, the corresponding expectile is the circular mean. In this case qj = 0, 
+
+I1/2(0 , y ) = −1
+
+2 sin y, Aj = R
+
+2 , Bj = 0 .
+
+Hence Theorem 13 yields 
+
+√n ˆqn,j = 1
+
+R
+
+1
+
+√n
+
+> n
+
+∑
+
+> i=1
+
+sin Yi + oP (1) ,
+
+and therefore √n ˆqn,j 
+
+> L
+
+−→ N
+
+(
+
+0, E[sin 2 Y ]
+
+R2
+
+)
+
+.
+
+Thus the theorem contains the classical asymptotic normality of the sample circular mean as the special case α = 1 /2. 
+
+Remark 15. The assumptions of Theorem 13 are stronger than necessary. For the asymptotic normality result it is enough to assume uniqueness of the relevant population roots, positivity of the corresponding slopes Aj , consistency of the empirical roots, and continuity of the density at the antipode. We use the assumptions of Theorem 3 in order to keep the statement aligned with the preceding uniqueness theory. Fig. 2 shows stack plots of the circular mean and the circular α-expectiles for α = 0 .75 and 0.9 for samples of sizes 25, 100 and 400 from the von Mises distribution vM (0 , 1), based on 10 4 replications. As a numerical check of Theorem 13, Table 1 compares the limiting covariance matrix for the pair ( α1, α 2) = (0 .75 , 0.90) with Monte Carlo covariance matrices of 
+
+√n(ˆ qn,. 75 − q.75 , ˆqn,. 90 − q.90 )for samples from vM (0 , 1). The approximation is already reasonable for n = 25, espe-cially for the correlation, and becomes accurate for n = 100 and n = 400. This supports the finite-dimensional normal approximation derived above. All computations were carried out in R (R Core Team, 2025), using the circular 
+
+package (Agostinelli and Lund, 2025). Code for computing theoretical and empirical circular expectiles can be found on GitHub at https://github.com/BernhardKlar/CircularExpectiles 
+
+22 0   
+
+> π
+> 2
+> π
+> 3π
+> 2
+> +
+> n = 25
+> 0
+> π
+> 2
+> π
+> 3π
+> 2
+> +0
+> π
+> 2
+> π
+> 3π
+> 2
+> +
+> 0
+> π
+> 2
+> π
+> 3π
+> 2
+> +
+> n = 100
+> 0
+> π
+> 2
+> π
+> 3π
+> 2
+> +0
+> π
+> 2
+> π
+> 3π
+> 2
+> +
+> 0
+> π
+> 2
+> π
+> 3π
+> 2
+> +
+> n = 400
+> 0
+> π
+> 2
+> π
+> 3π
+> 2
+> +0
+> π
+> 2
+> π
+> 3π
+> 2
+> +
+
+Figure 2: Stack plot of ˆ μn (left), ˆ μn, 0.75 (middle) and ˆ μn, 0.90 (right) for samples of sizes 25 (upper row), 100 (middle row) and 400 (lower row) from the von Mises distribution vM (0 , 1), with 10 4 replications. 
+
+4.1. Potential applications 
+
+The results developed above suggest several possible applications of circular expectiles. Throughout this subsection, angular differences are understood in the μ-centered chart (μ − π, μ + π). Thus, for α ∈ (0 , 1/2), the lower expectile μα lies to the left of μ, while the upper expectile μ1−α lies to the right of μ, and expressions such as μ1−α − μα are interpreted as ordinary differences of these representatives. First, circular expectiles lead naturally to expectile-based measures of dispersion. In analogy with the linear case (Bellini et al., 2022; Eberl and Klar, 2023), one may define the circular interexpectile range by 
+
+Rα = μ1−α − μα, α ∈ (0 , 1/2) .
+
+This quantity measures the width of the central expectile interval around the circular mean direction. It is small for concentrated distributions and becomes large when the distribution spreads over a substantial part of the circle. The empirical counterpart is ˆRn,α = ˆ μn, 1−α − ˆμn,α . The finite-dimensional asymptotic normality established above provides the basis for studying the large-sample distribution of ˆRn,α , for constructing confidence intervals, and for comparing such expectile-based dispersion measures with classical circular measures of spread. 23 Var .75 Cov .75 ,. 90 Var .90 Corr .75 ,. 90 
+
+n = 25 4.84 5.76 10.08 0.825 
+
+n = 100 4.15 5.84 11.96 0.829 
+
+n = 400 4.03 5.92 12.57 0.831 Limit 3.94 5.83 12.53 0.829 
+
+Table 1: Monte Carlo covariance matrices of √n(ˆ qn,. 75 − q.75 , ˆqn,. 90 − q.90 ) for samples from the von Mises distribution vM (0 , 1), based on 10 5 replications, compared with the limiting covariance matrix from Theorem 13. Second, the circular expectile curve carries information about the full distribution. Indeed, under regularity assumptions such as those used in the uniqueness results above, the full map α 7 → μα, α ∈ (0 , 1), determines the underlying circular distribution. To see this informally, assume by rotation invariance that μ = 0. For 0 < α < 1/2, the expectile q(α) = μα ∈ (−π, 0) satisfies 0 = Iα(q(α), F ) = αC sin q(α) + (1 − 2α)D(q(α)) ,
+
+where 
+
+C = E cos X > 0, D(ν) = 
+
+∫ ν
+
+> −π
+
+sin( ν − x) dF (x).
+
+Since q is strictly monotone, the lower expectile curve determines D(ν)/C on ( −π, 0). The upper expectile curve gives the analogous information on (0 , π ). If F has density 
+
+f , then 
+
+D′′ (ν) + D(ν) = f (ν),
+
+so the expectile curve determines the density, up to the normalizing constant, which is fixed by ∫ π 
+
+> −π
+
+f (x) dx = 1. This identifiability observation can be used to characterize symmetry. A circular distribution is symmetric about μ if and only if 
+
+μ1−α − μ = μ − μα for all α ∈ (0 , 1/2) .
+
+Thus circular expectiles provide a natural basis for graphical diagnostics and formal tests of circular symmetry. For example, one may plot the two distances μ1−α − μ and 
+
+μ−μα as functions of α, or plot their difference. This parallels expectile-based symmetry diagnostics in the linear case (Eberl and Klar, 2022). Third, circular expectiles can be used to define measures of skewness. In analogy with the expectile-based skewness measures studied in the linear setting (Eberl and Klar, 2022, 2023), define 
+
+γα = μ1−α + μα − 2μ
+
+μ1−α − μα
+
+= d+ 
+
+> α
+
+− d−
+
+> α
+
+d+ 
+
+> α
+
++ d−
+
+> α
+
+, α ∈ (0 , 1/2) ,
+
+where d− 
+
+> α
+
+= μ − μα and d+ 
+
+> α
+
+= μ1−α − μ. Hence γα ∈ (−1, 1), with γα = 0 corresponding 24 to balanced lower and upper expectile distances at level α. Positive values indicate a longer upper expectile tail, while negative values indicate a longer lower expectile tail. The function α 7 → γα therefore yields a skewness profile of the circular distribution. Its empirical counterpart, ˆγn,α = ˆμn, 1−α + ˆ μn,α − 2ˆ μn
+
+ˆμn, 1−α − ˆμn,α 
+
+,
+
+can be studied by applying the delta method to the joint asymptotic distribution of (ˆ μn, ˆμn,α , ˆμn, 1−α). This opens the way to comparing expectile-based circular skewness measures with existing measures of circular skewness, and to studying their finite-sample and asymptotic behaviour; cf. Eberl and Klar (2020) for related investigations in the linear case. Several further directions are possible. Since the full circular expectile curve identifies the distribution, one may develop goodness-of-fit procedures based on distances between empirical and fitted expectile curves. Finally, another natural direction is conditional or regression-type circular expectiles, where the center, lower expectiles and upper expec-tiles are allowed to depend on covariates. 
+
+A. Proofs of Theorem 8 and Proposition 12 
+
+Proof of Theorem 8. For ν ∈ (θ(k), θ (k+1) ), the indicator sets are constant, so 
+
+C− 
+
+> ν
+
+:= 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+cos( θi)1{θi≤ν}, S− 
+
+> ν
+
+:= 1
+
+n
+
+> n
+
+∑
+
+> i=1
+
+sin( θi)1{θi≤ν},
+
+satisfy C− 
+
+> ν
+
+= C− 
+
+> k
+
+and S− 
+
+> ν
+
+= S− 
+
+> k
+
+. Hence 
+
+In,α (ν) = αC n sin ν + (1 − 2α)(C− 
+
+> k
+
+sin ν − S− 
+
+> k
+
+cos ν) = C(k) 
+
+> α
+
+sin ν − S(k) 
+
+> α
+
+cos ν. 
+
+We next analyze the coefficients. The sequence ( S− 
+
+> k
+
+)nk=0 is strictly decreasing as long as 
+
+θ(k) < 0, strictly increasing after the sign change, and satisfies S− 
+
+> 0
+
+= S− 
+
+> n
+
+= 0. Hence 
+
+S− 
+
+> k
+
+< 0 for all k = 1 , . . . , n − 1. Therefore, for α ∈ (0 , 1/2), 
+
+S(k) 
+
+> α
+
+= (1 − 2α)S− 
+
+> k
+
+< 0 for all k = 1 , . . . , n − 1.
+
+For k = 0 and k = n, one has 
+
+S(0)  
+
+> α
+
+= S(n) 
+
+> α
+
+= 0 , C(0)  
+
+> α
+
+= αC n > 0, C(n) 
+
+> α
+
+= (1 − α)Cn > 0.
+
+Therefore, (C(k) 
+
+> α
+
+, S (k) 
+
+> α
+
+) 6 = (0 , 0) for all k = 0 , . . . , n. (14) Hence, on each interval ( θ(k), θ (k+1) ), the function 
+
+In,α (ν) = C(k) 
+
+> α
+
+sin ν − S(k) 
+
+> α
+
+cos ν
+
+25 is a nontrivial sinusoid. Now define, on ( −π/ 2, π/ 2), 
+
+Jn,α (ν) := In,α (ν)
+
+cos ν .
+
+Since each summand in In,α vanishes at a sample point θi, the function In,α is continuous on ( −π, π ); hence Jn,α is continuous on ( −π/ 2, π/ 2). On each interval ( θ(k), θ (k+1) ) ⊂
+
+(−π/ 2, π/ 2), differentiation yields 
+
+J′
+
+> n,α
+
+(ν) = C(k)
+
+> α
+
+cos 2 ν .
+
+We distinguish three cases according to the sign of C(k∗) 
+
+> α
+
+, where k∗ is the unique index such that −π/ 2 ∈ (θ(k∗ ), θ (k∗ +1) ). 
+
+Case 1: C(k∗) 
+
+> α
+
+> 0.
+
+Since 
+
+C(k+1)  
+
+> α
+
+− C(k) 
+
+> α
+
+= 1 − 2α
+
+n cos( θ(k+1) ),
+
+the sequence k 7 → C(k) 
+
+> α
+
+is strictly increasing on the index range corresponding to (−π/ 2, π/ 2). Hence C(k) 
+
+> α
+
+> 0 for every k such that ( θ(k), θ (k+1) ) ⊂ (−π/ 2, π/ 2), and therefore Jn,α is strictly increasing on ( −π/ 2, π/ 2). Moreover, lim 
+
+> ν↓− π/ 2
+
+Jn,α (ν) = −∞ , Jn,α (0) = −S(k0) 
+
+> α
+
+> 0,
+
+where k0 is the unique index such that 0 ∈ (θ(k0), θ (k0+1) ). Thus there exists exactly one zero in ( −π/ 2, 0) and no zero in (0 , π/ 2). On ( −π, −π/ 2), one has sin ν < 0, cos ν < 0, S(k) 
+
+> α
+
+< 0, and C(k) 
+
+> α
+
+≥ 0 up to the interval containing −π/ 2, so 
+
+In,α (ν) = C(k) 
+
+> α
+
+sin ν − S(k) 
+
+> α
+
+cos ν < 0.
+
+Finally, on ( π/ 2, π ) the coefficients satisfy C(k) 
+
+> α
+
+> 0 and S(k) 
+
+> n,α
+
+≤ 0. Indeed, C(k) 
+
+> α
+
+is decreasing on the right tail and ends at 
+
+C(n) 
+
+> α
+
+= (1 − α)Cn > 0,
+
+while S(k) 
+
+> α
+
+< 0 for k = 1 , . . . , n − 1 and S(n) 
+
+> α
+
+= 0. Hence, for ν ∈ (π/ 2, π ), 
+
+I′
+
+> n,α
+
+(ν) = C(k) 
+
+> α
+
+cos ν + S(k) 
+
+> α
+
+sin ν < 0.
+
+Since lim ν↑π In,α (ν) = 0, it follows that In,α (ν) > 0 for all ν ∈ (π/ 2, π ). Hence the zero is unique. 
+
+Case 2: C(k∗) 
+
+> α
+
+= 0 .
+
+Then In,α (−π/ 2) = −C(k∗) 
+
+> α
+
+= 0. As in Case 1, Jn,α is increasing on ( −π/ 2, π/ 2). Note that on the interval containing −π/ 2, one has C(k∗) 
+
+> α
+
+= 0, so J′
+
+> n,α
+
+(ν) = 0, that is, Jn,α is 26 constant there. However, 
+
+In,α (ν) = −S(k∗ ) 
+
+> α
+
+cos ν, 
+
+and since −S(k∗ ) 
+
+> α
+
+> 0, it follows that In,α is strictly increasing on this interval. It follows that 
+
+In,α (ν) > 0 for all ν ∈ (−π/ 2, π/ 2) .
+
+Again as in Case 1, one has In,α (ν) < 0 on ( −π, −π/ 2) and In,α (ν) > 0 on ( π/ 2, π ). Hence the unique zero is ν = −π/ 2. 
+
+Case 3: C(k∗) 
+
+> α
+
+< 0.
+
+Since C(0)  
+
+> α
+
+> 0 and C(k∗) 
+
+> α
+
+< 0, define 
+
+m := min {k ≤ k∗ : C(k) 
+
+> α
+
+< 0}.
+
+Then m ≥ 1, C(m−1)  
+
+> α
+
+≥ 0, and θ(m) < −π/ 2. Moreover, C(k) 
+
+> α
+
+< 0 for all k = m, . . . , k ∗,since k 7 → C(k) 
+
+> α
+
+is strictly decreasing on the left tail ( −π, −π/ 2). First consider ( −π, −π/ 2). For k < m , we have C(k) 
+
+> α
+
+≥ 0, S(k) 
+
+> α
+
+≤ 0, and, on this interval, sin ν < 0, cos ν < 0. Hence, by (14), 
+
+In,α (ν) = C(k) 
+
+> α
+
+sin ν − S(k) 
+
+> α
+
+cos ν < 0on all intervals lying to the left of θ(m). Using (14) again, and the conditions that 
+
+C(m−1)  
+
+> α
+
+≥ 0, S(m−1)  
+
+> α
+
+≤ 0, and θ(m) < −π/ 2, we also obtain 
+
+In,α (θ(m)) = C(m−1)  
+
+> α
+
+sin θ(m) − S(m−1)  
+
+> α
+
+cos θ(m) < 0.
+
+On the other hand, for ν ∈ (θ(m), −π/ 2), the relevant coefficients satisfy 
+
+C(k) 
+
+> α
+
+< 0, S(k) 
+
+> α
+
+< 0, sin ν < 0, cos ν < 0.
+
+Thus, on each interval of constancy of the coefficients, 
+
+I′
+
+> n,α
+
+(ν) = C(k) 
+
+> α
+
+cos ν + S(k) 
+
+> α
+
+sin ν > 0.
+
+Since In,α is continuous, it follows that In,α is strictly increasing on ( θ(m), −π/ 2). Fur-thermore, 
+
+In,α (−π/ 2) = −C(k∗) 
+
+> α
+
+> 0.
+
+Consequently, In,α has exactly one zero in ( θ(m), −π/ 2), and no zero in ( −π, θ (m)]. Hence there is exactly one zero in ( −π, −π/ 2). We next show that there are no zeros in ( −π/ 2, π/ 2). Let k+ be the unique index such that 
+
+π/ 2 ∈ (θ(k+), θ (k++1) ).
+
+Since C(k) 
+
+> α
+
+is strictly increasing on the central range ( −π/ 2, π/ 2), while C(k∗) 
+
+> α
+
+< 0, and since C(k+) 
+
+> α
+
+> 0, there is exactly one sign change of C(k) 
+
+> α
+
+in this range. The positivity of 27 C(k+) 
+
+> α
+
+follows from the fact that C(k) 
+
+> α
+
+is decreasing on the right tail and ends at C(n) 
+
+> α
+
+> 0. On ( −π/ 2, π/ 2), Jn,α (ν) = In,α (ν)/ cos ν is continuous and, on ( θ(k), θ (k+1) ), 
+
+J′
+
+> n,α
+
+(ν) = C(k)
+
+> α
+
+cos 2 ν .
+
+Hence Jn,α first decreases and then increases. Its minimum is therefore attained either on an interval where C(k) 
+
+> α
+
+= 0, or at a sample point where C(k) 
+
+> α
+
+changes sign from negative to positive. If C(k) 
+
+> α
+
+= 0 on such an interval, then Jn,α (ν) = −S(k) 
+
+> α
+
+> 0. Otherwise, let θ(r) ∈ (−π/ 2, π/ 2) be the sample point at which the sign changes, so that 
+
+C(r−1)  
+
+> α
+
+< 0 < C (r) 
+
+> α
+
+.
+
+If θ(r) < 0, then using the left representation gives 
+
+Jn,α (θ(r)) = C(r−1)  
+
+> α
+
+tan θ(r) − S(r−1)  
+
+> α
+
+> 0,
+
+because C(r−1)  
+
+> α
+
+< 0, tan θ(r) < 0, and S(r−1)  
+
+> α
+
+< 0. If θ(r) > 0, then using the right representation gives 
+
+Jn,α (θ(r)) = C(r) 
+
+> α
+
+tan θ(r) − S(r) 
+
+> α
+
+> 0.
+
+Thus the minimum of Jn,α on ( −π/ 2, π/ 2) is strictly positive, and it follows that 
+
+In,α (ν) > 0 for all ν ∈ (−π/ 2, π/ 2) .
+
+Finally, consider ( π/ 2, π ). On the right tail, C(k) 
+
+> α
+
+> 0 and S(k) 
+
+> α
+
+≤ 0, because C(k) 
+
+> α
+
+is decreasing there and ends at C(n) 
+
+> α
+
+> 0, while S(k) 
+
+> α
+
+< 0 for k = 1 , . . . , n − 1 and S(n) 
+
+> α
+
+= 0. Therefore, for ν ∈ (π/ 2, π ), 
+
+I′
+
+> n,α
+
+(ν) = C(k) 
+
+> α
+
+cos ν + S(k) 
+
+> α
+
+sin ν < 0.
+
+Since lim ν↑π In,α (ν) = 0, we obtain 
+
+In,α (ν) > 0 for all ν ∈ (π/ 2, π ).
+
+Thus, in Case 3, In,α has exactly one zero, this zero lies in ( −π, −π/ 2), and In,α changes sign from negative to positive at this zero. Thus in all cases there exists exactly one zero qn(α) ∈ (−π, 0), and its position relative to −π/ 2 is determined by the sign of C(k∗) 
+
+> α
+
+.Finally, since gn,α is differentiable on ( −π, π ) with ∂g n,α (ν, θ )/∂ν = In,α (ν, θ ), and since In,α changes sign from negative to positive at qn(α), it follows that qn(α) is the unique minimizer of gn,α (ν, θ ). 
+
+Proof of Proposition 12. By rotation invariance, assume μ = 0. We write X for the 0-centered representative, so that X ∈ (−π, π ) a.s. Put qα = μα in this chart, and let 
+
+Mn := ˆ μn be the sample circular mean represented in ( −π, π ). Since R > 0, the sample 28 circular mean is strongly consistent, and hence 
+
+Mn → 0 a.s. For a center m, let 
+
+x(m) = m + Arg (−π,π )
+
+(ei(x−m))
+
+denote the representative of x in ( m − π, m + π). For ν ∈ (m − π, m + π), define 
+
+ψm(ν, x ) = α sin( ν − x(m))1{x(m)>ν } + (1 − α) sin( ν − x(m))1{x(m)≤ν}.
+
+With Pn denoting the empirical measure, write 
+
+I(m) 
+
+> n,α
+
+(ν) = Pnψm(ν, ·), I(0)  
+
+> α
+
+(ν, F ) = P ψ 0(ν, ·).
+
+We first claim that, for every fixed ν ∈ (−π, π ), 
+
+I(Mn) 
+
+> n,α
+
+(ν) − I(0) 
+
+> n,α
+
+(ν) → 0 a.s. Indeed, choose η > 0 such that ν ∈ (−π + η, π − η), and for 0 < δ < η set 
+
+Aδ = ( −π, −π + δ] ∪ [π − δ, π ).
+
+If |m| ≤ δ, then changing the branch center from 0 to m can change the representative only for observations in Aδ . Since |ψm| ≤ 1, 
+
+∣∣I(Mn) 
+
+> n,α
+
+(ν) − I(0) 
+
+> n,α
+
+(ν)∣∣ ≤ 2Pn(Aδ )eventually almost surely. Hence lim sup 
+
+> n→∞
+
+∣∣I(Mn) 
+
+> n,α
+
+(ν) − I(0) 
+
+> n,α
+
+(ν)∣∣ ≤ 2P (Aδ) a.s. Letting δ ↓ 0, using absolute continuity, proves the claim. The strong law of large numbers gives 
+
+I(0) 
+
+> n,α
+
+(ν) → I(0)  
+
+> α
+
+(ν, F ) a.s. Thus 
+
+I(Mn) 
+
+> n,α
+
+(ν) → I(0)  
+
+> α
+
+(ν, F ) a.s. Now fix ε > 0 such that qα ± ε ∈ (−π, π ). By the assumed sign change of the population identification function, 
+
+I(0)  
+
+> α
+
+(qα − ε, F ) < 0 < I (0)  
+
+> α
+
+(qα + ε, F ).
+
+By the pointwise convergence just proved, 
+
+I(Mn) 
+
+> n,α
+
+(qα − ε) < 0 < I (Mn) 
+
+> n,α
+
+(qα + ε)29 eventually almost surely. Also, qα ± ε ∈ (Mn − π, M n + π) eventually. By Theorem 8, applied after centering at Mn, I(Mn) 
+
+> n,α
+
+has a unique zero qn(α) ∈ (Mn −
+
+π, M n), and this zero is the empirical circular α-expectile. Since I(Mn) 
+
+> n,α
+
+is continuous and changes sign between qα − ε and qα + ε, this zero lies between these two points. Hence, eventually almost surely, 
+
+qα − ε < ˆμ(0)  
+
+> n,α
+
+< q α + ε, 
+
+where ˆ μ(0)  
+
+> n,α
+
+is the 0-centered representative of the empirical circular expectile. Since 
+
+ε > 0 was arbitrary, ˆμ(0)  
+
+> n,α
+
+→ qα a.s. 
+
+Declaration of AI Use: 
+
+The authors acknowledge the use of OpenAI’s ChatGPT-5.5 Pro (chatgpt.com) to as-sist in the preparation of this manuscript. The AI tool was used to discuss statistical methodologies and evaluate the feasibility of alternative proof strategies. Furthermore, it was used for proof checking, correcting typographical errors in the derivations, and editing the manuscript text. Additionally, building upon a basic version of the com-putational implementation originally drafted by the author, the AI tool was used to implement input validation checks and optimize execution speed. The correctness of the AI-optimized code was verified by benchmarking its outputs against the original code and conducting independent tests. The author maintains sole accountability for the correctness and adequacy of the arguments and results, as well as for the completeness and accuracy of citations to relevant prior work. 
+
+References 
+
+Agostinelli, C. and Lund, U. (2025). R package circular : Circular Statistics (version 0.5-2) .Bellini, F., Fadina, T., Wang, R., and Wei, Y. (2022). Parametric measures of variability induced by risk measures. Insurance: Mathematics and Economics , 106:270–284. Bellini, F., Klar, B., and M¨ uller, A. (2018). Expectiles, omega ratios and stochastic ordering. Methodology and Computing in Applied Probability , 20:855–873. Bellini, F., Klar, B., M¨ uller, A., and Gianin, E. R. (2014). Generalized quantiles as risk measures. Insurance: Mathematics and Economics , 54:41–48. Bhattacharya, R. and Patrangenaru, V. (2003). Large sample theory of intrinsic and extrinsic sample means on manifolds. The Annals of Statistics , 31(1):1 – 29. Bhattacharya, R. and Patrangenaru, V. (2005). Large sample theory of intrinsic and extrinsic sample means on manifolds—II. The Annals of Statistics , 33(3):1225 – 1259. Di Marzio, M., Panzera, A., and Taylor, C. C. (2016). Nonparametric circular quantile regression. Journal of Statistical Planning and Inference , 170:1–14. 30 Eberl, A. and Klar, B. (2020). Asymptotic distributions and performance of empirical skewness measures. Computational Statistics & Data Analysis , 146:106939. Eberl, A. and Klar, B. (2022). Expectile-based measures of skewness. Scandinavian Journal of Statistics , 49(1):373–399. Eberl, A. and Klar, B. (2023). Stochastic orders and measures of skewness and dispersion based on expectiles. Statistical Papers , 64:509–527. Fisher, N. I. (1985). Spherical medians. Journal of the Royal Statistical Society. Series B (Methodological) , 47(2):342–348. Fisher, N. I. (1993). Statistical Analysis of Circular Data . Cambridge University Press. Holzmann, H. and Klar, B. (2016). Expectile asymptotics. Electronic Journal of Statis-tics , 10(2):2355–2371. Hotz, T. (2013). Extrinsic vs intrinsic means on the circle. In Nielsen, F. and Barbaresco, F., editors, Geometric Science of Information , pages 433–440. Springer Berlin Heidel-berg. Hotz, T. and Huckemann, S. (2015). Intrinsic means on the circle: uniqueness, locus and asymptotics. Annals of the Institute of Statistical Mathematics , 67:177–193. Jammalamadaka, S. R. and SenGupta, A. (2001). Topics in Circular Statistics . World Scientific. Kr¨ atschmer, V. and Z¨ ahle, H. (2017). Statistical inference for expectile-based risk mea-sures. Scandinavian Journal of Statistics , 44(2):425–454. Ley, C., Sabbah, C., and Verdebout, T. (2014). A new concept of quantiles for directional data and the angular mahalanobis depth. Electronic Journal of Statistics , 8(1):795– 816. Liu, R. Y. and Singh, K. (1992). Ordering directional data: Concepts of data depth on circles and spheres. The Annals of Statistics , 20(3):1468–1484. Mardia, K. and Jupp, P. (2000). Directional Statistics. John Wiley & Sons, Ltd, United States. McKilliam, R. G., Quinn, B. G., and Clarkson, I. V. L. (2012). Direction estimation by minimum squared arc length. IEEE Transactions on Signal Processing , 60(5):2115– 2124. Newey, W. K. and Powell, J. L. (1987). Asymmetric least squares estimation and testing. 
+
+Econometrica: Journal of the Econometric Society , pages 819–847. Pewsey, A. (2004). The large-sample joint distribution of key circular statistics. Metrika ,60:25–32. Purkayastha, S. (1995). An almost sure representation of sample circular median. Jour-nal of Statistical Planning and Inference , 46(1):77–91. R Core Team (2025). R: A Language and Environment for Statistical Computing . RFoundation for Statistical Computing, Vienna, Austria. 31 Sobotka, F. and Kneib, T. (2012). Geoadditive expectile regression. Computational Statistics & Data Analysis , 56(4):755–767. Van der Vaart, A. (1998). Asymptotic Statistics. Cambridge University Press. Ziegel, J. F. (2016). Coherence and elicitability. Mathematical Finance , 26(4):901–918. 32
