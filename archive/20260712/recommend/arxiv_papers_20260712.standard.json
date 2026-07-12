@@ -1,0 +1,90 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-12T20:27:19.548662+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.04407v1",
+      "source": "arxiv",
+      "title": "Quadrature-Aware Complex-Linear Neural Operator for Boundary-to-Field Prediction in Resonant Acoustics",
+      "abstract": "Repeated prediction of acoustic fields from spatially distributed boundary excitation is computationally expensive when each source realization requires a new wave simulation. This work introduces a quadrature-aware complex-linear boundary operator (CLBO) that maps complex normal velocity on a vibrating surface to complex pressure at receiver locations. The model couples learned source and receiver basis functions through an explicit complex surface-quadrature contraction, so the boundary excitation enters linearly by construction. This preserves complex superposition, homogeneity, and zero response to zero excitation, while representing the source through coordinates, normals, and quadrature weights rather than a fixed flattened input vector. Reference data were generated using a verified three-dimensional multiple-relaxation-time (MRT) lattice Boltzmann solver and stored in a solver-agnostic boundary-to-field format. CLBO was compared with a fixed-sensor complex DeepONet under matched case splits and optimization settings, with additional tests of structural consistency, receiver-coordinate interpolation, source discretization, source-family holdout, label efficiency, physics-informed ablations, unseen source mixtures, and computational cost. Across five training seeds, CLBO achieved a mean complex relative field error of 0.184 +/- 0.00771, compared with 0.367 +/- 0.00742 for DeepONet. Its measured source-superposition error was 1.31 x 10^-7, and its mean error on newly simulated mixed-source cases was 0.237, compared with 0.415 for DeepONet. Inference was 1.83 x 10^4 faster than the reference calculation for the reported query size. These results show that enforcing the known complex-linear boundary-to-field structure improves physical consistency and generalization under distributed acoustic excitation.",
+      "authors": [
+        "Muhammad Idrees Khan",
+        "Hua-Dong Yao"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn",
+        "cs.LG"
+      ],
+      "published": "2026-07-05T16:58:37+00:00",
+      "link": "https://arxiv.org/pdf/2607.04407v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "acoustic field prediction from boundary excitation",
+      "llm_evidence_cn": "边界激励到声场预测",
+      "llm_evidence": "边界激励到声场预测",
+      "canonical_evidence": "边界激励到声场预测",
+      "llm_tldr_en": "Introduces a quadrature-aware complex-linear neural operator for boundary-to-field prediction in acoustics, preserving linearity and superposition for efficient field computation.",
+      "llm_tldr_cn": "针对谐振声学中重复声场预测计算成本高的问题，本文提出了一种正交感知的复线性神经算子（CLBO）。该模型将振动表面复法向速度映射到接收点复声压，通过显式的复表面积分耦合学习源和接收基函数，确保线性叠加原理。实验表明该方法在保持物理一致性的同时大幅提升预测效率，为声源定位中的声场计算提供了可微分的替代方案。",
+      "llm_tldr": "针对谐振声学中重复声场预测计算成本高的问题，本文提出了一种正交感知的复线性神经算子（CLBO）。该模型将振动表面复法向速度映射到接收点复声压，通过显式的复表面积分耦合学习源和接收基函数，确保线性叠加原理。实验表明该方法在保持物理一致性的同时大幅提升预测效率，为声源定位中的声场计算提供了可微分的替代方案。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.06782v1",
+      "source": "arxiv",
+      "title": "G-PROBE: Cross-FOV Place Recognition and Certainty-Coupled Localization for 3D Point Clouds",
+      "abstract": "Global localization from 3D point clouds remains challenging under limited or asymmetric fields of view (FOV), which fail to provide the dense, symmetric coverage that place recognition methods assume. We present G-PROBE, a learning-free global localization framework that removes this assumption. A virtual sensor decomposition runs the same pipeline, by design, on configurations ranging from a narrow-FOV sensor to a panoramic or multi-sensor rig. The front-end enumerates cross-FOV branch ensembles that encode heading hypotheses for heading-invariant place recognition. A score-scale-invariant, tuning-free gamma-SGRT suppresses heading aliasing under partial FOV and provably becomes inert at symmetric 360 degrees. The back-end, CG-GICP, refines a coarse full-cloud GICP with a pass restricted to high-certainty co-observed points selected by a bird's-eye-view certainty map (a by-product of front-end scoring). This certainty coupling links descriptor evaluation to 6-DoF metric pose estimation without an external verification module. Evaluated on five LiDAR datasets and three modalities (mechanical, solid-state, FMCW), G-PROBE attains the highest learning-free multi-session F1 on average and is competitive in panoramic single-session settings. Where hand-crafted and zero-shot supervised baselines collapse under wide-to-narrow cross-sensor pairing, it remains usable end-to-end (up to 55.0% vs. no more than 6.8% success), and under FOV asymmetry (360 to 60 degrees) it retains about 54% Recall@1, about 18x the strongest learning-free baseline.",
+      "authors": [
+        "Jinseop Lee"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-07-07T20:22:44+00:00",
+      "link": "https://arxiv.org/pdf/2607.06782v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "sensor alignment and localization in 3D point clouds",
+      "llm_evidence_cn": "3D点云中的传感器对齐与定位",
+      "llm_evidence": "3D点云中的传感器对齐与定位",
+      "canonical_evidence": "3D点云中的传感器对齐与定位",
+      "llm_tldr_en": "Presents a learning-free global localization framework handling limited FOV with virtual sensor decomposition and heading-invariant place recognition.",
+      "llm_tldr_cn": "该文提出G-PROBE，一种无学习的全局定位框架，通过虚拟传感器分解处理有限视场，前端枚举跨视场分支集合实现朝向不变的地点识别，后端利用CG-GI进行校准，对传感器对齐和跨视场定位具有方法论价值。",
+      "llm_tldr": "该文提出G-PROBE，一种无学习的全局定位框架，通过虚拟传感器分解处理有限视场，前端枚举跨视场分支集合实现朝向不变的地点识别，后端利用CG-GI进行校准，对传感器对齐和跨视场定位具有方法论价值。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

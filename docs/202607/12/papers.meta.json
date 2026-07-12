@@ -1,0 +1,39 @@
+{
+  "label": "2026-07-12",
+  "date": "2026-07-12",
+  "generated_at": "2026-07-12T20:29:00",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202607/12/2607.04407v1-quadrature-aware-complex-linear-neural-operator-for-boundary-to-field-prediction-in-resonant-acoustics",
+      "section": "quick",
+      "title_en": "Quadrature-Aware Complex-Linear Neural Operator for Boundary-to-Field Prediction in Resonant Acoustics",
+      "authors": "Muhammad Idrees Khan, Hua-Dong Yao",
+      "date": "2026-07-05",
+      "pdf": "https://arxiv.org/pdf/2607.04407v1",
+      "score": "6.0",
+      "evidence": "边界激励到声场预测",
+      "tldr": "针对共振声学中边界激励重复预测声场计算昂贵的问题，提出了一种复数线性边界算子CLBO，通过显式复数表面积分耦合源和接收基函数，强制保持复数叠加性与齐次性。在三维格子玻尔兹曼模拟数据上，CLBO均方相对误差0.184，比DeepONet低近一半，推理速度提升4个数量级，且能准确泛化到未见源分布与混合源场景。",
+      "tags": "query:gso",
+      "abstract_en": "Repeated prediction of acoustic fields from spatially distributed boundary excitation is computationally expensive when each source realization requires a new wave simulation. This work introduces a quadrature-aware complex-linear boundary operator (CLBO) that maps complex normal velocity on a vibrating surface to complex pressure at receiver locations. The model couples learned source and receiver basis functions through an explicit complex surface-quadrature contraction, so the boundary excitation enters linearly by construction. This preserves complex superposition, homogeneity, and zero response to zero excitation, while representing the source through coordinates, normals, and quadrature weights rather than a fixed flattened input vector. Reference data were generated using a verified three-dimensional multiple-relaxation-time (MRT) lattice Boltzmann solver and stored in a solver-agnostic boundary-to-field format. CLBO was compared with a fixed-sensor complex DeepONet under matched case splits and optimization settings, with additional tests of structural consistency, receiver-coordinate interpolation, source discretization, source-family holdout, label efficiency, physics-informed ablations, unseen source mixtures, and computational cost. Across five training seeds, CLBO achieved a mean complex relative field error of 0.184 +/- 0.00771, compared with 0.367 +/- 0.00742 for DeepONet. Its measured source-superposition error was 1.31 x 10^-7, and its mean error on newly simulated mixed-source cases was 0.237, compared with 0.415 for DeepONet. Inference was 1.83 x 10^4 faster than the reference calculation for the reported query size. These results show that enforcing the known complex-linear boundary-to-field structure improves physical consistency and generalization under distributed acoustic excitation.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/12/2607.06782v1-g-probe-cross-fov-place-recognition-and-certainty-coupled-localization-for-3d-point-clouds",
+      "section": "quick",
+      "title_en": "G-PROBE: Cross-FOV Place Recognition and Certainty-Coupled Localization for 3D Point Clouds",
+      "authors": "Jinseop Lee",
+      "date": "2026-07-07",
+      "pdf": "https://arxiv.org/pdf/2607.06782v1",
+      "score": "6.0",
+      "evidence": "3D点云中的传感器对齐与定位",
+      "tldr": "针对3D点云全局定位在视场受限或不对称时失效的问题，提出无学习框架G-PROBE。它通过虚拟传感器分解适应任意视场，前端用跨FOV分支集成实现航向不变位置识别，后端用置信度地图筛选高置信点进行GICP优化。在五个数据集三种传感器上，平均无学习多会话F1最高；宽窄交叉配对成功率55.0%，远超基线；视场从360缩至60度时Recall@1约54%，为基线的18倍。该方法去除了视场对称假设，实现了鲁棒的跨视场全局定位。",
+      "tags": "query:gso",
+      "abstract_en": "Global localization from 3D point clouds remains challenging under limited or asymmetric fields of view (FOV), which fail to provide the dense, symmetric coverage that place recognition methods assume. We present G-PROBE, a learning-free global localization framework that removes this assumption. A virtual sensor decomposition runs the same pipeline, by design, on configurations ranging from a narrow-FOV sensor to a panoramic or multi-sensor rig. The front-end enumerates cross-FOV branch ensembles that encode heading hypotheses for heading-invariant place recognition. A score-scale-invariant, tuning-free gamma-SGRT suppresses heading aliasing under partial FOV and provably becomes inert at symmetric 360 degrees. The back-end, CG-GICP, refines a coarse full-cloud GICP with a pass restricted to high-certainty co-observed points selected by a bird's-eye-view certainty map (a by-product of front-end scoring). This certainty coupling links descriptor evaluation to 6-DoF metric pose estimation without an external verification module. Evaluated on five LiDAR datasets and three modalities (mechanical, solid-state, FMCW), G-PROBE attains the highest learning-free multi-session F1 on average and is competitive in panoramic single-session settings. Where hand-crafted and zero-shot supervised baselines collapse under wide-to-narrow cross-sensor pairing, it remains usable end-to-end (up to 55.0% vs. no more than 6.8% success), and under FOV asymmetry (360 to 60 degrees) it retains about 54% Recall@1, about 18x the strongest learning-free baseline.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

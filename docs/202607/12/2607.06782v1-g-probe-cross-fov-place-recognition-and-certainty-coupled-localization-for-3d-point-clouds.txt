@@ -1,0 +1,1333 @@
+Title: G-PROBE: Cross-FOV Place Recognition and Certainty-Coupled Localization for 3D Point Clouds
+
+URL Source: https://arxiv.org/pdf/2607.06782v1
+
+Published Time: Thu, 09 Jul 2026 00:11:00 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+> 1
+
+# G-PROBE: Cross-FOV Place Recognition and Certainty-Coupled Localization for 3D Point Clouds 
+
+Jinseop Lee 
+
+Abstract —Global localization from 3D point clouds remains challenging under limited or asymmetric fields of view (FOV), which fail to provide the dense, symmetric coverage that place recognition methods assume. We present G-PROBE, a learning-free global localization framework that removes this assumption. A virtual sensor decomposition runs the same pipeline, by design, on configurations ranging from a narrow-FOV sensor to a panoramic or multi-sensor rig. The front-end enumerates cross-FOV branch ensembles that encode heading hypotheses for heading-invariant place recognition. A score-scale-invariant, tuning-free γ-SGRT suppresses heading aliasing under partial FOV and provably becomes inert at symmetric 360 ◦. The back-end, CG-GICP, refines a coarse full-cloud GICP with a pass restricted to high-certainty co-observed points selected by a bird’s-eye-view certainty map (a by-product of front-end scoring). This certainty coupling links descriptor evaluation to 6-DoF metric pose estimation without an external verification module. Evaluated on five LiDAR datasets and three modalities (mechanical, solid-state, FMCW), G-PROBE attains the highest learning-free multi-session F1 on average and is competitive in panoramic single-session settings. Where hand-crafted and zero-shot supervised baselines collapse under wide ↔narrow cross-sensor pairing, it remains usable end-to-end (up to 55 .0% vs. 
+
+≤6.8% success), and under FOV asymmetry (360 ◦ → 60 ◦)it retains ∼54% Recall@1, ∼18 × the strongest learning-free baseline. 
+
+Index Terms —3D Point Clouds, LiDAR, Global Localization, Certainty-Guided Registration, Cross-FOV Heading Invariance, Place Recognition 
+
+I. I NTRODUCTION 
+
+Global localization, the estimation of a robot’s metric pose directly from a prior map without an initial pose estimate, is fundamental to robust autonomous navigation and loop closure in SLAM. Place recognition is well established for cameras [1] and dense 360 ◦ LiDAR [2], [3], but the mature LiDAR solutions implicitly assume a dense, symmetric, panoramic field of view (FOV). Localization on diverse, FOV-constrained point clouds has received comparatively little attention, even as the sensors that produce them are increasingly deployed for their long sensing range and compact, mechanically robust solid-state design. A recent survey likewise names limited FOV, cross-sensor configuration, and unbalanced matching among the open problems of global LiDAR localization [4]. 
+
+A. The Heterogeneity and Cross-FOV Heading Problem 
+
+The central challenge addressed in this paper is the mis-match between the panoramic assumptions of existing methods 
+
+J. Lee is with SK Intellix, Seoul, Republic of Korea (e-mail: 
+
+jinseop.llee@gmail.com ). 360 180 120 90 60 
+
+Query FOV ( ), database = 360 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> Recall@1 (%)
+> M2DP
+> LiDAR Iris
+> SC
+> SC++
+> SOLiD
+> RING++
+> PROBE
+> HeLiOS
+> BEVPlace++
+> UniLGL
+> G-PROBE
+
+Fig. 1: Place recognition under FOV asymmetry. Recall@1 as the query field of view is cropped from 360 ◦ to 60 ◦ against a panoramic ( 360 ◦) database (asymmetric block of Table V, macro mean over the 12 single-session sequences of three datasets). Most hand-crafted descriptors collapse by 180 ◦ (to 
+
+∼2% at 60 ◦). The supervised baselines ( †) fall to ≤15% at 60 ◦
+
+(HeLiOS, the most gradual, retains 14% ). G-PROBE alone retains ∼54% even at 60 ◦, at a CPU runtime on par with SC++ (Table XII). and the constrained, heterogeneous FOVs of modern sensor configurations. 
+
+Problem 1: Sensor Heterogeneity and Modality In-variance. Emerging autonomous systems deploy a mix of spinning, directional solid-state, and frequency-modulated continuous-wave (FMCW) LiDARs, each with distinct point densities, noise distributions, and FOVs. Modality-invariant matching across these sensor types remains an open challenge. Recent methods attempt this using overlap-based deep learning (HeLiOS [5], following the overlap supervision of Overlap-Net [6]) or Vision Foundation Models (VFMs) [7], but require supervised training to adapt to new sensors and, absent that adaptation, degrade on unseen scanning patterns (§VI-D). 
+
+Problem 2: Heading-Dependent Coverage. Many plat-forms observe only a partial azimuth: a single narrow-FOV solid-state LiDAR ( e.g. , a 70 ◦ Livox) or multiple sensors with a combined blind spot. A robot revisiting from a different heading then observes the scene through a different angular sector, so polar descriptors that gain rotation invariance by full-ring column shifting [2] become unreliable. A narrow FOV also admits only a small angular slice of the scene at once, leaving little distinctive structure for reliable matching and compounding the geometric degeneracy of long featureless arXiv:2607.06782v1 [cs.RO] 7 Jul 2026 2
+
+paths that corrupts both recognition and registration. 
+
+B. Limitations of Existing Approaches 
+
+Prior works address these problems only in isolation (§II): panoramic descriptors assume dense 360 ◦ coverage [2], [3], FOV-aware methods rely on fixed heuristics or supervised fine-tuning [7], [8], and degeneracy-aware registration and odometry reason purely in geometric space [9], [10]. None of them links the per-region reliability the descriptor computes to the alignment the registration performs. Hand-crafted descrip-tors discard their internal state after retrieval, and registration ignores observational confidence. 
+
+C. Probing Reliability from Geometry 
+
+Rather than learn modality invariance, we probe per-bin structural reliability directly from sensor geometry. During cross-FOV ensemble evaluation the descriptor computes per-bin mutual occupancy agreement between query and database. Bins on solid structure show high mutual occupancy and low uncertainty, FOV-boundary and sparse bins the opposite. This single computation serves both stages of the pipeline. The mutual-agreement score drives the cross-FOV match, addressing the heterogeneity and heading problems above. The same internal state, extracted as a bird’s-eye-view (BEV) certainty map c(r, s ) ∈ [0 , 1] and fed to registration, yields a certainty-coupled architecture in which the front-end informs the back-end about observational reliability. The coupling thus incurs no additional cost. 
+
+D. Contributions 
+
+This paper makes three contributions: 1) Cross-FOV Ensemble Place Recognition (§IV): A framework that decomposes any sensor configuration (a gap-free multi-sensor rig or a single sensor; Definition 1) into cross-FOV branch descriptors with FOV-overlap weighting, parameterized solely by the total azimuthal coverage and its orientation rather than the physical sen-sor count, enabling heading-invariant retrieval without panoramic FOV assumptions. A score-scale-invariant Softmax Gap Ratio Test ( γ-SGRT) adds tuning-free, FOV-adaptive suppression of heading aliasing, yielding a uniqueness probability (Pdom ) that flags heading-ambiguous matches. 2) Certainty-Guided Registration (CG-GICP) (§V): A two-pass coarse-to-fine Generalized-ICP in which a per-bin BEV certainty map, a by-product of G-PROBE’s oc-cupancy scoring, selects the high-certainty co-observed points for the refinement pass. This recognition-to-registration coupling operates without any external ver-ification module ( e.g. , RANSAC) and suppresses the worst-case error tail from one-sided, FOV-boundary correspondences, leaving the typical case unchanged (§VI-F). 3) Heterogeneous Evaluation (§VI): An evaluation of the learning-free, CPU-only system across five datasets and three LiDAR modalities (mechanical, solid-state, FMCW), with FOV co-visibility ground truth, via a 
+
+3×3 cross-sensor place recognition matrix, cross-day end-to-end metric localization, an FOV-controlled cross-sensor study, and a registration ablation. G-PROBE attains the highest learning-free multi-session F1 on average and the best cross-FOV robustness among all baselines under FOV asymmetry. Under extreme asym-metry ( 360 ◦ → 60 ◦) it retains ∼54% Recall@1, ∼18 ×
+
+the strongest learning-free baseline, while most prior descriptors collapse below 4% (Fig. 1). 
+
+Relation to PROBE. This paper builds on PROBE [11], a symmetric-FOV, retrieval-only descriptor that introduced the closed-form analytical marginalization over continuous trans-lations (§IV-C). PROBE was validated predominantly in the panoramic, full-ring setting. Under FOV restriction its retrieval keys degrade, with only a brute-force, retrieval-bypassing variant recovering partial accuracy on KITTI, and it explicitly flagged this missing-sector key distortion as an open problem. G-PROBE inherits this probabilistic core and extends it from a single descriptor to a complete global localization system: (i) the panoramic, full-ring retrieval becomes a general cross-FOV framework (virtual sensor decomposition, FOV-overlap mask-ing, γ-SGRT) whose per-pair occupancy divergence reduces exactly to PROBE’s under homogeneous full co-visibility with column trimming disabled, a strict generalization; (ii) a metric back-end, CG-GICP, coupled through a by-product certainty map, turns the retrieval-only descriptor into an end-to-end 6-DoF localizer; and (iii) PROBE’s largely single-sensor, 360 ◦
+
+validation is replaced by a heterogeneous evaluation over five datasets, three modalities, and a 3×3 cross-sensor matrix. II. R ELATED WORK 
+
+A. Place Recognition for 3D Point Clouds 
+
+Hand-crafted descriptors. Early methods match local point features and keypoint votes [12], [13]. Later descriptors com-press each scan into a compact signature: M2DP [14] via multi-plane projection, LiDAR Iris [15] via LoG-Gabor binary signatures, the widely adopted polar Scan Context family (SC [2], SC++ [3]), and intensity-coded variants that exploit reflectivity (DELIGHT [16], Intensity Scan Context [17]). Bag-of-words on LinK3D keypoint features further enables real-time loop closing (BoW3D [18]). A parallel analytical line of work achieves invariance in closed form. The RING family [19], [20] builds roto-translation-invariant represen-tations via the Radon transform (extended with equivariant learning in RING# [21]), while triangle descriptors (STD [22], BTC [23]) match viewpoint-invariant keypoint triangles. Re-cent surveys [4], [24] cover the broader landscape. 
+
+From discrete sampling to analytical marginalization. 
+
+The polar descriptors above attain invariance through discrete operations: polar column shifts and, in SC++ [3], virtual-view augmentation that adds computation per perturbation. PROBE [11] replaces such sampling with a closed-form marginalization over continuous translations. 
+
+Learned descriptors. Following NetVLAD [25], deep networks learn global descriptors end-to-end: PointNetVLAD [26], the graph-augmented LPD-Net [27], 3
+
+MinkLoc3D [28], LoGG3D-Net [29], the differentiable DiSCO [30], the transformer-based OverlapTransformer [31], and the rotation-equivariant BEVPlace++ [32], which also recovers a 3-DoF pose. Further variants pursue cross-attention single-scan retrieval (CASSPR [33]) and learned 6-DoF relocalization (EgoNN [34]). All require supervised training, whereas G-PROBE models the underlying geometric symmetries explicitly, a learning-free alternative. 
+
+B. FOV-Constrained and Cross-Modal Retrieval 
+
+OverlapNet [6] estimates dense range-image overlap but relies on dense panoramic range images (e.g. , 64-beam). SOLiD [8] organizes range- and azimuth–elevation bins with a fixed heuristic reweighting, deriving a 1-DoF initial heading from the azimuth channel, but its narrow-FOV encoding degrades under reverse-heading revisits (orientation beyond 
+
+∼180 ◦). Density-map loop closing [35] also spans heteroge-neous LiDARs, but matches ORB features over odometry-accumulated local maps rather than single scans. Learned methods target this regime (HeLiOS [5] via overlap-based learning with a local spherical transformer, UniLGL [7] via VFM-based multi-BEV viewpoint-invariance learning, and SHeRLoc [36] bridging spinning radar and 4D radar), but all require supervised training on the target suite and, without it, degrade out-of-distribution (§VI-D). G-PROBE instead ad-dresses this regime without retraining. Cross-FOV ensembles with trimmed Bernoulli-KL (BKL) scoring drop the highest-divergence sectors, and virtual sensor decomposition (Defini-tion 1) treats physical rigs and partitioned panoramic sensors identically. 
+
+C. Robust Point Cloud Registration 
+
+ICP [37] and Generalized-ICP (GICP) [38] are local optimizers that drift along under-constrained directions in degenerate scenes (urban canyons, straight paths, open fields) and under partial overlap, as in asymmetric FOV. Degeneracy- and robustness-aware variants address this in ge-ometric space: Hessian eigenvalue analysis [39], localizability scoring (X-ICP [9]), an adaptive correspondence threshold (KISS-ICP [40]), planarity-adaptive point-to-plane/point-to-point weighting (GenZ-ICP [10]), or unreliable-closure rejec-tion (DARE-SLAM [41]), all at or after correspondence for-mation. A complementary line of work achieves outlier robust-ness through certifiable optimization (TEASER [42]), graph-theoretic consensus (maximal cliques [43]), or initialization-free global registration from sparse correspondences (Qua-tro [44], G3Reg [45]), but all likewise operate on putative correspondences. Learned registration extracts more reliable correspondences (PREDATOR [46] for low-overlap pairs, GeoTransformer [47] via geometric self-attention) while LCD-Net [48] jointly learns loop closure and registration. Yet all are supervised. CG-GICP instead derives its reliability signal from descriptor space. The BEV certainty map flags unreliable constraints (FOV boundaries, sparse regions) from the mutual occupancy agreement before registration. At the system level, modern LiDAR mapping stacks [49]–[51] either omit place recognition or attach it as a separate, loosely coupled module, TABLE I: Comparison of G-PROBE with representative base-lines. Cross-FOV /Cross-Sensor denote each method’s de-signed scope, not measured performance (several supervised baselines collapse out-of-distribution, Tables V and VI). Par-tial marks a regime targeted only in part. Metric Pose : output completeness ( ✓=6-DoF SE(3), SE(2) =3-DoF planar, ✗=no metric pose), not convergence under cross-sensor matching (§VI-F). † supervised. G-PROBE is the only learning-free method in this comparison that is simultaneously cross-FOV, cross-sensor, and full 6-DoF metric.                                        
+
+> Method Cross-FOV Cross-Sensor Metric Pose Learning-free SC [2] ✗✗✗✓
+> SC++ [3] ✗✗✗✓
+> SOLiD [8] Partial ✗✗✓
+> RING++ [20] ✗✗SE(2) ✓
+> PROBE [11] ✗✗✗✓
+> HeLiOS †[5] ✓✓✗✗
+> BEVPlace++ †[32] ✗✗SE(2) ✗
+> UniLGL †[7] Partial Partial ✓✗
+> G-PROBE (Ours) ✓✓✓✓
+
+leaving the cross-heading FOV problem unsolved. Table I compares G-PROBE with representative baselines. III. S YSTEM OVERVIEW 
+
+G-PROBE (Generalized PROBE) is a global localization system producing a metric SE(3) pose from a single query scan, extending the preliminary descriptor PROBE [11] from retrieval to arbitrary-FOV metric localization. The G-PROBE front-end (§IV) performs cross-FOV ensemble retrieval and FOV-aware BKL scoring with SGRT aliasing suppression, exporting the BEV certainty map computed during scoring. The CG-GICP back-end (§V) consumes this map to restrict its fine refinement pass to reliably co-observed points (Fig. 2). The 6-DoF poses serve as one-shot initialization (kidnapped robot) or loop-closure constraints. IV. G-PROBE: C ROSS -FOV E NSEMBLE PLACE 
+
+RECOGNITION 
+
+A. Virtual Sensor Decomposition 
+
+G-PROBE operates on ego-centric clouds (voxel down-sampling). All fixed hyperparameters introduced below are collected with their values in Table II. A revisit may approach from any heading ∆ψ ∈ [0 ◦, 360 ◦), so when the merged azimuth Φtotal is < 360 ◦, different sectors observe the same scene, and a heading-invariant system must handle all ∆ψ
+
+without prior knowledge. 
+
+Definition 1 (Virtual Sensor Decomposition) . Any sensor configuration with contiguous azimuthal coverage (single panoramic or gap-free multi-sensor array), yielding a merged ego-centric point cloud with total coverage Φtotal (abbreviated 
+
+Φ) and center azimuth ϕbase , is mathematically partitioned into N virtual sensors {V1, . . . , V N } indexed by ascending center azimuth. Each virtual sensor is defined by its half-FOV 
+
+α = Φ total /(2 N ) and center azimuth ϕi = ϕbase + (2 i − N −
+
+1) · α. This decomposition is identity-preserving. The union of virtual FOVs exactly recovers the original coverage space, SNi=1 [ϕi − α, ϕ i + α] = [ ϕbase − Φtotal /2, ϕ base + Φ total /2] .4                                     
+
+> I. Cross-FOV Descriptor Generation II. Cross-Pair Branch Retrieval & Verification III. Certainty-Coupled Registration
+> Point Cloud
+> P(Φtotal )
+> Virtual Decomposition
+> N= max(1 ,round(Φ /90 ◦))
+> sectors Vi→pairs Pij
+> (Sec. IV-A)
+> Per-Pair Polar BEV
+> occupancy (μ, σ ), max-height z
+> Jacobian blur (Sec. IV-C)
+> Per-Pair Ring Key
+> kij ∈R2Nr
+> (Sec. IV-B)
+> Branch Generation
+> all (Pqij , P db
+> kl ): hint ∆ψ,gate wFOV ≥wmin
+> (Sec. IV-B)
+> Masked Retrieval
+> symmetric overlap keys, O(M)
+> wFOV -weighted votes →top-K
+> (Sec. IV-B)
+> FFT Alignment
+> hint-windowed, per branch (Sec. IV-C)
+> Branch Scoring
+> Sb=wFOV ·CC z·BKL
+> symmetric Bernoulli-KL (Sec. IV-C)
+> γ-SGRT
+> Sfinal = max bSb·P(1 −γ)
+> dom
+> (Sec. IV-D)
+> pairs Pij cand. top-K
+> Certainty Map c(r, s )
+> scoring by-product (Sec. V-A)
+> Stage 1: GICP
+> full clouds (coarse) (Sec. V-C)
+> Stage 2: Fine GICP
+> certainty-filtered source (Sec. V-C)
+> 6-DoF Pose
+> ∆ψinit
+> c≥τc
+> (μ, σ )
+
+Fig. 2: G-PROBE pipeline. (I) Any sensor configuration is decomposed into N virtual sectors and  N
+
+2
+
+ pairs (Definition 1). Each pair builds a polar BEV (Bernoulli occupancy (μ, σ ), max-height) and a rotation-robust ring key. (II) Each query–database pair combination forms a heading-hypothesis branch gated by FOV overlap. Branch-masked keys retrieve in O(M ), FFT alignment refines the heading, and the FOV-weighted score Sb = wFOV · CC z · BKL is aggregated by the FOV-adaptive γ-SGRT (19). 
+
+(III) The by-product certainty map restricts CG-GICP’s fine pass to co-observed structure (gold dashed), yielding a refined 6-DoF pose. This SE (2) abstraction decouples the pipeline from hard-ware. Points are assigned to virtual sensors Vi strictly by azimuth. Each virtual-sensor pair (below) encodes an explicit relative-heading hypothesis. 
+
+Instantiations. The number of virtual sensors follows the quantization rule N = max(1 , round(Φ total /90 ◦)) , a compute– resolution balance confirmed by ablation (§VI-J). 90 ◦ sectors keep the O(N 4) cross-pair branch count (§IV-B) within the real-time budget, so we fix N rather than tune it. A panoramic 
+
+360 ◦ LiDAR yields N =4 sectors ( α = 45 ◦) centered at the inter-cardinal directions ϕi ∈ {± 45 ◦, ±135 ◦}. A 270 ◦ rig yields N =3 . Narrow-FOV LiDARs ( e.g. , Aeva 120 ◦, Avia 
+
+70 ◦) resolve to N =1 , preserving the entire FOV as one structural template rather than sub-dividing it. 
+
+Pairwise decomposition. We decompose the virtual sensor array into all  N
+
+2
+
+ pairwise subsets. Each virtual sensor pair 
+
+Pij = Vi ∪ Vj has a union FOV mask Fij from the individual virtual sector coverages. For N = 1 ( 12
+
+ = 0 ), a single self-pair P11 ≡ V1 is matched against the opposing side’s  N ′
+
+2
+
+
+
+pairs (its self-pair when N ′=1 , with N ′ the database-side sector count), so the narrow-FOV sensor still participates in cross-heading matching. The center angle of pair Pij is the circular mean ¯ϕij = atan2 (sin ϕi + sin ϕj , cos ϕi + cos ϕj ).For an antipodal pair (two opposite-facing sectors, e.g. the diagonal V+45 ∪V−135 in the N =4 sensor), where the unit vectors cancel and the circular mean is undefined, we anchor 
+
+¯ϕij to the lower-indexed sector (for directly specified physical configurations with unequal sector FOVs, the narrower one). 
+
+Running example. The N =4 sensor’s  42
+
+=6 pairs place the four adjacent pairs on the cardinal axes (front 0◦,left +90 ◦, rear 180 ◦, right −90 ◦) and the two antipodal pairs on the diagonals (Fig. 3). 
+
+B. Stage 1: Density-Robust Retrieval 
+
+For each sensor pair Pij , we compute a D-dimensional L2-normalized retrieval key capturing the range-stratified struc-tural statistics of the enclosed point cloud. The key reuses the probabilistic ring-key formulation of PROBE [11] (after Scan Context [2]). The novelty is not the key itself but its use per cross-FOV branch (4)–(6). The range axis is divided into Nr concentric annuli spanning [0 , R max ]. From the polar BEV grid (§IV-C), each ring r ∈ { 1, . . . , N r } produces two features: 
+
+fr = [¯ μr , ¯zr ]⊤, ¯μr = 1
+
+Ns
+
+P
+
+sμ(r, s ), ¯zr = 1
+
+Ns
+
+P
+
+szmax (r, s ),
+
+(1) where Ns is the number of azimuth bins of the polar BEV grid (§IV-C), ¯μr is the mean structural occupancy (from the polar-blurred μ, mitigating sensor-specific scanning patterns) and ¯zr the mean structure height, which supports platforms of differing sensor height (ground vehicles, quadrupeds). Features are concatenated across rings into a D-dimensional vector (D = Nr × 2) and globally L2-normalized, attenuating (with-out eliminating) the dependence of ¯μr on absolute density, sufficient for cross-pair cosine retrieval. 
+
+Why cross-pair retrieval succeeds. The ring key is range-stratified, not azimuth-dependent. A revisit from a different heading sees the same structures through a different pair at the same ranges, keeping cross-pair cosine similarity meaningful. The compact key serves the O(M ) search. The full polar BEV (§IV-C) serves verification, cutting retrieval from O(M · Nr ·
+
+Ns) to O(M · D), D = 2 Nr ≪ Nr Ns.
+
+Cross-Pair Retrieval and Branch Generation. Given query node q and a database of M nodes, we generate all cross-pair branches by enumerating every (P qij , P db 
+
+kl ) combi-nation across query and database pairs. For each, the heading hint is the pair center angle difference: 
+
+∆ψhint =   ¯ϕqij − ¯ϕdb 
+
+kl 
+
+ mod 360 ◦, (2) and the expected FOV overlap ratio is symmetrically normal-ized: 
+
+wFOV = |F qij ∩ roll (Fdb 
+
+kl , ∆ψhint )|
+
+min  |F qij |, |roll (Fdb 
+
+kl , ∆ψhint )| . (3) Here roll (·, ∆ψ) circularly shifts a mask by 
+
+round(∆ ψ N s/360 ◦) azimuth bins. Normalized by the smaller FOV, the ratio measures the fraction of the usable observation that is shared, even under severe asymmetry (DB = 90 ◦, Query = 360 ◦). A branch is retained only if 
+
+wFOV ≥ wmin . Enumerating every pair makes reverse-heading revisits ordinary branches with ∆ψhint ≈ 180 ◦, so no adjacency or reverse-branch logic is needed. 
+
+Symmetric FOV-overlap retrieval. For meaningful de-scriptor comparison under arbitrary FOV asymmetry, we re-5120°     
+
+> 360° DB Scan
+> Virtual sectors
+> Ringkeys
+> DB keys
+> 270°
+> 360°
+> N=18
+> N=54
+> N=108
+> x 18 branches
+> FFT Align Branch scoring (co-observed FOV)
+> Branch-score matrix
+> x 6 branches
+> x 36 branches
+> (N,R,S) Branch tensor
+> (a) Decompose (b) Retrieval
+> Query ringkeys Per-branch similarity
+> Top-3 retrieved
+> Max over branches
+> (d) γ-SGRT (axis dominance) (c) Batched verification
+> per-branch matvec
+
+# = 
+
+> Query scan
+> 120° query
+> 270° query
+> 360° query
+> γ-SGRT Result
+> Heading hypotheses
+
+Fig. 3: The G-PROBE front-end (Fig. 2, parts I–II) on a real revisit: HeLiPR KAIST06 query vs. the 360 ◦ Ouster KAIST05 database at three query FOVs ( 120 ◦/270 ◦/360 ◦, cropped). Polar panels show μ(r, s ). (a) Decompose: the database splits into 
+
+N =4 sectors and 6 pairs with ring keys. (b) Retrieval: the query’s 1/3/6 ring keys cast FOV-weighted votes. The true match ranks 1 at all FOVs (top-3 shown). (c) Batched verification: all candidate–branch slices stack into one (Nb,N r ,N s) tensor (Nb=18 /54 /108 ), each FFT-aligned and scored Sb=wFOV ·CC z·BKL on its co-observed FOV (orange wedge), then reduced by 
+
+max over branches. (d) γ-SGRT: the dominant 0/180 ◦ axis ( Pdom ≈1) yields Sfinal =0 .63 /0.68 /0.81 with recovered ∆ψ=0 ◦,correct at all FOVs. strict both query and database ring keys to their shared physi-cal observation region (Fig. 3). For each branch b=( P qij , P db  
+
+> kl
+
+),writing Fq ≡F qij , Fdb ≡F db  
+
+> kl
+
+, and ∆ψb≡∆ψhint , the FOV over-lap is computed per coordinate frame: 
+
+Oq (b) = Fq ∩ roll (Fdb , +∆ ψb), (4) 
+
+Odb (b) = Fdb ∩ roll (Fq , −∆ψb), (5) where Oq and Odb represent the same physical region (up to the hint resolution ∆ψb), expressed in the query and database frames respectively. The branch-specific retrieval keys are then: 
+
+kqb = RingKey (BEV q ⊙ O q ),
+
+kdb  
+
+> b
+
+= RingKey (BEV db ⊙ O db ). (6) Residual misalignment is corrected by the FFT cross-correlation of §IV-C. Database keys are pre-computed at insertion and stored in branch-specific matrices, so each branch performs its cosine search kqb · Kdb  
+
+> b
+
+in O(M ) at a constant-factor memory cost. When Fq = Fdb both masks reduce to the full FOV and (6) degenerates to the unmasked ring key of PROBE [11]. 
+
+Cross-sensor generalization. Eqs. (4)–(6) depend only on the FOV masks F (not on density, scan pattern, or modality), so the masking transfers unchanged across physically distinct sensors ( e.g. , a 360 ◦ spinning database vs. a 70 ◦ solid-state query), specified by their FOV extents (validated in §VI-D). 
+
+Vote pooling and ranking. The top-kb results per branch are pooled. For each database candidate m, we record the FOV-weighted branch support and the cumulative similarity: 
+
+vw(m) = X 
+
+> b:m∈top kb(b)
+
+wFOV (b), ¯s(m) = X 
+
+> b:m∈top kb(b)
+
+sim b(m),
+
+(7) where wFOV (b) is the branch’s FOV-overlap ratio, so low-overlap heading hypotheses are discounted consistently at both stages. A masked ring key spans fewer azimuth bins and casts a weaker vote at equal similarity. Candidates are ranked lexicographically by (vw(m), ¯s(m)) (descending), and the top-
+
+K candidates advance to the geometric verification of §IV-C. The weighted support is a ranking signal only. False-positive rejection is left to the subsequent BKL scoring (§IV-C) and SGRT (§IV-D). 6
+
+Running example (cross-FOV, N =4 → N =1 ). Apanoramic database ( N =4 , six pairs) queried by a narrow sen-sor ( N =1 ; e.g. Ouster →Aeva) yields 6 branches. Whichever database pair faces the query’s true heading wins, and a reverse-direction query simply matches the rear ( 180 ◦) pair. FOV gating (3) down-weights pairs the narrow query cannot overlap. Two panoramic sensors give 6×6=36 branches (Ta-ble XIa). 
+
+Heading-Hypothesis Consistency Filtering. Branch results may be mutually inconsistent (a branch suggesting ∆ψ ≈−90 ◦ vs. one suggesting 0◦). We quantize all branches into 
+
+⌊360 ◦/∆step ⌋ heading hypotheses {H ψ } by each branch’s heading hint (2), with ∆step =90 ◦ the cardinal quantization step at which our virtual pairs align. Each candidate m is scored only over the branches Bm
+
+that nominated it, so incompatible heading evidence never mixes. The final heading is the winning branch of the max-over-branches aggregation (§IV-C, using max not mean to avoid bias from differing branch counts), while the hypothesis groups {H ψ } feed the SGRT uniqueness test (§IV-D). 
+
+C. Stage 2: FOV-Aware Geometric Scoring 
+
+For geometric verification, each sensor pair constructs a polar BEV grid of size Nr × Ns (Nr range rings, Ns azimuth bins), uniformly discretizing range [0 , R max ] and the full 360 ◦
+
+azimuth. Three grid channels are computed: 
+
+Occupancy μ(r, s ). Binary occupancy smoothed by an adaptive polar Gaussian blur. As derived in [11], marginalizing isotropic Cartesian translational uncertainty through the polar Jacobian yields, to first order, a distance-adaptive angular bandwidth σθ ∝ 1/r , with a density-adaptive √ρ scaling (also from [11]) that prevents excessive dilation of isolated returns on sparse rings. The effective angular kernel width for a ring with occupancy density ρ(r) is: 
+
+σgrid  
+
+> θ
+
+(r) = σT
+
+pρ(r)
+
+r · ∆θ
+
+, (8) where σT is the translational uncertainty, ρ(r) is the ring-level occupancy density (the fraction of occupied bins, computed on the raw, pre-blur occupancy), and ∆θ = 2 π/N s is the angular bin width. The factor σT /(r∆θ ) follows from an arc displacement σT subtending angle σT /r (radians); dividing by the bin width ∆θ (radians per azimuth bin) renders σgrid 
+
+> θ
+
+in grid-bin units. Completing the separable approximation, an analogous radial blur of width σr = max(round( σT /∆r ), 1) 
+
+bins ( ∆r the ring width) is applied along the range axis. Retrieval is thereby robust to query–database translational offset, a property inherited from PROBE [11]. 
+
+Bernoulli uncertainty σ(r, s ) = pμ(1 − μ). Used for shrinkage regularization. 
+
+Max-Height zmax (r, s ). Structural signatures. 
+
+FOV-Aware Cross-Correlation Alignment. Cross-branch matches ( e.g. , the narrow query against the database’s left pair at ∆ψ = +90 ◦) require aligning grids with different angular coverage. We define per-branch FOV masks Fb and compute overlap: 
+
+O(bq , b db , ∆s) = Fbq ∩ roll (Fbdb , ∆s). (9) Following the FFT-based rotation alignment of PROBE [11], cross-correlation on the max-height channel refines the head-ing. Our generalization restricts the correlation to the branch’s overlapping wedge and searches only the hint-centered win-dow W rather than the full 360 ◦ ring: 
+
+∆s∗ = arg max 
+
+> ∆s∈W
+
+IFFT 
+
+"X
+
+> r
+
+ˆZ(r) 
+
+> q
+
+· ˆZ(r)
+
+> db
+
+#
+
+(∆ s), (10) where ˆZ(r) = FFT s(( zmax ⊙ O )( r, ·)) is the DFT of ring r’s wedge-masked max-height row ( O fixed at the hint), W is a narrow ( ∼± 50 ◦) window around the branch-specific heading hint (the pairing geometry already constraining the heading to a sector), and the refined heading is ∆ψ = ∆ s∗ 360 ◦/N s
+
+(∆s∗ already subsumes the hint). 
+
+Two-Factor BKL Scoring. After alignment, the verification score combines two factors, computed only within the over-lapping FOV O (the refined overlap wedge, extended over all rings): 
+
+Factor 1: Occupancy-Weighted Height CC. The height cross-correlation factor generalizes PROBE’s uncentered height cosine [11]. We weight it by the joint occupancy probability W = pq pdb (the shrinkage occupancies defined in Factor 2) and mean-center the heights. Writing ˜zq = zq − ¯zq
+
+and ˜zdb = zdb − ¯zdb for the W -mean-centered heights, CC z = max 0,
+
+P 
+
+> (r,s )∈O
+
+W ˜zq ˜zdb 
+
+∥˜zq ∥W ∥˜zdb ∥W
+
+!
+
+, (11) where ∥x∥W =   P  
+
+> (r,s )∈O
+
+W x 21/2 is the W -weighted norm and ¯z• = P W z •/ P W the W -weighted mean of each height, all sums running over the jointly height-observed cells of O (both zq and zdb nonzero). This is the standard 
+
+W -weighted Pearson correlation, bounded in [−1, 1] by the Cauchy–Schwarz inequality, so the clamp yields CC z ∈ [0 , 1] ;when fewer than five cells are jointly height-observed, the branch carries no height evidence and CC z is defined as 0;if a valid overlap has vanishing weighted variance (constant height), the channel is uninformative and CC z ≜ 1. The weighting W anchors the correlation on structure both sensors observe confidently (e.g. , building walls), and the mean-centering cancels the shared ground level without any explicit ground segmentation. The [0 , 1] clamp is deliberate. Negative correlation is no evidence of place identity and is treated as zero evidence, guaranteeing Sb ≥ 0 as the SGRT ratio (18) requires. 
+
+Factor 2: Bernoulli-KL Divergence. Each cell’s shrinkage occupancy pi = μi(1 −σi)+ 12 σi (the uncertainty-proportional shrinkage of [11]) pulls unreliable cells (μ ≈ 0.5, high 
+
+σ) toward the uninformative 0.5, absorbing boundary and blur uncertainty. We rename PROBE’s Bernoulli-KL Jaccard 
+
+JKL [11] to BKL (Bernoulli-KL), omitting the imprecise “Jaccard.” The per-cell symmetric divergence between the two shrinkage occupancies is 
+
+Dsym (r, s ) = 12 (KL( pq ∥pdb ) + KL( pdb ∥pq )) , (12) where KL( p∥q) = p ln pq + (1 − p) ln 1−p 
+
+> 1−q
+
+is the Bernoulli KL divergence; Dsym is non-negative by Gibbs’ inequality, com-7
+
+puted uncoupled so it remains a genuine divergence between the measured occupancies. 
+
+Column-Wise Trimmed Aggregation. We aggregate the symmetric divergence over the co-observed cells U =
+
+{(r, s ) ∈ O : μq (r, s ) + μdb (r, s ) > 0.1}, the occupancy soft-union within the FOV overlap O (so U ⊆ O ), as a column-trimmed mean. For each azimuthal column s we form the per-column mean divergence and its co-observed weight 
+
+dc(s) = 1
+
+Wc(s)
+
+X
+
+> r:( r,s )∈U
+
+Dsym (r, s ),Wc(s) = { r : ( r, s ) ∈ U } .
+
+(13) Let S = {s | Wc(s) > 0} with Ms = |S| . To reject dynamic obstacles or localized occlusion, which span several rings over a narrow angular range, we discard the round( Ms ·η) highest-divergence columns ( η ∈ [0 , 1) ), keeping Skept . The score is the co-observed-weighted average over the kept columns: 
+
+BKL = exp −
+
+P 
+
+> s∈S kept
+
+Wc(s) dc(s)
+
+P 
+
+> s∈S kept
+
+Wc(s)
+
+!
+
+, (14) where the trimmed set Skept ̸ = ∅ (as round( ηM s) < M s at our η for any nonempty U). Since the shrinkage occupancies are clipped to [ϵ, 1 − ϵ] (ϵ=10 −6), Dsym is finite and non-negative, and BKL ∈ (0 , 1] without clamping. The trim is applied identically to all candidates. 
+
+Reduction to PROBE. With full co-visibility (where the co-observed mask U specializes to PROBE’s soft union) and 
+
+η = 0 , (14) reduces exactly to PROBE’s Bernoulli-KL Jaccard 
+
+JKL = exp 
+
+
+
+− 1
+
+> |U|
+
+P 
+
+> (r,s )∈U
+
+Dsym (r, s )
+
+
+
+[11], while the en-semble of branch-local windowed alignments spans all relative headings in place of PROBE’s single full-ring correlation (§I). The per-branch score reuses the FOV overlap ratio wFOV 
+
+of (3) as a structural visibility prior. Branches with partial coverage ( e.g. , a 90 ◦ overlap out of 180 ◦) are softly down-weighted, reflecting their reduced geometric information for verification: 
+
+Sb = wFOV × CC z × BKL . (15) The multiplicative two-factor structure (CC z × BKL ) fol-lows PROBE’s CC z × J KL [11]. G-PROBE prepends the FOV-overlap prior wFOV , so on a homogeneous 360 ◦ pair (wFOV =1 ) the score Sb recovers PROBE’s two-factor form. The multiplicative form enforces a veto. Disagreement in any single channel drives Sb → 0, rejecting partial matches ( e.g. 
+
+urban canyons agreeing in height, CC z ≈1, but not occupancy, 
+
+BKL ≈0) that a weighted sum would over-score. 
+
+D. Probabilistic Softmax Gap Ratio Test (SGRT) 
+
+The final score rejects ambiguous matches by the dominance of the best heading axis over its competitors, via a Softmax over structural axes (antipodal-merged hypotheses) from a two-stage aggregation: 
+
+Stage 1: Hypothesis scoring (mean aggregation). Each hypothesis Hψ groups branches whose heading hints round to 0.0 0.2 0.4 0.6 0.8 1.0                     
+
+> competing-axis ratio =S/S*
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> 1.0
+> score multiplier  P(1  )
+> dom
+> 0.5:
+> 98% kept
+> (Cor. 1)
+> 1: Pdom 1||
+> (Prop. 1)
+> (a) suppression vs. axis ambiguity
+> = 1 (360 ): inert
+> = 0.5 (180 )
+> = 0.19 (70 )
+> = 0 (narrow): full
+> 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85
+> Pdom flag threshold
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 120
+> 140
+> 160
+> flagged matches
+> @Pdom < 0.75:
+> 45 FP : 3 TP
+> 94% precise, 99.9% TP kept
+> (b) real flag precision (7416 queries)
+> false positives flagged ( )
+> true positives lost
+
+Fig. 4: γ-SGRT behavior. (a) Theory: the score multiplier 
+
+P (1 −γ) 
+
+> dom
+
+(Eqs. (18)–(19), κ=10 , |A| =2 ) vs. the competing-axis ratio λ= ¯SA/ ¯SA∗ , as a family over the FOV factor γ: a panoramic match ( γ=1 ) is inert, a narrow-FOV one ( γ→0)fully suppressed. True positives with λ ≤ 0.5 keep ≥ 98% of their score (green region, Corollary 1). An axis tie ( λ → 1)collapses to Pdom →1/|A| (Proposition 1). (b) Practice: over the HeLiPR cross-sensor pairings ( 7,416 queries), sweeping the flag threshold shows the flags concentrate on aliasing false positives (green) while preserving true positives (red): at Pdom <0.75 , 45 false vs. 3 true positives are flagged ( 94% 
+
+precision, 99 .9% of the 2,179 true positives retained). the same quantized angle. The hypothesis-level score is the arithmetic mean of its constituent branch scores: 
+
+SHψ = 1
+
+|H ψ |
+
+X
+
+> b∈H ψ
+
+Sb. (16) Branches that did not nominate m contribute Sb = 0.Averaging, not maximizing, favors consensus within each heading direction, so one high-scoring branch cannot mask poor neighbors. 
+
+Stage 2: Antipodal axis grouping (max aggregation). 
+
+A heading ψ and its 180 ◦ reverse describe the same line of travel, so we merge antipodal hypotheses into structural axes 
+
+A indexed by ψ mod 180 ◦:
+
+¯SA = max    
+
+> ψ:ψmod 180 ◦=A
+
+SHψ . (17) The maximum gives an axis full credit if either direction matches strongly, essential where both 0◦ and 180 ◦ score high (reverse-heading aliasing). In the running example the four hypotheses merge into |A| =2 structural axes {0◦, 90 ◦}. SGRT tests dominance over the full axis set. 
+
+Adaptive Softmax. For score-scale invariance across sen-sor configurations and point-cloud densities, we employ an adaptive temperature τsm = ¯SA∗ /κ , where κ > 0 is a fixed sharpness constant (Fig. 4). Substituting into the standard Softmax yields a ratio-only expression: 
+
+Pdom = 11 + P 
+
+> A̸ =A∗
+
+exp 
+
+
+
+κ ·
+
+ ¯SA 
+
+> ¯SA∗
+
+− 1
+
+ , (18) where A∗ = arg max A ¯SA (and Pdom ≜ 1 in the degenerate case ¯SA∗ = 0 , where no axis has support). This probability Pdom ∈ (0 , 1] is combined with an FOV coverage factor γ (the γ-adaptive exponent that names γ-SGRT) to produce the final similarity score: 
+
+Sfinal =
+
+
+
+max  
+
+> b
+
+Sb
+
+
+
+× P (1 −γ) 
+
+> dom
+
+, (19) 8(a) Input scans (b) Stage-1 · 6-DoF GICP (all points) (seeded by front-end heading Δψ) (c) Certainty filter  
+
+> Init: Δψ
+> Front-end: certainty (by-product)
+> DB (Ouster 360°)
+> Query (Aeva 120°)
+> co-observed (low σ)
+> (d) Stage-2 · fine GICP (co-observed)
+> Shared certainty (Coupling)
+> TE 1.30 m TE 0.94 m
+> -28% Certainty filter improves registration
+> Query DB Certainty/kept.
+> Place recognition
+
+Fig. 5: The CG-GICP back-end (Fig. 2, part III) on a real cross-session, cross-sensor revisit: a KAIST06 Aeva (120 ◦) query against the cross-day KAIST05 Ouster (360 ◦) database. Top: the certainty map c(r, s )=(1 −σq )(1 −σdb ) min( μq , μ db ), a by-product of front-end BKL scoring, isolates the co-observed, low-uncertainty region. (a) Input scans. (b) Stage 1: a coarse 6-DoF GICP on the full clouds, seeded by the front-end heading ∆ψ. (c) Certainty filter ( c≥τc, source-only, ∼67% kept). 
+
+(d) Stage 2: a fine GICP on the co-observed points, suppressing the one-sided FOV-boundary correspondences that bias Stage 1 and lowering the translation error from 1.30 to 0.94 m. Aggregate gains are quantified in Table VIII. where γ = min(Φ q , Φdb )/360 ◦ ∈ [0 , 1] measures the heading observability of the configuration, and Φq , Φdb are the total az-imuthal FOVs of the query and database sensors. The exponent 
+
+(1 − γ) vanishes at γ = 1 (panoramic: P 0 
+
+> dom
+
+= 1 , since at full FOV a symmetric match still localizes to the correct place, so heading ambiguity no longer implies a wrong place and war-rants no penalty; any residual heading symmetry is left to the back-end) and activates suppression for γ < 1 in proportion to heading ambiguity ( e.g. , P 0.5 
+
+> dom
+
+at 180 ◦, P 0.81  
+
+> dom
+
+at 70 ◦). The factorization keeps the best single-branch quality ( max b Sb)while P (1 −γ) 
+
+> dom
+
+independently penalizes heading ambiguity, so the axis-level averaging (16) never dilutes a strong branch. An aliased environment (symmetric intersections, four-way crossings) flattens the Softmax ( Pdom → 1/|A| ) and suppresses 
+
+Sfinal , while a structurally unique scene (corners, T-junctions) drives Pdom → 1 and preserves the geometric score. SGRT generalizes Lowe’s ratio test [52] to all |A| axes (not only the top two), with a scale-invariant continuous weight (not a binary accept–reject cut) and antipodal (forward–reverse) symmetry. 
+
+Proposition 1 (SGRT Suppression of Symmetric Aliasing) .
+
+For a structurally symmetric environment in which |A| ≥
+
+2 structural axes achieve identical scores S0 > 0, every ratio in (18) equals 1, so Pdom = 1/|A| and Sfinal =(max b Sb) |A| −(1 −γ) < max b Sb for any γ < 1 (reducing to (max b Sb)/|A| at the narrow-FOV limit γ = 0 ), a strict attenuation independent of S0 and κ.
+
+Remark 1 (Minimum Conditions for SGRT) . SGRT needs 
+
+|A| ≥ 2 structural axes, counted over the union of query and database pairs, so one wide side suffices. Against a 70 ◦
+
+query ( N =1 ), a 360 ◦ database ( N =4 ) still spans multiple hypotheses and SGRT stays active. The γ-exponent further modulates this. At γ = 1 (panoramic) SGRT is inactive regardless of |A| . Only when both sides are narrow-FOV (N = 1 each, |A| = 1 ) does Pdom = 1 hold identically. There, the ensemble adds no aliasing-specific suppression and correctness rests on the raw BKL match score. 
+
+Corollary 1 (SGRT Non-Degradation of Unambiguous True Positives) . For a true-positive match where the correct head-ing axis achieves score ¯SA∗ and all other axes achieve scores 
+
+¯SA ≤ λ · ¯SA∗ with λ < 1, the SGRT attenuation is bounded: 
+
+Pdom ≥ 11 + ( |A| − 1) exp( κ(λ − 1)) . (20) 
+
+For |A| = 2 (e.g. a narrow query against a wide database), 
+
+κ = 10 , λ ≤ 0.5, this gives Pdom ≥ 0.993 . Even for a hypothetical |A| = 4 (the deployed axis set has |A| ≤ 
+
+2), Pdom ≥ 0.980 . Since the applied multiplier satisfies 
+
+P (1 −γ) 
+
+> dom
+
+≥ Pdom , SGRT preserves ≥ 98% of an unambiguous true positive’s score in the worst case ( γ = 0 ), rising toward 
+
+100% as the FOV widens. Proof. Every summand in (18) is at most exp( κ(λ − 1)) by monotonicity. Substituting the (|A|− 1) -term bound gives (20). V. CG-GICP: T WO -S TAGE CERTAINTY -G UIDED 
+
+REGISTRATION 
+
+Standard ICP on FOV-constrained point clouds is biased by unreliable correspondences at FOV boundaries and in sparse, one-sided regions. CG-GICP addresses this with a coarse-to-fine two-pass Generalized-ICP coupled to the certainty map (§V-A–§V-C). This anchoring targets asymmetric-FOV and cross-sensor registration, where a large fraction of the query falls outside the database’s reliable observation. Fig. 5 runs the back-end end-to-end on a real cross-session, cross-sensor pair (KAIST06 Aeva 120 ◦ query, KAIST05 Ouster 360 ◦ database). 
+
+A. BEV Certainty Map Extraction 
+
+As a by-product of BKL scoring (§IV-C), the winning branch’s aligned grids yield a per-bin certainty weight c(r, s ) ∈
+
+[0 , 1] :
+
+c(r, s ) = wcert (r, s ) · wocc (r, s ), (21) 9(a) KITTI (b) NCLT (c) HeLiPR (d) SNAIL (e) GrandTour 
+
+Fig. 6: LiDAR point clouds across the five evaluation datasets, one representative top-down frame each on a common ±35 mscale. Single-sensor datasets (a, b, d) are height-colored. The two cross-sensor datasets overlay all calibrated LiDARs in one extrinsically registered frame, color-coded by sensor: (c) HeLiPR fuses the 360 ◦ Ouster OS2-128, the 120 ◦ Aeva Aeries-II, and the 70 ◦ Livox Avia. (e) GrandTour fuses the Hesai XT32, Livox Mid-360, and Velodyne VLP-16. Beam count and field of view vary widely, the 128-beam Ouster (c) far denser than the 32-beam Hesai XT32 (d,e) or Velodyne HDL-32E (b): the heterogeneity that the cross-sensor experiments (§VI-D, §VI-E) target. where wcert (r, s ) = (1 − σq (r, s ))(1 − σdb (r, s )) and 
+
+wocc (r, s ) = min( μq (r, s ), μ db (r, s )) are the mutual certainty and mutual occupancy, zeroed outside the FOV overlap O
+
+and where either scan has high uncertainty ( σ > σ thr ) or low occupancy ( μ < μthr ). The weight is a conservative conjunction of two fuzzy t-norms, so only mutually well-observed bins score high. 
+
+Precise role of the certainty map. The certainty map does not encode structural distinctiveness. Clearly observed parallel boundaries receive c ≈ 1 despite their longitudinal degeneracy. Rather, it removes FOV-boundary, sparse, and high-uncertainty bins whose occupancy estimates would otherwise corrupt registration. 
+
+B. Certainty-Based Point Filtering 
+
+Each 3D point is projected to its polar BEV bin (ri, s i)
+
+and assigned weight wi = c(ri, s i). Points with wi < τ c
+
+are discarded, typically removing 20–60% of the input (less on well-co-observed pairs) while keeping the reliably co-observed points. This filtering is asymmetric. Only the query (source) cloud is filtered, the target (database) cloud retained in full. The asymmetry ensures that for cross-heading matches (e.g. , ∆ψ = 180 ◦), target points outside the query’s filtered FOV remain valid correspondence targets, preventing empty-neighborhood artifacts in the KD-tree search. 
+
+C. Coarse-to-Fine Two-Pass Registration 
+
+Registration is initialized from G-PROBE’s refined heading 
+
+∆ψ, a median height offset ∆z, and zero lateral offset, then runs two Generalized-ICP passes. 
+
+Stage 1: Coarse GICP on all points. Generalized-ICP [38] is applied to the unfiltered source and target clouds: 
+
+TGICP = arg min 
+
+> T
+
+X
+
+> i
+
+(ptgt  
+
+> i
+
+− T p src  
+
+> i
+
+)⊤
+
+×(Ctgt  
+
+> i
+
++ T C src  
+
+> i
+
+T ⊤)−1(ptgt  
+
+> i
+
+− T p src  
+
+> i
+
+),
+
+(22) where Ci are the local surface covariance matrices. Using all points retains the broadest geometric constraints (particularly ground-plane and vertical structure constraining pitch, roll, and yaw) for a stable coarse pose TGICP even on sparse sensors. 
+
+Stage 2: Certainty-filtered refinement. A second Generalized-ICP, initialized at TGICP , runs with the source re-stricted to its certainty-filtered points Sc = {i : c(ri, s i) ≥ τc}
+
+(§V-B), matched against the full target: 
+
+Tfinal = arg min 
+
+> T
+
+X
+
+> i∈S c
+
+ei(T )⊤ Ctgt  
+
+> i
+
++ T C src  
+
+> i
+
+T ⊤−1ei(T ), (23) with residual ei(T ) = ptgt  
+
+> i
+
+−T p src  
+
+> i
+
+and ptgt  
+
+> i
+
+the nearest neighbor of psrc  
+
+> i
+
+under T . Since the certainty map is zero outside the co-observed FOV overlap (§V-A), Sc retains only co-observed points. Because the fine pass is initialized at TGICP , whose rotation is already well-constrained by the all-points coarse pass, it corrects mainly the residual translation and leaves the heading essentially unchanged. 
+
+Rationale for the two passes. A single all-points GICP admits one-sided FOV-edge bias; a filtered-only GICP loses the broad support needed for stable rotation on sparse sensors; the coarse-to-fine order resolves both (compared in §VI-F, Table VIII). VI. E XPERIMENTAL EVALUATION 
+
+A. Datasets and Setup 
+
+We evaluate on five datasets spanning three LiDAR modal-ities (mechanical spinning, solid-state, FMCW) and four ro-bustness challenges (seasonal drift, extreme weather, cross-sensor, large-scale), each with a representative LiDAR scan in Fig. 6: 1) KITTI [53]: Sequences 00, 02, 05, and 08 (Velodyne HDL-64E, 360 ◦). Sequence 08 provides reverse-heading loop closures. Sequences 00, 02, and 05 test scalability on diverse suburban environments. 2) NCLT [54]: Sequences 2012-05-26, 2012-08-20, 2012-09-28, and 2013-04-05 (Velodyne HDL-32E, 360 ◦, Seg-way): long-term dynamic change, repetitive structure, varied indoor–outdoor trajectories. Three multi-session pairs from 05-26 evaluate seasonal robustness. 3) HeLiPR [55]: KAIST05/06 and Riverside05/06, each with simultaneous Ouster OS2-128 ( 360 ◦, mechanical spinning), Aeva Aeries-II ( 120 ◦, FMCW), and Livox Avia ( 70 ◦, solid-state), one synchronized cross-sensor benchmark. 10 
+
+4) SNAIL [56]: the Hesai XT32 ( 360 ◦) LiDAR of the SNAIL-Radar platform. Two challenge scenarios: (1) ex-treme weather (clear →heavy rain, Starlake 2 km) and (2) long-term dynamic changes (46-day gap, Info Fac-ulty 2.2 km). 5) GrandTour [57]: A quadruped (ANYmal-D) carrying three simultaneous 360 ◦-azimuth LiDARs (Hesai XT32, 32-beam, 120 m; Livox Mid-360, non-repetitive dome, 
+
+∼40 m; and Velodyne VLP-16, 16-beam, 100 m) for the FOV-controlled cross-sensor study on a legged platform (§VI-E), spanning an underground level (LEE-1), arescue-training site (ARC-1), an alpine village (GRI-1), and a rail-yard re-localization pair (SBB-1 →2). 
+
+Baselines. We compare against ten methods spanning learning-free (M2DP [14], LiDAR Iris [15], SC [2], SC++ [3], SOLiD [8], RING++ [20], PROBE [11]) and deep learning (HeLiOS [5], BEVPlace++ [32], UniLGL [7]) approaches. The three deep baselines use their official pre-trained weights without domain adaptation. HeLiOS is trained on HeLiPR (DCC/KAIST/Riverside 04–06) across the same four LiDAR types including narrow-FOV scans, so its HeLiPR and limited-FOV results form an optimistic in-distribution bound, while its other results reflect genuine transfer. BEVPlace++ is trained on KITTI sequence 00, one of our four KITTI sequences, so its KITTI results partly reflect data seen during training. UniLGL is trained on MCD, a SNAIL-Radar route, and its Garden database, so our SNAIL cells share its training sensor. BEVPlace++ and UniLGL are applied zero-shot to HeLiPR with native pose estimators, with UniLGL’s official per-sensor windows (forward [0 , 80] m for FOV-limited scans, centered for panoramic). Both rely on a fully-populated BEV grid (half-emptied under our asymmetric protocol), so we treat their asymmetric cross-FOV cells as an out-of-distribution generalization test. 
+
+Keyframe Selection. Database keyframes are sampled at 
+
+5 m spatial intervals and query keyframes at 10 m intervals. 
+
+Evaluation Protocol. A database keyframe is a ground-truth positive for a query iff it satisfies both (i) a Euclidean proximity threshold dpos = 7 .5 m (identical for intra-sequence and multi-session), and (ii) a field-of-view (FOV) co-visibility criterion. The latter measures the angular intersection of the two scans’ azimuthal coverage arcs (each arc set by its sensor FOV and scan heading), normalized by the smaller of the two FOVs: 
+
+νcov = ∠[ arc(Φ q ) ∩ arc(Φ db ) ] min(Φ q , Φdb ) ≥ 0.25 . (24) We normalize by the minimum FOV (intersection-over-minimum, not IoU). Under asymmetry the question is whether the narrower sensor’s view lies within the wider’s cover-age. IoU would penalize the wider sensor’s unshared field. This fixes two conventional-ground-truth failures: distance-only metrics falsely accept oppositely-facing sensors, and heading-difference metrics over-penalize valid partial overlaps under high asymmetry ( 360 ◦ vs. 70 ◦). In the symmetric 360 ◦
+
+case the criterion saturates ( νcov ≡ 1), reducing exactly to the conventional distance-only definition. Temporal exclusion uses 
+
+dexc = 20 m trajectory distance. TABLE II: G-PROBE (front-end) and CG-GICP (back-end) parameters, fixed across all experiments. The 80 m range clamp is shared by all methods for fair comparison.                                      
+
+> Front-end (G-PROBE)
+> Voxel size 0.5mσT2mPolar BEV Nr×Ns40 ×60 top-K/ branch-kb20 /5
+> Max range 80 mMin FOV overlap wmin 0.3
+> SGRT κ10 Column-trim η0.1
+> Back-end (CG-GICP)
+> Max correspondence 2.0mCertainty filter τc0.01
+> Certainty σthr 0.4Certainty μthr 0.15
+> Registration voxel 0.2mMax iterations 30
+
+Metrics. Following the standard top-1 loop-closure protocol of SC [2], SC++ [3], and RING++ [20], each query contributes a single decision (its top-1 retrieved match), accepted when its similarity exceeds a threshold τ . Sweeping τ over the observed scores yields a precision–recall curve with Precision = TP TP + FP , Recall = TP 
+
+Nrev 
+
+, (25) where a true positive (TP) is an accepted top-1 satisfying the ground-truth criterion above, a false positive (FP) is any other accepted top-1 (including queries with no revisit), and Nrev 
+
+is the total number of revisit queries. We report Recall@1 
+
+(R@1, the threshold-free top-1 success rate, TP top1 /N rev ), the 
+
+maximum F1 along the curve, and AUC , the trapezoidal area under it. Since thresholds are drawn from the actual score distribution, AUC is invariant to monotone rescaling, a rank-based comparison across heterogeneous descriptors. All recall terms share the denominator Nrev . AUC is our primary single-modality metric. For extreme cross-sensor settings (§VI-D) we also emphasize Recall@1. All G-PROBE and CG-GICP parameters are fixed across all experiments (Table II). 
+
+B. Experiment 1: Standard LiDAR Place Recognition 
+
+Tables III and IV evaluate 19 LiDAR configurations: 12 single-session sequences and 7 multi-session pairs spanning seasonal and long-term variations. In the symmetric, same-sensor single-session setting, the supervised BEVPlace++ leads across datasets, as expected for a descriptor trained on panoramic same-sensor driving data. Among learning-free methods, G-PROBE is competitive, at an average AUC of .743 , behind the learning-free leader SC++ ( .754 ) and further behind PROBE ( .807 ), with PROBE retaining a clear edge on KITTI. We attribute the gap to the ensemble structure. The aligned-pair divergence formula is exactly PROBE’s (§IV-C), and the ensemble’s windowed branch searches trade PROBE’s peak same-heading sensitivity for the heading diversity that cross-FOV matching demands. The ordering reverses where that diversity matters. Among learning-free methods G-PROBE leads on the multi-session average AUC ( .835 vs. .823 , driven by HeLiPR, Table IV). G-PROBE’s advantages emerge under asymmetric FOV (Ta-ble V) and cross-sensor heterogeneity (Table VI). RING++’s 
+
+86 .5% R@1 on KITTI (Table III) confirms sound retrieval. 11 
+
+TABLE III: 360 ◦ Panoramic LiDAR Single-Session Place Recognition (Dataset Averages). †: supervised. Best in bold , second best underlined.                                                                                                                                                   
+
+> Dataset Metric Learning-free Deep Learning Proposed
+> M2DP Iris SC SC++ SOLiD RING++ PROBE HeLiOS †BEVP++ †UniLGL †G-PROBE
+> KITTI (4 Seqs) R@1 .624 .875 .737 .844 .780 .865 .917 .748 .980 .885 .881 F1 .601 .670 .689 .769 .677 .485 .840 .662 .928 .655 .766 AUC .568 .660 .644 .753 .661 .412 .832 .604 .950 .655 .749 NCLT (4 Seqs) R@1 .214 .834 .819 .865 .687 .788 .911 .753 .964 .790 .861 F1 .236 .708 .657 .733 .530 .502 .750 .586 .781 .625 .741 AUC .148 .588 .569 .698 .452 .461 .786 .493 .796 .567 .700 HeLiPR (4 Seqs) R@1 .650 .713 .808 .863 .682 .863 .878 .796 .878 .726 .865 F1 .638 .671 .738 .841 .558 .667 .789 .732 .819 .666 .802 AUC .578 .630 .716 .812 .514 .653 .804 .611 .818 .538 .780
+> Average
+> R@1 .496 .807 .788 .857 .716 .839 .902 .766 .941 .800 .869 F1 .492 .683 .695 .781 .588 .551 .793 .660 .843 .649 .770 AUC .431 .626 .643 .754 .542 .509 .807 .569 .855 .587 .743
+> Sensors: KITTI Velodyne HDL-64E, NCLT Velodyne HDL-32E, HeLiPR Ouster OS2-128.
+
+TABLE IV: 360 ◦ Panoramic LiDAR Long-Term Multi-Session Place Recognition (Dataset Averages). †: supervised. Best in 
+
+bold , second best underlined.                                                                                                                                                   
+
+> Dataset Metric Learning-free Deep Learning Proposed
+> M2DP Iris SC SC++ SOLiD RING++ PROBE HeLiOS †BEVP++ †UniLGL †G-PROBE
+> NCLT (3 Pairs) R@1 .452 .744 .724 .726 .517 .536 .787 .807 .917 .736 .779 F1 .472 .795 .722 .728 .486 .512 .792 .781 .871 .725 .811 AUC .390 .693 .644 .656 .365 .381 .751 .709 .873 .666 .742 HeLiPR (2 Pairs) R@1 .639 .741 .747 .715 .455 .714 .784 .785 .859 .614 .862
+> F1 .668 .805 .787 .776 .448 .701 .839 .781 .849 .620 .892
+> AUC .564 .727 .696 .667 .275 .589 .764 .654 .828 .456 .828
+> SNAIL (2 Pairs) R@1 .800 .954 .953 .927 .809 .500 .956 .922 .989 .913 .949 F1 .813 .968 .957 .938 .808 .500 .964 .922 .988 .915 .952 AUC .768 .953 .949 .923 .734 .498 .953 .898 .988 .890 .935
+> Average
+> R@1 .630 .813 .808 .789 .594 .583 .842 .838 .922 .754 .863 F1 .651 .856 .822 .814 .581 .571 .865 .828 .903 .753 .885 AUC .574 .791 .763 .749 .458 .489 .823 .754 .896 .671 .835
+> Sensors: NCLT Velodyne HDL-32E, HeLiPR Ouster OS2-128, SNAIL Hesai XT32.
+
+Its lower AUC reflects the denser maps used here, over 600 
+
+frames each (vs. its original sparse 20 m map). 
+
+C. Experiment 2: Limited-FOV Robustness 
+
+A heading-invariant system must tolerate a reduced field of view. 
+
+Symmetric limited FOV. We first crop both database and query to the same limited FOV F ∈ { 180 , 120 , 90 , 60 }◦. The symmetric (top) block of Table V reports mean Recall@1 and AUC over the single-session sequences. The learning-free baselines remain functional (AUC .16 –.53 ), with G-PROBE and PROBE leading in AUC among learning-free methods at all FOVs. G-PROBE attains the best AUC overall (above even the supervised baselines) at 120 ◦ and 90 ◦, and is a close second at 60 ◦ (HeLiOS leads, .532 vs. .485 ). Among supervised methods the Recall@1 lead splits by FOV width: BEVPlace++ at the wider {180 , 120 }◦, HeLiOS at the narrower {90 , 60 }◦. All methods remain functional. 
+
+Asymmetric FOV. We now introduce FOV asymmetry. The query is cropped from 360 ◦ down to 60 ◦ while the database stays at full 360 ◦, the regime a limited-FOV robot faces against a panoramic map. The asymmetric block of Table V reports mean Recall@1 and AUC across the 12 single-session sequences of the three datasets. Fig. 1 visualizes the aggregate degradation. G-PROBE recovers the correct heading across the whole heading ×FOV space (not only same-/reverse-heading revisits), as the cross-sensor registration accuracy confirms (§VI-F). Every learning-free baseline collapses under asymmetric FOV ( −96% or worse). Only G-PROBE remains reliable, even at extreme asymmetry ( 60 ◦). The symmetric block is the control: the same cropped FOVs, shared by both database and query, leave baselines functional (top block of Table V). Their collapse under asymmetry (a cropped query against a panoramic database) therefore reflects the FOV asymmetry between query and database, not the FOV reduction itself. 
+
+D. Experiment 3: Cross-Sensor Generalization (HeLiPR) 
+
+We conduct an exhaustive cross-sensor evaluation over the three HeLiPR LiDARs with mutually overlapping fields of view (Ouster OS2-128 360 ◦, Aeva Aeries-II 120 ◦, Livox Avia 70 ◦) in single-session ( KAIST05 ) and multi-session (KAIST05 →06 ) configurations. We evaluate Mean AUC across all 9 sensor combinations ( 3×3 matrix), comparing G-PROBE against the six baselines of Table VI. All methods operate at each sensor’s full native horizontal FOV. G-PROBE is the only method retaining non-trivial AUC across all off-diagonal cross-sensor pairs (Table VI). Its sym-12 
+
+TABLE V: Limited-FOV place recognition (Mean R@1 % / Mean AUC, equal weight per dataset, over the 12 single-session sequences of KITTI, NCLT, and HeLiPR). Top : symmetric control, DB = Query = F ◦. Bottom : asymmetric, DB 360 ◦ →
+
+Query F ◦. ∆ = relative drop from 360 ◦ to 60 ◦. Best in bold , second best underlined, per metric. †: supervised. 
+
+FOV Learning-free Deep Learning Proposed 
+
+M2DP Iris SC SC++ SOLiD RING++ PROBE HeLiOS † BEVP++ † UniLGL † G-PROBE 
+
+Symmetric control (DB = Query = F ◦)
+
+180 ◦ 52.0 / .405 57.1 / .409 57.9 / .377 59.2 / .422 52.4 / .347 52.9 / .240 60.1 / .518 62.0 / .514 67.7 / .546 59.4 / .436 57.9 / .529 
+
+120 ◦ 53.0 / .407 62.0 / .405 66.1 / .353 64.9 / .401 61.7 / .337 50.5 / .236 67.2 / .526 68.5 / .567 70.6 / .527 63.0 / .448 62.7 / .568 
+
+90 ◦ 49.8 / .347 60.0 / .379 70.5 / .330 71.0 / .371 53.8 / .321 47.2 / .207 66.4 / .497 70.7 / .559 69.9 / .482 63.6 / .415 62.6 / .560 
+
+60 ◦ 51.5 / .363 55.4 / .341 64.8 / .261 64.9 / .285 48.2 / .255 43.2 / .162 61.8 / .402 70.4 / .532 66.0 / .397 59.7 / .375 59.1 / .485 
+
+Asymmetric (DB 360 ◦ → Query F ◦)
+
+360 ◦ 49.6 / .431 80.7 / .626 78.8 / .643 85.7 / .754 71.7 / .542 83.8 / .509 90.2 / .807 76.6 / .569 94.1 / .855 80.0 / .587 86.9 / .743 
+
+180 ◦ 2.3 / .001 8.6 / .041 10.5 / .049 7.8 / .030 6.5 / .019 11.2 / .007 10.8 / .023 34.7 / .110 63.9 / .323 3.7 / .001 78.8 / .693 
+
+120 ◦ 1.2 / .000 4.7 / .025 6.0 / .030 3.9 / .015 2.6 / .005 5.3 / .002 4.5 / .009 24.7 / .064 40.8 / .163 2.4 / .000 73.6 / .623 
+
+90 ◦ 0.9 / .000 3.0 / .013 4.1 / .019 2.6 / .010 1.8 / .002 3.0 / .001 3.4 / .005 19.9 / .040 22.0 / .079 1.5 / .000 68.8 / .549 
+
+60 ◦ 0.8 / .000 2.3 / .008 2.9 / .011 1.8 / .008 1.6 / .003 2.5 / .000 2.2 / .002 14.1 / .023 9.3 / .034 0.7 / .000 53.7 / .382 
+
+∆ (%) −98.3% / 
+
+−100.0% 
+
+−97.2% / 
+
+−98.7% 
+
+−96.3% / 
+
+−98.3% 
+
+−97.9% / 
+
+−98.9% 
+
+−97.7% / 
+
+−99.4% 
+
+−97.1% / 
+
+−99.9% 
+
+−97.6% / 
+
+−99.8% 
+
+−81.6% / 
+
+−95.9% 
+
+−90.2% / 
+
+−96.1% 
+
+−99.1% / 
+
+−100.0% 
+
+−38.2% /
+
+−48.5% 
+
+TABLE VI: Cross-Sensor Place Recognition Mean AUC Matrix (HeLiPR KAIST; Riverside reported in the text and table note). †: supervised. Best in bold , second best underlined.                                       
+
+> Database Query Ouster (360 ◦)Aeva (120 ◦)Avia (70 ◦)
+> Single-Session (KAIST05 DB →KAIST05 Query): Asymmetric FOV
+> Ouster ( 360 ◦)
+> SC++: .859 / RING++: .661 / PROBE: .871 HeLiOS †: .718 / BEVP++ †:.962 / UniLGL †: .720 / Ours: .862 SC++: .008 / RING++: .000 / PROBE: .008 HeLiOS †: .018 / BEVP++ †: .010 / UniLGL †: .000 / Ours: .488
+> SC++: .000 / RING++: .000 / PROBE: .002 HeLiOS †: .028 / BEVP++ †: .002 / UniLGL †: .000 / Ours: .329 Aeva ( 120 ◦)
+> SC++: .024 / RING++: .000 / PROBE: .030 HeLiOS †: .002 / BEVP++ †: .014 / UniLGL †: .000 / Ours: .413
+> SC++: .895 / RING++: .262 / PROBE: .910
+> HeLiOS †: .859 / BEVP++ †: .843 / UniLGL †: .495 / Ours: .873 SC++: .198 / RING++: .000 / PROBE: .394 HeLiOS †: .363 / BEVP++ †: .019 / UniLGL †: .012 / Ours: .421 Avia ( 70 ◦)
+> SC++: .007 / RING++: .000 / PROBE: .026 HeLiOS †: .006 / BEVP++ †: .001 / UniLGL †: .000 / Ours: .272
+> SC++: .161 / RING++: .002 / PROBE: .386 HeLiOS †:.424 / BEVP++ †: .042 / UniLGL †: .004 / Ours: .422 SC++: .564 / RING++: .289 / PROBE: .836
+> HeLiOS †: .824 / BEVP++ †: .633 / UniLGL †: .499 / Ours: .808
+> Multi-Session (KAIST05 DB →KAIST06 Query): Asymmetric FOV + Temporal Change
+> DB (K05) Q (K06) Ouster (360 ◦)Aeva (120 ◦)Avia (70 ◦)
+> Ouster ( 360 ◦)
+> SC++: .761 / RING++: .622 / PROBE: .825 HeLiOS †: .734 / BEVP++ †: .846 / UniLGL †: .492 / Ours: .914
+> SC++: .025 / RING++: .000 / PROBE: .004 HeLiOS †: .006 / BEVP++ †: .006 / UniLGL †: .000 / Ours: .508
+> SC++: .021 / RING++: .000 / PROBE: .007 HeLiOS †: .023 / BEVP++ †: .002 / UniLGL †: .000 / Ours: .502 Aeva ( 120 ◦)
+> SC++: .048 / RING++: .000 / PROBE: .020 HeLiOS †: .018 / BEVP++ †: .020 / UniLGL †: .000 / Ours: .411
+> SC++: .784 / RING++: .273 / PROBE: .864
+> HeLiOS †: .803 / BEVP++ †: .765 / UniLGL †: .308 / Ours: .692 SC++: .241 / RING++: .004 / PROBE: .346 HeLiOS †:.517 / BEVP++ †: .026 / UniLGL †: .021 / Ours: .412
+> Avia ( 70 ◦)
+> SC++: .014 / RING++: .000 / PROBE: .010 HeLiOS †: .018 / BEVP++ †: .003 / UniLGL †: .000 / Ours: .224
+> SC++: .086 / RING++: .001 / PROBE: .183 HeLiOS †:.335 / BEVP++ †: .024 / UniLGL †: .009 / Ours: .221 SC++: .653 / RING++: .328 / PROBE: .851
+> HeLiOS †: .834 / BEVP++ †: .707 / UniLGL †: .469 / Ours: .749
+
+The R@1 ranking mirrors the AUC ranking: mean off-diagonal R@1 per block (KAIST single/multi, Riverside single/multi) is 
+
+43 .9/42 .1/30 .1/24 .9% for G-PROBE vs. 29 .8/29 .6/28 .5/26 .6% for the strongest baseline (the in-distribution HeLiOS †, which edges G-PROBE only in the Riverside multi-session block). All other baselines (PROBE next, up to 21% ) stay below 22% in all four blocks. 
+
+metric FOV-overlap formulation, Eqs. (4)–(6), restricts com-parison to co-observed sectors. The matrix separates into two regimes (Figs. 7 and 8). On the diagonal (same-sensor) all structurally-capable methods retain signal and G-PROBE is competitive (Ouster →Ouster AUC .862 vs. SC++ .859 ), though PROBE retains a slight edge across the single-session same-sensor diagonals and a larger one on the multi-session narrow-FOV diagonals. Off-diagonal, the ranking reverses. Pairing a 360 ◦ Ouster with a narrow-FOV sensor drives all evaluated learning-free and supervised baselines to near-zero AUC ( ≤ 0.08 ). Their global descriptors penalize the unobserved field. G-PROBE alone retains usable similarity (Ouster →Aeva .488 /. 508 , Ouster →Avia .329 /. 502 
+
+on KAIST single/multi-session, more than an order of magni-tude above all baselines). The same trend holds on Riverside (Table VI note, Table IX). By the same symmetric formulation, the reverse pairings keep signal (Fig. 7), though a wider-FOV database remains the stronger reference. The exception is the narrow-FOV pair (Aeva ↔Avia), where in-distribution HeLiOS leads three of the four cells (e.g. multi-session Aeva →Avia .517 vs. .412 ) while G-PROBE takes the single-session Aeva →Avia ( .421 vs. .363 ). Where sensors barely co-observe, all methods score near zero. G-PROBE’s scores are discounted by the wFOV prior at minimal overlap rather than inflated. 
+
+E. Experiment 4: FOV-Controlled Cross-Sensor Study on a Legged Platform 
+
+In HeLiPR, FOV asymmetry and sensor heterogeneity are entangled. The GrandTour dataset [57] supplies the control that HeLiPR lacks: three simultaneously recorded LiDARs sharing a 360 ◦ azimuth yet differing in beam count, scan pattern, and range, so its cross-sensor cells isolate the density/pattern/range component alone. The platform is a quadruped (walking-induced roll/pitch), on which we apply G-PROBE zero-shot with parameters and protocol identical to HeLiPR (query keyframes at 5 m owing to the short missions). Table VII spans four sites: three single-session (intra-mission loop closure: LEE-1, ARC-1, GRI-1) and one cross-mission re-localization (SBB-1 →SBB-2, 26 revisit queries per cell). With the FOV shared, the zero-shot supervised baselines that fell to near zero on HeLiPR’s cross-sensor cells (BEV-13 0.0 0.5 1.0 
+
+> 0.0
+> 0.5
+> 1.0
+> KAIST 05  06
+> Precision
+
+Ouster Ouster   
+
+> 0.0 0.5 1.0
+> 0.0
+> 0.5
+> 1.0
+
+Ouster Aeva   
+
+> 0.0 0.5 1.0
+> 0.0
+> 0.5
+> 1.0
+
+Ouster Avia   
+
+> 0.0 0.5 1.0
+> 0.0
+> 0.5
+> 1.0
+
+Aeva Ouster   
+
+> 0.0 0.5 1.0
+> 0.0
+> 0.5
+> 1.0
+
+Aeva Avia   
+
+> 0.0 0.5 1.0
+
+Recall   
+
+> 0.0
+> 0.5
+> 1.0
+> Riverside 05  06
+> Precision
+> 0.0 0.5 1.0
+
+Recall   
+
+> 0.0
+> 0.5
+> 1.0
+> 0.0 0.5 1.0
+
+Recall   
+
+> 0.0
+> 0.5
+> 1.0
+> 0.0 0.5 1.0
+
+Recall   
+
+> 0.0
+> 0.5
+> 1.0
+> 0.0 0.5 1.0
+
+Recall        
+
+> 0.0
+> 0.5
+> 1.0
+> SC++ SOLiD RING++ PROBE HeLiOS BEVPlace++ UniLGL G-PROBE
+
+Fig. 7: Multi-session precision–recall on HeLiPR ( 05 → 06 , cross-day). AUCs reproduce the multi-session block of Table VI (with SOLiD additionally shown). Cols 1–3 : 360 ◦ Ouster database vs. progressively narrower queries (Ouster, Aeva 120 ◦,Avia 70 ◦). Col 4 : reverse cross-sensor (Aeva →Ouster). Col 5 : narrow-FOV pair (Aeva →Avia). On the wide ↔narrow cross-sensor cells G-PROBE is the only method with non-trivial area (AUC up to .51 ) while baselines fall onto the axes ( ≤ .05 ). On the same-sensor and narrow–narrow pairs it is competitive rather than dominant. Consistent across both sites. SC++ 
+
+> R@1 76%
+> SOLiD
+> R@1 34%
+> RING++
+> R@1 75%
+> PROBE
+> R@1 82%
+> HeLiOS
+> R@1 80%
+> BEVPlace++
+> R@1 86%
+> UniLGL
+> R@1 61%
+> G-PROBE
+> R@1 91%
+> SC++
+> R@1 4%
+> SOLiD
+> R@1 1%
+> RING++
+> R@1 1%
+> PROBE
+> R@1 3%
+> HeLiOS
+> R@1 9%
+> BEVPlace++
+> R@1 6%
+> UniLGL
+> R@1 1%
+> G-PROBE
+> R@1 51%
+> Ouster  Ouster Ouster  Aeva
+
+Fig. 8: Per-method top-1 match maps on HeLiPR KAIST 05 → 06 (same retrievals as Table VI): each revisit query is a dot on the KAIST05 trajectory, green if its top-1 is correct ( ≤ 7.5 m) else red. Top (Ouster →Ouster): all methods retrieve the same-sensor revisits (R@1 34 –91% , G-PROBE highest). Bottom (Ouster →Aeva 120 ◦): the seven baselines (incl. SOLiD) turn almost entirely red (R@1 1–9% ) while G-PROBE alone retains correct top-1 matches ( 51% ). Even PROBE, its probabilistic predecessor, falls to 3% .TABLE VII: FOV-controlled cross-sensor study (GrandTour, quadruped ANYmal): all three LiDARs share a 360 ◦ FOV, isolating density/pattern/range heterogeneity from FOV asym-metry. Mean R@1 (%), same-sensor (S) vs. cross-sensor (C) cells. Parameters identical to HeLiPR. †: supervised zero-shot. The last two columns average S and C over the four sites. Cells aggregate 17 –26 revisit queries, so we treat these as a robustness check on a legged platform, not a precise ranking. Best in bold , second best underlined.                                                            
+
+> Method LEE-1 S / C ARC-1 S / C GRI-1 S / C SBB-1 →2S / C Same (mean) Cross (mean) SC++ [3] 26.4 / 20.8 61.1 / 39.8 44.9 / 29.4 67.9 / 35.9 50.1 31.5 SOLiD [8] 26.4 / 29.9 50.0 / 25.0 38.9 / 28.5 50.0 / 22.4 41.3 26.5 RING++ [20] 13.9 / 15.3 48.1 / 34.3 35.8 / 24.7 69.2 / 19.2 41.8 23.4 PROBE [11] 22.2 / 26.4 63.0 / 51.9 44.9 / 44.7 67.9 / 34.6 49.5 39.4 HeLiOS †[5] 44.4 / 31.9 44.4 / 35.2 46.3 / 39.3 59.0 / 28.2 48.5 33.7 BEVP++ †[32] 37.5 / 27.8 70.4 / 49.1 63.2 / 39.9 75.6 / 27.6 61.7 36.1 UniLGL †[7] 30.6 / 33.3 61.1 / 51.9 43.4 / 29.2 56.4 / 24.4 47.9 34.7
+> G-PROBE (Ours) 23.6 / 22.2 61.1 / 55.6 55.6 / 50.7 66.7 / 32.7 51.8 40.3
+
+Place++, UniLGL; Table VI) recover (up to 49 –52% R@1 on the strongest site, ARC-1, and 35 –36% cross-sensor mean), indicating that FOV asymmetry, not heterogeneity per se, causes their collapse. Under cross-mission re-localization their scores drop again ( 27 .6/24 .4% ), and the ordering flips (SC++ 
+
+35 .9, PROBE 34 .6, G-PROBE 32 .7% ). Fig. 9 shows one such cell (Hesai →Velodyne), G-PROBE re-localizing zero-shot across a 32-to-16-beam gap. With the retrieval-shortlist baselines depth-matched to G-PROBE ( K=20 ), G-PROBE leads on the cross-sensor mean ( 40 .3% , Table VII), including the strongest cross-sensor cell (ARC-1, 55 .6% ), and is compet-itive on the same-sensor control (except the underground LEE-1, which the supervised baselines lead). Over the 27 single-session cells of the three sites, G-PROBE leads the learning-free methods ( 44 .1% vs. PROBE 41 .8% and SC++ 34 .7% ). The supervised baselines reach 45 .0% (BEVPlace++), 40 .4% 
+
+(UniLGL), 38 .7% (HeLiOS, out-of-distribution here), placing G-PROBE second overall, 0.9 percentage points (pp) behind BEVPlace++. 
+
+F. Experiment 5: Cross-Sensor Geometric Registration 
+
+We evaluate metric registration on cross-sensor loop-closure pairs: an Ouster 360 ◦ database against Aeva 120 ◦ and Avia 70 ◦
+
+queries on both HeLiPR sites, multi-session ( 05 → 06 ). Each 14 
+
+TABLE VIII: Registration Robustness and CG-GICP Architecture Ablation (HeLiPR, multi-session 05 → 06 , cross-sensor blocks): per block, translation error TE 50 / TE 95 (m), rotation error RE 50 / RE 95 (◦), and success (TE < 2 m ∧ RE < 5◦), with identical G-PROBE initialization for all methods. Best in bold , second best underlined, per metric within each block.                                                                                                                       
+
+> KAIST →Aeva ( 120 ◦), n=623 KAIST →Avia ( 70 ◦), n=618 Riverside →Aeva ( 120 ◦), n=604 Riverside →Avia ( 70 ◦), n=604
+> Method TE 50 /95 RE 50 /95 Succ. TE 50 /95 RE 50 /95 Succ. TE 50 /95 RE 50 /95 Succ. TE 50 /95 RE 50 /95 Succ. P2P-ICP 0.79 / 1.23 1.93 / 3.00 97.0% 0.68 / 2.38 1.62 / 3.30 93.9% 0.77 / 1.97 1.89 / 3.52 92.9% 0.63 / 4.27 1.91 / 3.59 84.4% GICP 0.72 / 1.15 1.85 / 2.57 97.9% 0.81 / 1.18 1.42 /2.02 97.2% 0.75 / 1.89 1.85 / 2.36 93.5% 0.79 / 1.69 1.49 /1.75 94.2% KISS-ICP 0.73 / 1.15 1.79 /2.50 97.0% 0.81 / 2.94 1.42 / 2.44 92.1% 0.77 / 2.33 1.80 / 4.68 91.1% 0.82 / 2.48 1.50 / 2.25 90.2% GICP 2-Stage §0.72 / 1.15 1.85 / 2.57 97.9% 0.81 / 1.18 1.42 / 2.02 97.2% 0.75 / 2.20 1.85 / 2.33 93.4% 0.79 / 1.77 1.49 / 1.75 94.2% CG 1-Stage 0.75 / 1.17 1.85 / 2.74 97.0% 0.83 / 1.34 1.46 / 2.33 95.8% 0.76 / 2.33 1.84 / 2.59 92.5% 0.82 / 1.84 1.49 / 1.93 94.4% CG 2-Stage 0.74 / 1.14 1.85 / 2.58 98.6% 0.83 / 1.17 1.45 / 2.18 97.2% 0.76 / 1.75 1.84 / 2.42 94.0% 0.82 / 1.61 1.49 / 1.82 94.7%
+
+On the same-sensor reference (Ouster →Ouster, both sites, n=620 /604 ) all variants nearly coincide (TE 50 within 0.03 m, success 
+
+98 .2–99 .5% , except KISS-ICP’s Riverside tail at 95 .9% ). Averaged over the four cross-sensor blocks: Success = P2P 92 .0, GICP 95 .7,GICP 2-Stage § 95 .7, KISS 92 .6, CG-GICP 1-Stage 94 .9, 2-Stage 96 .1; TE 95 (m) = P2P 2.5, GICP 1.5, GICP 2-Stage § 1.6, KISS 2.2,1-Stage 1.7, 2-Stage 1.4; RE 95 (◦) = GICP 2.2 (best), 2-Stage 2.2. § Control: coarse pass + all-points fine pass, without the certainty filter. It reproduces plain GICP on the KAIST blocks (TE 95 unchanged at 1.15 and 1.18 m) and regresses on the harder Riverside blocks (TE 95 1.89 →2.20 and 1.69 →1.77 m). The § control row is excluded from the bold/underline ranking. 
+
+Fig. 9: Zero-shot cross-sensor re-localization on the legged ANYmal (GrandTour SBB-1 →SBB-2): Hesai XT32 database vs. Velodyne VLP-16 query, both 360 ◦. (a) Match map 
+
+(the retrieval behind Table VII): each query ( ×) joins its retrieved keyframe ( ◦). Green = correct ( ≤ 7.5 m), lime =
+
+near-miss ( 7.5–15 m, an adjacent keyframe), red = aliasing (≥ 15 m). R@1 = 15 /26 = 57 .7% . Six of the 11 misses are near-misses. (b, c) Query (16-beam) and database (32-beam) clouds. (d) The matched polar occupancy BEVs coincide after alignment by the recovered heading, despite the density gap. 
+
+(e) The by-product certainty map c(r, s ) (green) retains only co-observed bins, which drive the CG-GICP back-end (§V). query is paired with its nearest database keyframe within 10 m(distance-only, without the co-visibility gate of (24)), assessing all genuine revisits regardless of FOV overlap. The cross-day protocol is essential, since co-located single-session pairs leave the heading initialization near ground truth and all refiners appear near-perfect. All methods (P2P-ICP [37], GICP [38], KISS-ICP [40]) receive identical G-PROBE initialization (yaw, 
+
+∆z) and correspondence distance ( 2.0 m), both clouds voxel-downsampled to 0.2 m, isolating the refinement stage. The experiment doubles as the CG-GICP architecture ablation: GICP = coarse pass only, 1-Stage = certainty-filtered fine pass only, 2-Stage = both. Table VIII reports the results. On the same-sensor Ouster →Ouster reference (see the note to Table VIII), all variants nearly coincide, so the differences below emerge only once full co-visibility is lost. Under cross-sensor asymmetry the methods separate not in the typical case (median TE 50 ≈ 0.6–0.8 m for all) but in the worst-case tail. As the query FOV narrows, P2P-ICP’s and KISS-ICP’s TE 95 
+
+grow to 2.4–4.3 m (unconstrained where the sensors do not co-observe), pulling success down to 84 .4–97 .0% . Certainty-guided filtering then tightens the residual tail: 2-Stage reaches the best average success ( 96 .1% ) and the tightest worst-case translation (TE 95 = 1.4 m). Most of the gain over P2P-ICP comes from the GICP optimizer itself. The co-visibility filter supplies the final worst-case-tail tightening (TE 95 1.5 →
+
+1.4 m). Within the two-pass architecture, the tail tightening is attributable to the certainty filter: the GICP 2-Stage § control (the same coarse-to-fine pass without the certainty filter) does not tighten the tail (Table VIII, note), since re-optimizing over the uncertain FOV-boundary correspondences re-introduces their bias. Only filtering them out does. The alignment is visualized end-to-end in Fig. 5. Between the two CG-GICP architectures the 2-Stage scheme is the stronger default (with the best success in all cross-sensor blocks). The coarse pass supplies broad con-straints that stabilize the heading before the certainty-filtered fine pass. On the voxel-downsampled registration clouds the coarse pass does not perturb the translation under extreme asymmetry. In the harder Riverside blocks the gap is largest (Riverside-Aeva: 2-Stage TE 95 = 1 .75 m versus 2.33 m for 1-Stage). We retain both as configurable variants. 
+
+G. Experiment 6: End-to-End Metric Global Localization 
+
+Having isolated retrieval (§VI-D) and registration (§VI-F), we now evaluate the complete system. Given a query scan, each method must retrieve a database candidate and recover a 6-DoF metric pose. A query is a localization success only if its top-1 retrieval satisfies the ground-truth positive criterion (24) and the pose is within 2 m and 5◦ of ground truth. The rate is reported over all revisit queries (the Recall@1 denominator). Following UniLGL’s [7] global localization benchmark, each method runs its native pose estimator rather than a forced common back-end: UniLGL [7] via its GNC-TLS solver without additional registration; SC++ [3] is semi-metric (1-DoF yaw via aligning-key shift) and pairs with GICP, its prescribed ICP-family refinement, initialized by that yaw; G-PROBE uses its 2-Stage CG-GICP. Because the success metric scores a 6-DoF pose, methods that emit only a 3-DoF planar pose (BEVPlace++ [32], RING++ [20]) or no metric pose at 15 
+
+TABLE IX: End-to-End Metric Global Localization: HeLiPR Multi-Session ( 05 → 06 ). Entries: Success % / median TE (m) / RE ( ◦). Success = top-1 GT-positive ∧ pose < 2 m/5◦. Each method uses its native estimator. G-PROBE’s two back-ends share the front-end and are near-identical here (success is front-end-dominated, and CG-GICP’s registration benefit is isolated in Table VIII). Best in bold , second best underlined. “–” = < 5 correct retrievals or degenerate estimate.                                                                           
+
+> Database Query Ouster (360 ◦)Aeva (120 ◦)Avia (70 ◦)
+> KAIST05 DB →KAIST06 Query (cross-day)
+> Ouster ( 360 ◦)
+> SC++ 74.7/0.38/ 0.2 | UniLGL †40.8/1.22/1.5 G-PROBE (w/o CG) 90.5/0.37/ 0.2 | G-PROBE (CG) 91.5 /0.36 /0.2
+> SC++ 4.9/ 0.63 /2.0 | UniLGL †0.0/48.61/164.7 G-PROBE (w/o CG) 49.2/0.72/ 1.9 | G-PROBE (CG) 50.3 /0.71/ 1.9
+> SC++ 4.1/ 0.74 /1.4 | UniLGL †0.0/39.43/155.7 G-PROBE (w/o CG) 53.4/0.84/ 1.4 | G-PROBE (CG) 55.0 /0.83/ 1.4 Aeva ( 120 ◦)
+> SC++ 6.8/0.65/1.9 | UniLGL †0.0/74.53/164.7 G-PROBE (w/o CG) 39.2/0.63/ 1.8 | G-PROBE (CG) 40.6 /0.62 /1.8
+> SC++ 76.0 /0.35/ 0.3 | UniLGL †12.2/4.21/6.3 G-PROBE (w/o CG) 65.5/0.32/ 0.3 | G-PROBE (CG) 66.0/ 0.31 /0.3
+> SC++ 31.6/0.89/ 2.1 | UniLGL †0.2/17.39/53.7 G-PROBE (w/o CG) 41.1/ 0.86 /2.1 | G-PROBE (CG) 41.4 /0.86 /2.1 Avia ( 70 ◦)
+> SC++ 3.3/1.60/1.9 | UniLGL †0.0/–/– G-PROBE (w/o CG) 28.6/ 0.71 /1.5 | G-PROBE (CG) 29.1 /0.71 /1.4
+> SC++ 16.4/1.06/2.4 | UniLGL †0.2/10.30/27.0 G-PROBE (w/o CG) 21.5/ 0.94 /2.2 | G-PROBE (CG) 21.8 /0.94 /2.2
+> SC++ 71.3/ 0.39 /0.2 | UniLGL †25.3/2.34/3.0 G-PROBE (w/o CG) 78.7/ 0.39 /0.2 | G-PROBE (CG) 79.8 /0.39 /0.2
+> Riverside05 DB →Riverside06 Query (cross-day)
+> Ouster ( 360 ◦)
+> SC++ 65.5/ 0.17 /0.1 | UniLGL †37.1/1.34/1.0 G-PROBE (w/o CG) 80.4/ 0.17 /0.1 | G-PROBE (CG) 82.1 /0.17 /0.1
+> SC++ 2.7/ 0.78 /2.1 | UniLGL †0.0/46.85/123.1 G-PROBE (w/o CG) 24.8/0.81/ 1.8 | G-PROBE (CG) 25.4 /0.81/ 1.8
+> SC++ 3.6/0.86/ 1.5 | UniLGL †0.0/33.55/89.8 G-PROBE (w/o CG) 42.0/ 0.82 /1.5 | G-PROBE (CG) 42.2 /0.82 /1.5 Aeva ( 120 ◦)
+> SC++ 5.3/0.61/ 1.7 | UniLGL †0.0/32.03/151.5 G-PROBE (w/o CG) 21.9/ 0.58 /1.7 | G-PROBE (CG) 22.4 /0.58 /1.7
+> SC++ 53.8 /0.22/0.3 | UniLGL †6.1/6.97/12.2 G-PROBE (w/o CG) 47.3/ 0.21 /0.2 | G-PROBE (CG) 47.8/ 0.21 /0.2
+> SC++ 27.9/0.87/ 2.1 | UniLGL †0.3/26.00/57.6 G-PROBE (w/o CG) 29.6/ 0.86 /2.1 | G-PROBE (CG) 29.9 /0.86 /2.1 Avia ( 70 ◦)
+> SC++ 4.4/0.69/ 1.5 | UniLGL †0.0/47.64/133.6 G-PROBE (w/o CG) 15.8/0.65/ 1.5 | G-PROBE (CG) 16.3 /0.64 /1.5
+> SC++ 18.2 /0.91/2.3 | UniLGL †0.0/28.21/163.3 G-PROBE (w/o CG) 15.0/0.90/ 2.2 | G-PROBE (CG) 15.7/ 0.88 /2.2
+> SC++ 65.4 /0.23 /0.2 | UniLGL †12.2/3.86/4.8 G-PROBE (w/o CG) 58.8/0.27/ 0.2 | G-PROBE (CG) 59.4/0.27/ 0.2
+
+†: supervised (deep-learned). Diagonal = same-sensor (loop-closure). Off-diagonal = cross-sensor. The TE/RE medians are conditioned on each method’s correctly-retrieved set, whose size varies by more than an order of magnitude across methods (e.g. on Ouster →Avia, SC++ retrieves ∼20 pairs vs. G-PROBE’s ∼370 ). A low-recall baseline’s median therefore reflects only its few easiest retrievals, so Success, which conjoins retrieval and pose, is the unbiased metric. 
+
+all (the retrieval-only descriptors) cannot be scored end-to-end and appear at the place recognition level only (Tables III, IV, VI). Table IX reports the full 3×3 database ×query matrix. On the diagonal (same-sensor), G-PROBE attains the best success on both Ouster →Ouster blocks (91 .5% /82 .1% on KAIST/Riverside) and is competitive on the narrow diagonals (G-PROBE leads KAIST Avia, 79 .8% vs. SC++ 71 .3% , while SC++ leads the other three by ≤ 10 pp). Off-diagonal, the gap is pronounced. Baselines on the Ouster-paired cells already collapse at retrieval (success 0–7% ), the heading essentially unconstrained for the rare retrieved query (UniLGL median rotation 164 .7◦ on Ouster →Aeva), whereas G-PROBE both finds the place and recovers an accurate metric pose, reaching 
+
+55 .0% /0.83 m/ 1.4◦ on KAIST Ouster →Avia and 50 .3% on Ouster →Aeva, against ≤ 4.9% for all baselines, a 10 –13 ×
+
+gap over the best baseline. The same dominance holds on Riverside ( 16 –42% vs. ≤ 5.3% ). Only Aeva ↔Avia leaves a baseline partly functional (SC++ 16 –32% , ahead on one Riverside cell). A strong pose estimator cannot compensate for a query never retrieved, so on the wide ↔narrow pairings G-PROBE alone succeeds end-to-end. CG-GICP nonetheless matches or exceeds plain GICP in all 18 cells (mean +0 .7 pp). 
+
+H. Ablation Study: Column-Trimmed Aggregation 
+
+This ablation isolates the column-trim η (§IV-C, (14)), the robustness step that discards the η=10% highest-divergence azimuth columns before aggregation. Holding all other com-ponents fixed, we sweep η ∈ { 0, 0.05 , 0.1, 0.2, 0.3} (Table Xa) on the HeLiPR multi-session ( 05 →06 ) cells of both sites, where cross-day dynamic content differs most. The cross-FOV decomposition and FOV masking already provide the cross-sensor robustness. The symmetric BKL (PROBE’s divergence under the decomposition) reaches ∼0.38 
+
+AUC on KAIST’s wide ↔narrow cells (Table VI), where all external baselines drop to near-zero. The column-trim adds a further small, near-tuning-free gain. Pooled over both sites, the 0→0.05 trim raises the cross-sensor mean AUC by TABLE X: Scoring ablations. (a) Column-trim η (Mean AUC, HeLiPR both sites, multi-session 05 →06 ; same-sensor =
+
+diagonal, cross-sensor = off-diagonal). The score is robust to η
+
+(a ∼0.02 AUC band). We fix a conservative η=0 .1 rather than tune to the sweep maximum. (b) SGRT calibration over the twelve off-diagonal multi-session cells ( 7,416 revisit queries): flagged matches are several times less likely to be correct (an illustrative Pdom <0.9 grouping of a continuous down-weight; cf. Fig. 4). 
+
+(a) Column-trim η Same-sensor Cross-sensor 
+
+0 (no trim) .672 .272 
+
+0.05 .678 .282 
+
+0.1 (default) .677 .282 
+
+0.2 .677 .289 
+
+0.3 .677 .292 (b) Match group Queries Correct (TP) % Confident ( Pdom ≥ 0.9) 7,141 (96 .3% ) 30 .3
+
+SGRT-flagged ( Pdom < 0.9) 275 (3.7% ) 6.2
+
++0 .010 (same-sensor +0 .006 ) by rejecting the worst dynamic-object/occlusion columns, and the score then stays within a narrow band for η ∈ [0 .05 , 0.3] (cross-sensor rising a further 
+
+∼+0 .01 to its η=0 .3 maximum, Table Xa). Recall@1 is essentially unchanged (the ranking set by the decomposition). The effect is largest on the wide ↔narrow cross-sensor cells (e.g. +0 .05 AUC on KAIST Aeva →Ouster), where a few dynamic-object or occlusion columns would otherwise penal-ize a genuine match. The same-sensor effect is smaller, as static panoramic revisits carry little transient disagreement. 
+
+I. Ablation Study: SGRT 
+
+SGRT down-weights a match by its heading-uniqueness probability Pdom (18), suppressing heading aliasing. Such aliasing arises in rotationally near-symmetric scenes (open plazas, four-way intersections, feature-poor stretches), un-common in HeLiPR’s directional driving. SGRT therefore substantially down-weights only ∼3.7% of revisit queries and 16 
+
+TABLE XI: Hyperparameter ablations (HeLiPR KAIST05, single-session). (a) Virtual-sector count N forced on each 360 ◦ sensor, overriding N = max(1 , round(Φ /90 ◦))=4 .Cross-FOV Ouster →Aeva decomposes the database only (#b= max(1 ,  N
+
+> 2
+
+)), panoramic Ouster →Ouster both ( #b the branches retained after FOV gating). (b) Retrieval depth 
+
+K (360 ◦ database, kb=5 fixed). Best in bold , second best underlined, per column. The adopted N =4 / K=20 is bold in the first column.                                                                                  
+
+> (a) sector Ouster →Ouster (pano.) Ouster →Aeva (cross-FOV)
+> N(◦)R@1 AUC #bR@1 AUC #b
+> 1360 45.6 .385 126.0 .250 12180 45.6 .385 11.7 .007 13120 66.6 .595 931.3 .275 3
+> 490 88.6 .862 36 52.0 .488 6660 90.8 .858 189 46.7 .425 15 845 87.2 .750 528 51.1 .475 28 (b) Query 360 ◦(pano.) Query 120 ◦Query 90 ◦
+> KR@1 AUC R@1 AUC R@1 AUC 10 86.1 .841 64.3 .637 60.8 .598
+> 20 88.6 .862 74.4 .732 70.7 .690 30 89.2 .867 75.0 .737 71.0 .692
+
+leaves aggregate retrieval metrics essentially unchanged. The meaningful question is thus calibration rather than aggregate effect: whether the matches SGRT flags ( Pdom low) are the unreliable ones. Table X(b) answers this. Fig. 4(b) visualizes the calibration. The point-biserial correlation ρ(Pdom , TP) = +0 .15 (p < 
+
+10 −36 ) confirms the signal. SGRT flags matches several times less likely to be correct ( 6.2% vs. 30 .3% ): e.g. , a cross-session KAIST Ouster( 360 ◦)→Aeva( 120 ◦) query whose aliased top-1 lies 84 m from the true revisit scores comparably across its dominant heading axes, so the flattened Softmax (Pdom =0 .67 ) drives it below threshold. Disabling it shifts aggregate precision–recall within noise, and the score-scale-invariant ratio (18) gives identical results for κ ∈ { 10 , 15 , 20 }.
+
+J. Hyperparameter Ablations: Sector Count N and Retrieval Depth K
+
+Virtual-sector count N . The sector count is fixed by 
+
+N = max(1 , round(Φ /90 ◦)) (§IV-A), not tuned. Overriding it on two HeLiPR KAIST05 cells (Table XIa) confirms 
+
+N =4 as the cross-FOV optimum on all metrics and the panoramic accuracy–compute knee. Coarser ( N ≤3) and finer (N ≥6) settings both lose AUC, and N =2 collapses. Its single pair (  22
+
+=1 ) yields only one heading hypothesis (losing the heading diversity N ≥3 supplies), and its two 180 ◦ sectors sit off the cardinal axes, so a forward query falls on asector boundary. In the panoramic cell, decomposition supplies heading coverage. A single full-FOV branch ( N =1 ) cannot align reverse-/lateral-heading revisits (R@1 45 .6% ), whereas the N =4 heading ensemble tiles the circle ( 88 .6% ). Beyond the knee, N =6 adds only +2 .2 pp R@1 for 5.2× the branches and N =8 degrades, so the O(N 4) cost outweighs the marginal gain. TABLE XII: Front-End Runtime (median ms/query, single-threaded Intel Core i7): descriptor extraction + retrieval on the HeLiPR Ouster stream ( 1,294 -keyframe database). All methods share the same voxel downsampling, and the het-erogeneous pose stage is excluded (see text). Bold = fastest, underline = second.                          
+
+> Method Descriptor [ms] Retrieval [ms] Total [ms] SC++ [3] 715 22 SOLiD [8] 5<15
+> PROBE [11] 516
+> G-PROBE (K=10 )15 823
+> G-PROBE (K=20 , default) 15 11 26
+> G-PROBE (K=30 )15 14 29
+
+All learning-free and CPU-only on the same machine. The remaining baselines are GPU-bound (HeLiOS, UniLGL), 3-DoF planar (RING++, BEVPlace++), or dominated by PROBE on the dataset averages (M2DP, Iris, SC; Tables III–IV). Shortlist baselines share G-PROBE’s K=20 depth (inapplicable to SOLiD’s single global descriptor). The K sweep affects only the batched verification, folded into the Retrieval column. 
+
+Retrieval depth K. G-PROBE verifies the top-K vote-ranked candidates with the full FOV-weighted BKL score, all else fixed. Sweeping K from 10 to 30 across query FOVs (Table XIb) shows recall is far from saturated at K=10 
+
+and the margin grows with FOV asymmetry. K=20 recov-ers +9 .9/+10 .1 pp R@1 at 90 ◦/120 ◦ against only +2 .5 pp panoramic, because a cropped query’s true match is frequently ranked outside the top-10 by the rotation-robust ring-key vote yet wins decisively on geometric verification once shortlisted. The gain saturates (K=20 → 30 adds ≤0.6 pp), placing the accuracy–latency knee at the default K=20 (+∼3 ms, Table XII). 
+
+K. Computational Analysis 
+
+Despite enumerating O(N 4) cross-pair branches, the front-end runs in real time on a single CPU thread via three optimizations. (i) Collision-free hash voxelization. Quantized voxel coordinates are packed into a single integer key and de-duplicated with one unique call. (ii) Matrix–vector re-trieval. Each branch’s FOV-masked database ring keys form a contiguous matrix Kdb  
+
+> b
+
+, so all M similarities are one 
+
+O(M D ) product Kdb  
+
+> b
+
+kqb . (iii) Batched verification. Shortlisted candidates are scored as one (K, N r , N s) tensor, broadcasting the FFT alignment and trimmed-BKL reduction over the batch rather than per-candidate looping. G-PROBE’s front-end totals ∼26 ms per keyframe at the default K=20 on the HeLiPR Ouster 360 ◦ stream (single thread, ∼38 Hz): voxel downsampling ∼8 ms, BEV construc-tion over the six pairs ∼4 ms, batched BKL scoring ∼9 ms over the K candidates, and the rest for sector assignment, ring-key extraction, retrieval, and SGRT. The conditional CG-GICP back-end ( ∼200 ms on a dense 360 ◦ keyframe, 
+
+∼100 ms on a 70 ◦ Avia query) is triggered only on the top-1 candidate passing the front-end threshold, amortizing to 
+
+< 5 ms per keyframe when triggers are sparse (the loop-closure setting). Table XII shows this is comparable to SC++ (22 ms). The lighter SOLiD/PROBE are faster but retrieval-only or symmetric-FOV, whereas G-PROBE adds full cross-FOV metric localization. 17 
+
+VII. D ISCUSSION 
+
+A. Why Baselines Fail and G-PROBE Generalizes 
+
+Polar descriptors (SC [2], SC++ [3], SOLiD [8]) fail un-der asymmetric FOV truncation. Empty sectors violate the column-shift rotation assumption and act as out-of-distribution noise. Learned models (BEVPlace++ [32], UniLGL [7]) rely on a fully-populated BEV grid that half-empties under asym-metry (a training-distribution shift), yet recover once the FOV is shared (§VI-E). G-PROBE circumvents both. Probabilistic BEV modeling scores occupancy distributions directly, so the BKL score needs neither the column-shift rotation assumption nor a fully-populated grid, and virtual-sensor decomposition recovers the overlap under any heading and FOV. 
+
+B. Certainty Coupling and Score-Scale Invariance 
+
+Recognition and registration need not be independent. CG-GICP reuses the certainty map already computed by the front-end to refine translation on only the co-observed regions, suppressing the one-sided FOV-boundary correspondences that bias the fit. Its benefit is worst-case rather than typical (§VI-F). Independently, γ-SGRT depends on score ratios, not magni-tudes, so equivalent scenes yield identical Pdom across FOVs (18), needing no tuning. 
+
+C. Implications for Lifelong Place Recognition 
+
+G-PROBE handles long-term change without explicit change detection or retraining, which we attribute to two complementary mechanisms. The column-wise trimmed BKL aggregation absorbs localized structural change. Demolished or added structure raises occupancy divergence over a narrow azimuthal range, which the trimming step (14) discards while stable structure anchors the score. The BKL score itself is, in turn, comparatively robust to global point-level degradation (weather, seasonal change) that no trimming could localize. On the multi-session benchmarks, G-PROBE sustains F1 = 0 .952 
+
+on SNAIL across a 46-day gap and an extreme weather change (clear → heavy rain), and F1 = 0 .811 on NCLT over gaps reaching 10 months (Table IV). It leads the learning-free methods on the multi-session average and outperforms the supervised UniLGL and HeLiOS there, though BEVPlace++ retains the overall lead (Table IV). 
+
+D. Limitations and Future Work 
+
+(1) Discrete heading hypotheses. The heading hypothe-ses are quantized at ∆step intervals, so at oblique inter-section angles the system conservatively rejects ambigu-ous matches. Continuous heading estimation via polar BEV cross-correlation remains future work. When both query and database reduce to a single virtual sensor ( |A| =1 , narrowest-to-narrowest), Pdom ≡1 leaves γ-SGRT inert, the degenerate case where aliasing suppression rests on the raw match score alone (Remark 1). 
+
+(2) Registration scope. CG-GICP applies the certainty map as a hard source filter. Soft certainty-weighted covariance scaling inside the GICP objective is future work. Its 6-DoF accuracy is benchmarked on HeLiPR, whose motion is planar-dominant (the ground truth is full SE(3) and CG-GICP assumes no planarity). A dedicated non-planar registration benchmark is left open, with legged-platform generalization shown at the place recognition level (§VI-E). 
+
+(3) Scope and tuning. G-PROBE is deliberately learning-free. A hybrid that pairs learned retrieval features with its geometric scoring could improve recall in point-sparse scenes. Only the single score threshold needs environment-level tun-ing (standard for place recognition [2], [3]). The remaining parameters stay fixed across all sequences. The decomposition (Definition 1) applies identically to physically distinct multi-LiDAR rigs. Their evaluation, and aerial platforms, are de-ferred to future work. G-PROBE’s single-shot 6-DoF output can initialize sequential or Monte-Carlo back-ends, which we do not evaluate. 
+
+(4) Absolute cross-sensor performance. While G-PROBE is the only method to retain signal across all cross-sensor pairings, its absolute recall there remains modest (R@1 ∼25– 55%, AUC 0.2–0.5): it establishes a usable operating point for cross-sensor place recognition, not a solved problem. The hardest regime is the narrow ↔narrow pair (Aeva ↔Avia), which co-observes at most the Avia’s 70 ◦ arc ( ∼19% of the azimuth), limiting the independent structure available for matching. Tighter cross-modal matching remains open. 
+
+(5) Multiplicative scoring. The veto form of the branch score (15) rejects partial false positives, but conversely a single corrupted channel (transient occupancy, a dynamic object, or height noise) can suppress an otherwise genuine match, a false-negative risk we do not explicitly mitigate. VIII. C ONCLUSION 
+
+We presented G-PROBE, a certainty-coupled descriptor– registration architecture for global localization from 3D point clouds, independent of the physical sensor count by construc-tion (Definition 1). The contributions are: (1) a cross-FOV ensemble framework whose virtual sensor decomposition unifies multi-sensor rigs and panoramic sensors, with a γ-SGRT that provably atten-uates symmetric aliasing while preserving unambiguous true positives (Proposition 1, Corollary 1); (2) certainty-coupled CG-GICP, where the front-end’s BEV certainty maps anchor refinement on co-observed structure without an external ver-ifier; and (3) a cross-FOV evaluation protocol with FOV co-visibility ground truth across five datasets. Across KITTI, NCLT, HeLiPR, SNAIL, and GrandTour, G-PROBE achieves the highest average multi-session F1 among learning-free methods (over the NCLT/HeLiPR/SNAIL pairs), competitive single-session AUC, and up to 55 .0% vs. ≤6.8% 
+
+end-to-end wide ↔narrow cross-sensor localization success. CG-GICP attains the best average cross-sensor registration success ( 96 .1% ) with the tightest worst-case translation (TE 95 :
+
+1.4 m vs. 1.5 m for uncoupled GICP and 2.5 m for P2P-ICP). REFERENCES [1] D. Gálvez-López and J. D. Tardós, “Bags of binary words for fast place recognition in image sequences,” IEEE Trans. Robot. , vol. 28, no. 5, pp. 1188–1197, 2012. 18 
+
+[2] G. Kim and A. Kim, “Scan Context: Egocentric spatial descriptor for place recognition within 3D point cloud map,” in Proc. IEEE/RSJ IROS ,2018, pp. 4802–4809. [3] G. Kim, S. Choi, and A. Kim, “Scan Context++: Structural place recog-nition robust to rotation and lateral variations in urban environments,” 
+
+IEEE Trans. Robot. , vol. 38, no. 3, pp. 1856–1874, 2022. [4] H. Yin et al. , “A survey on global LiDAR localization: Challenges, advances and open problems,” Int. J. Comput. Vis. , vol. 132, no. 8, pp. 3139–3171, 2024. [5] M. Jung, S. Jung, H. Gil, and A. Kim, “HeLiOS: Heterogeneous LiDAR place recognition via overlap-based learning and local spherical transformer,” in Proc. IEEE ICRA , 2025, pp. 2204–2211. [6] X. Chen et al. , “OverlapNet: Loop closing for LiDAR-based SLAM,” in Proc. RSS , 2020. [7] H. Shen et al. , “UniLGL: Learning uniform place recognition for FOV-limited/panoramic LiDAR global localization,” IEEE Trans. Robot. ,vol. 42, pp. 1556–1576, 2026. [8] H. Kim, J. Choi, T. Sim, G. Kim, and Y. Cho, “Narrowing your FOV with SOLiD: Spatially organized and lightweight global descriptor for FOV-constrained LiDAR place recognition,” IEEE Robot. Autom. Lett. ,vol. 9, no. 11, pp. 9645–9652, 2024. [9] T. Tuna et al. , “X-ICP: Localizability-aware LiDAR registration for ro-bust localization in extreme environments,” IEEE Trans. Robot. , vol. 40, pp. 452–471, 2024. [10] D. Lee, H. Lim, and S. Han, “GenZ-ICP: Generalizable and degeneracy-robust LiDAR odometry using an adaptive weighting,” IEEE Robot. Autom. Lett. , vol. 10, no. 1, pp. 152–159, 2025. [11] J. Lee, B. Lee, and G. Yoo, “PROBE: Probabilistic occu-pancy BEV encoding with analytical translation robustness for 3D place recognition,” IEEE Robot. Autom. Lett. , early access, 2026, doi: 10.1109/LRA.2026.3703245. [12] B. Steder, G. Grisetti, and W. Burgard, “Robust place recognition for 3D range data based on point features,” in Proc. IEEE ICRA , 2010, pp. 1400–1405. [13] M. Bosse and R. Zlot, “Place recognition using keypoint voting in large 3D lidar datasets,” in Proc. IEEE ICRA , 2013, pp. 2677–2684. [14] L. He, X. Wang, and H. Zhang, “M2DP: A novel 3D point cloud descriptor and its application in loop closure detection,” in Proc. IEEE/RSJ IROS , 2016, pp. 231–237. [15] Y. Wang et al. , “LiDAR Iris for loop-closure detection,” in Proc. IEEE/RSJ IROS , 2020, pp. 5769–5775. [16] K. P. Cop, P. V. K. Borges, and R. Dubé, “DELIGHT: An efficient descriptor for global localisation using LiDAR intensities,” in Proc. IEEE ICRA , 2018, pp. 3653–3660. [17] H. Wang, C. Wang, and L. Xie, “Intensity scan context: Coding intensity and geometry relations for loop closure detection,” in Proc. IEEE ICRA ,2020, pp. 2095–2101. [18] Y. Cui, X. Chen, Y. Zhang, J. Dong, Q. Wu, and F. Zhu, “BoW3D: Bag of words for real-time loop closing in 3D LiDAR SLAM,” IEEE Robot. Autom. Lett. , vol. 8, no. 5, pp. 2828–2835, 2023. [19] S. Lu, X. Xu, H. Yin, Z. Chen, R. Xiong, and Y. Wang, “One RING to rule them all: Radon sinogram for place recognition, orientation and translation estimation,” in Proc. IEEE/RSJ IROS , 2022, pp. 2778–2785. [20] X. Xu et al. , “RING++: Roto-translation invariant Gram for global localization on a sparse scan map,” IEEE Trans. Robot. , vol. 39, no. 6, pp. 4616–4635, 2023. [21] S. Lu et al. , “RING#: PR-by-PE global localization with roto-translation equivariant Gram learning,” IEEE Trans. Robot. , vol. 41, pp. 1861–1881, 2025. [22] C. Yuan, J. Lin, Z. Zou, X. Hong, and F. Zhang, “STD: Stable triangle descriptor for 3D place recognition,” in Proc. IEEE ICRA , 2023, pp. 1897–1903. [23] C. Yuan, J. Lin, Z. Liu, H. Wei, X. Hong, and F. Zhang, “BTC: A binary and triangle combined descriptor for 3-D place recognition,” IEEE Trans. Robot. , vol. 40, pp. 1580–1599, 2024. [24] Y. Zhang, P. Shi, and J. Li, “LiDAR-based place recognition for autonomous driving: A survey,” ACM Comput. Surv. , vol. 57, no. 4, Art. no. 106, 2024. [25] R. Arandjelovi´ c, P. Gronat, A. Torii, T. Pajdla, and J. Sivic, “NetVLAD: CNN architecture for weakly supervised place recognition,” in Proc. IEEE CVPR , 2016, pp. 5297–5307. [26] M. A. Uy and G. H. Lee, “PointNetVLAD: Deep point cloud based retrieval for large-scale place recognition,” in Proc. IEEE CVPR , 2018, pp. 4470–4479. [27] Z. Liu et al. , “LPD-Net: 3D point cloud learning for large-scale place recognition and environment analysis,” in Proc. IEEE/CVF ICCV , 2019, pp. 2831–2840. [28] J. Komorowski, “MinkLoc3D: Point cloud based large-scale place recognition,” in Proc. IEEE/CVF WACV , 2021, pp. 1789–1798. [29] K. Vidanapathirana et al. , “LoGG3D-Net: Locally guided global de-scriptor learning for 3D place recognition,” in Proc. IEEE ICRA , 2022, pp. 2215–2221. [30] X. Xu et al. , “DiSCO: Differentiable scan context with orientation,” 
+
+IEEE Robot. Autom. Lett. , vol. 6, no. 2, pp. 2791–2798, 2021. [31] J. Ma, J. Zhang, J. Xu, R. Ai, W. Gu, and X. Chen, “OverlapTransformer: An efficient and yaw-angle-invariant transformer network for LiDAR-based place recognition,” IEEE Robot. Autom. Lett. , vol. 7, no. 3, pp. 6958–6965, 2022. [32] L. Luo et al. , “BEVPlace++: Fast, robust, and lightweight LiDAR global localization for unmanned ground vehicles,” IEEE Trans. Robot. , vol. 41, pp. 4479–4498, 2025. [33] Y. Xia et al. , “CASSPR: Cross attention single scan place recognition,” in Proc. IEEE/CVF ICCV , 2023, pp. 8427–8438. [34] J. Komorowski, M. Wysocza´ nska, and T. Trzci´ nski, “EgoNN: Egocentric neural network for point cloud based 6DoF relocalization at the city scale,” IEEE Robot. Autom. Lett. , vol. 7, no. 2, pp. 722–729, 2022. [35] S. Gupta et al. , “Efficiently closing loops in LiDAR-based SLAM using point cloud density maps,” Int. J. Robot. Res. , 2026. [36] H. Kim, M. Jung, W. Yang, and A. Kim, “SHeRLoc: Synchronized heterogeneous radar place recognition for cross-modal localization,” 
+
+IEEE Robot. Autom. Lett. , vol. 10, no. 12, pp. 13264–13271, 2025. [37] P. J. Besl and N. D. McKay, “A method for registration of 3-D shapes,” 
+
+IEEE Trans. Pattern Anal. Mach. Intell. , vol. 14, no. 2, pp. 239–256, 1992. [38] A. Segal, D. Haehnel, and S. Thrun, “Generalized-ICP,” in Proc. RSS ,2009. [39] J. Zhang, M. Kaess, and S. Singh, “On degeneracy of optimization-based state estimation problems,” in Proc. IEEE ICRA , 2016, pp. 809–816. [40] I. Vizzo et al. , “KISS-ICP: In defense of point-to-point ICP – Simple, accurate, and robust registration if done the right way,” IEEE Robot. Autom. Lett. , vol. 8, no. 2, pp. 1029–1036, 2023. [41] K. Ebadi et al. , “DARE-SLAM: Degeneracy-aware and resilient loop closing in perceptually-degraded environments,” J. Intell. Robot. Syst. ,vol. 102, no. 1, Art. no. 2, 2021. [42] H. Yang, J. Shi, and L. Carlone, “TEASER: Fast and certifiable point cloud registration,” IEEE Trans. Robot. , vol. 37, no. 2, pp. 314–333, 2021. [43] X. Zhang, J. Yang, S. Zhang, and Y. Zhang, “3D registration with maximal cliques,” in Proc. IEEE/CVF CVPR , 2023, pp. 17745–17754. [44] H. Lim et al. , “A single correspondence is enough: Robust global registration to avoid degeneracy in urban environments,” in Proc. IEEE ICRA , 2022, pp. 8010–8017. [45] Z. Qiao, Z. Yu, B. Jiang, H. Yin, and S. Shen, “G3Reg: Pyramid graph-based global registration using Gaussian ellipsoid model,” IEEE Trans. Autom. Sci. Eng. , vol. 22, pp. 3416–3432, 2025. [46] S. Huang, Z. Gojcic, M. Usvyatsov, A. Wieser, and K. Schindler, “PREDATOR: Registration of 3D point clouds with low overlap,” in 
+
+Proc. IEEE/CVF CVPR , 2021, pp. 4267–4276. [47] Z. Qin et al. , “Geometric transformer for fast and robust point cloud registration,” in Proc. IEEE/CVF CVPR , 2022, pp. 11143–11152. [48] D. Cattaneo, M. Vaghi, and A. Valada, “LCDNet: Deep loop closure detection and point cloud registration for LiDAR SLAM,” IEEE Trans. Robot. , vol. 38, no. 4, pp. 2074–2093, 2022. [49] T. Shan et al. , “LIO-SAM: Tightly-coupled lidar inertial odometry via smoothing and mapping,” in Proc. IEEE/RSJ IROS , 2020, pp. 5135– 5142. [50] W. Xu et al. , “FAST-LIO2: Fast direct LiDAR-inertial odometry,” IEEE Trans. Robot. , vol. 38, no. 4, pp. 2053–2073, 2022. [51] J. Lin et al. , “ImMesh: An immediate LiDAR localization and meshing framework,” IEEE Trans. Robot. , vol. 39, no. 6, pp. 4312–4331, 2023. [52] D. G. Lowe, “Distinctive image features from scale-invariant keypoints,” 
+
+Int. J. Comput. Vis. , vol. 60, no. 2, pp. 91–110, 2004. [53] A. Geiger, P. Lenz, and R. Urtasun, “Are we ready for autonomous driving? The KITTI vision benchmark suite,” in Proc. IEEE CVPR ,2012, pp. 3354–3361. [54] N. Carlevaris-Bianco, A. K. Ushani, and R. M. Eustice, “University of Michigan North Campus long-term vision and lidar dataset,” Int. J. Robot. Res. , vol. 35, no. 9, pp. 1023–1035, 2016. [55] M. Jung et al. , “HeLiPR: Heterogeneous LiDAR dataset for inter-LiDAR place recognition under spatiotemporal variations,” Int. J. Robot. Res. ,vol. 43, no. 12, pp. 1867–1883, 2024. [56] J. Huai et al. , “SNAIL radar: A large-scale diverse benchmark for evaluating 4D-radar-based SLAM,” Int. J. Robot. Res. , vol. 44, no. 12, pp. 1941–1958, 2025. [57] J. Frey et al. , “GrandTour: A legged robotics dataset in the wild for multi-modal perception and state estimation,” arXiv:2602.18164, 2026.

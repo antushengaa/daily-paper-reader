@@ -6,31 +6,27 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-11
-- 运行时间：2026-07-11 21:07:26 UTC
+- 最新运行日期：2026-07-12
+- 运行时间：2026-07-12 20:28:53 UTC
 - 运行状态：成功
-- 本次总论文数：3
-- 精读区：1
+- 本次总论文数：2
+- 精读区：0
 - 速读区：2
 
 ### 今日简报（AI）
-今日精读《D-CLIPSE: 基于分布式共识与被动监听的定位方法》（8.0分），速读《圆形期望值》（7.0分）与《多RIS优化部署：不均匀用户分布下的覆盖保证和速率最大化》（6.0分）。  
-最值得关注的方向是分布式共识与被动监听结合的定位新范式，以及圆形期望值在统计中的新理论。  
-建议读者优先研读精读论文的源码和实验设定，再结合速读论文中的RIS部署方法，思考融合定位与通信的潜在应用。
-- 详情：[/202607/11/README](/202607/11/README)
+今日阅读2篇论文，速读评分均为6.0/10。最值得关注的方向是神经网络在声学共振预测中的应用，以及3D点云的跨视角定位方法。建议进一步了解这两类技术在工程仿真和机器人导航中的实际表现。
+- 详情：[/202607/12/README](/202607/12/README)
 
 ### 精读区论文标签
-1. [D-CLIPSE: Distributed Consensus-based Localization with Passive Listening on Shared State Exchange](/202607/11/2607.07995v1-d-clipse-distributed-consensus-based-localization-with-passive-listening-on-shared-state-exchange)  
-   标签：评分：8.0/10、query:gso
-   evidence：基于被动侦听的一致分布式定位
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Circular Expectiles](/202607/11/2607.08306v1-circular-expectiles)  
-   标签：评分：7.0/10、query:gso
-   evidence：非凸圆形优化
-2. [Optimal Multi-RIS Placement: Coverage-Guaranteed Sum Rate Maximization Under Inhomogeneous User Distributions](/202607/11/2607.07990v1-optimal-multi-ris-placement-coverage-guaranteed-sum-rate-maximization-under-inhomogeneous-user-distributions)  
+1. [Quadrature-Aware Complex-Linear Neural Operator for Boundary-to-Field Prediction in Resonant Acoustics](/202607/12/2607.04407v1-quadrature-aware-complex-linear-neural-operator-for-boundary-to-field-prediction-in-resonant-acoustics)  
    标签：评分：6.0/10、query:gso
-   evidence：提出多层非凸优化问题求解RIS部署
+   evidence：边界激励到声场预测
+2. [G-PROBE: Cross-FOV Place Recognition and Certainty-Coupled Localization for 3D Point Clouds](/202607/12/2607.06782v1-g-probe-cross-fov-place-recognition-and-certainty-coupled-localization-for-3d-point-clouds)  
+   标签：评分：6.0/10、query:gso
+   evidence：3D点云中的传感器对齐与定位
 
 
 <div class="dpr-home-promo-card">
