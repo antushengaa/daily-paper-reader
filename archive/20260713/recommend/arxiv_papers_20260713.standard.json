@@ -1,0 +1,100 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-13T21:12:19.433095+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.07733v1",
+      "source": "arxiv",
+      "title": "A Self-Supervised Approach for Minimal-Annotation Hydroacoustic Data Exploration",
+      "abstract": "Passive hydroacoustic monitoring often generates large volumes of continuous recordings that are only partially exploited due to the cost of manual annotation. Supervised detection methods perform well but require large labeled datasets, seldom available for rare signals or understudied environments. This work proposes a self-supervised exploration pipeline to address this limitation in low-frequency settings. A Masked AutoEncoder (MAE) is pre-trained on a reconstruction pretext task, then used to extract patch-level representations from spectrograms. Within each spectrogram, adjacent informative patches are aggregated into event-level embeddings, enabling the disentanglement of overlapping events. These embeddings are then clustered at the dataset scale using the dimension reduction algorithm UMAP and the clustering algorithm HDBSCAN to identify hydroacoustic patterns. The pipeline was applied to a multi-year hydroacoustic dataset collected near Mayotte Island, Indian Ocean, containing marine mammal vocalizations, seismo-volcanic signals, and anthropogenic noise. The 317 clusters were manually mapped to 15 hydroacoustic classes or noise in less than one hour. The method was evaluated in two ways. Quantitatively, when used as a classifier, it achieved performance comparable to two existing detectors. Qualitatively, it recovered known seasonal patterns of marine mammal acoustic activity. It also identified patterns of previously unstudied signals, thereby demonstrating its practical value.",
+      "authors": [
+        "Pierre-Yves Raumer",
+        "Axel Marmoret",
+        "Dorian Cazau",
+        "Anatole Gros-Martial",
+        "Richard Dreo",
+        "Maelle Torterotot",
+        "Sara Bazin",
+        "Flore Samaran",
+        "Jean-Yves Royer"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.LG"
+      ],
+      "published": "2026-07-07T07:47:16+00:00",
+      "link": "https://arxiv.org/pdf/2607.07733v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "self-supervised learning on acoustic spectrograms for event discovery",
+      "llm_evidence_cn": "自监督学习处理声学谱图，用于事件发现",
+      "llm_evidence": "自监督学习处理声学谱图，用于事件发现",
+      "canonical_evidence": "自监督学习处理声学谱图，用于事件发现",
+      "llm_tldr_en": "Self-supervised pipeline for hydroacoustic data exploration using masked autoencoder, patch-level representations and clustering, enabling event discovery with minimal annotation.",
+      "llm_tldr_cn": "该论文针对被动水声监测中标注数据稀缺的问题，提出了一种自监督探索流水线。该方法首先在谱图上预训练掩码自编码器（MAE）进行重构任务，提取块级表示，然后聚合相邻有效块为事件级嵌入，最后通过聚类实现事件探索。在低频谱图数据上，该方法有效分离了重叠事件，无需大量标注即可发现信号模式。这项工作为水声数据的低标注成本分析提供了新途径。",
+      "llm_tldr": "该论文针对被动水声监测中标注数据稀缺的问题，提出了一种自监督探索流水线。该方法首先在谱图上预训练掩码自编码器（MAE）进行重构任务，提取块级表示，然后聚合相邻有效块为事件级嵌入，最后通过聚类实现事件探索。在低频谱图数据上，该方法有效分离了重叠事件，无需大量标注即可发现信号模式。这项工作为水声数据的低标注成本分析提供了新途径。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.08045v1",
+      "source": "arxiv",
+      "title": "RadioDiff-v2: Generative Angular Radio Maps for Multi-Beam Selection and Localization",
+      "abstract": "Angular radio maps describe the received-power distribution over the angle of arrival and underpin beam selection and receiver localization in sixth-generation (6G) networks. Predicting the angular power spectrum (APS) from geometry is difficult, because the mapping is ill-posed in non-line-of-sight (NLOS) conditions and must generalize to unseen environments. Distortion-minimizing regressors return the conditional mean, which over-smooths the spectrum and erases the multipath structure that downstream tasks need. We cast the task as a perception-distortion problem and propose RadioDiff-v2, a dual-branch one-dimensional diffusion transformer trained with flow matching. It couples periodic angular encoding, adaptive layer-normalization conditioning, a Fourier angular mixer, and joint velocity and clean-signal heads. A per-metric estimator portfolio reads every deployment quantity from this single model, so that samples carry the distribution, the clean-signal head supplies a regression-grade point estimate, Bayes-optimal rules select beams, and the conditional likelihood localizes the receiver. We prove that a concentrated conditional yields a straight probability-flow trajectory that one step integrates exactly, identifying deterministic transport as the correct inductive bias. On a zero-shot test of 99 environments and one million links, RadioDiff-v2 leads every baseline on every metric, with a 0.39 dB Wasserstein-1 distance, per-bin error below the regression baseline, a 2.43 dB eight-beam NLOS sweep loss, and a 20.6-pixel localization error with four base stations. Code is available at https://github.com/UNIC-Lab/RadioDiff-v2.",
+      "authors": [
+        "Xiucheng Wang",
+        "Junxi Huang",
+        "Nan Cheng"
+      ],
+      "primary_category": "cs.IT",
+      "categories": [
+        "cs.IT",
+        "cs.LG",
+        "eess.SP"
+      ],
+      "published": "2026-07-09T01:48:47+00:00",
+      "link": "https://arxiv.org/pdf/2607.08045v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "generative angular radio maps for beam selection and localization using array processing",
+      "llm_evidence_cn": "生成角度无线电地图用于波束选择和定位，涉及阵列处理",
+      "llm_evidence": "生成角度无线电地图用于波束选择和定位，涉及阵列处理",
+      "canonical_evidence": "生成角度无线电地图用于波束选择和定位，涉及阵列处理",
+      "llm_tldr_en": "Proposes RadioDiff-v2, a diffusion transformer for generative angular radio maps from geometry, enabling multi-beam selection and receiver localization in 6G networks.",
+      "llm_tldr_cn": "该论文提出RadioDiff-v2，一种双分支一维扩散变压器，通过流匹配生成角度功率谱，解决非视距条件下映射不适定问题。该方法将角度无线电地图生成视为感知-失真问题，显著保留多径结构，从而提升波束选择和定位精度。虽用于无线通信，但其阵列角度估计与生成方法对声源定位中的DOA估计具有直接借鉴意义。",
+      "llm_tldr": "该论文提出RadioDiff-v2，一种双分支一维扩散变压器，通过流匹配生成角度功率谱，解决非视距条件下映射不适定问题。该方法将角度无线电地图生成视为感知-失真问题，显著保留多径结构，从而提升波束选择和定位精度。虽用于无线通信，但其阵列角度估计与生成方法对声源定位中的DOA估计具有直接借鉴意义。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

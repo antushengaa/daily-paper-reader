@@ -1,0 +1,39 @@
+{
+  "label": "2026-07-13",
+  "date": "2026-07-13",
+  "generated_at": "2026-07-13T21:14:12",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202607/13/2607.07733v1-a-self-supervised-approach-for-minimal-annotation-hydroacoustic-data-exploration",
+      "section": "quick",
+      "title_en": "A Self-Supervised Approach for Minimal-Annotation Hydroacoustic Data Exploration",
+      "authors": "Pierre-Yves Raumer, Axel Marmoret, Dorian Cazau, Anatole Gros-Martial, Richard Dreo, Maelle Torterotot, Sara Bazin, Flore Samaran, Jean-Yves Royer",
+      "date": "2026-07-07",
+      "pdf": "https://arxiv.org/pdf/2607.07733v1",
+      "score": "6.0",
+      "evidence": "自监督学习处理声学谱图，用于事件发现",
+      "tldr": "被动水声监测数据量大，人工标注成本高。本文提出自监督探索流程，先预训练掩码自编码器重建频谱图，提取patch嵌入并聚合为事件级表示，再通过UMAP降维和HDBSCAN聚类。应用于含海洋哺乳动物、地震火山和人为噪声的多类数据集，317个簇手动映射为15类仅需1小时，分类性能与监督方法相当，并发现已知和未知的信号模式。为少标注水声数据分析提供有效方案。",
+      "tags": "query:gso",
+      "abstract_en": "Passive hydroacoustic monitoring often generates large volumes of continuous recordings that are only partially exploited due to the cost of manual annotation. Supervised detection methods perform well but require large labeled datasets, seldom available for rare signals or understudied environments. This work proposes a self-supervised exploration pipeline to address this limitation in low-frequency settings. A Masked AutoEncoder (MAE) is pre-trained on a reconstruction pretext task, then used to extract patch-level representations from spectrograms. Within each spectrogram, adjacent informative patches are aggregated into event-level embeddings, enabling the disentanglement of overlapping events. These embeddings are then clustered at the dataset scale using the dimension reduction algorithm UMAP and the clustering algorithm HDBSCAN to identify hydroacoustic patterns. The pipeline was applied to a multi-year hydroacoustic dataset collected near Mayotte Island, Indian Ocean, containing marine mammal vocalizations, seismo-volcanic signals, and anthropogenic noise. The 317 clusters were manually mapped to 15 hydroacoustic classes or noise in less than one hour. The method was evaluated in two ways. Quantitatively, when used as a classifier, it achieved performance comparable to two existing detectors. Qualitatively, it recovered known seasonal patterns of marine mammal acoustic activity. It also identified patterns of previously unstudied signals, thereby demonstrating its practical value.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/13/2607.08045v1-radiodiff-v2-generative-angular-radio-maps-for-multi-beam-selection-and-localization",
+      "section": "quick",
+      "title_en": "RadioDiff-v2: Generative Angular Radio Maps for Multi-Beam Selection and Localization",
+      "authors": "Xiucheng Wang, Junxi Huang, Nan Cheng",
+      "date": "2026-07-09",
+      "pdf": "https://arxiv.org/pdf/2607.08045v1",
+      "score": "6.0",
+      "evidence": "生成角度无线电地图用于波束选择和定位，涉及阵列处理",
+      "tldr": "针对6G网络中角度无线电地图预测在非视距条件下映射不适定、传统回归器过度平滑丢失多径结构的问题，提出RadioDiff-v2双分支一维扩散Transformer，采用流匹配训练、周期性角度编码和自适应层归一化，同时输出速度头和干净信号头。在99个环境的零样本测试中，所有指标超越基线，Wasserstein距离0.39 dB，八波束非视距扫描损失2.43 dB，四基站定位误差20.6像素。该方法通过可微分概率流支持贝叶斯最优波束选择和定位，证明确定性传输是正确归纳偏置。",
+      "tags": "query:gso",
+      "abstract_en": "Angular radio maps describe the received-power distribution over the angle of arrival and underpin beam selection and receiver localization in sixth-generation (6G) networks. Predicting the angular power spectrum (APS) from geometry is difficult, because the mapping is ill-posed in non-line-of-sight (NLOS) conditions and must generalize to unseen environments. Distortion-minimizing regressors return the conditional mean, which over-smooths the spectrum and erases the multipath structure that downstream tasks need. We cast the task as a perception-distortion problem and propose RadioDiff-v2, a dual-branch one-dimensional diffusion transformer trained with flow matching. It couples periodic angular encoding, adaptive layer-normalization conditioning, a Fourier angular mixer, and joint velocity and clean-signal heads. A per-metric estimator portfolio reads every deployment quantity from this single model, so that samples carry the distribution, the clean-signal head supplies a regression-grade point estimate, Bayes-optimal rules select beams, and the conditional likelihood localizes the receiver. We prove that a concentrated conditional yields a straight probability-flow trajectory that one step integrates exactly, identifying deterministic transport as the correct inductive bias. On a zero-shot test of 99 environments and one million links, RadioDiff-v2 leads every baseline on every metric, with a 0.39 dB Wasserstein-1 distance, per-bin error below the regression baseline, a 2.43 dB eight-beam NLOS sweep loss, and a 20.6-pixel localization error with four base stations. Code is available at https://github.com/UNIC-Lab/RadioDiff-v2.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

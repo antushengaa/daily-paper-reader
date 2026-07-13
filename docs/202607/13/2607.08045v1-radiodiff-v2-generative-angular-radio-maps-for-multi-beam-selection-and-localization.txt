@@ -1,0 +1,789 @@
+Title: RadioDiff-v2: Generative Angular Radio Maps for Multi-Beam Selection and Localization
+
+URL Source: https://arxiv.org/pdf/2607.08045v1
+
+Published Time: Fri, 10 Jul 2026 00:29:04 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+> 1
+
+# RadioDiff-v2: Generative Angular Radio Maps for Multi-Beam Selection and Localization 
+
+Xiucheng Wang, Junxi Huang, Nan Cheng 
+
+Abstract —Angular radio maps describe the received-power distribution over the angle of arrival and underpin beam selection and receiver localization in sixth-generation (6G) networks. Predicting the angular power spectrum (APS) from geometry is difficult, because the mapping is ill-posed in non-line-of-sight (NLOS) conditions and must generalize to unseen environments. Distortion-minimizing regressors return the conditional mean, which over-smooths the spectrum and erases the multipath structure that downstream tasks need. We cast the task as a perception-distortion problem and propose RadioDiff-v2, a dual-branch one-dimensional diffusion transformer trained with flow matching. It couples periodic angular encoding, adaptive layer-normalization conditioning, a Fourier angular mixer, and joint velocity and clean-signal heads. A per-metric estimator portfolio reads every deployment quantity from this single model, so that samples carry the distribution, the clean-signal head supplies a regression-grade point estimate, Bayes-optimal rules select beams, and the conditional likelihood localizes the receiver. We prove that a concentrated conditional yields a straight probability-flow trajectory that one step integrates exactly, iden-tifying deterministic transport as the correct inductive bias. On a zero-shot test of 99 environments and one million links, RadioDiff-v2 leads every baseline on every metric, with a 0.39 dB Wasserstein-1 distance, per-bin error below the regression baseline, a 2.43 dB eight-beam NLOS sweep loss, and a 20.6-pixel localization error with four base stations. Code is available at https://github.com/UNIC-Lab/RadioDiff-v2. 
+
+Index Terms —Radio map, angular power spectrum, flow matching, diffusion model, beam selection, localization, 6G. 
+
+I. I NTRODUCTION 
+
+The angular structure of the wireless channel governs how a base station forms beams and where it places nulls. Sixth-generation (6G) systems push toward higher carriers and large antenna arrays, where directional transmission is the dominant source of link gain [1], [2]. A station that knows the angular power spectrum (APS) at a candidate receiver location can steer toward the strongest arrival before any pilot exchange. The same angular knowledge underpins beam management, interference avoidance, and device localization in dense cells. A radio map, also called a channel knowledge map, stores such location-dependent channel descriptors over space so that a station can query them offline [3]–[5]. Most radio-map work targets a scalar received power or path loss [6], [7], whereas the angular radio map is the harder and the more useful object 
+
+This work was supported by the National Key Research and Development Program of China (2024YFB907500). Xiucheng Wang, Junxi Huang and Nan Cheng are with the State Key Laboratory of ISN and School of Telecommunications Engineering, Xidian University, Xi’an 710071, China (e-mail: {xcwang_1, 24012100067}@stu.xidian.edu.cn; dr.nan.cheng@ieee.org); (Corresponding author: Nan Cheng.) .
+
+because it exposes direction rather than a single scalar. Beam selection and angle-based localization both consume the full angular profile rather than a single power value, and this paper therefore studies the prediction of the angular radio map from geometry. This prediction is difficult because multipath propagation governs the mapping from geometry to the angular profile. In a line-of-sight (LOS) link the dominant arrival follows the geometric bearing from receiver to transmitter, so the angular profile is sharply peaked and nearly determined by the receiver position. In a non-line-of-sight (NLOS) link the direct path is blocked, and the received energy arrives through reflection and diffraction around buildings. The angular profile then carries several lobes whose directions depend on the surrounding layout in ways that no closed-form bearing rule captures. A predictor must also generalize to environments it never saw during training, since a deployed map cannot enumerate every city block. This zero-shot requirement rules out memorizing per-environment fingerprints and demands a model that rea-sons from the building geometry itself. Multipath ambiguity, NLOS ill-posedness, and zero-shot generalization together make the angular radio map an open challenge for learning-based channel modeling. Existing learning approaches treat the problem as image-to-image regression and minimize a per-pixel reconstruction loss. A convolutional regressor such as RadioUNet trains a U-shaped network with a mean-squared-error objective and pro-duces accurate scalar maps [6], [8]. A conditional generative adversarial network such as RME-GAN adds an adversarial term to a reconstruction loss to sharpen the outputs [9], [10]. The prior diffusion model RadioDiff casts map construction as denoising and reports strong path-loss accuracy with a convolutional backbone [7], [11], yet these methods share one assumption that fails for the angular task. A loss that scores each angular bin against the ground truth is minimized in expectation by the conditional mean of the angular profile. The conditional mean of several NLOS lobes is a broad, low-amplitude blur that sits between the true lobes and matches none of them, and this blur is the failure that the present work removes. This averaging is not a tuning artifact but a structural property of distortion-minimizing training, and it defines the central difficulty we address. Angular radio-map prediction is therefore a perception-distortion problem [12], in which a predictor can minimize per-bin distortion or reproduce the sharp multi-lobe statistics of the true angular profile, but in the NLOS regime it cannot do both. A regressor takes the first option and over-smooths, and the resulting blur collapses arXiv:2607.08045v1 [cs.IT] 9 Jul 2026 2
+
+the dynamic range, merges distinct arrivals into one diffuse mass, and erases the angular separation between candidate beam directions. A beam chosen from a blurred profile then points at the average of the lobes rather than at any usable arrival, and a localizer that compares angular signatures loses the very sharpness that distinguishes nearby positions. The deterministic generative adversarial network suffers a related failure, because adversarial training on this task collapses onto a narrow set of outputs and does not represent the spread of plausible NLOS profiles. RadioDiff is generative, yet it samples a reverse-time stochastic differential equation that injects fresh noise at every step. This stochastic sampling is a poor match for a channel that is close to deterministic once the geometry is fixed. The task thus needs a generator that is faithful to the conditional distribution without injecting spurious noise. We propose RadioDiff-v2, a generative model that matches the conditional distribution of the angular radio map rather than its conditional mean, implemented as a one-dimensional diffusion transformer trained with flow matching. It learns an ordinary differential equation that transports a noise prior to the data conditional along a near-straight path [13]–[15]. This deterministic transport is the right inductive bias for a channel that is nearly determined by its environment, and it places probability on the sharp arrivals instead of spreading it. In a LOS link the learned map behaves like a sharp regressor without the averaging that destroys the dominant lobe. In an NLOS link it represents the several plausible arrivals, which yields diverse candidate beams for a sweep and a posterior mean for single-beam pointing, and the same conditional den-sity also serves a second task that regressors cannot perform. Scoring an observed angular profile under each candidate position gives a Bayesian likelihood, so RadioDiff-v2 localizes a receiver by generative maximum-a-posteriori inference [16], [17]. One model thus supplies sharp angular maps, calibrated beam diversity, an accurate point estimate, and a likelihood for localization, all zero-shot to unseen environments. The main contributions of this paper, spanning problem formula-tion, model design, theoretical analysis, and deployment, are summarized as follows. 1) We reframe angular radio-map prediction as aperception-distortion problem. We show that adistortion-minimizing regressor returns the conditional mean of the angular profile. The mean over-smooths the spectrum, collapses its dynamic range, and erases the multipath structure that beam selection and likelihood-based localization require. 2) We propose RadioDiff-v2, a dual-branch one-dimensional diffusion transformer trained with rectified flow. The design combines a periodic angular positional encoding, adaptive layer-normalization conditioning, a bottleneck adaptive Fourier transform angular mixer, and coupled velocity and clean-signal decoder heads with a learnable fusion gate. We further introduce a per-metric estimator portfolio that reads every deployment quantity from this single model. The sampling readout carries the distribution, the clean-signal head yields a regression-grade point estimate, and Bayes-optimal rules select single beams and diverse sweep sets. Every readout hyper-parameter is selected on validation data and frozen before testing. 3) We analyze why flow matching fits the angular radio-map task. We prove that, for a concentrated conditional, the flow-matching probability-flow ordinary differen-tial equation follows a straight-line trajectory that one step integrates exactly. A noise-injecting reverse-time stochastic differential equation instead retains residual spread. The result identifies deterministic transport as the correct inductive bias and connects it to the perception-distortion regime. 4) We use the learned conditional density as a Bayesian likelihood to localize a receiver, a capability regressors cannot provide. On a zero-shot test of 99 environments and one million links, RadioDiff-v2 leads every baseline on every metric. It attains a distributional Wasserstein-1 distance of 0.39 dB against 1.97 for the prior diffusion baseline, a per-bin error of 0.184 against 0.199 for the regression baseline, and an eight-beam NLOS sweep loss of 2.43 dB. The multi-station localization error is 20.6 pixels at four base stations and falls to 17.1 pixels at six, where regressor-map fusion saturates near 41 pixels. II. R ELATED WORK 
+
+A. Radio-Map and Channel-Knowledge-Map Construction 
+
+Radio-map and channel-knowledge-map construction pre-dicts a spatial field of channel quantities from the environment geometry and supports environment-aware operation in 6G networks [18], [19]. Early learning approaches cast path-loss-map prediction as image-to-image regression. RadioUNet trained a convolutional U-shaped network that maps a building layout and a transmitter location to a dense path-loss map under a mean-squared-error objective [6]. The conditional generative adversarial network RME-GAN instead paired a reconstruction loss with an adversarial loss to sharpen the estimated field [9]. The RadioDiff family reframed the task as conditional generation, adopted a denoising diffusion prob-abilistic model with a convolutional backbone, and improved perceptual sharpness over the regressors [7]. Subsequent vari-ants have extended this line in three directions. The first injected electromagnetic priors and inverse-problem structure into the diffusion process for multipath-aware and integrated sensing settings [11], [20]. The second carried the diffusion prior to indoor construction-and-localization and to few-shot regimes through physics-informed manifold alignment [21], [22]. The third reused diffusion-trajectory midpoints to cut inference latency [23]. A parallel effort has broadened cov-erage with graph-based reconstruction and large datasets that frame channel-knowledge maps as a computer-vision problem, including three-dimensional radio-map benchmarks across heights [4], [24]–[27]. These methods share a scalar path-loss target on a Cartesian grid, and they optimize per-pixel agree-ment with a ground-truth map. This per-pixel emphasis over-smooths the angular fine structure of the channel, which is 3(a)  Problem and Condition 
+
+> gray rounded
+> 256 x 256
+> building map
+> square tile
+> white, binary
+> occupancy
+
+Polar occupancy (16 x 180) 
+
+Geometry 𝑑𝑑 , 𝑠𝑠𝑠𝑠𝑠𝑠  𝜙𝜙  , 𝑐𝑐𝑐𝑐 𝑠𝑠  𝜙𝜙 
+
+LOS flag 
+
+LOS bearing bump 
+
+𝑪𝑪 
+
+𝐶𝐶 = Enc( occ, 𝑑𝑑 , 𝑠𝑠𝑠𝑠𝑠𝑠  𝜙𝜙  , 𝑐𝑐𝑐𝑐 𝑠𝑠  𝜙𝜙 ) ∈ ℝ 17 ×180    
+
+> geometry condition in, structured 𝑪𝑪 out over-smoothed
+
+�𝑥𝑥 0𝑟𝑟𝑟𝑟𝑟𝑟 = 𝔼𝔼 [𝑥𝑥 0|𝑐𝑐 ]
+
+Receiver 
+
+> Polar occupancy
+> 16 range x 180 °
+> Transmitter
+> mean of modes ≠ any mode
+
+ill-posed in NLOS 
+
+> ground-truth
+> generative
+> sample
+> regressor
+> mean
+
+(b)  Flow-matching Training 
+
+velocity-target  𝒙𝒙 𝟎𝟎 = 𝜺𝜺 − 𝒙𝒙 𝟎𝟎        
+
+> true APS 𝒙𝒙 𝟎𝟎 interpolants morph sharp →noisy 𝒙𝒙 𝟏𝟏 ~𝓝𝓝 (𝟎𝟎 ,𝑰𝑰 )
+> 𝒙𝒙 𝒕𝒕
+> t = 0.25, 0.5, 0.75
+
+𝒗𝒗 𝝓𝝓 (𝒙𝒙 𝒕𝒕 , 𝒕𝒕 , 𝒄𝒄 )  
+
+> 𝒕𝒕 ~logit-normal
+
+𝒙𝒙 𝒕𝒕 = ( 𝟏𝟏 − 𝒕𝒕 )𝒙𝒙 𝟎𝟎 + 𝒕𝒕𝜺𝜺 
+
+> interpolant
+
+ℒ FM = Ε𝑡𝑡 ,𝑥𝑥 0,𝜺𝜺 ∥ 𝒗𝒗 𝝓𝝓 (𝒙𝒙 𝒕𝒕 , 𝒕𝒕 , 𝒄𝒄 ) ∥ 22 +𝜆𝜆  ∥ � 𝑥𝑥 0 − 𝑥𝑥 0 ∥22
+
+> velocity + clean-signal loss
+
+velocity field transports noise to true APS 
+
+conditioned on geometry, distribution matching 
+
+(c)  Dual-branch DiT-1D 
+
+[𝜀𝜀 : 𝑡𝑡 ]
+
+L x DiT 
+
+block 
+
+AFT 
+
+angular 
+
+mixer 
+
+> Fourier
+
+output 
+
+heads  
+
+> velocity
+> heads 𝑣𝑣 𝜙𝜙
+> clean-signal
+> heads
+> 𝑣𝑣 𝜙𝜙
+
+𝜎𝜎 (𝛼𝛼 )
+
+> x0-anchored
+> fusion
+> modulation
+> conditioning
+
+adaLN( 𝐡𝐡 ) = 𝛾𝛾  𝒄𝒄 , 𝑡𝑡 ⨀ LN  𝐡𝐡 + 𝛽𝛽  𝒄𝒄 , 𝑡𝑡 
+
+AFT: 𝐡𝐡 ← ℱ −𝟏𝟏 (𝐰𝐰⨀ℱ (𝐡𝐡 )) 
+
+�𝑥𝑥 0 = 𝜎𝜎  𝛼𝛼  �𝑥𝑥 0head + (1 − 𝜎𝜎 (𝛼𝛼 ))( 𝑥𝑥 𝑡𝑡 − 𝑡𝑡𝑣𝑣 𝜙𝜙 )
+
+> learned spectral
+> mixing over angle
+> ~ 5.9 M
+> parameters
+
+MLP 
+
+AFT token mixer    
+
+> angular multi-head self-attention
+> adaLN-zero
+> (scale 𝛾𝛾 , scale 𝛽𝛽 , scale 𝑔𝑔 )
+
+magnified block  
+
+> token embed +
+> periodic angular
+> PE( 𝑁𝑁 𝜃𝜃 = 180 )
+
+(d)  ODE Inference and Theory 
+
+> Proposition
+
+Theory  
+
+> noise
+> 𝝁𝝁 (𝒄𝒄 )target
+> reverse SDE:
+> residual noise
+
+if 𝑝𝑝  𝑥𝑥 0 𝑐𝑐 = 𝛿𝛿 (𝑥𝑥 0 − 𝜇𝜇  𝑐𝑐 )
+
+then 𝑥𝑥 𝑡𝑡 = 1 − 𝑡𝑡  𝜇𝜇  𝑐𝑐 + 𝑡𝑡𝑥𝑥 1
+
+straight line; one Euler step 
+
+⨁
+
+> CFG
+> guidance
+> 𝑤𝑤
+
+𝑡𝑡 = 1 → 0 𝑡𝑡 = 0 
+
+�𝑥𝑥 0   
+
+> null
+> select 𝑤𝑤 by 𝑊𝑊 1
+
+Theory 
+
+𝑑𝑑𝑥𝑥 𝑡𝑡 𝑑𝑑 𝑡𝑡  = 𝒗𝒗 𝝓𝝓 (𝒙𝒙 𝒕𝒕 , 𝒕𝒕 , 𝒄𝒄 )
+
+𝒗𝒗 𝝓𝝓  
+
+> 𝒘𝒘
+
+= 𝒗𝒗 𝝓𝝓  + 𝒘𝒘 (𝒗𝒗 𝒄𝒄 − 𝒗𝒗 𝝓𝝓 )
+
+stochastic SDE 
+
+deterministic line 
+
+Deterministic ODE transport matches concentrated APS 
+
+conditional, theoretical claim visual 
+
+(straight ODE vs noisy SDE) 
+
+> noise
+
+(e)  Beam Selection 
+
+generated 
+
+APS 
+
+posterior 
+
+mean  MMSE point estimate     
+
+> 𝑥𝑥 0
+> (𝑘𝑘 ),𝑘𝑘 = 1 … 𝐵𝐵
+> codebook diverse
+> samples
+> swept
+> candidates
+> beampattern
+> outcome
+> realized
+> best beam
+> sweep
+
+𝐿𝐿 𝑠𝑠𝑠𝑠 𝑟𝑟𝑟𝑟 𝑠𝑠𝑠𝑠𝑠 
+
+> single-beam
+
+𝐿𝐿 𝑠𝑠 𝐵𝐵 𝑠1 , DoA 
+
+�𝑥𝑥 0𝑀𝑀𝑀𝑀𝑀𝑀𝑀𝑀 = 1
+
+𝐾𝐾  �
+
+> 𝑘𝑘
+
+𝑥𝑥 0
+
+> (𝑘𝑘 )
+
+ℬ = { 𝑎𝑎 ̂ 𝜃𝜃  𝑘𝑘 :̂ 𝜃𝜃  𝑘𝑘 = 𝑎𝑎𝑎𝑎 𝑔𝑔  max  
+
+> 𝜃𝜃
+
+𝑥𝑥 0 
+
+> (𝑘𝑘 )
+
+}𝑘𝑘=1 
+
+> 𝑠𝑠
+
+one model 
+
+serves 
+
+both estimators 
+
+The distribution’s spread feeds multi-beam sweep while 
+
+its mean feeds single-beam accuracy, 
+
+both from one generated APS 
+
+The learned conditional density doubles as a Bayesian 
+
+likelihood; independent base stations multiply to 
+
+triangulate, a capability regressors lack 
+
+(f)  Generative-MAP Localization 
+
+ℒ FM  𝒚𝒚 𝒄𝒄  𝒑𝒑 = 𝔼𝔼 𝜺𝜺 ,𝒕𝒕 ∥ 𝒗𝒗 𝝓𝝓 (𝒚𝒚 𝒕𝒕 , 𝒕𝒕 , 𝒄𝒄  𝒑𝒑 − (𝜀𝜀 − 𝑦𝑦 ) ∥ 22
+
+�𝒑𝒑 = 𝑎𝑎𝑎𝑎 𝑔𝑔  min  
+
+> 𝑠𝑠
+
+�
+
+> 𝑚𝑚=1 𝑀𝑀
+
+ℒ FM  𝒚𝒚 𝑚𝑚 𝒄𝒄𝒎𝒎  𝒑𝒑     
+
+> argmin
+> true
+> position
+> score each
+> candidate 𝐩𝐩
+> single-station likelihood multi-station triangulation
+> three base stations
+> ridges intersection →triangulation
+> score
+> �𝑚𝑚
+
+Angular radio map as a 
+
+perception-distortion problem 
+
+Flow-matching dual-branch 
+
+DiT-1D + 𝑊𝑊 1 sampler 
+
+ODE transport matched to the 
+
+concentrated APS conditional 
+
+One model: multi-beam selection 
+
+and generative-MAP localization 
+
+Fig. 1: Overview of RadioDiff-v2. (a) The condition is built from the receiver-centred polar occupancy, the geometry, and the LOS flag, and the NLOS conditional is ill-posed for a mean estimator. (b) Flow matching learns the velocity field that transports noise to the true spectrum under the condition. (c) The dual-branch DiT-1D combines periodic angular encoding, adaptive layer-normalization conditioning, the AFT angular mixer, and velocity and clean-signal heads with a learnable fusion gate. (d) The deterministic ODE transport matches the concentrated conditional, in contrast to a noise-injecting SDE. (e) The estimator portfolio serves the beam sweep through diverse samples and single-beam pointing through the point estimate. (f) The conditional likelihood localizes the receiver, and independent base stations triangulate. exactly the structure that multi-beam selection and likelihood-based localization require. RadioDiff-v2 instead targets the dB APS and matches its conditional distribution, recovering the sharp multipath lobes that the prior estimators wash out. 
+
+B. Generative Models 
+
+Diffusion and flow-based generators define the methodolog-ical backdrop for distribution-faithful prediction. A denoising diffusion probabilistic model learns to invert a fixed forward noising chain and samples through a reverse-time stochas-tic process [28]. Deterministic and score-based formulations have recast sampling as an ordinary or stochastic differential equation and accelerated inference [29], [30]. Latent and text-guided variants have scaled generation to high resolution and rich conditions [31], [32]. Flow matching and rectified flow take a complementary route and regress a velocity field along a straight interpolant between the noise prior and the data. This construction yields a probability-flow ordinary differen-tial equation with short, low-curvature trajectories [13], [14]. Generative adversarial networks reach sharp samples through a min-max game but are prone to mode collapse [10]. Decoupled diffusion designs have reshaped the transition kernel to ease few-step sampling [33]. Transformer backbones supply scal-able conditioning, and the diffusion transformer pairs attention with adaptive normalization for strong generative quality [15], [34]. Broad vision surveys have documented this progres-sion in detail [35]. These generators are designed for high-entropy image priors, whereas the APS is a near-deterministic physical quantity given the geometry. RadioDiff-v2 therefore adopts flow-matching ordinary-differential-equation transport on a one-dimensional diffusion transformer, which fits this concentrated conditional and avoids the residual stochastic spread of noise-injecting samplers. 
+
+C. Radio-Map Localization and Fingerprinting 
+
+Localization from radio observations is a long-standing application of radio maps. Fingerprinting matches a mea-sured signature against a stored database and returns the position of the nearest entry. A Gaussian-process map often interpolates the radio field between the stored entries [17]. 4
+
+Deep variants learn the matching directly. LocUNet regressed a receiver position from path-loss radio maps with a con-volutional network [16]. Further studies have mined radio fingerprints for simultaneous localization and mapping or for robust device identification [3], [36]. These approaches share a discriminative or nearest-neighbour view. They compare an observed signature to references under a fixed metric, and they cannot evaluate how probable an observation is at a candidate position. A regressor therefore offers no conditional likelihood, and a fingerprint match degrades once the observed angular structure is smoothed away. RadioDiff-v2 closes this gap by scoring each candidate position with the flow-matching loss of the observed spectrum under that position’s condi-tion. This scoring turns the learned conditional density into a Bayesian likelihood for generative maximum-a-posteriori localization [37]. Per-station likelihoods multiply across base stations, so the estimate triangulates as coverage grows and surpasses even an oracle fingerprint built from the true spectra. III. S YSTEM MODEL AND PROBLEM FORMULATION 
+
+We consider a single-frequency wireless environment served by multiple base stations and described by a binary building map. The map is a 256 × 256 image whose pixels mark free space or building interior, and all coordinates are expressed in pixels over [0 , 256] 2. Each environment contains on the order of one hundred transmitter sites and tens of thousands of receiver locations. Propagation between any transmitter and any receiver is governed by LOS paths, reflections, and diffractions around the buildings. For a fixed transmitter and receiver, the directional structure of the received field is summarized by the APS, which records how the arriving power is distributed over the azimuth at the receiver. The APS encodes the directions of the dominant multipath components, so beam selection and angle-based localization both depend on it. This section defines the APS, the conditioning information available to the model, the zero-shot evaluation setting, and the two downstream tasks. Each symbol is introduced where it first appears, and the principal symbols are collected in Table I. The generation target is the dB-domain APS at a receiver, written as x0 ∈ RNθ . The azimuth is discretized into 
+
+Nθ = 180 angular bins of one degree, and the n-th bin is centered at angle θn for n = 1 , . . . , N θ . Let P (θn) denote the linear received power arriving within the n-th bin, obtained by aggregating the multipath contributions whose angle of arrival falls in that bin. The n-th entry of the target is the normalized power in decibels, 
+
+[x0]n = 10 log 10 
+
+ P (θn) + ε − Pmin 
+
+Pmax − Pmin 
+
+, (1) where ε is a small constant that bounds the logarithm in deep nulls, and Pmin and Pmax are fixed dynamic-range limits applied across the dataset. The angular power varies over several orders of magnitude, so the dB domain is adopted to expose the weak off-axis lobes that a linear scale would suppress. The mapping in (1) is monotone, so the angle of the dominant lobe and the angular spread of x0 are both preserved. The APS is periodic in the azimuth, and the angular positional encoding introduced in Sec. IV respects this periodicity. TABLE I: Principal notation.                                                                           
+
+> Symbol Meaning
+> x0∈RNθClean dB-domain angular power spectrum (target)
+> Nθ= 180 Number of angular bins over the azimuth
+> θnAzimuth angle of the n-th bin
+> cConditioning input (all items below jointly)
+> B∈ { 0,1}16 ×180 Rx-centred polar building-occupancy map
+> ptx ,prx ∈[0 ,256] 2Transmitter and receiver pixel coordinates
+> gTx/Rx geometry features
+> ℓ∈ { 0,1}Line-of-sight flag; LOS angle withheld
+> p(x0|c)Conditional law of the APS given cμ(c) = E[x0|c]Conditional mean (the regressor target)
+> ϵ∼ N (0,I)Gaussian noise prior sample
+> t∈[0 ,1] Flow-matching (rectified-flow) time
+> xtRectified-flow linear interpolant
+> v=ϵ−x0Target velocity field
+> vϕ(xt, t, c)Network velocity prediction (parameters ϕ)
+> ˆx0Network clean-signal prediction
+> σ(α)Learnable x0-fusion gate
+> wClassifier-free guidance scale; null token ∅
+> W1(·,·)Wasserstein-1 distance (dB domain)
+> a(θ)Array steering vector at angle θ
+> B={b1, . . . , bB}Set of Bcandidate beams
+> Lsweep@ BOracle-best minus realized beamforming gain (dB)
+> G(θ)Beamforming gain at bearing θ(dB)
+> p⋆Estimated receiver position
+> LFM (y|c)Flow-matching score of yunder c
+> MNumber of base stations heard
+
+The conditioning input collects everything the model is allowed to observe and is denoted by c. Its first component is a receiver-centered, angle-aligned polar building-occupancy map B ∈ { 0, 1}16 ×180 , whose rays are cast from the re-ceiver and record building occupancy over 16 range cells and 180 angular bins. The polar map shares its angular axis with the APS, so a blocked bearing in B aligns with the corresponding angular bin of x0. The second component is the geometry, namely the transmitter and receiver pixel coordinates ptx , prx ∈ [0 , 256] 2 together with derived features 
+
+g that include the relative position and the transmitter-receiver distance. The third component is a binary LOS flag ℓ ∈ { 0, 1}
+
+that states whether an unobstructed path exists. The LOS bearing itself is withheld from c, because revealing it would expose the dominant direction in LOS links and weaken the evaluation. The condition therefore carries occupancy, coarse geometry, and a visibility bit, but never the target angle. The mapping from the condition to the APS is not de-terministic under the observed information. Given the exact scatterer positions and material properties, the APS would be fixed by electromagnetic propagation [38], [39]. The condition 
+
+c exposes only a binary occupancy map and coarse geometry, so several physical environments are consistent with the same 
+
+c, and the APS therefore retains a small but genuine residual uncertainty. We model this residual uncertainty by treating x0
+
+as a sample from a conditional law p(x0 | c) that is con-centrated for LOS links and admits limited multi-modality for NLOS links. The conditional mean is μ(c) = E[x0 | c], and 5
+
+a distortion-minimizing regressor learns to output exactly this quantity [6]. Recovering the full conditional law rather than its mean is the central requirement of the angular radio-map task. The multipath structure that beam selection and localization need lives in the modes of p(x0 | c), and averaging over the modes erases it. The proposed method therefore targets 
+
+p(x0 | c) directly through generative modeling. Generalization is evaluated zero-shot across environments, and the 99 environments [40] are partitioned into 79 dis-joint training environments and 20 disjoint test environments, so that no test building map appears during training [41]. Training draws links from the training environments, an in-distribution validation set is held out for monitoring, and the reported test set consists only of links from the unseen test environments. This split measures whether a model learns transferable propagation structure rather than memorizing the training geometries. A subset of receivers is heard by three or more transmitters, which gives a multi-base-station setting and enables the fusion used for localization. The zero-shot protocol is therefore the operating regime of interest, because a deployable radio-map model must serve environments for which no measurements were collected, and all quantities defined below are evaluated under this protocol. The first downstream task is beam selection in the NLOS regime. In this regime the direct path is blocked, and the optimal beam points along a reflected or diffracted bearing rather than the geometric transmitter direction [42]. A beam is a steering vector a(θ) from an angular codebook, and its realized beamforming gain is the APS power collected along 
+
+θ. A generative model proposes a set of B candidate beams 
+
+B = {b1, . . . , bB }, and the receiver sweeps them. The relevant loss is therefore the gap between the oracle-best beam and the best realized beam over the set, 
+
+Lsweep@ B (B) = max  
+
+> θ
+
+G(θ) − max  
+
+> b∈B
+
+G(b), (2) where G(θ) denotes the beamforming gain at bearing θ under the true APS, measured in decibels. We formalize the task as follows. 
+
+Problem 1 (Generative beam sweep) . Given the condition c,produce B candidate beams that minimize the expected sweep loss, 
+
+min  
+
+> B
+
+ELsweep@ B (B) c, |B| = B. (3) A small sweep loss requires candidate beams that are both accurate and diverse, so a model that collapses to a single bearing wins only when B = 1 . The angular spread of the predicted APS is reported alongside (2), because preserving the spread supplies the diversity that the sweep rewards [9]. The second downstream task is receiver localization from the observed APS, which we cast as a Bayesian estimation problem over candidate positions. Let y denote an observed APS measured at an unknown receiver. Let c(p) denote the condition that the known building map induces for a candidate position p. A generative model assigns each candidate the conditional likelihood of the observation under that position. We summarize this likelihood by the flow-matching score 
+
+LFM (y | c(p)) defined in Sec. IV. The estimate is the position whose induced condition best explains the observation, 
+
+p⋆ = arg min  
+
+> p
+
+LFM 
+
+ y c(p). (4) When the receiver is heard by M base stations, the per-station likelihoods are conditionally independent given the position and therefore combine additively in the log domain. We state the task as follows. 
+
+Problem 2 (Generative maximum-a-posteriori localization) .
+
+Given M observed spectra {ym}Mm=1 and the building map, estimate the receiver position by 
+
+p⋆ = arg min 
+
+> p
+> M
+
+X
+
+> m=1
+
+LFM 
+
+ ym cm(p), (5) 
+
+where cm(p) is the condition induced for the m-th base station. 
+
+Each station contributes a likelihood ridge along its bearing, and the ridges intersect at the true position, so the estimate sharpens as M grows. A regressor returns only the conditional mean and provides no likelihood, so it cannot score (4) and cannot perform this task [16]. Problems 1 and 2 therefore both reduce to modeling the conditional law p(x0 | c), which is the objective of the method developed next. IV. P ROPOSED METHOD : R ADIO DIFF -V2RadioDiff-v2 casts APS prediction as conditional generation rather than regression, and the model receives the condition c
+
+and learns to draw samples from the conditional law p(x0 | c),where x0 ∈ RNθ is the dB-domain APS over Nθ = 180 
+
+angular bins. The generator is a dual-branch one-dimensional diffusion transformer trained by flow matching [13], and Fig. 1 shows the full pipeline. The condition is encoded once and injected into every transformer block, and the network predicts both a velocity field and a clean signal. An ordinary differential equation (ODE) sampler then integrates the velocity from a Gaussian prior to an APS sample. Because the conditional density is modeled rather than its mean, one trained network serves three needs at once. It supplies a posterior mean for point estimation, a set of diverse samples for beam selection, and a conditional likelihood for localization. This section develops the training objective, the backbone, the distribution-aware sampler selection, the theoretical motivation, and the two deployment estimators in turn. 
+
+A. Flow-Matching Formulation 
+
+Flow matching learns a time-dependent velocity field whose probability-flow ODE transports a Gaussian prior to the data conditional [13]. We adopt the rectified-flow interpolant, which connects a clean APS x0 and a noise sample ϵ ∼ N (0, I)
+
+along a straight segment [14]. For a flow time t ∈ [0 , 1] , the interpolant and its target velocity are 
+
+xt = (1 − t) x0 + t ϵ, (6) 
+
+v = dxt
+
+dt = ϵ − x0. (7) 6
+
+The target velocity in (7) is constant along each interpolation path. The network vϕ(xt, t, c) with parameters ϕ regresses this velocity from the noisy state, the time, and the condition. The training objective is the conditional flow-matching loss 
+
+LFM (ϕ) = Ex0,ϵ,t, c vϕ(xt, t, c) − (ϵ − x0) 22, (8) with t drawn uniformly on [0 , 1] and xt formed by (6). At inference, samples follow the probability-flow ODE 
+
+dxt
+
+dt = vϕ(xt, t, c), x1 = ϵ, (9) integrated backward from t = 1 to t = 0 . The regression target in (8) differs fundamentally from a per-bin reconstruction loss on x0. A reconstruction loss collapses the conditional onto its mean μ(c), whereas (8) fits a transport map that preserves the conditional spread. This distinction is the source of the perception-distortion behavior analyzed in Sec. IV-D. 
+
+B. Dual-Branch DiT-1D Backbone 
+
+The backbone is a stack of one-dimensional transformer blocks operating over the Nθ angular tokens [15], and each block applies multi-head self-attention and a feed-forward network with residual connections [34]. On top of this stack the design adds five components, and each is justified by the failure it prevents. The components are a periodic angular encoding, an adaptive normalization condition path, a Fourier angular mixer, coupled decoder heads, and classifier-free guid-ance, and we describe them in turn before assembling them into the sampler. The first component is a periodic angular positional encod-ing, because the azimuth axis is circular, so bin 1 and bin Nθ
+
+are neighbors. A standard linear positional encoding places a discontinuity at the wrap-around, which fragments lobes that straddle the 0-degree boundary. We therefore encode each bin index n with sinusoids of its angle θn, so the encoding stays continuous across the seam. Without this periodic encoding, the model splits a single physical lobe into two partial lobes at the array boundary, and the dominant direction of arrival is mislocated. The second component injects the condition through adap-tive layer normalization in the adaLN-zero form [15], where the condition c collects the polar building-occupancy map B,the geometry features g, and the LOS flag ℓ. A condition encoder maps this input to per-block scale and shift parame-ters, and each block modulates its normalized activations by these parameters, so the geometry steers generation at every depth. The residual branches are initialized to zero, which makes each block an identity map at the start of training and stabilizes optimization. Concatenating the condition to the input instead would dilute it across depth, and the geometry signal would weaken in the deeper blocks where the lobe structure is resolved. The third component is an adaptive Fourier transform (AFT) angular mixer at the network bottleneck. The APS is naturally sparse in the angular frequency domain, since a small number of multipath clusters produces a few dominant lobes. The AFT mixer transforms the bottleneck tokens to the angular spectral domain, applies a learned complex filter, and transforms back. This gives the model a global angular receptive field at low cost and a direct handle on the sparse spectral structure. Without the AFT mixer, the purely local attention smooths fine angular detail, and the recovered lobes are wider than the true ones. The fourth component is a pair of decoder heads with a learnable fusion gate. One head predicts the velocity vϕ,and the other predicts the clean signal ˆx0 directly. The two predictions are tied through the interpolant, since (6) and (7) give a velocity-implied clean signal ˆxv 
+
+> 0
+
+= xt − t vϕ. A learnable gate σ(α) ∈ (0 , 1) fuses the two estimates, 
+
+ˆxfuse 0 = σ(α) ˆ x0 +  1 − σ(α) ˆxv 
+
+> 0
+
+, (10) where σ(·) is the logistic function. The velocity head carries the transport that fits the distribution, while the direct ˆx0 head anchors the sample to a physically valid spectrum near t = 0 .The gate lets the model trust the direct head where it is reliable and the velocity head elsewhere. With the velocity head alone, the few-step trajectory accumulates error near the data end and the sharp peak is blunted. The fifth component is classifier-free guidance with alearned null condition [43]. During training, the condition is replaced by a learned null token ∅ with a fixed probability, so the network learns both the conditional and the uncondi-tional velocity. At inference, the guided velocity extrapolates between the two, 
+
+˜vϕ(xt, t, c) = vϕ(xt, t, ∅) + wvϕ(xt, t, c) − vϕ(xt, t, ∅),
+
+(11) with a guidance scale w. A larger w sharpens the samples toward the conditional mode and trades sample diversity for fidelity to the dominant lobe. The role of w is examined in Sec. IV-C. These five components feed a sampler that integrates the guided probability-flow ODE in K steps and anchors each step on the clean-signal estimate. At step k with time tk,the update reads the fused clean signal from (10), recomputes the guided velocity from (11), and advances the state toward 
+
+t = 0 . Anchoring on ˆxfuse 0 keeps every intermediate state on the manifold of valid spectra, which matters under the small step budgets used here, and Algorithm 1 summarizes the full procedure. A plain velocity-only Euler sampler drifts off the spectrum manifold within a few steps, which widens the lobes and inflates the distributional error. 
+
+C. Distribution-Aware Sampler Selection 
+
+The guidance scale w is an inference-time control, so it is selected after training without retraining. The usual practice tunes w to minimize a per-bin distortion such as normalized mean-squared error (NMSE). This choice is misaligned with the angular tasks, because a distortion-optimal w pushes the sampler toward the conditional mean and erases the multipath spread. We instead select w by the Wasserstein-1 distance 
+
+W1 between the distribution of generated APS values and the distribution of true APS values in the dB domain [44]. The selected scale is 
+
+w⋆ = arg min  
+
+> w
+
+W1
+
+ pw(x0), p (x0), (12) 7
+
+Algorithm 1 x0-anchored ODE sampler for RadioDiff-v2. 
+
+Require: Condition c, steps K, guidance scale w, schedule 
+
+1 = t0 > · · · > t K = 0 
+
+Ensure: APS sample ˆx0 
+
+> 1:
+
+Draw xt0 ∼ N (0, I) 
+
+> 2:
+
+for k = 0 , 1, . . . , K − 1 do  
+
+> 3:
+
+Compute heads vϕ and ˆx0 at (xtk , t k, c) and at 
+
+(xtk , t k, ∅) 
+
+> 4:
+
+Form the guided velocity ˜vϕ by (11)  
+
+> 5:
+
+Form the fused clean signal ˆxfuse 0 by (10)  
+
+> 6:
+
+Set xtk+1 ← tk+1 
+
+ xtk + ( tk+1 − tk) ˜ vϕ
+
+/t k + (1 −
+
+tk+1 /t k) ˆ xfuse 0 {x0-anchored step}  
+
+> 7:
+
+end for  
+
+> 8:
+
+ˆx0 ← ˆxfuse 0 
+
+> 9:
+
+return ˆx0
+
+where pw is the sampling law under guidance scale w. This criterion targets distributional fidelity directly. It restores the dynamic range and the lobe sharpness that the NMSE-optimal scale destroys, and it does so purely at inference. The trade-off governed by w is quantified in Sec. V. 
+
+D. Theoretical Analysis 
+
+The choice of an ODE transport over a noise-injecting reverse process is not incidental, because given the transmitter, the receiver, and the environment geometry, the APS is a near-deterministic physical quantity, so the conditional p(x0 | c) is concentrated. We make this concentration precise and show that flow matching is the matched inductive bias. The argu-ment rests on two assumptions, the first of which fixes the conditional to a deterministic limit while the second grants the optimal velocity. 
+
+Assumption 1 (Concentrated conditional) . The conditional law of the APS given the condition is a Dirac mass at a deterministic map, p(x0 | c) = δ(x0 − μ(c)) . This is the exact limit of low aleatoric entropy and is approached most closely in the LOS regime. 
+
+Assumption 2 (Optimal velocity) . The network attains the minimizer of the flow-matching objective in (8) , so vϕ
+
+equals the conditional expectation of the target velocity, 
+
+vϕ(xt, t, c) = E[ϵ − x0 | xt, c].
+
+Proposition 1 (Straight-line transport for concentrated con-ditionals) . Under Assumptions 1 and 2, the flow-matching probability-flow ODE in (9) has the closed-form trajectory 
+
+xt = (1 − t) μ(c) + t x1, (13) 
+
+which is a straight line from the prior sample x1 to μ(c). A single Euler step from t = 1 to t = 0 integrates (9) exactly, so the discretization error is zero. A reverse-time stochastic differential equation (SDE) with the same marginals instead injects fresh Gaussian noise of fixed per-step variance and does not share this property. Proof: Under Assumption 1 the only clean signal con-sistent with the condition is x0 = μ(c). Substituting into (6) gives xt = (1 − t)μ(c) + tϵ, hence xt is an affine function of t and (13) holds with x1 = ϵ. Under Assumption 2 the optimal velocity is the conditional mean of the target, and because the target ϵ − μ(c) is determined by xt and c, this conditional mean equals the constant x1 −μ(c) along the path. The probability-flow ODE in (9) therefore has a constant right-hand side, so its exact solution is the straight line in (13). A constant-velocity ODE is integrated without error by one Euler step, which gives the zero-discretization claim. The reverse-time SDE that shares the same time marginals adds an independent Brownian increment at every step. Its per-step noise variance does not vanish as the conditional concentrates, so it must remove injected noise across many steps and retains residual spread around μ(c) at any finite step count. Proposition 1 characterizes the idealized deterministic limit, and the observed condition refines this picture, because it sup-plies only a binary building map and coarse geometry, without exact scatterer positions or material parameters. The NLOS APS therefore retains a small but genuine residual uncertainty, and this uncertainty places the task in the perception-distortion regime, where flow matching handles both ends of the regime with one model. When the conditional is sharp, as in LOS, the ODE maps essentially all of the prior to the single mode, and the model then behaves like a sharp regressor without the 
+
+ℓ2 averaging that over-smooths. When residual multi-modality remains, as in NLOS, the noise-to-sample map represents the several modes and yields calibrated diversity, whereas a pure distortion-minimizing regressor instead returns the mean of those modes. This modal average is the over-smoothing failure that flattens the dynamic range and erases the angular structure. The analysis therefore predicts sharper conditional modes than a noise-injecting baseline at equal backbone and step budget, and hence lower W1 and a stronger beam sweep, a pair of predictions that the experiments in Sec. V confirm directly. 
+
+E. Per-Metric Estimator Portfolio 
+
+One trained model serves every deployment need through the choice of readout, and each metric receives its Bayes-appropriate estimator. For distributional fidelity the sampling readout is used unchanged, since the transported samples carry the conditional law itself. For a point estimate the receiver needs a minimum mean-squared-error (MMSE) es-timate, which is the posterior mean of the APS. RadioDiff-v2 forms it by averaging K conditional samples, 
+
+ˆxMMSE 0 = 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+x(k)0 , x(k)0 ∼ pw(x0 | c), (14) which approximates E[x0 | c] as K grows. The clean-signal head supplies a second, cheaper route to the same quantity. The reconstruction term in the training loss makes this head a conditional-mean regressor operating on a noisy probe. Evaluating it at the noise end of the path therefore requires no target information, 
+
+ˆxhead 0 = 1
+
+R
+
+> R
+
+X
+
+> r=1
+
+head x0
+
+ tr ϵr , t r, c, ϵr ∼ N (0, I),
+
+(15) 8link 1                  
+
+> dB (own peak)
+> COST231 RME-GAN MS-Areg RadioDiff RadioDiff-v2 sampling (Ours) Ground Truth
+> link 2
+> dB (own peak)
+> link 3
+> dB (own peak)
+> link 4
+> dB (own peak)
+> link 5
+> dB (own peak)
+> 180 0180
+> (deg)
+> link 6
+> dB (own peak)
+> 180 0180
+> (deg)
+> 180 0180
+> (deg)
+> 180 0180
+> (deg)
+> 180 0180
+> (deg)
+> 180 0180
+> (deg)
+
+Fig. 2: Qualitative comparison of predicted angular power spectra on NLOS links, shown in the dB domain with each curve normalized to its own peak, so 0 dB marks that curve’s dominant direction regardless of method. Columns from left to right are COST231, RME-GAN, MS-Areg, RadioDiff, the RadioDiff-v2 sampling readout, and the ground truth. The COST231 beam is steered to the geometric bearing, which under NLOS conditions points at the blocked direct path and lands at the wrong angle. The RadioDiff-v2 sampling readout consistently places its peak at the correct angle, whereas RME-GAN and MS-Areg stay broad and noisy near their own peak with no clean dominant lobe even after this per-curve referencing; the per-bin accuracy of the RadioDiff-v2 point readout is reported in Table II. with tr close to one and R antithetic draws. A convex blend 
+
+λ ˆxhead 0 + (1 − λ) ˆ xMMSE 0 serves the per-bin metrics, with λ
+
+chosen per metric. For beam selection the base station needs directions to probe, and the correct decision rule depends on the probing budget B. For a small budget the portfolio scores each codebook beam by its gain on the expected spectrum and picks the top beams. For a larger budget it selects the set greedily, 
+
+Bj = Bj−1 ∪
+
+n
+
+arg max  
+
+> b
+
+Ek
+
+ max  u(k) 
+
+> b
+
+, max 
+
+> b′∈B j−1
+
+u(k)
+
+> b′
+
+ o
+
+,
+
+(16) where u(k) 
+
+> b
+
+is the gain of beam b on sample k. Each greedy step adds the beam with the largest expected improvement of the realized best gain. The selected set therefore covers distinct plausible arrivals instead of repeating the dominant one. This objective is monotone submodular, which makes the greedy set near-optimal. The portfolio hyper-parameters include tr,
+
+R, K, w, λ, and the per-budget beam rule. All are selected on held-out validation links from the training environments and frozen before any test evaluation. A regressor that outputs only 
+
+μ(c) supplies a point estimate but no distribution, no diverse beam set, and no likelihood, so it cannot host such a portfolio. V. E XPERIMENTS 
+
+A. Generative-MAP Localization 
+
+The learned conditional density doubles as a Bayesian likelihood for localization, which a regressor cannot supply. Given an observed APS y measured at an unknown receiver, each candidate position p defines a condition c(p). The known building map and the geometry to the serving transmitter induce this condition. Scoring y under that condition by the flow-matching loss yields the negative log-likelihood up to 9
+
+TABLE II: Comparison with baselines on the zero-shot test set over 20 unseen environments. Distributional and per-bin metrics use a 50 ,000 -link environment-stratified subset, the NLOS beam block uses 20 ,000 NLOS links, and the LOS block uses the full test; every method is scored on identical links. Portfolio readout hyper-parameters are selected on validation data only and frozen before testing. All values in dB or degrees as indicated; arrows give the optimisation direction. Best is in bold and second-best is underlined. The final row reports the RadioDiff-v2 portfolio against the strongest baseline in each column.                                                                                             
+
+> Distributional Per-bin distortion NLOS beam sweep (dB) LOS communication Method W1(dB) ↓NMSE ↓PSNR ↑SSIM ↑@1 ↓@4 ↓@8 ↓AngSp. ◦↓LBF@1 ↓AngSp. ◦↓DoA ◦↓
+> RME-GAN [9] 2.53 0.217 22.64 0.584 12.47 7.28 4.60 26.2 0.23 2.5 4.5 MS-Areg [40] 5.06 0.199 23.28 0.668 11.57 8.10 5.85 27.6 0.05 3.0 2.5 RadioDiff [7] 1.97 0.312 22.99 0.611 14.23 10.98 8.50 10.8 0.08 2.3 2.9 RadioDiff-v2 sampling 0.39 0.351 22.68 0.576 13.95 10.90 8.60 11.1 0.02 1.9 1.9 RadioDiff-v2 portfolio (Ours) 0.39 0.184 25.12 0.709 11.33 4.29 2.43 7.60 0.02 1.9 1.9
+> Gain vs. best baseline −80 .2% −7.5% +1 .84 +6 .1% −2.1% −41 .1% −47 .2% −29 .6% −60 .0% −17 .4% −24 .0%
+
+a constant. The maximum-a-posteriori (MAP) estimate is the position that minimizes this score, 
+
+LFM (y | c(p)) = Eϵ,t vϕ(yt, t, c(p)) − (ϵ − y) 22, (17) 
+
+p⋆ = arg min  
+
+> p
+
+LFM 
+
+ y | c(p), (18) with yt = (1 − t)y + tϵ and the true position excluded from the search. The score in (17) rewards positions whose conditional density explains the observed multipath pattern, so it uses the full angular structure rather than a single summary. When the receiver is heard by M base stations, the per-station observations are conditionally independent given the position, so their likelihoods multiply and their log-likelihoods add. The joint estimate sums the per-station scores, 
+
+p⋆ = arg min 
+
+> p
+> M
+
+X
+
+> m=1
+
+LFM 
+
+ ym | cm(p), (19) where ym and cm(p) are the observation and the condition for the m-th station. The per-station scores trace likelihood ridges along their respective bearings, and the ridges intersect at the true position, so the joint objective triangulates. The single-observation problem is weakly determined, so the de-cisive gains come from this fusion and require multi-station coverage. The localization accuracy of both forms is reported in Sec. V. 
+
+B. Experimental Setup 
+
+We evaluated RadioDiff-v2 on a large-scale angular radio map corpus of 99 environments [40], each containing on the order of 50 ,000 transmitter-to-receiver links. Every link supplies a dB-domain APS with Nθ = 180 angular bins as the prediction target. The condition consists of the receiver-centred angle-aligned polar building-occupancy map, the transmitter and receiver geometry, and a LOS flag whose angle is with-held. We adopted a strict zero-shot protocol with 79 training environments and 20 disjoint test environments. Training used 
+
+3,864 ,000 links, and validation used 60 ,000 in-distribution links. Every evaluation below uses zero-shot test links from the unseen environments. Each table states its environment-stratified evaluation subset, and every method is scored on identical links. All estimator hyper-parameters of the portfolio were selected on the validation links only and frozen before any test evaluation. About 15 to 20 percent of receivers are heard by at least three transmitters, which yields the multi-base-station setting used for localization. We compared against four baselines that span the relevant method families, and RadioDiff is the prior denoising diffusion probabilistic model with a convolutional U-Net backbone [7], [8], [28]. RME-GAN is a conditional generative adversarial network trained with an ℓ1 and adversarial loss [9], [10], and MS-Areg is the multi-scale regression baseline from the Map2APS benchmark, trained with the mean-squared er-ror [40]. COST231 is the analytical path-loss model whose an-gular analogue steers to the geometric receiver-to-transmitter bearing [42], [45]. All learned baselines used the same con-dition and the same zero-shot split as RadioDiff-v2, so every reported difference reflects the model rather than the data. The evaluation uses metrics from two regimes that the perception-distortion view keeps separate [12], and distribu-tional fidelity is measured by the Wasserstein-1 distance W1
+
+in the dB domain [44]. Per-bin distortion is measured by the NMSE, the peak signal-to-noise ratio (PSNR), and the struc-tural similarity index (SSIM) [46]. Communication quality is measured by the beam-sweep loss Lsweep@ B , defined as the oracle-best beamforming gain minus the realized gain over B
+
+proposed beams. The angular-spread error, the direction-of-arrival (DoA) error, and the single-beam loss LBF@1 complete the communication metrics. Localization quality is measured by the median pixel error on the zero-shot test set, and lower values are better for every metric except PSNR and SSIM. 
+
+C. Distributional Fidelity and Per-Bin Distortion 
+
+Table II reports the full comparison across distributional fidelity, per-bin distortion, and both communication regimes. This subsection reads its distributional and per-bin columns. The sampling readout attains a dB-domain Wasserstein-1 of 
+
+0.39 , against 1.97 for the prior diffusion baseline and 2.53 and 
+
+5.06 for the adversarial and regression baselines. This margin corresponds to a 5.1× to 13 .0× improvement. The portfolio readout of the same model wins the per-bin columns as well, with an NMSE of 0.184 against the regressor’s 0.199 , a PSNR of 25 .12 against 23 .28 , and an SSIM of 0.709 against 0.668 .The qualitative comparison in Fig. 2 explains the distributional gap. RadioDiff-v2 consistently places its peak at the correct 10 
+
+angle, whereas the regressor and the adversarial baseline stay broad and noisy near their own peak with no clean dominant lobe, even once each curve is referenced to its own maximum. The flow-matching model recovers the multipath angular structure that the downstream tasks consume, and its clean-signal readout supplies the conditional mean when a point estimate is the goal. The two RadioDiff-v2 rows of Table II make the perception-distortion structure of the task explicit, because the trade-off binds a single readout, not a single model [12]. The sampling readout matches the conditional distribution and therefore pays a per-bin penalty, exactly as the theory predicts. The clean-signal readout of the same network is instead a conditional-mean regressor, and its blend with the posterior mean beats the strongest regressor on NMSE by 7.5 percent, on PSNR by 
+
+1.84 dB, and on SSIM by 6.1 percent. The regressors cannot make the reverse move, because a conditional mean carries no distribution to recover, and their Wasserstein-1 stays an order of magnitude worse. A fairness check gave the prior diffusion baseline the same clean-signal readout, and the readout im-proves that baseline to an NMSE of 0.191 , which still trails the portfolio. The more accurate conditional distribution therefore yields the more accurate conditional mean, and one model now occupies both ends of the perception-distortion frontier. 
+
+D. NLOS Communication 
+
+The NLOS beam-sweep columns of Table II address the regime where the conditional law over candidate beams is genuinely multi-modal, and here the decision rule matters as much as the model. The Bayes-optimal portfolio selection of (16) attains an eight-beam sweep loss of 2.43 dB, against 
+
+4.60 dB for the adversarial baseline, 5.85 dB for the regression baseline, and 8.50 dB for the prior diffusion baseline. The four-beam sweep shows the same ordering at 4.29 dB against 
+
+7.28 dB for the closest baseline. The single-probe sweep is the budget where a sharp point estimate helps most, and the expected-spectrum rule still wins it at 11 .33 dB against the regressor’s 11 .57 dB. The greedy set also repairs the angular-spread error to 7.60 degrees, below the prior diffusion baseline at 10 .8 and far below the regressors near 27 . The naive rule that reads one beam per sample reaches only 13 .95 dB at a single probe. The gain from the Bayes rules is thus decision-theoretic and costs no retraining. Table III isolates the NLOS point estimate, where the clean-signal readout of (15) reaches a single-beam loss of 11 .23 dB and a DoA error of 47 .4 degrees. The expected-spectrum rule over K = 16 samples attains 11 .34 dB and 46 .9 degrees, and both run ahead of the strongest regressor, which sits at 11 .57 
+
+dB and 48 .1 degrees. The expected-spectrum estimator keeps the angular-spread error at 7.60 degrees at the same time, so the accuracy does not come from over-smoothing, and the prior diffusion baseline trails on every column. The advantage is not generic to generative sampling; it follows from the more accurate conditional law and the matched readouts. One model consequently serves both roles, the diverse sweep through its samples and the accurate point estimate through its portfolio. TABLE III: NLOS point estimate on 20 ,000 zero-shot NLOS links, identical for every method. Best is in bold , second-best is underlined. The Gain row is the RadioDiff-v2 expected-spectrum estimator against the strongest baseline in each column.                          
+
+> Estimator DoA err ↓LBF@1 (dB) ↓AngSpread err ↓
+> RME-GAN [9] 52.0 12.47 26.2 MS-Areg [40] 48.1 11.57 27.6 RadioDiff [7] 59.2 14.23 10.8 RadioDiff-v2 clean-signal readout 47.4 11.23 26.6
+> RadioDiff-v2 expected spectrum ( K=16 )46.9 11.34 7.60
+> Gain over best baseline −2.5% −2.0% −29 .6%
+
+E. LOS Communication and the Geometric Baseline 
+
+The LOS columns of Table II report the regime where the conditional law is concentrated and the task is well posed. RadioDiff-v2 is best on every LOS metric, with a single-beam loss of 0.02 dB, an angular-spread error of 1.9 degrees, and a DoA error of 1.9 degrees. All methods sit near the optimum here, because the dominant path is visible and the spectrum is nearly a single lobe. The margin over the regressors is therefore small in absolute terms, yet RadioDiff-v2 is the tightest on all three columns. The result confirms that flow matching behaves like a sharp regressor in the concentrated regime without paying the ℓ2 averaging penalty that over-smooths the spectrum. The geometric COST231 baseline explains why learning is essential only in NLOS, and it was evaluated on 60 ,000 zero-shot links against the true-APS oracle beam, with its angular analogue steering a single beam to the geometric receiver-to-transmitter bearing [42], [45]. In LOS the geometric bearing is the optimal beam, with a single-beam loss of 0.00 dB, a DoA error of 0.6 degrees, and a beam identical to the oracle on 99 .0 percent of links. In NLOS the same rule fails, because it points at the blocked direct path, and its single-beam loss grows to 12 .12 dB, its DoA error to 48 .0 degrees, and its beam matches the oracle on only 4.6 percent of links. The RadioDiff-v2 portfolio lowers the NLOS single-beam loss to 
+
+11 .34 dB, below the geometric 12 .12 dB, and its greedy sweep drives the eight-beam loss down to 2.43 dB. The geometric baseline thus marks the trivial LOS optimum and the NLOS failure that motivates a learned conditional model. 
+
+F. Localization 
+
+Table IV reports localization, the second contribution. The correct way to localize with a generative model is generative-MAP estimation. We score a candidate position by the flow-matching loss of the observed APS under that position’s condition and select the minimum with the query position excluded [16]. Single-station generative-MAP attains a median error of 62 .6 pixels, which beats the oracle true-APS finger-print nearest-neighbour at 78 .0 pixels by about 20 percent. It also improves on the naive use of RadioDiff-v2 as a plain fingerprint at 83 .6 pixels by about 25 percent. The genera-tive likelihood draws on the learned conditional density and the known building map. The regressors lack this capability entirely, since they expose no conditional likelihood. 11 
+
+TABLE IV: Localization median pixel error on the zero-shot test set. Best is in bold , second-best is underlined. The upper block is single-station, and the lower block is multi-base-station joint generative-MAP.                                   
+
+> Single-station method Median error (px) ↓
+> RadioDiff-v2 as fingerprint kNN 83.6 Oracle true-APS fingerprint kNN 78.0
+> RadioDiff-v2 generative-MAP 62.6
+> Gain over oracle fingerprint −19 .7%
+> Multi-station fusion (median px), M= 1 /2/3/4/5/6
+> MS-Areg map +kNN fusion 68.5 / 56.3 / 46.2 / 42.6 / 41.6 / 41.4
+> RadioDiff-v2 joint generative-MAP 74.7 / 54.1 /31.0 /20.6 /19.2 /17.1
+> Gain ( M=4 ) over regressor-map fusion −51 .6% 1 base station err=137px
+
+One station. 2 base stations err=7px Two stations. 4 base stations err=7px Four stations. 
+
+Fig. 3: Multi-base-station likelihood maps over space for one query with one, two, and four base stations. Each station contributes a likelihood ridge along its bearing, and as stations are added the ridges intersect and the posterior sharpens onto the true position. The lower block of Table IV reports multi-base-station fusion on 577 fixed queries over all 20 test environments, and Fig. 3 shows the posterior sharpening onto the true posi-tion. Independent per-station likelihoods multiply, so we sum the per-station flow-matching losses with uniform weights, and the median error falls monotonically from 74 .7 pixels with one station to 20 .6 at four and 17 .1 at six. The fair alternative gave the regressor the same information, fusing nearest-neighbour matches against its predicted maps from the same M stations. This fusion saturates near 41 pixels from three stations onward, because fingerprint matching carries no likelihood geometry and the extra stations add no triangulation. The generative likelihood instead keeps improving, since each station contributes a ridge along its bearing and the ridges intersect at the true position, and the advantage reaches 2.4× at six stations. Two scope boundaries remain: single-observation localization is weakly determined, and at one station the regressor fusion is slightly ahead on this multi-station query subset. The broader single-station protocol in the upper block still favours generative-MAP by 20 percent, and multi-station coverage is also required, which the census places at 15 to 
+
+20 percent of receivers for three or more transmitters. The recommended recipe is therefore the plain generative-MAP for a single station and the uniform-sum fusion across stations. 
+
+G. Ablation: Inference-Axis Sampler Selection 
+
+Table V ablates the classifier-free guidance scale on a test subset and shows that the sampler is an inference-axis design choice [43]. The guidance scale that minimizes per-bin NMSE is not the scale that minimizes the Wasserstein-1 distance. A greedy NMSE choice at w = 2 reaches an NMSE of 
+
+0.306 but a Wasserstein-1 of 4.47 . The Wasserstein-optimal choice at w = 1 instead attains a Wasserstein-1 of 0.63 at a small NMSE cost of 0.334 . Selecting the sampler by the Wasserstein-1 objective thus improves distributional fidelity by about 7× on this subset with no retraining. We deploy the sampler at w = 1 under this objective, which is consistent with the sampling-readout fidelity of 0.39 and the beam-sweep advantage in Table II. The frontier numbers are reported on their own subset and are kept separate from the headline results to avoid cross-quoting. TABLE V: Classifier-free guidance frontier on a zero-shot test subset. The NMSE-optimal and Wasserstein-optimal operating points differ, which motivates the Wasserstein-1 sampler se-lection. Best is in bold , second-best is underlined.                        
+
+> Guidance wNMSE ↓W1(dB) ↓sweep@8 ↓
+> 2.0(NMSE-greedy) 0.306 4.47 5.18
+> 1.50.303 2.89 4.64
+> 1.0(W1-optimal) 0.334 0.63 4.14
+> Gain ( w=1 ) over w=2 +9 .2% −85 .9% −20 .1%
+
+VI. C ONCLUSION 
+
+We have reframed angular radio map prediction as aperception-distortion problem and proposed RadioDiff-v2, a dual-branch one-dimensional diffusion transformer trained with flow matching, whose per-metric estimator portfolio reads every deployment quantity from one model. We have shown that this portfolio leads every baseline on every metric of the zero-shot test, combining a thirteen-fold distributional advantage with regression-grade per-bin accuracy, Bayes-optimal beam selection, and multi-station likelihood localiza-tion that continues to improve where regressor-map fusion saturates. One zero-shot map therefore serves spectrum recon-struction, multi-beam selection, and receiver localization for environment-aware 6G networks. Future work will extend the conditional density to wideband and elevation-resolved spectra so that frequency-selective and three-dimensional beam man-agement fit within the same generative framework. REFERENCES [1] N. Cheng, F. Chen, W. Chen, Z. Cheng, Q. Yang, C. Li, and X. Shen, “6G omni-scenario on-demand services provisioning: vision, technology and prospect(in chinese),” Sci Sin Inform , vol. 54, no. 5, pp. 1025–1054, 2024. [2] N. Docomo et al. , “5g channel model for bands up to 100 ghz,” Technical report, Tech. Rep., 2016. [3] H. Li, K. Gupta, C. Wang, N. Ghose, and B. Wang, “RadioNet: Robust deep-learning based radio fingerprinting,” in Proceedings of the 2022 IEEE Conference on Communications and Network Security (CNS) ,2022, pp. 190–198. [4] S. Zhang, S. Jiang, W. Lin, Z. Fang, K. Liu, H. Zhang, and K. Chen, “Generative ai on spectrumnet: An open benchmark of multiband 3d radio maps,” IEEE Trans. Cognit. Commun. Networking , vol. 11, no. 2, pp. 886–901, 2025. 12 
+
+[5] G. Sun, W. Xie, D. Niyato, F. Mei, J. Kang, H. Du, and S. Mao, “Generative ai for deep reinforcement learning: Framework, analysis, and use cases,” IEEE Wireless Commun. , vol. 32, no. 3, pp. 186–195, 2025. [6] R. Levie, Ç. Yapar, G. Kutyniok, and G. Caire, “RadioUNet: Fast radio map estimation with convolutional neural networks,” IEEE Trans. Wireless Commun. , vol. 20, no. 6, pp. 4001–4015, 2021. [7] X. Wang, K. Tao, N. Cheng, Z. Yin, Z. Li, Y. Zhang, and X. Shen, “Radiodiff: An effective generative diffusion model for sampling-free dynamic radio map construction,” IEEE Trans. Cognit. Commun. Net-working , vol. 11, no. 2, pp. 738–750, 2025. [8] O. Ronneberger, P. Fischer, and T. Brox, “U-net: Convolutional networks for biomedical image segmentation,” in Medical image computing and computer-assisted intervention–MICCAI 2015: 18th international con-ference, Munich, Germany, October 5-9, 2015, proceedings, part III 18 .Springer, 2015, pp. 234–241. [9] S. Zhang, A. Wijesinghe, and Z. Ding, “RME-GAN: A learning framework for radio map estimation based on conditional generative adversarial network,” IEEE Internet Things J. , vol. 10, no. 20, pp. 18 016–18 027, 2023. [10] A. Creswell, T. White, V. Dumoulin, K. Arulkumaran, B. Sengupta, and A. A. Bharath, “Generative adversarial networks: An overview,” IEEE Signal Process. Mag. , vol. 35, no. 1, pp. 53–65, 2018. [11] X. Wang, Q. Zhang, N. Cheng, R. Sun, Z. Li, S. Cui, and X. Shen, “Radiodiff-k 2: Helmholtz equation informed generative diffusion model for multi-path aware radio map construction,” IEEE J. Sel. Areas Commun. , vol. 44, pp. 2318–2333, 2026. [12] Y. Blau and T. Michaeli, “The perception-distortion tradeoff,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR) , 2018, pp. 6228–6237. [13] Y. Lipman, R. T. Q. Chen, H. Ben-Hamu, M. Nickel, and M. Le, “Flow matching for generative modeling,” in Proc. Int. Conf. Learn. Represent. (ICLR) , 2023. [14] X. Liu, C. Gong, and Q. Liu, “Flow straight and fast: Learning to generate and transfer data with rectified flow,” in Proc. Int. Conf. Learn. Represent. (ICLR) , 2023. [15] W. Peebles and S. Xie, “Scalable diffusion models with transformers,” in 
+
+Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV) , 2023, pp. 4172–4182. [16] Ç. Yapar, R. Levie, G. Kutyniok, and G. Caire, “Locunet: Fast urban positioning using radio maps and deep learning,” in ICASSP 2022-2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) . IEEE, 2022, pp. 4063–4067. [17] X. Wang, X. Wang, S. Mao, J. Zhang, S. C. Periaswamy, and J. Patton, “Indoor radio map construction and localization with deep gaussian processes,” IEEE Internet Things J. , vol. 7, no. 11, pp. 11 238–11 249, 2020. [18] Y. Zeng and X. Xu, “Toward environment-aware 6G communications via channel knowledge map,” IEEE Wireless Commun. , vol. 28, no. 3, pp. 84–91, 2021. [19] X. Wang, Y. Pan, N. Cheng, Ç. Yapar, R. Sun, Z. Yin, C. Zhou, W. Xu, Y. Zhang, J. Zhang, S. Cui, and X. Shen, “A tutorial on learning-based radio map construction: Data, paradigms, and physics-awareness,” arXiv preprint arXiv:2603.17499 , 2026. [20] X. Wang, Z. Fang, N. Cheng, R. Sun, H. Zhou, Z. Su, Z. Li, and X. Shen, “Radiodiff-inverse: Diffusion enhanced bayesian inverse estimation for isac radio map construction,” IEEE Trans. Wireless Commun. , vol. 25, pp. 14 611–14 626, 2026. [21] X. Wang, T. Yuan, Y. Cao, N. Cheng, R. Sun, and W. Zhuang, “iRadioDiff: Physics-informed diffusion model for indoor radio map construction and localization,” arXiv preprint arXiv:2511.20015 , 2025. [22] X. Wang, Z. Guo, and N. Cheng, “RadioDiff-FS: Physics-informed manifold alignment in few-shot diffusion models for high-fidelity radio map construction,” arXiv preprint arXiv:2603.18865 , 2026. [23] X. Wang, P. Zheng, H. Jia, N. Cheng, R. Sun, C. Zhou, and X. Shen, “RadioDiff-flux: Efficient radio map construction via generative denoise diffusion model trajectory midpoint reuse,” IEEE Trans. Cognit. Com-mun. Networking , vol. 12, pp. 4882–4895, 2026. [24] X. Li, S. Zhang, H. Li, X. Li, L. Xu, H. Xu, H. Mei, G. Zhu, N. Qi, and M. Xiao, “Radiogat: A joint model-based and data-driven framework for multi-band radiomap reconstruction via graph attention networks,” IEEE Trans. Wireless Commun. , vol. 23, no. 11, pp. 17 777–17 792, 2024. [25] F. Jaensch, G. Caire, and B. Demir, “Radio map estimation–an open dataset with directive transmitter antennas and initial experiments,” arXiv preprint arXiv:2402.00878 , 2024. [26] D. Wu, Z. Wu, Y. Qiu, S. Fu, and Y. Zeng, “Ckmimagenet: Acomprehensive dataset to enable channel knowledge map construction via computer vision,” in 2024 IEEE/CIC International Conference on Communications in China (ICCC Workshops) . IEEE, 2024, pp. 114– 119. [27] X. Wang, Q. Zhang, N. Cheng, J. Chen, Z. Zhang, Z. Li, S. Cui, and X. Shen, “RadioDiff-3D: A 3D ×3D radio map dataset and generative diffusion based benchmark for 6G environment-aware communication,” 
+
+IEEE Trans. Netw. Sci. Eng. , vol. 13, pp. 3773–3789, 2026. [28] J. Ho, A. Jain, and P. Abbeel, “Denoising diffusion probabilistic models,” 
+
+Advances in neural information processing systems (NeurIPS) , vol. 33, pp. 6840–6851, 2020. [29] J. Song, C. Meng, and S. Ermon, “Denoising diffusion implicit models,” in Proc. Int. Conf. Learn. Represent. (ICLR) , 2021, pp. 1–12. [30] Y. Song, J. Sohl-Dickstein, D. P. Kingma, A. Kumar, S. Ermon, and B. Poole, “Score-based generative modeling through stochastic differ-ential equations,” in Proc. Int. Conf. Learn. Represent. (ICLR) , 2021. [31] R. Rombach, A. Blattmann, D. Lorenz, P. Esser, and B. Ommer, “High-resolution image synthesis with latent diffusion models,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR) , 2022, pp. 10 674–10 685. [32] A. Nichol, P. Dhariwal, A. Ramesh, P. Shyam, P. Mishkin, B. McGrew, I. Sutskever, and M. Chen, “Glide: Towards photorealistic image gener-ation and editing with text-guided diffusion models,” in Proc. Int. Conf. Mach. Learn. (ICML) , ser. PMLR, vol. 162, 2022, pp. 16 784–16 804. [33] Y. Huang, Z. Qin, X. Liu, and K. Xu, “Decoupled diffusion models with explicit transition probability,” arXiv preprint arXiv:2306.13720 , 2023. [34] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin, “Attention is all you need,” Advances in neural information processing systems (NeurIPS) , vol. 30, 2017. [35] F.-A. Croitoru, V. Hondru, R. T. Ionescu, and M. Shah, “Diffusion models in vision: A survey,” IEEE Trans. Pattern Anal. Mach , vol. 45, no. 9, pp. 10 850–10 869, 2023. [36] R. Liu, B. P. L. Lau, K. Ismail, A. Chathuranga, C. Yuen, S. X. Yang, Y. L. Guan, S. Mao, and U.-X. Tan, “Exploiting radio fingerprints for simultaneous localization and mapping,” IEEE Pervasive Comput. ,vol. 22, no. 3, pp. 38–46, 2023. [37] Y. Kang, J. Kang, J. Wen, T. Zhang, Z. Yang, D. Niyato, and Y. Zhang, “Confidence-regulated generative diffusion models for reliable ai agent migration in vehicular metaverses,” arXiv preprint arXiv:2505.12710 ,2025. [38] M. Zhou, L. Ying, L. Lu, L. Shi, J. Zi, and Z. Yu, “Electromagnetic scattering laws in weyl systems,” Nature Commun. , vol. 8, no. 1, p. 1388, 2017. [39] G. A. Deschamps, “Ray techniques in electromagnetics,” Proc. IEEE ,vol. 60, no. 9, pp. 1022–1035, 1972. [40] J. Huang, X. Wang, N. Cheng, K. Wang, R. Sun, and Z. Yin, “Map2aps: A physically grounded benchmark for direct angle power spectrum prediction from urban geometry,” arXiv preprint arXiv:2605.14989 ,2026. [41] A. Alkhateeb, “Deepmimo: A generic deep learning dataset for millimeter wave and massive mimo applications,” arXiv preprint arXiv:1902.06435 , 2019. [42] R. Wahl, G. Wölfle, P. Wertz, P. Wildbolz, and F. Landstorfer, “Dominant path prediction model for urban scenarios,” in 14th IST mobile and wireless communications summit , 2005, pp. 1–5. [43] J. Ho and T. Salimans, “Classifier-free diffusion guidance,” 2022. [44] G. Peyré and M. Cuturi, “Computational optimal transport: With appli-cations to data science,” Found. Trends Mach. Learn. , vol. 11, no. 5-6, pp. 355–607, 2019. [45] E. Damosso and L. M. Correia, “Digital mobile radio towards future gen-eration systems—COST action 231 final report,” European Commission, Brussels, Belgium, Tech. Rep. EUR 18957, 1999. [46] Z. Wang, A. C. Bovik, H. R. Sheikh, and E. P. Simoncelli, “Image quality assessment: from error visibility to structural similarity,” IEEE Trans. Image Processing , vol. 13, no. 4, pp. 600–612, 2004.
