@@ -1,0 +1,69 @@
+{
+  "label": "2026-07-14",
+  "date": "2026-07-14",
+  "generated_at": "2026-07-14T21:30:10",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202607/14/2607.10129v1-a-closed-form-noise-sensitivity-asymmetry-for-causal-branch-selection-in-minimal-array-tdoa-localization",
+      "section": "deep",
+      "title_en": "A Closed-Form Noise-Sensitivity Asymmetry for Causal Branch Selection in Minimal-Array TDoA Localization",
+      "authors": "Abeer Nasir Chaudhry, Salman Liaquat, Hasan Saeed Mir",
+      "date": "2026-07-11",
+      "pdf": "https://arxiv.org/pdf/2607.10129v1",
+      "score": "9.0",
+      "evidence": "最小阵列TDoA定位；分支选择歧义消解",
+      "tldr": "最小三阵元TDoA定位存在分支选择歧义，传统方法需添加第四接收器或角度传感器。本文通过隐式微分发现两根共享相同灵敏度分母，不对称性完全在分子中；闭合形式分析给出精确符号条件，并证明内部区域中更敏感根为外部物理根。提出因果常内存选择器，利用噪声下根灵敏度差异选择物理根，无需额外硬件。实验表明，在双可行根操作点中，物理根在85%情况下灵敏度更高（中位比值16），外部根规则达近0.99准确率。关键发现是平滑性和连续性方法在噪声下翻转并低于随机水平。",
+      "tags": "query:gso",
+      "abstract_en": "Minimal-array time-difference-of-arrival (TDoA) localization with three planar receivers reduces to a scalar quadratic whose two roots can both be feasible target positions, leaving a branch-selection ambiguity intrinsic to the minimal geometry. Because a minimal array is the cheapest, most deployable passive configuration, this ambiguity is conventionally broken only by adding a fourth receiver or an angle sensor, sacrificing the very minimality that motivates the array. This article resolves it from the measurements alone. Implicit differentiation shows that the two roots share an identical sensitivity denominator, so classical root conditioning cannot separate them and the entire asymmetry resides in the numerator. A closed-form analysis then yields an exact sign condition for the asymmetry, and over the feasible interior the more sensitive root is the outer, physical one, away from two algebraic degeneracy loci. A causal, constant-memory selector smooths a per-root variability statistic, whose expectation is shown to be proportional to the per-root sensitivity in the noise-dominated regime, and selects the larger one. Across a dimensionless receiver atlas the physical root is the more sensitive at a median of 85\\% of two-feasible-root operating points (median sensitivity ratio 16), and, because the more sensitive root is the outer one, a simple outer-root rule attains near-0.99 branch-selection accuracy on this interior, matched online by a causal, constant-memory realization. The decisive empirical finding is that smoothness- and continuity-based disambiguation, the natural alternatives, invert under timing noise and fall below chance.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/14/2607.10551v1-projection-domain-sensitivity-analysis-of-vertebral-drrs-under-intrinsic-calibration-perturbation",
+      "section": "deep",
+      "title_en": "Projection-Domain Sensitivity Analysis of Vertebral DRRs Under Intrinsic Calibration Perturbation",
+      "authors": "Lin Li, Chaochao Zhou, Benjamin Aubert, Junlin Guo, Junchao Zhu",
+      "date": "2026-07-12",
+      "pdf": "https://arxiv.org/pdf/2607.10551v1",
+      "score": "8.0",
+      "evidence": "精确几何校准至关重要；校准扰动对椎体DRR的灵敏度分析",
+      "tldr": "几何校准对透视引导脊柱成像和DRR生成至关重要，但其扰动对投影域一致性的影响尚不明确。本研究通过CT衍生椎骨模型和受控成像几何，生成真实与扰动内在参数的DRR，从解剖标志位移、轮廓距离等角度量化投影域变化。结果显示即使微小扰动也会引起椎骨投影几何、轮廓形态和DRR外观的可测变化，且LAT视图比AP更敏感，同时降低下游2D-3D配准的旋转精度。该发现表明投影域一致性可补充传统重建校准指标，为提高校准鲁棒性评估和脊柱介入可靠性提供实用框架。",
+      "tags": "query:gso",
+      "abstract_en": "Accurate geometric calibration is essential for fluoroscopy-guided spinal imaging, digitally reconstructed radiograph (DRR) generation, and 2D--3D vertebral registration. Although calibration quality is typically evaluated using reconstruction-based metrics such as reprojection error, its influence on projection-domain consistency remains poorly understood. This study presents a synthetic framework for evaluating how intrinsic calibration perturbations affect vertebral fluoroscopic projections and downstream registration performance.   CT-derived vertebral models and controlled cone-beam imaging geometry were used to generate DRRs with both ground-truth and perturbed intrinsic calibration parameters while maintaining identical anatomy and acquisition pose. Projection-domain changes were quantified using anatomical landmark displacement, contour distance, silhouette overlap, image similarity, and landmark-based 2D--3D registration accuracy in anterior--posterior (AP) and lateral (LAT) views.   Results show that even small intrinsic calibration perturbations produce measurable changes in vertebral projection geometry, contour morphology, landmark localization, and DRR appearance. Sensitivity is strongly view dependent, with LAT projections exhibiting substantially greater deformation and anatomical displacement than AP projections. These projection inconsistencies also degrade downstream 2D--3D registration, particularly rotational alignment accuracy.   The findings demonstrate that projection-domain consistency complements conventional reconstruction-based calibration metrics and provides a practical framework for assessing calibration robustness. This approach may improve the reliability of DRR generation and fluoroscopy-guided vertebral registration in image-guided spinal applications.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/14/2607.09334v1-site-geometry-and-calibration-uncertainties-in-digital-twin-enabled-channel-estimation",
+      "section": "quick",
+      "title_en": "Site Geometry and Calibration Uncertainties in Digital Twin-enabled Channel Estimation",
+      "authors": "Lorenzo Del Moro, Francesco Linsalata, Umberto Spagnolini, Maurizio Magarini",
+      "date": "2026-07-10",
+      "pdf": "https://arxiv.org/pdf/2607.09334v1",
+      "score": "6.0",
+      "evidence": "场地几何与校准不确定性在信道估计中的研究",
+      "tldr": "数字孪生辅助信道估计利用射线追踪提取多径特征构建信道协方差低秩结构，但模型不匹配源于用户定位误差和电磁校准误差。本文通过一阶扰动模型分离几何扰动和电磁扰动，分析发现定位误差主导性能下降而电磁校准误差影响有限。数值结果在城郊乡场景下显示定位误差是主要限制因素，但DT估计器在低信噪比下仍比基线方法提升10dB NMSE。",
+      "tags": "query:gso",
+      "abstract_en": "Fast ray tracing (RT) has stimulated the Digital Twin (DT) as an emerging technology for environment-aware communications. Since wireless propagation is governed by the interaction between site geometry and electromagnetic (EM) properties of the environment, DT-based approaches can provide site-specific prior information for channel estimation. In this work, we investigate the robustness of DT to aid the channel estimation, where multipath features extracted via RT are used to construct the low-rank (LR) eigenstructure of the channel covariance matrix. This LR structure is used in channel estimation. However, the digital representation of propagation model is inaccurate and thus it affects the LR. We explicitly analyze these model mismatches that arise from user positioning errors, which translate into geometric inconsistencies in the site representation, and EM material calibration errors. We derive a first-order perturbative model that separates geometric perturbations, affecting angles and delays, from EM perturbations, affecting path gains. Based on this perturbed model, we provide a normalized mean-square error (NMSE) analysis that reveals a fundamental difference between geometric and EM perturbations. In particular, we show that LR estimation is inherently robust to EM calibration perturbations, while positioning errors, dominate performance degradation by altering the channel eigenstructure. Numerical results confirm that, in urban, suburban and rural scenarios, positioning errors are the primary limiting factor, whereas EM calibration errors have a comparatively limited impact. Despite these mismatches, DT-empowered estimators provide up to 10dB NMSE improvement, over baseline methods, in the urban low signal-to-noise ratio (SNR) settings, while achieving performance comparable to baseline estimators at high SNR for moderate (< 1 m) positioning errors.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/14/biorxiv-10-64898-2026-07-03-736144-v1-stars2cells-astrometric-tracking-of-neurons-across-imaging-sessions",
+      "section": "quick",
+      "title_en": "Stars2Cells: Astrometric Tracking of Neurons Across Imaging Sessions",
+      "authors": "Peden-Asarch, A. M., Honan, L. E., Bai, J. Z., Asarch, E. M., Quinn, J. A., Coffey, K. R., Neumaier, J. F.",
+      "date": "2026-07-08",
+      "pdf": "https://www.biorxiv.org/content/10.64898/2026.07.03.736144v1.full.pdf",
+      "score": "6.0",
+      "evidence": "使用不变描述子进行跨会话对齐的几何校准方法",
+      "tldr": "慢性钙成像追踪同一神经元跨天变化是研究学习、漂移与可塑性的前提，但现有方法因空间或时间相关性退化而难以实现。受天文定标启发，Stars2Cells (S2C)将每个神经元局部几何表示为旋转、平移、均匀缩放不变的四维quad描述子，仅基于质心坐标进行描述子匹配、RANSAC验证和匈牙利分配。在合成基准上，S2C达到98.4%的F1分数，远高于传统ROI匹配的36.0%。应用于背内侧纹状体成像，揭示群体奖励反应掩盖了单个神经元的几乎完全更新，证明跨会话追踪的关键价值。",
+      "tags": "query:gso",
+      "abstract_en": "Chronic calcium imaging offers a window into how single neurons and ensemble activity change across days where identifying the same neurons from one session to the next is the prerequisite for answering questions regarding learning, drift, and plasticity over time. Yet only [~]2-3% of imaging laboratories publish longitudinal cross-session work, because existing registration tools depend on spatial-footprint or temporal correlations that degrade under repeated recording sessions. Here, we introduce Stars2Cells (S2C), a tracking pipeline inspired by astrometric plate-solving that represents each neurons local geometry as a four-dimensional quad descriptor invariant to rotation, translation, and uniform scaling. S2C operates purely on centroid coordinates and combines descriptor-space matching, Random Sample Consensus (RANSAC) verification, and Hungarian assignment. Across a synthetic benchmark of 1,262 paired runs spanning 100-1,000 neurons and 8 perturbation conditions plus 1 identity sanity-floor, S2C reached pooled F1 = 98.4% compared to the standard ROI-based matching of 36.0%. To show what this enables, we applied the pipeline to dorsomedial striatum (DMS) imaging during oral fentanyl behavioral-economics self-administration. Here, we show that a conserved population-rewarded lever press response in DMS masks near-complete single-neuron turnover. This representational-drift signature we demonstrated is invisible to the bulk photometry, and resolving it requires the same-cell tracking S2C provides. S2C is distributed as a GUI-driven standalone application for both macOS and Windows, requiring no Python, command line, or virtual environment setup.",
+      "source": "biorxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,1680 @@
+Title: Site Geometry and Calibration Uncertainties in Digital Twin-enabled Channel Estimation
+
+URL Source: https://arxiv.org/pdf/2607.09334v1
+
+Published Time: Mon, 13 Jul 2026 01:08:17 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+> 1
+
+# Site Geometry and Calibration Uncertainties in Digital Twin-enabled Channel Estimation 
+
+Lorenzo Del Moro, Francesco Linsalata, Umberto Spagnolini and Maurizio Magarini DEIB, Politecnico di Milano, Milan, Italy Email: {name.surname}@polimi.it, 
+
+Abstract—Fast ray tracing (RT) has stimulated the Digital Twin (DT) as an emerging technology for environment-aware communications. Since wireless propagation is governed by the interaction between site geometry and electromagnetic (EM) properties of the environment, DT-based approaches can provide site-specific prior information for channel estimation. In this work, we investigate the robustness of DT to aid the channel estimation, where multipath features extracted via RT are used to construct the low-rank (LR) eigenstructure of the channel covariance matrix. This LR structure is used in channel estimation. However, the digital representation of propagation model is inaccurate and thus it affects the LR. We explicitly analyze these model mismatches that arise from user positioning errors, which translate into geometric inconsistencies in the site representation, and EM material calibration errors. We derive a first-order perturbative model that separates geometric perturbations, affecting angles and delays, from EM perturbations, affecting path gains. Based on this perturbed model, we provide a normalized mean-square error (NMSE) analysis that reveals a fundamental difference between geometric and EM perturbations. In particular, we show that LR estimation is inherently robust to EM calibration perturbations, while positioning errors, dominate performance degradation by altering the channel eigenstructure. Numerical results confirm that, in urban, suburban and rural scenarios, positioning errors are the primary limiting factor, whereas EM calibration errors have a comparatively limited impact. Despite these mismatches, DT-empowered estimators provide up to 10 dB NMSE improvement, over baseline methods, in the urban low signal-to-noise ratio (SNR) settings, while achieving performance comparable to baseline estimators at high SNR for moderate ( < 1 m) positioning errors. Index Terms—Digital Twin, Ray tracing, Channel estima-tion 
+
+I. Introduction Next-generation networks are expected to support new applications and use cases, imposing stringent require-ments in terms of data rates, reliability, and latency. To meet these challenging requirements, higher carrier frequencies, e.g., upper mid-band and millimeter-wave (mmWave), are expected to support large bandwidths despite severe propagation path loss [1]. Multiple-input multiple-output (MIMO) is regarded as a key technology for enabling the shift to these frequency bands. How-ever, wideband MIMO channels are characterized by a 
+
+The work was partially supported by the European Union un-der the Italian National Recovery and Resilience Plan (NRRP) of NextGenerationEU, partnership on “Telecommunications of the Future” (PE00000001 - program “RESTART”, Structural Project 6GWINET). This work is within the Joint Lab between Politecnico di Milano and Huawei. 
+
+large number of parameters, making accurate channel estimation increasingly challenging [2]. Low-rank (LR) and minimum mean square error (MMSE) estimators have been proposed to address this issue by exploiting the eigenstructure of the channel covariance matrix, which typically exhibits LR properties due to the sparse structure of wideband MIMO channels in the spatio-temporal (ST) domain [3]. From a physical standpoint, this eigenstructure is de-termined by the underlying propagation geometry and by the electromagnetic interactions with the environment, which jointly define the dominant multipath components. In particular, the site geometry, together with the Base Station (BS) and User Equipment (UE) positions, deter-mines the propagation paths, so that inaccuracies in UE positioning directly translate into geometric inconsisten-cies in the effective propagation scenario seen by the BS. Unfortunately, acquiring reliable covariance information remains challenging in practice, as its dimension scales with the channel dimensionality and channel statistics [4]. These challenges have motivated several complementary research directions, including learning-assisted channel estimation [5], [6], advanced wave-domain processing through stacked intelligent metasurfaces (SIMs) [7], [8], and environment-aware communications that exploit prior knowledge of the propagation environment [9]. Recent research on environment-aware communications has increasingly leveraged the Digital Twin (DT), avirtual representation that mirrors the components and interactions of the physical system [10]. In the radio access network (RAN) context, DT systems enable the synthesis of prior channel information by emulating the electro-magnetic propagation environment, with ray tracing (RT) acting as a key enabling tool [11], [12]. By exploiting high-fidelity digital models of the scenario, obtained for in-stance via multimodal sensing or geospatial databases [11], [13], RT simulations extract relevant parameters of the dominant multipath components for given BS and UE positions, accounting for reflection, diffraction, and diffuse scattering. Compared to purely data-driven approaches, RT leverages a priori knowledge grounded in the physics of electromagnetic propagation, offering the potential to accurately capture angles-of-arrival (AoAs), angles-of-departure (AoDs), propagation delays, and path gains [14]. These parameters fully determine the channel covariance matrix and its eigenstructure, which represent the key quantities exploited by LR and MMSE estimators. As a arXiv:2607.09334v1 [eess.SP] 10 Jul 2026 2
+
+result, any mismatch in the digital representation of the environment propagates to the estimated eigenstructure, potentially degrading the performance of DT-empowered channel estimation. Related works Several recent works have investigated the use of the DT in the RAN, focusing either on improv-ing the modeling fidelity and computational efficiency of RT simulations [11], [15], [16] or on architectural aspects such as DT orchestration, real-time synchronization, and predictive optimization within the RAN [10], [17]. More recently, DTs have also been explored for tasks such as localization, hybrid precoding/combining, and CSI feedback [18]–[20]. DT has also been increasingly adopted to support chan-nel estimation using site-specific propagation information. For example, in [21], DT-derived subspaces are iteratively calibrated through reinforcement learning (RL) to enable zone-specific subspace-based channel estimation, thereby reducing feedback overhead. In our previous works [22], [23], we exploited the ST eigenstructure reconstructed from the DT as a prior for uplink LR channel estimation and investigated the impact of the limited propagation knowledge arising from the computational constraints of real-time RT. In parallel, several works have addressed the problem of calibrating RT-based DTs to better match real channel observations. In particular, [14] shows that even small discrepancies in the site geometry can induce significant phase errors in the RT-generated multipath components, and proposes a channel-response-based calibration method to compensate for such effects. More generally, RT cali-bration techniques aim at refining the EM parameters of the digital model using channel measurements [24], [25]. These approaches improve the fidelity of RT predictions by calibrating the simulated channel responses, but do not analyze how residual mismatches affect the channel eigen-structure and, in turn, channel estimation performance. Hence, existing DT-assisted communication frameworks either assume an ideal or calibrated digital representation of the propagation environment or focus on improving RT fidelity, without analytically characterizing how residual DT inaccuracies propagate to the channel covariance eigenstructure and affect LR and MMSE channel estima-tion performance. Table I summarizes the main differences between representative existing works and the proposed framework. Although high-resolution 3D models can be ob-tained [15], residual mismatches may still arise due to imperfect UE positioning or inaccuracies in the EM characterization of the environment. In particular, UE positioning errors introduce geometric inconsistencies in the reconstructed propagation scenario, whereas EM cali-bration errors primarily perturb the multipath gains while preserving the propagation geometry under the small-error assumption adopted in this work. Accordingly, these two error sources induce fundamentally different perturbations of the covariance eigenstructure, resulting in a distinct impact on LR and MMSE channel estimation. Assessing these effects experimentally is challenging because geometry, positioning, material properties, and RT modeling errors are inherently coupled in practical de-ployments. Consequently, measurement-based evaluations do not easily allow isolating the individual contribution of geometric and EM mismatches or controlling their magnitude. This motivates the use of controlled high-fidelity RT-based simulations, which enable a systematic and interpretable assessment of the individual impact of geometric and EM mismatches while isolating RT approximation errors from DT mismatch effects. To address this gap, this work proposes a model-based framework that links DT inaccuracies to perturbations of the channel covariance eigenstructure. Specifically, we adopt a first-order perturbation approach that separates geometric mismatches induced by UE positioning errors from EM mismatches affecting path gains, and analyze their impact on DT-empowered LR and MMSE estima-tion. Paper Contributions The main contributions of this paper are the following:  
+
+> •
+
+We propose a DT-empowered channel estimation framework that integrates high-fidelity 3D models and relative RT. The framework extracts dominant multipath parameters to reconstruct the channel eigenstructure for a given BS and UE position, which serves for DT-empowered LR and MMSE channel estimation.  
+
+> •
+
+We develop perturbation models for the multipath parameters under small-error regimes. In particular, we derive (i) AoA/AoD and delay perturbations due to UE positioning errors and (ii) path gain perturbations due to calibration errors in the EM modeling of reflections.  
+
+> •
+
+We provide an NMSE analysis to gain insights into the impact of mismatches on LR and MMSE chan-nel estimation in MIMO-OFDM systems, showing that LR estimators are loosely insensitive to EM calibration-induced gain perturbations under pre-served channel subspace conditions, while position-ing errors induce subspace distortions that directly impact estimation performance.  
+
+> •
+
+We validate the proposed framework via RT sim-ulations, in high-fidelity urban, suburban, and ru-ral scenarios. Results show that the proposed DT-empowered estimators remain robust to realistic po-sitioning and EM calibration errors, achieving up to 
+
+10 dB NMSE improvement over baseline approaches in the low SNR region. Paper Organization. The remainder of the paper is organized as follows. Section II introduces the uplink MIMO-OFDM model and the corresponding ST channel representation. Section III describes the DT-empowered channel estimation framework and the LR and MMSE estimators. Section IV presents the perturbation models and the NMSE analysis, while Section V reports simula-tion results. Finally, Section VI concludes the paper. 3
+
+TABLE I: Comparison between representative existing works and the proposed framework. 
+
+Reference Main contribution Channel estimation Perturbation analysis [10], [11], [15]–[17] RT-based DT construction, modeling fidelity, orchestration, and RAN optimization 
+
+7 7
+
+[14], [24], [25] Calibration of RT-based DTs against real-world measurements 
+
+7 7
+
+[18]–[20] DT-assisted localization, hybrid precoding, and CSI feedback 
+
+7 7
+
+[21] DT-derived subspaces with RL for channel estimation Subspace-based 7
+
+[22], [23] DT-derived channel priors for channel estima-tion LR 7
+
+This work Perturbation analysis of DT inaccuracies for DT-empowered channel estimation LR/MMSE 3
+
+Notation. (·)∗, (·)T, and (·)H denote complex conjugate, transpose, and Hermitian transpose, respectively, and (·)†
+
+the Moore-Penrose pseudoinverse. The Kronecker product is denoted by ⊗, diag( ·) forms a diagonal matrix, and 
+
+vec( ·) denotes vectorization. Tr {·} , rank {·} , and span {·} 
+
+denote trace, rank, and column space, respectively, while 
+
+E{·} denotes expectation and IN the identity matrix. The norm and inner product are ∥ · ∥ and ⟨a, b⟩ = aHb.
+
+N (·, ·) and NC(·, ·) denote real and complex Gaussian distributions, respectively, δ(·) is the Kronecker delta, and 
+
+ℜ{·} denotes the real part. II. System and Channel Model In this section, we first describe the uplink pilot transmission in an Nr × Nt MIMO-OFDM system and then provide the ST channel model. The BS and the UE are equipped with Nr and Nt antenna elements, respectively. The duration of an OFDM symbol is given by T = ( Nsc + Ncp )Ts, where Ts = 1 /B represents the sampling interval for a system bandwidth B, Ncp is the length of the cyclic prefix (CP), and Nsc denotes the number of subcarriers. A. Uplink Pilot Transmission We assume that channel estimation is performed using 
+
+Nt mutually orthogonal pilot sequences, each transmitted from a different UE antenna to the BS. These sequences, known at the BS, consist of Np pilot samples, scattered on a frequency grid, corresponding to predetermined subcarriers within an OFDM training symbol. We consider the transmission of M OFDM training symbols, indexed by m = 1 , . . . , M . Let xℓ ∈ CNp denote the frequency-domain baseband pilot sequence transmitted from the ℓth antenna ( ℓ = 1 , . . . , N t) in each training symbol, such that (xℓ)Hxℓ′
+
+= PTNp δ(ℓ − ℓ′), where PT denotes the average power per pilot subcarrier. We assume a CP 
+
+Ncp ≥ W −1, where W is the maximum temporal support of the channel impulse response (CIR). Accordingly, the vector yq (m) ∈ CNp of complex baseband received pilot samples in the frequency-domain, at the qth antenna (q = 1 , . . . , N r) and for the mth training symbol, can be written as 
+
+yq (m) = 
+
+> Nt
+
+∑
+
+> ℓ=1
+
+diag (xℓ)hℓ,q F (m) + wq (m), (1) where hℓ,q F (m) ∈ CNp is the equivalent baseband discrete-frequency channel response for the (ℓ, q )th link, for the 
+
+Np predetermined subcarriers. This can be written as 
+
+hℓ,q F (m) = ˜F h ℓ,q (m), where hℓ,q (m) ∈ CW denotes the discrete-time CIR for the (ℓ, q )th link and ˜F is the partial Discrete Fourier Transform, with entries 
+
+[˜F]k,w = 1
+
+√Nsc 
+
+exp ( −j2πkw/N sc ) , (2) where k ∈ { k0, . . . , k Np−1} denotes the pilot subcarrier index and w = 0, . . . , W − 1. Moreover, wq (m) ∼NC(0, σ 2
+
+> w
+
+INp ) is additive white Gaussian noise (AWGN) with variance σ2
+
+> w
+
+. By stacking the CIRs as hq (m) =
+
+[h1,q (m)T, . . . , hNt,q (m)T]T ∈ CW N t , (1) can be com-pactly rewritten as 
+
+yq (m) = B h q (m) + wq (m), (3) with B = [diag (x1)˜F, . . . , diag (xNt
+
+)˜F] ∈ CNp×W N t . Let 
+
+Y(m) = [y1(m), . . . , yNr (m)] ∈ CNp×Nr be the collection of pilot samples received on the Nr receiving antennas. Stacking the columns of Y(m) yields 
+
+y(m) = vec ( Y(m)) = Ψh (m) + w(m), (4) where h(m) = [h1(m)T, . . . , hNr (m)T]T ∈ CL, with 
+
+L = W N tNr, is the ST MIMO channel during the mth training symbol, while the transmitted complex samples for piloting become Ψ = INr ⊗ B ∈ CNrNp×L, and 
+
+w(m) ∼ NC(0NpNr , σ 2
+
+> w
+
+INpNr ) is AWGN. A necessary condition for identifiability in channel estimation is Np ≥
+
+W N t. Furthermore, optimal pilot design for maximum-likelihood (ML) channel estimation results in equipowered, equispaced, and phase shift orthogonal pilot samples, such that ΨHΨ = PTNp/N sc IL = νIL. Under Gaussian settings, the ML estimate is [26] ̂
+
+hML (m) = Ψ†y(m), (5) where Ψ† ∈ CL×NrNp is the pseudo-inverse of the trans-mitted pilot matrix in (4). 4
+
+B. ST MIMO Channel Model The wireless channel is characterized using a geometric propagation model, where the channel is represented as the superposition of P discrete multipath components, each associated with a planar wave and characterized by its AoA, AoD, propagation delay, and path gain. For the pth path ( p = 1 , . . . , P ), let θp = [ θaz  
+
+> p
+
+, θ el  
+
+> p
+
+] ∈
+
+[−π, π ) × [−π/ 2, π/ 2) denote the azimuth and elevation AoA, and γp = [ γaz  
+
+> p
+
+, γ el  
+
+> p
+
+] ∈ [−π, π ) × [−π/ 2, π/ 2) the azimuth and elevation AoD, both expressed in a global coordinate system (GCS). Similarly, let τp ∈ R≥0 denote the propagation delay of the pth path and Ωp ∈ R≥0 the corresponding path gain. ξp = [ θp, γp, τ p]T collects all the ST features of the pth propagation path, i.e., AoA, AoD, and delay. Let ξ = [ ξT 
+
+> 1
+
+, . . . , ξT 
+
+> P
+
+]T and Ω = [Ω 1, . . . , ΩP ]T
+
+denote the vectors collecting the ST features and gains of the P multipath components, respectively. The channel parameters {ξ, Ω} are assumed constant over the M
+
+training symbols, consistently with the ST resolution of the OFDM-MIMO system [2]. For a BS located in the far-field region of the UE, the 
+
+N × 1 array response vectors at the BS, can be modeled through a planar wavefront model [27]: 
+
+aBS (θp) = 
+
+[
+
+ej 2πλ (uBS 1 )TvBS  
+
+> p
+
+, . . . , e j 2πλ (uBS  
+
+> Nr)TvBS
+> p
+
+]T
+
+, (6) where λ is the carrier wavelength, uBS  
+
+> q
+
+is the 3D posi-tion of the qth array element in the GCS and vBS  
+
+> p
+
+=
+
+[cos( θaz  
+
+> p
+
+) cos( θel  
+
+> p
+
+), sin( θaz  
+
+> p
+
+) cos( θel  
+
+> p
+
+), sin( θel  
+
+> p
+
+)]T denotes the unit-norm AoA vector pointing at the BS array. Similarly, the array response at the UE, for the pth path, is 
+
+aUE (γp) = 
+
+[
+
+ej 2πλ (uUE 1 )TvUE  
+
+> p
+
+, ..., e j 2πλ (uUE  
+
+> Nt)TvUE
+> p
+
+]T
+
+, (7) where uUE  
+
+> ℓ
+
+is the 3D position of the ℓth array element in the GCS, and vUE  
+
+> p
+
+=[cos( γaz  
+
+> p
+
+) cos( γel  
+
+> p
+
+), sin( γaz  
+
+> p
+
+) cos( γel  
+
+> p
+
+), sin( γel  
+
+> p
+
+)] T is the unit-norm AoD vector pointing away from the UE array. We define as g(τp) = [g(−τp), . . . , g (( W − 1) Ts − τp)]T ∈ RW
+
+the discrete-time CIR given by the cascade of the BS and UE pulse shaping filters, for the pth path. Accordingly, we model the equivalent discrete-time ST MIMO channel 
+
+h(m) in (4) between the UE and the BS during the mth training symbol as 
+
+h(m) = 
+
+> P
+
+∑
+
+> p=1
+
+√Ωp
+
+(
+
+aBS (θp)⊗aUE (γp)⊗g(τp)
+
+)
+
+ejϕ p(m) (8) where ejϕ p(m) denotes the phase term associated with the 
+
+pth propagation path, and ζ(m) = [ejϕ 1(m), . . . , e jϕ P (m)]T
+
+collects the P phase terms, where {ϕp(m)}Pp=1 are i.i.d. and ∼ U [−π, π ) [14]. In (8), the channel parameters {ξ, Ω}
+
+capture the slow time-varying structure of the channel that remain invariant over the M training symbols, whereas 
+
+ζ(m) accounts for the fast time-varying fluctuations of the multipath components across training symbols. These are mutually uncorrelated, i.e., E{ζ(m)ζH(m)} = IP and independent across symbols, i.e., E{ζ(m)ζH(m + l)} =
+
+IP δ(l). Accordingly, the ST channel covariance matrix reads 
+
+R(ξ, Ω) = T(ξ) diag( Ω) T(ξ)H, (9) where T(ξ) = [t(ξ1), . . . , t(ξP )] ∈ CL×P collects the ST responses of the P propagation paths, with t(ξp) = 
+
+aBS (θp) ⊗ aUE (γp) ⊗ g(τp) ∈ CL. T(ξ) depends only on the ST features, whereas diag( Ω) determines the power distribution across the propagation paths. The eigenvalue decomposition (EVD) of R(ξ, Ω) is R(ξ, Ω) = UΛU H,where Λ = diag( λ1, . . . , λ r ) contains the r ≤ P non-zero eigenvalues and U = [ u1, . . . , ur ] ∈ CL×r collects the corresponding orthonormal eigenvectors. The pair {U, Λ}
+
+defines the covariance eigenstructure, whose geometric and spectral components are given by the channel subspace 
+
+S ≡ span {U} ≡ span {R(ξ, Ω)} ≡ span {T(ξ)} and the eigenvalue profile Λ, respectively. The subspace dimension is r = rank {R(ξ, Ω)} = rank {T(ξ)}, corresponding to the number of resolvable ST propagation modes supported by the system resolution. Since wideband MIMO channels are typically characterized by a sparse set of impulse responses in the ST domain, particularly at mmWave frequencies [3], the LR eigenstructure is exploited by conventional LR and MMSE channel estimators. This provides the basis for the DT framework introduced in the next section, where the channel parameters {ξ, Ω} are extracted by integrating a digital model of the environment and a RT simulation, to construct a prior estimate of the channel covariance and corresponding eigenstructure. III. Digital Twin-based Channel Estimation This section presents the DT-empowered channel esti-mation framework used throughout the paper. We analyze how inaccuracies in the DT propagate to the channel eigenstructure and, in turn, affect channel estimation performance. First, we describe the DT deployed at the BS and its role in extracting relevant channel parameters. Next, we detail the overall DT framework. Finally, we introduce the DT-empowered LR and MMSE channel estimation methods, which will later be studied under geometric and EM perturbations. A. Channel Estimation Framework The DT at the BS estimates the channel parameters set 
+
+{ˆξ, ˆΩ} by combining a digital replica of the propagation environment with RT simulation, as illustrated in Fig. 1. This representation is central to our analysis. It makes explicit how the physical description of the environment is translated into the multipath features that determine the covariance eigenstructure used for channel estimation. The digital replica is defined by the scene geometry ˆs,the EM material parameters ˆe, and the BS/UE positions 
+
+ˆp = [ˆ pTBS , ˆpTUE ]T, representing centroid positions of the arrays in the GCS. Under the planar wave assumption, the AoA, AoD, and delay of each propagation path are common across antenna elements, while the spatial varia-tions across the array are captured by the array response. 5
+
+Accurate digital representations of the environment can be obtained from site-specific maps or 3D reconstruction techniques [24]. The DT operates in synchronization with the channel evolution over the interval TST , during which M training symbols and {ξ, Ω} are assumed invariant. As illustrated in Fig. 1, at the beginning of each interval TST , the digital replica, defined by the set {s, ˆe, ˆp}, is used as input to the RT simulation fRT (·) to generate the estimated channel parameters set {ˆξ, ˆΩ}. The latency and computational requirements of RT-based features generation, scene recon-struction, and dynamic synchronization have been bench-marked in our previous work [16], where GPU-accelerated SBR implementations were shown to achieve wall-clock runtimes essentially independent of the interaction depth in multi-link configurations, with the RT cost scaling as O(ηL α), where η is a scenario-dependent parameter and α ≈ 1 for modern GPU-accelerated implementations. This ensures that, in typical site-specific deployments, the RT runtime satisfies TRT ≪ TST . Under tighter latency budgets, e.g., high UE mobility, the RT may instead resolve only a reduced subset ˆP < P of paths. We addressed this regime in [23], whereas here we assume 
+
+ˆP = P . Consequently, the propagation parameters can be computed in parallel with the uplink training phase and are assumed constant during the M training symbols. From the DT-provided parameter sets {ˆξ, ˆΩ}, the channel covariance matrix R(ˆξ, ˆΩ) = T(ˆξ) diag( ˆΩ) T(ˆξ)H
+
+can be reconstructed. The eigenvalue decomposition of R(ˆξ, ˆΩ) yields R(ˆξ, ˆΩ) = ˆU ˆΛ ˆUH, where ˆΛ =diag( ˆλ1, . . . , ˆλˆr ) contains the non-zero eigenvalues and 
+
+ˆU = [ˆ u1, . . . , ˆuˆr ] contains the associated eigenvectors. These eigenvectors define the DT-provided channel sub-space ˆS = span { ˆU} = span {T(ˆξ)} capturing the ˆr
+
+dominant ST propagation modes. The estimated rank ˆr
+
+corresponds to the number of dominant eigenvalues of 
+
+R(ˆξ, ˆΩ) and can be determined by standard thresholding rank-selection procedures. During the uplink training phase, the UE transmits M
+
+pilot symbols while the BS collects the pilot observations 
+
+y(m) in (4). The DT provides the structural prior infor-mation on the channel subspace and is used to construct projection matrices that exploit the LR structure of the channel covariance. This is the key interface between the DT and channel estimation: mismatches in the digital representation are not used directly but are conveyed through the reconstructed eigenstructure, which precisely determines the estimation performance analyzed later. The DT-empowered channel estimate can therefore be expressed, in a general form, as ˆh(m) = E(y(m), ˆU, ˆΛ),where E(·) denotes an estimator combining the pilot obser-vations with the DT-provided eigenstructure as described below. B. Digital Twin-based LR and MMSE Channel Estima-tion We first provide the DT-empowered LR estimator. This method has been widely investigated in the context of Digital Model Digital Twin   
+
+> Scene
+> Geometry
+> Material parameters
+> BS/UE positions
+> 𝐬𝐬
+> Ray-Tracer
+> �𝐞𝐞 �𝐩𝐩
+> 𝑓𝑓 𝑅𝑅𝑅𝑅 (�)
+> Eigenstructure
+> Reconstruction
+> BS
+> Model Update
+> Pilot Transmission UE
+> Channel
+> Estimation
+> Features
+> Extraction
+
+Fig. 1: DT-empowered channel estimation framework. The DT combines a digital replica—defined by scene geometry 
+
+s, EM parameters ˆe, and BS/UE positions ˆp—with RT to estimate propagation parameters {ˆξ, ˆΩ} and reconstruct the covariance R(ˆξ, ˆΩ) and its eigenstructure { ˆU, ˆΛ}.During uplink training over TST , the BS combines pilot observations y(m) with this eigenstructure via E(·) to obtain the channel estimate. multi-slot channel estimation [2]–[4], and exploits the invariance of the ST features to project the ML estimate onto the subspace spanned by the dominant propagation modes of the ST MIMO channel. For the DT-empowered LR estimator, the projection matrix, precomputed from the DT-provided covariance, is 
+
+ˆΠLR = ˆU ˆUH, (10) where ˆΠLR ∈ CL×L is idempotent and Hermitian. The estimator is then ˆh(m) = E(y(m), ˆU), explicitly 
+
+ˆhLR (m) = ˆΠLR ˆhML (m). (11) The LR estimator depends only on the DT-provided chan-nel subspace and is therefore insensitive to perturbations affecting only the eigenvalue profile. This property is central to the paper’s scope, as it suggests that geometric mismatches and EM calibration mismatches may not affect LR estimation in the same way. The computation of 
+
+ˆΠLR requires the EVD of R(ˆξ, ˆΩ), whose cost is O(L3) in general. Although this operation may become demanding for large values of L, it is performed only once per interval 
+
+TST rather than per training symbol. As a result, the DT-empowered LR channel estimation entails first computing 
+
+ˆhML (m) from the pilot observations and then projecting it onto the DT-provided channel subspace through (11). The overall computational cost is O(LN rNp + Lˆr). The first term corresponds to the computation of the ML chan-nel estimate, whereas the second term accounts for the projection onto the ˆr-dimensional DT-provided subspace. Unlike the DT-empowered LR method, the DT-empowered MMSE estimator requires a weighted projec-tion matrix given by [28], [29] 
+
+ˆΠMMSE = ˆU
+
+( ˆΛ( ˆΛ + ˆσ2
+
+> w
+
+ν Iˆr
+
+)−1) ˆUH. (12) The noise power estimate ˆσ2 
+
+> w
+
+is obtained as 
+
+ˆσ2 
+
+> w
+
+= νMw(L − ˆr)
+
+> Mw
+
+∑
+
+> m=1
+
+∥ ˆΠ⊥ 
+
+> LR
+
+ˆhML (m)∥2, (13) 6
+
+where ˆΠ⊥ 
+
+> LR
+
+= IL − ˆΠLR is the projection matrix associated with the orthogonal complement of the DT-provided channel subspace. This estimator is accurate when the DT-provided subspace closely matches the true channel sub-space. However, subspace mismatches may bias the noise power estimate. Accordingly, the DT-empowered MMSE estimator can be expressed as ˆh(m) = E(y(m), ˆU, ˆΛ) and is given by 
+
+ˆhMMSE (m) = ˆΠMMSE ˆhML (m). (14) The MMSE estimator depends on both the channel sub-space and the eigenvalue profile, and is therefore sensitive to both subspace perturbations and eigenvalue distortions. This distinction will be one of the main outcomes of the perturbation and NMSE analysis developed in the next section. In addition, it requires explicit noise power esti-mation, which adds a preprocessing step before projection. The computational cost remains O(LN rNp +Lˆr), identical to the LR case, since the weights depend only on ˆΛ
+
+and ˆσ2
+
+> w
+
+. In addition, the inversion of the ˆr × ˆr matrix in (12) entails a one-time cost O(ˆ r3) over the interval 
+
+TST . Additionally, Mw OFDM symbols are required for noise power estimation. In practice, Mw can be kept small (typically Mw ≪ M ) without significantly affecting estimation accuracy, thus limiting the associated latency overhead [28]. C. DT Mismatch Modeling As detailed in Sec. IV, we assume that the scene geometry and the BS position are perfectly known, i.e., we consider ˆs = s, and ˆpBS = pBS . This assumption is consis-tent with current site-specific reconstruction techniques, which can provide accurate digital representations of the propagation environment [15]. In contrast, the UE position and the EM material parameters may be affected by localization and calibration inaccuracies ˆe = e + ∆ e, and 
+
+ˆpUE = pUE + ∆ p, where ∆e ∼ f∆e(·) and ∆p ∼ f∆p(·)
+
+account for the lack of knowledge of the EM material prop-erties (calibration errors) and UE positioning inaccuracies, respectively (see Sec.IV). In particular, UE positioning errors introduce geometric inconsistencies in the effective site representation seen by the DT and are therefore expected to perturb the propagation paths reconstructed by RT. The digital replica is then used for RT simulations, where EM propagation is approximated by launching rays with a prescribed angular resolution and retaining those that satisfy a reception condition [15]. Accordingly, the RT simulation extracts estimates of a finite set of ˆP dominant multipath components associated with the propagation environment. We denote by fRT (·) the RT function which outputs the multipath components: 
+
+fRT (s, ˆe, ˆp) = ( ˆξ, ˆΩ). (15) Remarkably, RT simulations introduce modeling errors due to finite angular resolution or limited reflection order. However, site-specific RT has been shown to accurately reproduce the dominant multipath components in realistic propagation environments. Therefore, in this work, resid-ual RT approximation errors are neglected in order to iso-late the impact of DT mismatches due to localization and EM calibration inaccuracies. This assumption is consistent with sufficiently fine RT simulation settings, for which discretization and finite-resolution effects have been shown to remain limited [11]. Moreover, the analysis is restricted to the regime of small residual mismatches for which the set of dominant propagation paths remains unchanged under the considered perturbations, so that ˆP = P . For sufficiently large positioning or calibration errors, the as-sumption ˆP = P may no longer hold, leading to an under-estimation or overestimation of the dominant propagation components reconstructed by the DT. This would result in incomplete or inaccurate prior propagation knowledge, with a direct impact on the reconstructed eigenstructure and the resulting channel estimation performance. Such conditions lie outside the scope of the proposed framework and have been investigated in [23]. This local regime is precisely the one of interest to understand whether DT-empowered channel estimation remains reliable under realistic, yet non-catastrophic, imperfections of the digital representation. Accordingly, a first-order approximation around the nominal inputs (s, e, p) yields 
+
+fRT (s, ˆe, ˆp) ≈ (ξ + ∆ ξ, Ω + ∆ Ω), (16) where the perturbations ∆ξ and ∆Ω are induced by the perturbations ∆p and ∆e in the input variables. As men-tioned above, we focus on the local perturbation regime. In this context, UE positioning errors primarily affect the propagation geometry and, consequently, the delays and AoA/AoD features, whereas residual EM material calibration errors primarily affect the reflection coefficients and, consequently, the path gains. Therefore, in the considered setting, the cross-sensitivity between geometric and EM parameters is neglected, and we write ∂ξ/∂ e = 0
+
+and ∂Ω/∂ p = 01 This separation is instrumental for the rest of the paper, since it enables us to distinguish how geometric and EM mismatches affect different components of the covariance eigenstructure and, ultimately, different channel estimators. Accordingly, the perturbations can be expressed as 
+
+∆ξ =
+
+( ∂ξ
+
+∂p
+
+)
+
+∆p, ∆Ω =
+
+( ∂Ω
+
+∂e
+
+)
+
+∆e, (17) whose statistical characterization will be derived in Sec. IV. 7x      
+
+> y
+> S
+> n
+> pBS pUE ˆpUE
+> pim UE ˆpim UE pim BS
+> dˆd
+> θaz
+> ˆθaz
+> γaz ˆγaz
+> O(0 ,0)
+> 1
+
+Fig. 2: Representation of a specular reflection via the image method on a surface S with normal n. The reflected path is modeled as a LoS link between the BS and the virtual UE image (or equivalently, the virtual BS image and the UE). UE positioning errors propagate through the affine mapping, inducing correlated perturbations in delay and AoA/AoD. IV. DT Perturbation Models and NMSE Analysis In this section, we characterize the perturbations affect-ing the DT-extracted channel parameter set {ˆξ, ˆΩ} due to UE positioning and material calibration inaccuracies. Based on this characterization, we then present an NMSE analysis of the DT-empowered estimators, highlighting the role of eigenstructure mismatch. This is the core analytical link of the paper: it shows how DT inaccuracies propagate to the multipath parameters, how they perturb the reconstructed covariance eigenstructure, and why this leads to different robustness properties for LR and MMSE channel estimation. The analysis focuses on the small-error regime, in which the set of dominant propagation paths remains unchanged, and the induced deviations are accurately captured by first-order approximations. A. Geometry-Induced ST Feature Perturbations Following the first-order approximation introduced in Sec. III-A, we first characterize the perturbations in-duced by UE positioning inaccuracies, assuming ∆p ∼N (0, Σp). UE positioning errors introduce geometric mis-matches in the effective site representation used by the DT, thereby directly perturbing the propagation paths reconstructed by RT. As illustrated in Fig. 2, we adopt the image method [15] and focus on specular reflections [30].                               
+
+> 1While the relation ∂ξ/∂ e=0holds exactly under specular reflection, since the EM material parameters do not affect the propagation geometry, the assumption ∂Ω/∂ p=0is instead a first-order modeling choice adopted for analytical tractability. In practice, weak position-to-gain coupling may arise through small variations of the propagation distance and local incidence angles. Accounting for such effects would introduce additional gain perturbations following the same analytical pathway as EM calibration errors, without modifying the analytical framework developed in this paper.
+
+The pth propagation path, involving Kp specular reflec-tions, can be equivalently represented as a line-of-sight (LoS) vector between the BS position pBS and a virtual UE image position pim UE ,p ∈ R3, or, equivalently, between the UE position pUE and the corresponding virtual BS image position pim BS ,p ∈ R3. For the pth path, the UE image position is obtained through successive affine reflections and can be written as pim UE ,p = AUE  
+
+> p
+
+pUE + bUE  
+
+> p
+
+. Here, 
+
+AUE  
+
+> p
+
+∈ R3×3 is the product of the Householder reflection matrices associated with the reflecting planes along path 
+
+p, and bUE  
+
+> p
+
+∈ R3 collects the accumulated affine offsets. Due to the affine structure of the mapping, the perturbed image position satisfies ˆpim UE ,p = pim UE ,p + AUE  
+
+> p
+
+∆p. Thus the reflected position error ∆pim  
+
+> p
+
+= AUE  
+
+> p
+
+∆p is distributed as ∆pim  
+
+> p
+
+∼ N (0, AUE  
+
+> p
+
+ΣpAUE T
+
+> p
+
+).We now characterize the impact of UE positioning errors on the delay and AoA features of the pth path. Let 
+
+rp = pim UE ,p − pBS = [ rp,x , r p,y , r p,z ]T denote the equivalent LoS vector from the BS to the true UE image position, with norm Rp = ∥rp∥ and unit direction vBS  
+
+> p
+
+= rp/R p.The latter coincides with the AoA unit vector used in (6). Under UE positioning uncertainty, the equivalent per-turbed vector becomes ˆrp = rp + ∆ pim  
+
+> p
+
+= [ˆ rp,x , ˆrp,y , ˆrp,z ]T,and we define ˆRp = ∥ˆrp∥. By first-order approximation (see Appendix A), the perturbed distance is 
+
+ˆRp ≈ Rp + ( vBS  
+
+> p
+
+)T∆pim  
+
+> p
+
+. (18) Since ˆτp = ˆRp/c , it follows that ˆτp ≈ τp + 1 
+
+> c
+
+(vBS  
+
+> p
+
+)T∆pim  
+
+> p
+
+, so that the propagation delay of the pth path is distributed as 
+
+ˆτp ∼ N 
+
+(
+
+τp, 1
+
+c2 (vBS  
+
+> p
+
+)TAUE  
+
+> p
+
+ΣpAUE T 
+
+> p
+
+vBS 
+
+> p
+
+)
+
+. (19) The azimuth and elevation AoA features follow from the same first-order principle (see Appendix A). Defining ρ2 
+
+> p
+
+=
+
+r2 
+
+> p,x
+
++ r2 
+
+> p,y
+
+, the azimuth AoA ˆθaz  
+
+> p
+
+= atan2(ˆ rp,y , ˆrp,x ) can be approximated as 
+
+ˆθaz  
+
+> p
+
+≈ θaz  
+
+> p
+
++ 1
+
+ρ2
+
+> p
+
+(qθaz 
+
+> p
+
+)T ∆pim  
+
+> p
+
+, (20) where qθaz  
+
+> p
+
+= [ −rp,y , r p,x , 0] T. Accordingly, the azimuth AoA of the pth path is distributed as 
+
+ˆθaz  
+
+> p
+
+∼ N 
+
+(
+
+θaz  
+
+> p
+
+, 1
+
+ρ4
+
+> p
+
+(qθaz 
+
+> p
+
+)T AUE  
+
+> p
+
+ΣpAUE T 
+
+> p
+
+qθaz 
+
+> p
+
+)
+
+. (21) Similarly, the elevation AoA ˆθel  
+
+> p
+
+= arcsin(ˆ rp,z / ˆRp) can be approximated as 
+
+ˆθel  
+
+> p
+
+≈ θel  
+
+> p
+
++ 1
+
+R2
+
+> p
+
+ρp
+
+(qθel 
+
+> p
+
+)T ∆pim  
+
+> p
+
+, (22) where qθel  
+
+> p
+
+= [−rp,z rp,x , −rp,z rp,y , ρ 2
+
+> p
+
+]T. This yields an elevation AoA, for the pth path, distributed as 
+
+ˆθel  
+
+> p
+
+∼ N 
+
+(
+
+θel  
+
+> p
+
+, 1
+
+R4
+
+> p
+
+ρ2
+
+> p
+
+(qθel 
+
+> p
+
+)T AUE  
+
+> p
+
+ΣpAUE T 
+
+> p
+
+qθel 
+
+> p
+
+)
+
+. (23) An analogous construction applies to the AoD features. Using the image method, the same propagation path can 8
+
+be equivalently represented as a LoS vector from the UE to the BS image position. The BS image position is built in the same way as the UE image position, but following the same sequence of reflections in reverse order. Let dp = pUE − pim BS ,p = [dp,x , d p,y , d p,z ]T denote the corresponding vector, with norm Dp = ∥dp∥ and unit di-rection vUE  
+
+> p
+
+= dp/D p, which coincides with the AoD unit vector used in (7). Under UE positioning uncertainty, the perturbed vector is ˆdp = dp +∆ p. Defining δ2 
+
+> p
+
+= d2 
+
+> p,x
+
++d2
+
+> p,y
+
+and applying a first-order approximation of the angular features, the azimuth and elevation AoDs are Gaussian distributed as 
+
+ˆγaz  
+
+> p
+
+∼ N 
+
+(
+
+γaz  
+
+> p
+
+, 1
+
+δ4
+
+> p
+
+(qγaz 
+
+> p
+
+)T Σpqγaz 
+
+> p
+
+)
+
+, (24) 
+
+ˆγel  
+
+> p
+
+∼ N 
+
+(
+
+γel  
+
+> p
+
+, 1
+
+D4
+
+> p
+
+δ2
+
+> p
+
+(qγel 
+
+> p
+
+)T Σpqγel 
+
+> p
+
+)
+
+, (25) where qγaz  
+
+> p
+
+= [−dp,y , d p,x , 0] T and qγel  
+
+> p
+
+=
+
+[−dp,z dp,x , −dp,z dp,y , δ 2
+
+> p
+
+]T. Under the adopted first-order approximations, the DT-provided ST features of the pth path can be written as ˆξp = ξp + ∆ ξp, where 
+
+∆ξp = Jp∆p is distributed as ∆ξp ∼ N (0, JpΣpJT
+
+> p
+
+),with Jp ∈ R5×3 given by 
+
+Jp =
+
+
+
+> 1
+> ρ2
+> p
+
+(qθaz 
+
+> p
+
+)T AUE 
+
+> p
+> 1
+> R2
+> pρp
+
+(qθel 
+
+> p
+
+)T AUE 
+
+> p
+> 1
+> δ2
+> p
+
+(qγaz 
+
+> p
+
+)T
+
+> 1
+> D2
+> pδp
+
+(qγel 
+
+> p
+
+)T 
+
+> 1
+> c
+
+(vBS  
+
+> p
+
+)TAUE 
+
+> p
+
+
+
+. (26) Collecting the P multipath components, the DT-provided ST features are ˆξ = ξ + ∆ ξ, with ∆ξ ∼ N (0, JΣ pJT) and 
+
+J = [ JT 
+
+> 1
+
+, . . . , JT 
+
+> P
+
+]T ∈ R5P ×3. This result makes explicit how UE positioning uncertainty, through its geometric effect on the site representation, perturbs the ST features that define the channel subspace. B. Calibration-Induced Path Gains Perturbations Following the same first-order approximation intro-duced in Sec. III-A, we now model the perturbations induced by uncertainties in the EM material parameters. Recall that, under this approximation, UE positioning errors perturb only the propagation geometry, i.e., the delays and AoA/AoD features, while their impact on the path gains is neglected. This complementary perturbation model isolates the effect of EM mismatches, whose main impact is expected on the eigenvalue profile rather than on the channel subspace. Consider the pth propagation path involving Kp successive specular reflections. The path gain extracted from RT can be written as 
+
+ˆΩp = Ω (0) 
+
+> pKp
+
+∏
+
+> k=1
+
+∣∣ˆΓp,k 
+
+∣∣2, (27) where Ω(0)  
+
+> p
+
+> 0 collects the free-space attenuation con-tribution, and ˆΓp,k ∈ C denotes the reflection coefficient used by the digital model for the kth interaction along path p. For the kth reflection, let kp,k ∈ R3 denote the unit incident propagation direction and np,k ∈ R3 the unit outward normal of the corresponding planar surface. The local incidence angle θp,k ∈ [0 , π/ 2] is defined with respect to the surface normal as cos( θp,k ) = −kT
+
+> p,k
+
+np,k .The reflection coefficient depends on the complex relative permittivity εrp,k ∈ C of the kth reflecting surface, which can be written as εrp,k = ε′ 
+
+> p,k
+
+− jε ′′ 
+
+> p,k
+
+. The real part ε′
+
+> p,k
+
+models the dielectric permittivity of the material, while the imaginary part ε′′  
+
+> p,k
+
+accounts for conductive and loss effects. The calibrated permittivity used by the DT is modeled as ˆεrp,k = εrp,k + ∆ ep,k , where εrp,k ∈ C is the true relative permittivity and ∆ep,k is the corresponding cal-ibration error. We denote by ∆ep = [∆ ep, 1, . . . , ∆ep,K p ]T
+
+the vector collecting the calibration errors along path p,and by ∆e the vector collecting all material calibration errors in the DT model. The calibration error is modeled as ∆ep,k ∼ N C(0 , σ 2
+
+> p,k
+
+), with independent perturbations across reflections and paths. For an air–material interface (incident medium relative permittivity equal to one), the Fresnel reflection coeffi-cients are given by 
+
+ˆΓTE  
+
+> p,k
+
+=cos( θp,k ) −
+
+√
+
+ˆεrp,k − sin 2(θp,k )cos( θp,k ) + 
+
+√
+
+ˆεrp,k − sin 2(θp,k )
+
+, (28) 
+
+ˆΓTM  
+
+> p,k
+
+=ˆεrp,k cos( θp,k ) −
+
+√
+
+ˆεrp,k − sin 2(θp,k )ˆεrp,k cos( θp,k ) + 
+
+√
+
+ˆεrp,k − sin 2(θp,k )
+
+. (29) In the following, Γp,k denotes either the TE or TM coefficient, or an equivalent scalar coefficient capturing the effective polarization state along the considered path. Writing explicitly Γp,k = Γ( εrp,k , θ p,k ) and assuming small calibration errors, a first-order approximation yields 
+
+ˆΓp,k ≈ Γp,k + ∂Γ( ε, θ p,k )
+
+∂ε 
+
+∣∣∣∣ε=εrp,k 
+
+︸ ︷︷ ︸
+
+> cp,k
+
+∆ep,k , (30) where the sensitivity factor cp,k is derived in Appendix B. Taking the squared magnitude gives |ˆΓp,k |2 ≈ | Γp,k |2 +2 ℜ
+
+{
+
+Γ∗
+
+> p,k
+
+cp,k ∆ep,k 
+
+}
+
+, where second-order terms in ∆ep,k 
+
+are neglected. Substituting this into (27) and approximat-ing the product to first order around the nominal values yields 
+
+ˆΩp ≈ Ωp + Ω pKp
+
+∑
+
+> k=1
+
+ℜ{ αp,k ∆ep,k } , (31) where the nominal path gain is Ωp = Ω (0) 
+
+> p
+
+∏Kp 
+
+> k=1
+
+|Γp,k |2
+
+and the sensitivity factor (see Appendix B) is αp,k =2cp,k /Γp,k . The perturbed path gain can therefore be written as ˆΩp = Ωp + ∆Ω p, with ∆Ω p =Ωp
+
+∑Kp 
+
+> k=1
+
+ℜ{ αp,k ∆ep,k }.9
+
+Since αp,k ∆ep,k is circularly symmetric complex Gaus-sian with variance |αp,k |2σ2
+
+> p,k
+
+, its real part is Gaussian with variance |αp,k |2σ2
+
+> p,k
+
+/2. Therefore, 
+
+∆Ω p ∼ N 
+
+0, Ω2
+
+> pKp
+
+∑
+
+> k=1
+
+σ2
+
+> p,k
+
+2 |αp,k |2
+
+ . (32) Denoting the perturbation vector ∆Ω =[∆Ω 1, . . . , ∆Ω ˆP ]T, it follows that ∆Ω ∼ N (0, ΣΩ),where ΣΩ = diag( σ2Ω1 , . . . , σ 2ΩP ) with σ2Ωp =Ω2
+
+> p
+
+∑Kp 
+
+> k=1
+> σ2
+> p,k
+> 2
+
+|αp,k |2. In the considered regime, EM calibration errors thus redistribute power across the propagation modes without directly modifying the underlying geometric structure. C. NMSE Analysis We carry out the NMSE analysis by taking the expecta-tion over the channel and noise realizations, assumed in-dependent, while conditioning on the DT-provided eigen-structure to isolate the impact of the specific DT mis-match. In addition, the perturbations associated with UE positioning and EM calibration errors are assumed statisti-cally independent of the receiver noise. 2 This yields closed-form expressions for the NMSE conditioned on the DT-provided eigenstructure. The aim of the analysis is to make explicit how different perturbations of this eigenstructure translate into distinct degradation mechanisms for the DT-empowered LR and MMSE estimators. Let ˆh(m)
+
+denote the channel estimate and define the estimation error as ˜h(m) = ˆh(m) − h(m). The corresponding NMSE is 
+
+NMSE = 1Γ E
+
+{˜hH(m)˜h(m)
+
+}
+
+, (33) where Γ = E{∥ h(m)∥2} = Tr {R(ξ, Ω)} is the average channel power. For the LR case, plugging (11) into (33), the NMSE admits the decomposition 
+
+NMSE DT LR = 1Γ
+
+(
+
+Tr { ˆΠ⊥
+
+> LR
+
+R(ξ, Ω)} + Tr { ˆΠLR } σ2
+
+> w
+
+ν
+
+)
+
+= σ2 
+
+> h, LR
+
++ σ2
+
+> w, LR
+
+,
+
+(34) where ˆΠ⊥ 
+
+> LR
+
+= IL − ˆΠLR projects onto ˆS⊥. The two terms 
+
+σ2 
+
+> h, LR
+
+and σ2 
+
+> w, LR
+
+represent, respectively, the residual chan-nel component lying outside the DT-provided subspace and the projected noise component. From the properties of the projection matrices, Tr { ˆΠLR } = rank { ˆΠLR } = ˆ r,and thus σ2 
+
+> w, LR
+
+= σ2 
+
+> w
+
+ˆr/ (νΓ) . For the channel term, using 
+
+R(ξ, Ω) = ∑rj=1 λj uj uH 
+
+> j
+
+and ˆΠLR = ∑ˆrk=1 ˆuk ˆuH 
+
+> k
+
+yields 
+
+σ2 
+
+> h, LR
+
+= 1 − 1Γ
+
+> r
+
+∑
+
+> j=1 ˆr
+
+∑
+
+> k=1
+
+λj |⟨ ˆuk, uj ⟩| 2, (35) which directly quantifies the channel energy lying outside the DT-provided subspace.        
+
+> 2This assumption follows from the considered DT framework, where UE positioning, calibration, and channel estimation are per-formed as separate estimation processes using different observations or time instants, thus ensuring statistical independence.
+
+Analogously, for the MMSE, substituting (14) into (33) gives 
+
+NMSE DT MMSE = 1ΓTr 
+
+{
+
+(IL − ˆΠMMSE )R(ξ, Ω)( IL − ˆΠMMSE )H}
+
++ 1Γ Tr 
+
+{ ˆΠMMSE ˆΠH
+
+> MMSE
+
+} σ2
+
+> w
+
+ν
+
+= σ2 
+
+> h, MMSE
+
++ σ2
+
+> w, MMSE
+
+, (36) which again decomposes into a residual channel (dis-tortion) component and a noise component. Unlike the LR case, however, the matrix ˆΠMMSE is Hermitian but not idempotent. Inserting (12) into (36) gives the noise contribution σ2 
+
+> w, MMSE
+
+= ( σ2
+
+> w
+
+/ν Γ) ∑̂ rk=1 μ2
+
+> k
+
+, where 
+
+μk = ν ˆλk/(ν ˆλk + ˆ σ2
+
+> w
+
+) is the noise power retained after eigenvalue-dependent shrinkage. Similarly, using the spec-tral decomposition ˆΠMMSE = ∑̂ rk=1 μk ˆuk ˆuH 
+
+> k
+
+, the channel term becomes 
+
+σ2 
+
+> h, MMSE
+
+= 1 − 1Γ
+
+> r
+
+∑
+
+> j=1 ̂
+> r
+
+∑
+
+> k=1
+
+λj (2 μk − μ2
+
+> k
+
+)|⟨ ˆuk, uj ⟩| 2. (37) As σ2 
+
+> w
+
+→ 0, the shrinkage coefficients satisfy μk → 1
+
+for k = 1 , . . . , ˆr, so that ˆΠMMSE → ˆΠLR and the MMSE estimator asymptotically coincides with the LR estimator. These expressions reveal a key difference between the two estimators under eigenstructure mismatch: LR de-pends only on subspace mismatch, whereas MMSE is also sensitive to eigenvalue distortions through the shrinkage coefficients. Note that, when ˆr < r , fewer dominant modes are retained and the LR channel term σ2 
+
+> h, LR
+
+increases because a larger portion of the channel energy lies outside the estimated subspace. Conversely, when ˆr > r , the LR noise term σ2 
+
+> w, LR
+
+increases because additional noisy dimensions are included in the projection. The MMSE estimator is af-fected in both cases through the shrinkage coefficients μk,which nonetheless inherently attenuate noise, providing intrinsic robustness to moderate rank overestimation. Let us now assume correct rank-order selection, i.e., 
+
+ˆr = r. We exploit the previous NMSE analysis to assess the impact of EM calibration and positioning perturba-tions separately. Consider first calibration perturbations only, i.e., ˆξ = ξ, for which the covariance matrix is 
+
+ˆRΩ = T(ξ)diag( ˆΩ)TH(ξ). Since these perturbations affect only the path gains, the column space of T(ξ) is preserved and the channel subspace is unchanged, i.e., span { ˆRΩ} =span {R(ξ, Ω)}. The estimated and true subspace dimen-sions then coincide, so that the LR projection equals the orthogonal projector onto the true channel subspace, giving σ2 
+
+> h, LR
+
+= 0 and σ2 
+
+> w, LR
+
+= σ2
+
+> w
+
+r/ (νΓ) , consistent with the asymptotic LR behavior in [2]. The MMSE estimator, by contrast, remains affected: the eigenvalues of the covariance matrix change, which modifies the shrinkage coefficients μk even though the subspace itself is unchanged. Consider now positioning perturbations only, i.e., ˆΩ =
+
+Ω, for which the ST responses become T(ˆξ) and the covariance matrix is ˆRξ = T(ˆξ)diag( Ω)TH(ˆξ). Here the 10 
+
+TABLE II: RT simulation parameters.                   
+
+> Parameter Value Parameter Value Carrier frequency 28 GHz Grid UE height 1.5 m Antenna UE height 0.2 m Grid resolution 2×2m2
+> SUMO sampling time 0.1 s RT method Fibonacci (SBR) Initial sampled rays 10 6Interaction types Reflections
+
+perturbation alters the column space of T(ξ), so that in general span {T(ˆξ)}̸ = span {T(ξ)}. The LR projection is thus built from a mismatched subspace, yielding σ2 
+
+> h, LR
+
+>
+
+0, and the MMSE estimator is likewise affected, since both eigenvectors and eigenvalues are perturbed. This formalizes the main insight anticipated above: geometric mismatches due to UE positioning errors are the dominant source of degradation, because they alter the channel subspace, whereas EM calibration errors mainly perturb the eigenvalue profile and therefore have a more limited impact, especially for LR estimation. Notably, this conclu-sion remains valid even in the presence of weak position-to-gain coupling, which has been previously omitted. Indeed, the resulting gain perturbations affect only the covari-ance eigenvalue profile. Consequently, the LR estimator remains unaffected, whereas the MMSE estimator may experience only a limited additional degradation through the shrinkage coefficients. To quantify the magnitude of the impact of positioning and EM calibration errors due to eigenstructure mismatch, we refer to the numerical results presented in the next section. V. Numerical Results This section evaluates the DT-empowered estimators under site-specific RT simulations and residual positioning and calibration perturbations, describing the simulation setup and assessing performance against baseline methods. A. Simulation Framework In this study, we consider three outdoor scenarios with different building densities and propagation characteris-tics. The reference scenario is the 3D model of an urban area in Milan, Italy, previously investigated in [11], [16], covering an area of approximately 550 × 670 m2, with a single base station positioned on a rooftop at a height of 21.7 m. To achieve accurate RT channel generation, we selected NVIDIA Sionna RT (v0.18.0) [15]. We integrated with NVIDIA Sionna the 3D model containing buildings, walls, ground, and parked vehicle meshes. This initial high-fidelity base scenario is enriched with EM material properties assigned to each object through pre-processing and by referring to the ITU recommendation [31]. We refer to this as the urban scenario. To assess the generality of the proposed framework, we additionally consider the suburban and rural scenar-ios, generated from open geospatial data provided by the Estonian Land Board portal 3. The two scenarios 
+
+> 3https://geoportaal.maaamet.ee/.
+
+correspond to distinct areas of Tallinn, Estonia, each covering 300 × 300 m2, with BS heights of 20 .5 m and 
+
+21 m for the suburban and rural cases, respectively. The suburban scenario exhibits an intermediate building density, whereas the rural scenario is characterized by sparse buildings and reduced multipath richness. The RT settings reported in Table II are kept identical across all three scenarios, so that only the propagation environment changes. Unless otherwise specified, the urban scenario is used as the reference case throughout the paper, while the suburban and rural scenarios are introduced to verify that the main conclusions are not specific to dense urban propagation conditions. For each environment, two complementary RT datasets are generated: (i) a grid-based simulation, used only to build the fingerprinting database, where UEs are placed on a regular spatial grid ( 2 × 2 m2) at fixed height and no vehicular dynamics are included; and (ii) a vehicu-lar simulation, used in all performance evaluations as ground-truth channel realization, where UEs are placed on realistic vehicle meshes generated by SUMO [32] and vehicle dynamics are explicitly modeled. In both setups, RT provides, for each UE–BS pair and propagation path, the azimuth and elevation AoA/AoD, the propagation delay, and the path gain. The adopted MIMO-OFDM system assumes a uniform linear array (ULA) at the UE and a uniform planar array (UPA) at the BS, both with antenna spacing equal to 
+
+λ/ 2. A root-raised cosine (RRC) pulse shaping filter with roll-off factor β = 0 .2 is employed. The system follows the 5G NR numerology μ = 4 , corresponding to a subcarrier spacing of 240 kHz. Each slot contains 14 OFDM symbols, with a slot duration of Tslot = 62 .5, μ s. In accordance with the adopted 5G NR slot structure, one uplink training OFDM symbol is transmitted per slot. In the following, we consider M = 100 training symbols, corresponding to an interval TST = 6 .25 ms [2]. Furthermore, we assume a fixed number of transmit antennas Nt = 2 and a number of pilot subcarriers Np = Nsc /2.For numerical comparison, the following baseline esti-mators are considered: a ML estimator [26]; Conventional data-driven LR and MMSE estimators [2], [29], where the channel covariance matrix is estimated from M = 100 
+
+ML channel estimates. The rank is set equal to the true channel subspace dimension to isolate the effect of co-variance mismatch; Fingerprinting-based LR and MMSE estimators [4], [33], where the prior ST eigenstructure is retrieved from the grid point closest to the estimated UE position obtained from the grid-based simulation; Ideal LR and MMSE estimators, assuming perfect knowledge of the true channel eigenstructure. For all estimators except ML and ideal ones, the noise power is estimated from Mw = 1 
+
+training symbol as in (13). To model EM calibration mismatches in a compact form, we introduce a relative gain perturbation model. This model provides a simplified aggregate representation of EM calibration uncertainties, consistent with the first-order analysis. The considered perturbation levels are 11 
+
+TABLE III: Similarity metric η under positioning ( σg = 0 )and gain ( σp = 0 ) perturbations in the urban scenario.                               
+
+> Positioning ( σp[m]) Gain ( σg)Config. 0.1 110 0.1 0.25 0.5
+> 4,32 1.000 1.000 0.976 0.995 0.970 0.918
+> 8,64 1.000 0.995 0.934 0.995 0.965 0.917
+> 16 ,128 1.000 0.991 0.882 0.995 0.960 0.905
+
+not intended to reproduce a specific material estimation error. Rather, they represent moderate aggregate levels of uncertainty affecting the predicted path gains, encompass-ing inaccuracies in the EM characterization of materials, simplified material descriptions, and calibration imper-fections. Specifically, the perturbation affecting the pth path is expressed as ∆Ω p = Ω pβp, where βp ∼ N (0 , σ 2 
+
+> g
+
+)
+
+captures the aggregate effect of EM calibration errors along the propagation path, and σg denotes the normalized standard deviation. Accordingly, the gain perturbation vector satisfies ∆Ω ∼ N (0, ΣΩ), with ΣΩ = σ2 
+
+> g
+
+diag( Ω2).Positioning uncertainty is modeled as ∆p ∼ N (0, σ 2 
+
+> p
+
+I3),where σp denotes the standard deviation of the UE positioning error. The resulting ST feature perturbations satisfy ∆ξ ∼ N (0, σ 2 
+
+> p
+
+JJ T), where the matrix J (see Sec. IV-A) is computed from the scene geometry. B. Subspace Similarity Analysis We first assess the impact of positioning and EM calibration errors on the DT-provided channel covariance matrix. To this end, we adopt the similarity metric 
+
+η = E
+
+
+
+Tr 
+
+{
+
+R(ξ, Ω)HR(ˆξ, ˆΩ)
+
+}
+
+Tr {R(ξ, Ω)H} Tr 
+
+{
+
+R(ˆξ, ˆΩ)
+
+} , (38) which provides a normalized measure of the average correlation between the ground-truth and DT-provided covariance matrices. This metric jointly captures subspace deviations and eigenvalue distortions, and therefore re-flects the overall eigenstructure mismatch. Table III reports the similarity metric under both positioning and gain perturbations for different system configurations. Under positioning errors (σg = 0), as discussed in Sec. IV, perturbations jointly affect AoA, AoD, and delay, resulting in a distortion of the channel eigenstructure. For centimeter-level perturbations, the similarity remains close to one, indicating that the eigen-structure is accurately preserved. However, as σp increases, a clear degradation is observed, which becomes more pronounced for larger system dimensions. This behavior reflects the higher sensitivity of high-resolution systems to geometric mismatches, as the finer ST resolution makes the eigenstructure more susceptible to perturbations. In contrast, under gain perturbations (σp = 0), η
+
+mainly reflects the distortion of the eigenvalue profile, while the channel subspace remains largely unchanged. The perturbation primarily redistributes power across the propagation modes, with limited impact on the dominant 10 -1 10 0 10 1
+
+> -70 -60 -50 -40 -30 -20 -10 0
+
+Fig. 3: Projection error floor versus positioning error standard deviation σp for different system configurations in the urban scenario .eigenstructure. As a result, η remains high across all configurations, even for relatively large values of σg , and exhibits only a weak dependence on the system dimension. C. NMSE Analysis under Perturbations We next consider the projection error term introduced in (35), which captures the residual channel energy outside the DT-provided subspace. In the high SNR regime (σ2 
+
+> w
+
+→ 0), this term corresponds to the projection error, which determines the NMSE of both LR and MMSE estimators, and thus defines a fundamental performance floor. In particular, this analysis provides a practical indication of the maximum tolerable positioning error for a given system configuration when compared to baseline approaches (where the ML estimator is taken as reference). Fig. 3 reports this projection error floor as a function of the positioning error standard deviation. As expected, the floor increases with σp. For small positioning errors (roughly σp < 0.2 m), the floor remains very low (below approximately −30 dB), indicating that the DT accurately reconstructs the eigenstructure of the channel. However, for σp ≈ 1 m, the floor increases, revealing a substan-tial loss due to eigenstructure mismatches especially for higher-resolution configurations. More specifically, in the configuration with Nr = 16 and Nsc = 128 , the admissible positioning error lies approximately in the range 0.4–0.6
+
+m when compared to the ML estimator at SNR = 20 dB, while with Nr = 8 and Nsc = 64 the maximum tolerable positioning error is roughly 1 m .We then evaluate the NMSE performance of the DT-empowered LR estimator under joint gain and positioning perturbations for finite SNR values and for a system configuration with Nr = 16 and Nsc = 128 . To this end, Fig. 4 shows the NMSE performance as a function of σp,for different SNR values and gain perturbation levels in the urban scenario. The DT-empowered LR estimator is essentially insensitive to gain perturbations, as the curves corresponding to σg = 0 and σg = 0 .5 overlap across the entire σp range for all SNR values. This behavior provides 12 10 -1 10 0 10 1
+
+> -50 -40 -30 -20 -10 010
+
+Fig. 4: NMSE of the DT-empowered LR estimator versus positioning standard deviation σp in the urban scenario, for different SNRs and gain perturbations levels. Solid and dashed curves correspond to σg = 0 and σg = 0 .5,respectively. a direct validation of the theoretical analysis, confirming that LR estimation depends only on the channel subspace, which remains unaffected by gain perturbations as long as the dominant propagation structure is preserved. We further consider the DT-empowered MMSE esti-mator in the three propagation scenarios. Fig. 5 reports the NMSE performance as a function of σp in the urban, suburban, and rural scenarios. In contrast to LR estima-tion, MMSE exhibits a moderate sensitivity to gain per-turbations because it depends not only on the dominant subspace but also on the covariance eigenvalue profile, which is directly affected by gain errors through the eigenvalue-dependent shrinkage coefficients. Nevertheless, the resulting degradation remains limited compared to that induced by positioning errors. Although the absolute NMSE slightly differs across the three environments in the absence of perturbations because of the different propagation characteristics and channel sparsity, the impact of positioning and gain errors follows the same qualitative behavior. Gain perturbations only moderately affect the MMSE estimator, yielding less than 2 dB degradation at σp = 1 m across all considered SNR values. In contrast, positioning errors remain the dominant impairment, leading to nearly iden-tical degradation trends in all considered propagation environments. These results confirm that the observed be-havior is consistent across environments with substantially different propagation characteristics, thereby supporting the generality of the previous analysis. More importantly, these results consistently show that positioning errors represent the primary source of degra-dation. As σp increases, the NMSE deteriorates across all SNR regimes, reflecting the impact of eigenstructure mismatch induced by geometric perturbations. This effect is particularly pronounced at high SNR, where the noise contribution becomes negligible and the performance is dominated by subspace mismatch. At low SNR, the NMSE is dominated by noise and remains nearly constant across different values of σp. As the SNR increases, the noise contribution diminishes and the estimation performance becomes limited by eigenstructure mismatch, leading to an NMSE floor determined by the projection error. This tran-sition clearly highlights the fundamental role of subspace mismatch in limiting the performance of DT-empowered estimators and confirms the key theoretical insight that positioning errors, rather than gain perturbations, con-stitute the main bottleneck in DT-empowered channel estimation. D. Performance Evaluation Against Baseline Approaches Finally, Fig. 6 compares the proposed DT-empowered estimators with baseline approaches as a function of the SNR in the urban, suburban, and rural scenarios. Fig. 6(a), Fig. 6(b), and Fig. 6(c) report the LR results in the urban, suburban, and rural scenarios, respectively, whereas Fig. 6(d), Fig. 6(e), and Fig. 6(f) report the corresponding MMSE results. For LR estimation, Fig. 6(a), Fig. 6(b), and Fig. 6(c) show that the DT-empowered estimator provides a clear advantage in the low- and medium-SNR regimes across the three scenarios, owing to the more accurate subspace information provided by the DT. As the SNR increases, the performance gradually saturates because of the resid-ual mismatch induced by positioning errors. Under the considered perturbation setting, σp = 1 m and σg = 0 .5,this saturation is consistent with the projection error floor observed in Fig. 3. The absolute NMSE values vary across scenarios because the suburban and rural channels generally exhibit a more compact dominant ST subspace than the urban channel, due to their lower multipath richness. For MMSE estimation, Fig. 6(d), Fig. 6(e), and Fig. 6(f) show a similar behavior. The DT-empowered MMSE estimator performs close to the ideal MMSE estimator in the low-SNR regime and provides significant gains over the ML estimator and the fingerprinting-based approach. At higher SNR, the performance is limited by the residual mismatch between the true and DT-reconstructed covari-ance. Since MMSE depends not only on the dominant subspace but also on the covariance eigenvalue profile, it is more sensitive than LR to gain perturbations. Never-theless, consistently with Fig. 5, the dominant limitation remains the positioning-induced eigenspace mismatch. The comparison across scenarios also clarifies the behav-ior of the fingerprinting-based benchmark. In the rural sce-nario, this baseline becomes closer to the DT-empowered estimators because the propagation is sparser and the spatial channel variations are smoother. In this case, the nearest-grid covariance is more representative of the actual UE channel, reducing the mismatch introduced by grid discretization. Fingerprinting-based approaches are, hence, inherently limited by the spatial resolution of the underlying grid. The discretization introduces mismatches in the reconstructed propagation structure, leading to artificial shadowing effects (i.e., spurious path birth/loss). 13 10 -1 10 0 10 1
+
+> -50 -40 -30 -20 -10 010
+
+(a) Urban 10 -1 10 0 10 1 
+
+> -50 -40 -30 -20 -10 010
+
+(b) Suburban 10 -1 10 0 10 1 
+
+> -50 -40 -30 -20 -10 010
+
+(c) Rural 
+
+Fig. 5: NMSE of the DT-empowered MMSE estimator versus positioning standard deviation σp for different SNR values, gain perturbations levels, and scenarios. Solid and dashed curves correspond to σg = 0 and σg = 0 .5, respectively. -20 -10 0 10 20 
+
+> -40 -30 -20 -10 010 20 30
+
+(a) Urban -20 -10 0 10 20  
+
+> -40 -30 -20 -10 010 20 30
+
+(b) Suburban -20 -10 0 10 20  
+
+> -40 -30 -20 -10 010 20 30
+
+(c) Rural -20 -10 0 10 20 
+
+> -40 -30 -20 -10 010 20 30
+
+(d) Urban -20 -10 0 10 20  
+
+> -40 -30 -20 -10 010 20 30
+
+(e) Suburban -20 -10 0 10 20  
+
+> -40 -30 -20 -10 010 20 30
+
+(f) Rural 
+
+Fig. 6: NMSE versus SNR for the DT-empowered LR and MMSE estimators and baseline methods under σp = 1 m 
+
+and σg = 0 .5 across the considered scenarios. This degrades the estimated channel eigenstructure, ex-plaining the observed performance gap and saturation behavior. Overall, these results show that the DT-empowered framework provides a reliable and physically consistent prior for channel estimation across outdoor scenarios with different building densities, propagation sparsity, and multipath richness. Performance gains are most significant at low SNR and remain robust to gain perturbations, while ultimately limited by UE positioning accuracy. VI. Conclusion This paper investigated the robustness of DT-empowered channel estimation in wideband MIMO sys-tems, where site-specific propagation features extracted via RT are used to reconstruct the channel covariance eigenstructure and enable LR and MMSE estimation. By developing first-order perturbation models, we showed that positioning errors induce geometric mismatches that distort the channel subspace, while EM calibration errors mainly affect the eigenvalue profile. This structural dis-tinction explains the different sensitivity of the estimators, with LR being inherently robust to EM perturbations and MMSE affected by both subspace and eigenvalue mismatches. Numerical results across urban, suburban, and rural scenarios confirmed that the proposed frame-work exhibits consistent behavior across environments with different building densities, propagation sparsity, and multipath richness. In all considered scenarios, positioning inaccuracies are the dominant source of performance degradation, whereas EM calibration errors have a com-paratively limited impact. Overall, the results highlight the critical role of accurate geometric information in DT-enabled communications. Future work will focus on extending the analysis to large mismatches and imper-fect 3D scene reconstruction, as well as on integrating 14 
+
+adaptive techniques to mitigate subspace distortions in practical DT systems. A further relevant direction is the measurement-based validation of the proposed framework: controlled channel measurements at known UE positions would allow the RT-reconstructed covariance eigenstruc-ture to be compared with the sample covariance and would enable direct quantification of the perturbation levels induced by realistic positioning and EM calibration errors. Appendix A First-Order Approximation of ST features In this appendix, we derive first-order Taylor approxi-mations of distance, azimuth, and elevation angles under small perturbations of a 3D displacement vector. used to characterize geometric uncertainties in ST features. Con-sider a real-valued function g : R3 → R, with argument 
+
+d = [ d1, d 2, d 3]T ∈ R3. Let d = [ d1, d 2, d 3]T ∈ R3 be an arbitrary point, and let ϵ ∈ R3 denote a small perturbation such that d = d + ϵ. The first-order approximation of g
+
+around d is given by 
+
+g(d + ϵ) = g(d) + ∇g(d)Tϵ + o(∥ϵ∥), (39) where ∇g(d) ∈ R3 denotes the gradient of g evaluated in 
+
+d.In the specific case of g(d) = ∥d∥, the gradient evaluated in d, with d̸ = 0,
+
+∂g (d)
+
+∂d i
+
+= di
+
+∥d∥ , for i = 1 , 2, 3, (40) is ∇g(d) = d/∥d∥ = a. This yields the first-order approximation 
+
+g(d + ϵ) ≈ g(d) + aTϵ. (41) For the particular case of g(d) = atan2( d2, d 1), assume that d belongs to the open set 
+
+D = R2 \ ({(0 , 0) } ∪ { (d1, d 2) ∈ R2 : d1 < 0, d 2 = 0 }) ,
+
+where atan2 is differentiable. The gradient evaluated in d
+
+is 
+
+∇g(d) = 1
+
+ρ2
+
+
+
+−d2
+
+d1
+
+0
+
+ = 1
+
+ρ2 a, (42) where ρ =
+
+√
+
+d21 + d22 and a = [−d2 d1 0]T. The first-order approximation holds locally as 
+
+g(d + ϵ) ≈ g(d) + 1
+
+ρ2 aTϵ. (43) In the specific case of g(d) = arcsin( d3/∥d∥), the gradient evaluated in d, with d̸ = 0 and d21 + d22̸ = 0 
+
+is 
+
+∇g(d) = 1
+
+R2ρ
+
+
+
+−d3d1
+
+−d3d2
+
+d21 + d22
+
+ = 1
+
+R2ρ c, (44) where R2 = ∥d∥2 and c =
+
+[
+
+−d3d1 −d3d2 d21 + d22
+
+]T
+
+.This yields the first-order approximation 
+
+g(d + ϵ) ≈ g(d) + 1
+
+R2ρ cTϵ. (45) Appendix B Material-Induced Perturbations In this appendix, we derive the sensitivity factors for material-induced perturbations and their first-order impact on the path gain. A. Sensitivity Factors for the Reflection Coefficient Consider the reflection coefficient expressed as a func-tion Γ( ε, θ ) of the complex relative permittivity ε ∈ C and the incidence angle θ ∈ [0 , π/ 2] . The sensitivity factor is defined as 
+
+cp,k = ∂Γ( ε, θ p,k )
+
+∂ε 
+
+∣∣∣∣ε=εrp,k 
+
+. (46) For TE polarization, the reflection coefficient is given by 
+
+ΓTE (ε, θ ) = cos θ − √ε − sin 2 θ
+
+cos θ + √ε − sin 2 θ . (47) Let s(ε) = √ε − sin 2 θ, with ∂s (ε) 
+
+> ∂ε
+
+= 12s(ε) . The derivative 
+
+∂ΓTE /∂ε is 
+
+∂ΓTE 
+
+∂ε = − 2 cos θ
+
+(cos θ + s(ε)) 2
+
+∂s (ε)
+
+∂ε . (48) This results in a sensitivity factor for TE polarization 
+
+cTE  
+
+> p,k
+
+= − cos θp,k 
+
+√
+
+εrp,k − sin 2 θp,k 
+
+(
+
+cos θp,k +
+
+√
+
+εrp,k − sin 2 θp,k 
+
+)2 .
+
+(49) For TM polarization, the reflection coefficient is given by 
+
+ΓTM (ε, θ ) = ε cos θ − √ε − sin 2 θε cos θ + √ε − sin 2 θ . (50) The derivative ∂ΓTM /∂ε is 
+
+∂ΓTM 
+
+∂ε = 2 cos θ s (ε) − 2ε cos θ ∂s (ε)
+
+> ∂ε
+
+(ε cos θ + s(ε)) 2 . (51) This yields the sensitivity factor 
+
+cTM  
+
+> p,k
+
+=cos θp,k 
+
+(√
+
+εrp,k − sin 2 θp,k − εrp,k 
+
+√εrp,k −sin 2 θp,k 
+
+)(
+
+εrp,k cos θp,k +
+
+√
+
+εrp,k − sin 2 θp,k 
+
+)2 .
+
+(52) For general polarization conditions, the effective re-flection coefficient can be modeled as a combination of TE and TM components. This representation should be interpreted as an effective parametrization rather than a strict physical decomposition. B. First-Order Propagation to the Path Gain Consider the DT path gain 
+
+ˆΩp = Ω (0) 
+
+> pKp
+
+∏
+
+> k=1
+
+|ˆΓp,k |2. (53) 15 
+
+Using the first-order approximation ˆΓp,k ≈ Γp,k +
+
+cp,k δε rp,k , we expand the squared magnitude as 
+
+|ˆΓp,k |2 = |Γp,k |2 +2 ℜ{ Γ∗
+
+> p,k
+
+cp,k δε rp,k }+|cp,k |2|δε rp,k |2. (54) Under the small-perturbation assumption, the quadratic term |cp,k |2|δε rp,k |2 is neglected. Hence, 
+
+|ˆΓp,k |2 ≈ | Γp,k |2 + 2 ℜ{ Γ∗
+
+> p,k
+
+cp,k δε rp,k }. (55) Substituting into the product and retaining only first-order terms yields 
+
+ˆΩp ≈Ω(0) 
+
+> pKp
+
+∏
+
+> k=1
+
+|Γp,k |2
+
++ Ω (0) 
+
+> pKp
+
+∑
+
+> k=1
+
+2 ℜ{ Γ∗
+
+> p,k
+
+cp,k δε rp,k }
+
+> Kp
+
+∏ 
+
+> m=1
+> m̸=k
+
+|Γp,m |2
+
+ .
+
+(56) Recognizing that Ωp = Ω (0) 
+
+> p
+
+∏Kp 
+
+> m=1
+
+|Γp,m |2, it follows that 
+
+Ω(0) 
+
+> p
+
+∏  
+
+> m̸=k
+
+|Γp,m |2 = Ω p/|Γp,k |2, and hence 
+
+ˆΩp ≈ Ωp +
+
+> Kp
+
+∑
+
+> k=1
+
+2 Ω p ℜ
+
+{ Γ∗
+
+> p,k
+
+|Γp,k |2 cp,k δε rp,k 
+
+}
+
+. (57) Since Γp,k Γ∗ 
+
+> p,k
+
+= |Γp,k |2, we have Γ∗
+
+> p,k
+
+/|Γp,k |2 = 1 /Γp,k ,which yields 
+
+ˆΩp ≈ Ωp + Ω pKp
+
+∑
+
+> k=1
+
+ℜ
+
+{ 2cp,k 
+
+Γp,k 
+
+δε rp,k 
+
+}
+
+. (58) Defining the complex sensitivity coefficient αp,k =2cp,k /Γp,k , the first-order perturbation model can be compactly expressed as 
+
+ˆΩp ≈ Ωp + Ω pKp
+
+∑
+
+> k=1
+
+ℜ{αp,k δε rp,k 
+
+} . (59) References 
+
+[1] W. Jiang, B. Han, M. A. Habibi, and H. D. Schotten, “The road towards 6g: A comprehensive survey,” IEEE Open Journal of the Communications Society, vol. 2, pp. 334–366, 2021. [2] A. Brighente, M. Cerutti, M. Nicoli, S. Tomasin, and U. Spag-nolini, “Estimation of wideband dynamic mmwave and thz channels for 5g systems and beyond,” IEEE Journal on Selected Areas in Communications, vol. 38, no. 9, pp. 2026–2040, 2020. [3] H. Xie, F. Gao, and S. Jin, “An overview of low-rank channel estimation for massive mimo systems,” IEEE Access, vol. 4, pp. 7313–7321, 2016. [4] M. Mizmizi, D. Tagliaferri, D. Badini, C. Mazzucco, and U. Spagnolini, “Channel estimation for 6g v2x hybrid systems using multi-vehicular learning,” IEEE Access, vol. 9, pp. 95 775– 95 790, 2021. [5] Y. Li, A. S. Madhukumar, Z. Chu, G. Zheng, C.-X. Wang, and K. Yang, “Wideband hybrid-field thz um-mimo channel esti-mation: A dual-attention-aided deep-unfolded bayesian learning approach,” IEEE Transactions on Communications, vol. 74, pp. 6523–6540, 2026. [6] Y. Li and A. S. Madhukumar, “Hybrid near- and far-field thz um-mimo channel estimation: A sparsifying matrix learning-aided bayesian approach,” IEEE Transactions on Wireless Com-munications, vol. 24, no. 3, pp. 1881–1897, 2025. [7] Q. Li, M. El-Hajjar, C. Xu, J. An, C. Yuen, and L. Hanzo, “Stacked intelligent metasurface-based transceiver design for near-field wideband systems,” IEEE Transactions on Commu-nications, vol. 73, no. 9, pp. 8125–8139, 2025. [8] A. Wei, Z. Wang, K. Fang, J. Zhang, Y. Dong, L. Yang, and Q. Li, “Near-field beam training design for stacked intelligent metasurface assisted communication systems,” IEEE Transac-tions on Vehicular Technology, pp. 1–6, 2026. [9] Y. Zeng, J. Chen, J. Xu, D. Wu, X. Xu, S. Jin, X. Gao, D. Gesbert, S. Cui, and R. Zhang, “A tutorial on environment-aware communications via channel knowledge map for 6g,” IEEE Communications Surveys & Tutorials, vol. 26, no. 3, pp. 1478–1519, 2024. [10] X. Lin, L. Kundu, C. Dick, E. Obiodu, T. Mostak, and M. Flax-man, “6g digital twin networks: From theory to practice,” IEEE Communications Magazine, vol. 61, no. 11, pp. 72–78, 2023. [11] L. Cazzella, F. Linsalata, D. Badini, M. Matteucci, M. Mag-arini, and U. Spagnolini, “High-fidelity rf mapping: Assessing environmental modeling in 6g network digital twins,” Computer Networks, p. 111797, 2025. [12] Y. Fang, S. Xu, C. Fang, S. He, C. Li, Y. Huang, and L. Yang, “High-fidelity digital twin channel modeling for ris-assisted wireless communication systems,” IEEE Transactions on Communications, vol. 74, pp. 6904–6921, 2026. [13] S. Kamioka, T. Yamazaki, and T. Miyoshi, “Implementation and evaluation of digital twin using lidar and 3d city models,” in 2025 1st International Conference on Consumer Technology (ICCT-Pacific), 2025, pp. 1–3. [14] C. Ruah, O. Simeone, J. Hoydis, and B. Al-Hashimi, “Calibrat-ing wireless ray tracing for digital twinning using local phase error estimates,” IEEE Transactions on Machine Learning in Communications and Networking, vol. 2, pp. 1193–1215, 2024. [15] F. Ait Aoudia, J. Hoydis et al., “Sionna rt: Differentiable ray tracing for radio propagation modeling,” arXiv preprint arXiv:2303.xxxxx, 2023. [16] M. Zhu, L. Cazzella, F. Linsalata, M. Magarini, M. Matteucci, and U. Spagnolini, “Toward real-time digital twins of em environments: Computational benchmark for ray launching software,” IEEE Open Journal of the Communications Society, vol. 5, pp. 6291–6302, 2024. [17] Y. Wu, K. Zhang, and Y. Zhang, “Digital twin networks: A survey,” IEEE Internet of Things Journal, vol. 8, no. 18, pp. 13 789–13 804, 2021. [18] H. Luo and A. Alkhateeb, “Digital twin aided compressive sensing: Enabling sitespecific mimo hybrid precoding,” in 2024 58th Asilomar Conference on Signals, Systems, and Computers, 2024, pp. 17–21. [19] J. Morais and A. Alkhateeb, “Localization in digital twin mimo networks: A case for massive fingerprinting,” in 2024 IEEE International Conference on Communications Workshops (ICC Workshops), 2024, pp. 276–281. [20] H. Luo, S. Jiang, S. R. Khosravirad, and A. Alkhateeb, “Digital twin aided massive mimo csi feedback: Exploring the impact of twinning fidelity,” IEEE Transactions on Communications, vol. 73, no. 12, pp. 15 909–15 925, 2025. [21] S. Alikhani and A. Alkhateeb, “Digital twin aided channel estimation: Zone-specific subspace prediction and calibration,” in 2025 IEEE International Conference on Machine Learning for Communication and Networking (ICMLCN), 2025, pp. 1–6. [22] L. D. Moro, F. Linsalata, M. Mizmizi, M. Magarini, D. Badini, and U. Spagnolini, “Bayesian em digital twins channel estima-tion,” IEEE Wireless Communications Letters, vol. 14, no. 5, pp. 1326–1330, 2025. [23] L. Del Moro, F. Linsalata, M. Mizmizi, D. Badini, U. Spagnolini, and M. Magarini, “Channel estimation via digital twins with limited a priori knowledge,” in 2025 IEEE 36th International Symposium on Personal, Indoor and Mobile Radio Communi-cations (PIMRC), 2025, pp. 1–6. [24] J. Hoydis, F. A. Aoudia, S. Cammerer, F. Euchner, M. Nimier-David, S. T. Brink, and A. Keller, “Learning radio environments by differentiable ray tracing,” IEEE Transactions on Machine Learning in Communications and Networking, vol. 2, pp. 1527– 1539, 2024. [25] O. Kanhere, H. Poddar, and T. S. Rappaport, “Calibration of nyuray for ray tracing using 28, 73, and 142 ghz channel mea-surements conducted in indoor, outdoor, and factory scenarios,” IEEE Transactions on Antennas and Propagation, vol. 73, no. 1, pp. 405–420, 2025. [26] M. Gao, X. Yang, M. Zhou, J. Cheng, J. Wang, and D. Niyato, “Uplink pilot allocation for csi-based single-site indoor posi-16 
+
+tioning in mimo-ofdm isac systems,” IEEE Transactions on Communications, vol. 74, pp. 6734–6749, 2026. [27] E. Björnson and ￿. Demir, Introduction to Multiple Antenna Communications and Reconfigurable Surfaces. Foundations and Trends in Signal Processing, 2024. [28] E. Björnson, L. Sanguinetti, and M. Debbah, “Massive mimo with imperfect channel covariance information,” in 2016 50th Asilomar Conference on Signals, Systems and Computers, 2016, pp. 974–978. [29] G. Bacci, A. Alberto D’Amico, and L. Sanguinetti, “Mmse channel estimation in large-scale mimo: Improved robustness with reduced complexity,” IEEE Transactions on Wireless Communications, vol. 23, no. 12, pp. 18 563–18 575, 2024. [30] F. Fuschini, S. Häfner, M. Zoli, R. Müller, E. M. Vitucci, D. Dupleich, M. Barbiroli, J. Luo, E. Schulz, V. Degli-Esposti, and R. S. Thomä, “Analysis of in-room mm-wave propagation: Directional channel measurements and ray tracing simulations,” Journal of Infrared, Millimeter, and Terahertz Waves, vol. 38, pp. 727–744, 2017. [31] International Telecommunications Union Radiocommunication Sector. P.2040 : Effects of Building Materials and Structures on Radiowave Propagation Above About 100 MHz. https://www. itu.int/rec/R-REC-P.2040/en. [32] P. A. Lopez, M. Behrisch, M. Bieker-Walz, J. Erdmann, Y.-P. Flötteröd, R. Hilbrich, L. Lücken, J. Rummel, P. Wagner, and E. Wießner, “Microscopic traffic simulation using sumo,” in 2018 21st International Conference on Intelligent Transporta-tion Systems (ITSC). IEEE, 2018, pp. 2575–2582. [33] Y. Qiu, D. Wu, and Y. Zeng, “Ckm-based environment-aware pilot reuse and channel estimation,” in 2024 16th International Conference on Wireless Communications and Signal Processing (WCSP), 2024, pp. 169–174.

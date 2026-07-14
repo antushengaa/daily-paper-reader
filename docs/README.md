@@ -6,27 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-13
-- 运行时间：2026-07-13 21:14:05 UTC
+- 最新运行日期：2026-07-14
+- 运行时间：2026-07-14 21:30:04 UTC
 - 运行状态：成功
-- 本次总论文数：2
-- 精读区：0
+- 本次总论文数：4
+- 精读区：2
 - 速读区：2
 
 ### 今日简报（AI）
-今日速读两篇论文，均为6.0/10分，分别涉及水声数据自监督探索与无线电地图生成。值得关注的是自监督方法在少标注水声数据中的应用，以及生成式无线电地图在多波束选择与定位中的潜力。建议普通读者可优先了解自监督学习如何降低标注成本，或无线电地图在6G通信中的辅助价值。
-- 详情：[/202607/13/README](/202607/13/README)
+今日精读2篇速读2篇，聚焦定位算法与医学影像分析。最值得看的是《A Closed-Form Noise-Sensitivity Asymmetry for Causal Branch Selection in Minimal-Array TDoA Localization》（9.0分），揭示TDoA定位中因果分支选择的噪声敏感性新结论。建议优先关注数字孪生信道估计中的几何与校准不确定性研究。
+- 详情：[/202607/14/README](/202607/14/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [A Closed-Form Noise-Sensitivity Asymmetry for Causal Branch Selection in Minimal-Array TDoA Localization](/202607/14/2607.10129v1-a-closed-form-noise-sensitivity-asymmetry-for-causal-branch-selection-in-minimal-array-tdoa-localization)  
+   标签：评分：9.0/10、query:gso
+   evidence：最小阵列TDoA定位；分支选择歧义消解
+2. [Projection-Domain Sensitivity Analysis of Vertebral DRRs Under Intrinsic Calibration Perturbation](/202607/14/2607.10551v1-projection-domain-sensitivity-analysis-of-vertebral-drrs-under-intrinsic-calibration-perturbation)  
+   标签：评分：8.0/10、query:gso
+   evidence：精确几何校准至关重要；校准扰动对椎体DRR的灵敏度分析
 
 ### 速读区论文标签
-1. [A Self-Supervised Approach for Minimal-Annotation Hydroacoustic Data Exploration](/202607/13/2607.07733v1-a-self-supervised-approach-for-minimal-annotation-hydroacoustic-data-exploration)  
+1. [Site Geometry and Calibration Uncertainties in Digital Twin-enabled Channel Estimation](/202607/14/2607.09334v1-site-geometry-and-calibration-uncertainties-in-digital-twin-enabled-channel-estimation)  
    标签：评分：6.0/10、query:gso
-   evidence：自监督学习处理声学谱图，用于事件发现
-2. [RadioDiff-v2: Generative Angular Radio Maps for Multi-Beam Selection and Localization](/202607/13/2607.08045v1-radiodiff-v2-generative-angular-radio-maps-for-multi-beam-selection-and-localization)  
+   evidence：场地几何与校准不确定性在信道估计中的研究
+2. [Stars2Cells: Astrometric Tracking of Neurons Across Imaging Sessions](/202607/14/biorxiv-10-64898-2026-07-03-736144-v1-stars2cells-astrometric-tracking-of-neurons-across-imaging-sessions)  
    标签：评分：6.0/10、query:gso
-   evidence：生成角度无线电地图用于波束选择和定位，涉及阵列处理
+   evidence：使用不变描述子进行跨会话对齐的几何校准方法
 
 
 <div class="dpr-home-promo-card">
