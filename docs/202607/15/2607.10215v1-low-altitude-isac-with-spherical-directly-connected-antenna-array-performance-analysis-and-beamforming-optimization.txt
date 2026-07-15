@@ -1,0 +1,1571 @@
+Title: Low-Altitude ISAC With Spherical Directly-Connected Antenna Array: Performance Analysis and Beamforming Optimization
+
+URL Source: https://arxiv.org/pdf/2607.10215v1
+
+Published Time: Tue, 14 Jul 2026 00:36:16 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+> 1
+
+# Low-Altitude ISAC With Spherical Directly-Connected Antenna Array: Performance Analysis and Beamforming Optimization 
+
+Zhiqiang Xiao, Tao Zhang, Zhenjun Dong, Hao Wu, Xiaoqiang Xiao, and Jianhua, Zhang, Fellow, IEEE 
+
+Abstract —The safety development requirements of low-altitude economy (LAE) renders the robust low-altitude airspace monitor-ing critical important than ever before. Integrated sensing and communication (ISAC) as one of the key development trends of 6G provides potential solutions for the LAE. However, con-ventional antenna arrays suffer from limited three-dimensional (3D) sensing coverage and degraded angular resolution at high elevation angles. To address these challenges, this paper investi-gates low-altitude ISAC systems enabled by the recently proposed spherical directly-connected antenna array (DCAA). By carefully deploying multiple simple uniform planar arrays (sUPAs) over a spherical surface, without relying on any phase shifter, spherical DCAA enjoys advantages of full 3D coverage, superior and uniform angular resolution, enhanced energy-focusing and low hardware cost. In this paper, we first characterizes the sensing performance of the spherical DCAA, in terms of the sensing signal-to-noise ratio (SNR), area average probability of detection, and Cram´ er-Rao lower bounds (CRLBs) for both elevation and azimuth angle estimation. Then, a low-altitude ISAC optimization problem is formulated to maximize the worst-case sensing SNR over a prescribed aerial region while satisfying the communica-tion quality-of-service requirements of ground users. To effective solve this mixed-integer non-convex problem, we develop a novel greed-based joint array selection and beamforming optimization framework. Simulation results demonstrate that spherical DCAA significantly outperforms conventional UPA in terms of sensing coverage, angle estimation accuracy, and communication-sensing SNR tradeoff, highlighting its potential for future low-altitude ISAC systems. 
+
+Index Terms —Integrated sensing and communication (ISAC), low-altitude ISAC, directly-connected antenna array (DCAA), spherical DCAA, array signal processing. 
+
+I. I NTRODUCTION 
+
+Low-altitude economy (LAE) has attracted significant at-tention recent years, driven by various emerging applications, such as aerial express delivery, drone light show, and three-dimensional (3D) environment mapping. However, due to the complex and dynamic low-altitude environment, aerial platforms including both manned aircrafts and unmanned aerial vehicles (UAV) are exposed to substantial risks of flight accidents, such as collisions, crashes, and airspace intrusions. 
+
+Z. Xiao, T. Zhang, H. Wu and X. Qiao are with the Sixty-Third Research Institute, National University of Defense Technology, Nanjing, 210007, China (e-mail: zhiqiang xiao@nudt.edu.cn, ztcool@126.com). Z. Dong is with Purple Mountain Laboratories, Nanjing 211111, China (e-mail:zhenjun dong@seu.edu.cn). J. Zhang is with the State Key Lab of Networking and Switching Technol-ogy, Beijing University of Posts and Telecommunications, Beijing 100876, China (e-mail: jhzhang@bupt.edu.cn). 
+
+This renders the real-time low-altitude airspace sensing critical important for the safety development of the LAE [1]–[3]. As an important development trend of sixth-generation (6G) wireless networks, integrated sensing and communication (ISAC) holds great potentials for supporting the LAE. It is envisioned that densely deployed base stations (BSs) will be capable of simultaneously providing reliable communication and pervasive sensing services in the low-altitude environ-ment [4]–[6]. To this end, extensive research efforts have been devoted to enhancing the sensing capabilities of BSs, including information theory [7], waveform design [8], code-book design [9], network deployment [10], and prototyping experiments [11], etc. However, most of the existing works are developed based on the conventional planar arrays, which face fundamental challenging in supporting high-performance low-altitude ISAC. First, due to the high mobility and 3D spatial distribution of aerial targets, antenna arrays are required to provide full 3D coverage for seamless low-altitude sensing. However, conven-tional planar arrays, such as uniform planar array (UPA), are typically designed to provide directional beamforming within a limited angular sector [12]. This may lead to the sensing coverage hole, particularly in the region directly above the BS, that significantly degrades the low-altitude sensing perfor-mance. Although cooperative sensing among multiple BSs can partially alleviate this issue, it inevitably introduces additional signaling overhead and coordination complexity [13]–[15]. Second, the angular resolution of conventional UPA deterio-rates considerably as the target direction departs from the array boresight. Since aerial targets are frequently located in high-elevation region, conventional UPAs often suffer from insuffi-cient angular resolution to distinguish closely spaced aerial targets [16]. Third, although increasing the array aperture can improve both communication and sensing performance, it leads to the rapidly increasing hardware costs. Even with the hybrid analog/digital beamforming (HBF), which signifi-cantly reduces the number of radio frequency (RF) chains, a large number of phase shifters is still required. Furthermore, implementing high-resolution phase shifter remains challeng-ing particularly at millimeter-wave (mmWave) and Terahertz (THz) frequency bands [17], [18]. To address these challenges, recent research has explored several advanced antenna array architectures. For example, lens antenna array can focus the electromagnetic waves onto a small subset of antenna array, thereby significantly reducing the number of RF chains and hardware cost [19]. However, arXiv:2607.10215v1 [eess.SP] 11 Jul 2026 2
+
+as the energy-focusing effect can be essentially interpreted as a spatial Fourier transformation that maps signals into the beamspace domain, lens antenna array still suffers from the degraded angular resolution in high elevation region [20]. With the development of high-speed antenna switching and control technologies, the general concept of reconfigurable antenna array has been recently proposed [21], [22]. Unlike conventional arrays with the static architecture, reconfigurable antenna arrays can adaptively reconfigure the array geometries through antenna selection, movement, or rotation, provding additional spatial degrees of freedom (DoFs) for both com-munication and sensing performance improvement. Repre-sentative examples include sparse multi-input multi-output (MIMO) [23], fluid antenna (FA) [24], movable antenna (MA) [25], pinching antenna (PA) [26], and rotatable antenna (RA) [27]. Furthermore, the tri-hybrid MIMO architecture has been proposed in [21] and [28], which combines conventional HBF with reconfigurable antenna array. Although the aforementioned reconfigurable antenna arrays provide more design DoFs to enhance both communication and sensing performance, they also incur high hardware cost and control overhead. Different from above these, a novel architecture termed directly-connected antenna array (DCAA) has been recently proposed [29]–[33]. The key idea of DCAA is to exploit the inherent energy-focusing capability of simple antenna arrays. Note that even without phase shifters or digital beamforming, electromagnetic waves can still be naturally concentrated around the array boresight. Therefore, by prop-erly deploying the orientations of multiple antenna arrays and dynamically selecting the most suitable arrays to connect with the a less number of RF chains, DCAA can achieve flexible beamforming with significant reduced hardware cost. Building upon the DCAA concept, the ray antenna array (RAA) was first proposed [29], which consists of multiple simple uniform linear arrays (sULAs) arranged in a ray-like structure. Note that all elements within each sULA are directly connected to a common analog combiner or power splitter, while a switch network is employed for the sULA selection. By carefully designing the orientations of sULAs, RAA can achieve direction-independent uniform angular res-olution and enhanced energy-focusing with low hardware cost. The authors in [30] and [31] have investigated RAA for low-altitude ISAC, where both analytical and simulation results demonstrate the superiority of RAA over conventional ULA in terms of sensing coverage and angular resolution. However, RAA faces practical deployment challenges due to the potential blockage between adjacent sULAs. To mitigate this issue, a cylindrical DCAA was proposed [32], where multiple sub-arrays are stacked along the vertical direction to avoid mutual blockage, however it is difficult to provide full 3D coverage. More recently, a spherical DCAA was proposed [33], which generalizes the RAA from a planar to a spherical configuration. The spherical DCAA consists of multiple sim-ple UPAs (sUPAs) distributed over a spherical surface with optimized orientations. Note that the spherical DCAA inherits the key advantages of RAA and can further realize full 3D angular coverage. As the pioneering work on spherical DCAA, [33] mainly focuses on the architecture design, beampattern characterization, and angular resolution analysis. However, how to fully exploit the unique characteristics of spherical DCAA for low-altitude ISAC remains largely unexplored. In this paper, we further investigate the full 3D coverage of spherical DCAA for low-altitude ISAC systems. Specifically, the sensing performance of spherical DCAA is first analyzed, where the close-form expressions of sensing signal-to-noise ratio (SNR), area average probability of detection, and the Cramer-Rao lower bounds (CRLBs) for both elevation and azimuth angle estimation are derived. Furthermore, a low-altitude ISAC optimization problem is formulated to maximize the worst-case sensing SNR over a prescribed aerial sensing re-gion while guaranteeing the communication quality-of-service (QoS) requirements of ground users. To efficiently solve the resulting mixed-integer non-convex problem, a novel greedy-based joint array selection and beamforming optimization framework is developed. The main contributions of this paper are summarized as follows.  
+
+> •
+
+First, the 3D sensing performance of spherical DCAA is characterized, where the conventional UPA employed with Kronecker product codebook (KPC) serves as the benchmark. Specifically, a closed-form expression of the maximum achievable sensing SNR is derived, which re-veals that the spherical DCAA can achieve more uniform and higher sensing SNR distribution over the prescribed region. To further quantify the sensing coverage advan-tage of spherical DCAA, the area average probability of detection is analyzed. Moreover, the approximate closed-form expressions of the CRLBs for both azimuth and elevation angle estimation are derived, which reveals that spherical DCAA enjoys substantially lower CRLBs over the entire angular region than the conventional UPA.  
+
+> •
+
+Second, a low-altitude ISAC optimization problem is formulated to maximize the worst-case sensing SNR within a prescribed aerial sensing region while satisfy-ing the communication signal-to-interference-plus-noise ratio (SINR) requirements of ground users. To solve the resulting mixed-integer non-convex problem, a greedy-based joint array selection and beamforming framework is developed. Furthermore, a closed-form structural solution is first derived for a special orthogonal-channel case, providing useful design insights and enabling a low-complexity implementation for general multi-user com-munication and regional sensing scenarios.  
+
+> •
+
+Third, extensive simulation results are provided to val-idate the effectiveness of spherical DCAA for low-altitude ISAC. The results show that spherical DCAA achieves a superior communication–sensing SNR tradeoff than conventional UPA, thanks to the enhanced energy-focusing capability enabled by directional antenna el-ements. Furthermore, owing to its more uniform and superior angular resolution, spherical DCAA provides significantly improved aerial sensing coverage over the prescribed sensing region. The rest of this paper is organized as follows. Section II first breifly introduce spherical DCAA and describe the considered 3-1 -0.5 10    
+
+> Z[wavelength]
+> 0.5 10.5
+> Y[wavelength]
+> 00.5 1
+> X[wavelength]
+> 0-0.5 -0.5 -1 -1
+> (a)
+
+x y
+
+z
+
+
+
+
+
+u
+
+vp
+
+##  0, 0,1 T
+
+v
+
+##  0,1, 0 T
+
+uw
+
+MM R 
+
+> (b) Fig. 1. An illustration of the spherical DCAA architecture and the placement of each sUPA in the corresponding 3D coordinate system.
+
+low-altitude ISAC system. Section III analyzes the sensing performance of spherical DCAA. In Section IV, a joint array selection and beamforming optimization problem is considered for low-altitude ISAC, where a novel greedy-based algorithm is proposed to solve such a non-convex optimization problem. Simulation results and discussion are detailed in Section V. Finally, Section VI concludes this paper. II. S YSTEM MODEL 
+
+A. Spherical DCAA Architecture 
+
+Fig. 1 gives a schematic illustration of the spherical DCAA architecture in 3D coordinate system. The spherical DCAA consists of N sUPAs arrange on the surface of a sphere. Without loss of generality, we assume that each sUPA employs 
+
+M × M antenna elements with half-wavelength spacing. Different from the conventional UPA, all the antenna elements of each sUPA are directly connected to an analog combiner or splitter, without requiring any phase shifter. Note that the sUPA has the naturally energy-focusing capability, even without relying on analog or digital beamforming. As illustrated in Fig. 1(b), consider the incoming signal with the wave vector w = [ − cos θ cos ϕ, − cos θ sin ϕ, − sin θ]T ,where ϕ and θ denote the azimuth and elevation angles, respectively, with −π ≤ ϕ ≤ π and −π/ 2 ≤ θ ≤ π/ 2.Let u = [0 , 1, 0] T and v = [0 , 0, 1] T be the reference direction vectors along the y- and z-axis, respectively. The orientations of the sUPA with the normal vector p(η, ϑ ) = [cos ϑ cos η, cos ϑ sin η, sin ϑ]T can be represented by 
+
+˜u = R(η, ϑ )u = [ − sin η, cos η, 0] T ,
+
+˜v = R(η, ϑ )v = [ − cos η sin ϑ, − sin η sin ϑ, cos ϑ]T , (1) where R(η, ϑ ) is the rotation matrix without considering the self-spinning of the sUPA, η ∈ [−ηmax , η max ] and ϑ ∈
+
+[−ϑmax , ϑ max ] represent the yaw and pitch angles, rotating round the z- and y-axis, respectively, with 0 ≤ ηmax ≤ π and 
+
+0 ≤ ϑmax ≤ π/ 2. The rotation matrix R(η, ϑ ) is defined as 
+
+R(η, ϑ ) = 
+
+
+
+cos η − sin η 0sin η cos η 00 0 1
+
+
+
+cos ϑ 0 − sin ϑ
+
+0 1 0sin ϑ 0 cos ϑ
+
+ .
+
+(2) For the incoming signal with the wave vector w, the array response vector of the rotated sUPA can be expressed as 
+
+¯a(˜ u, ˜v, w) = ejω 0
+
+pG(˜ u, ˜v, w)a(˜ u, w) ⊗ a(˜ v, w), (3) where ω0 is a common phase shift from the reference antenna element, G(˜ u, ˜v, w) accounts the radiation pattern of each antenna element of the sUPA, which can be also expressed as G(η − ϕ, ϑ − θ), and a(˜ u, w) and a(˜ v, w) are the normalized horizontal and vertical steering vectors of the rotated sUPA, respectively, which is given by a(x, y) =[1 , e jπ xT y, · · · , e j(M −1) πxT y]T . Note that all M × M antenna elements of the sUPA are directly connected, thus the normal-ized beam pattern of the rotated sUPA is 
+
+r(˜ u, ˜v, w)= p1/M 21TM 2×1 ¯a(˜ u, ˜v, w)= ejω 0
+
+pM 2G(˜ u, ˜v, w)HM (−˜uT w)HM (−˜vT w)
+
+≜ ejω 0
+
+pM 2G(η − ϕ, ϑ − θ)f (ϕ, θ ; η, ϑ ),
+
+(4) where HM (x) ≜ ejπ/ 2( M −1) x sin( π/ 2M x )  
+
+> Msin( π/ 2x)
+
+is the Dirichlet kernel function and f (ϕ, θ ; η, ϑ ) is defined as 
+
+f (ϕ, θ ; η, ϑ ) ≜HM (cos θ sin( ϕ − η)) 
+
+× H M (sin θ cos ϑ − cos θ sin ϑ cos( ϕ − η)) .
+
+(5) To facilitate the theoretical analysis, we make the following reasonable assumptions for the antenna pattern G(ϕ, θ ): 
+
+> •
+
+The 3dB beamwidth of G(ϕ, θ ), denoted by (ϕ3dB , θ 3dB ),is wider than the angular resolution defined by the sUPA spacing, for ensuring that G(ϕ, θ ) varies slowly compared to the array factor f (ϕ, θ ; η, ϑ ) within the mainlobe.  
+
+> •
+
+G(ϕ, θ ) is symmetric with respect to (w.r.t.) the boresight and achieves its global maximum at (ϕ, θ ) = (0 , 0) . 
+
+> •
+
+G(ϕ, θ ) is monotonically non-increasing w.r.t. (ϕ, θ )
+
+within the mainlobe for |ϕ| ≤ ϕ3dB /2 and |θ| ≤ θ3dB /2.Note that the transmit response vector for steering a signal towards (ϕ, θ ) can be similarly derived based on (4). Thus, the details are omitted for brevity. Under the above assumptions, we have the following remarks. 
+
+Remark 1 : The beampattern of sUPA in (4) demonstrates the energy-focusing capability even without relying on any analog or digital beamforming. For any incoming/outgoing signal from/to a particular direction (ϕ, θ ), only the sUPA 4UE-1   
+
+> UE-K
+> Sensing Region Target BS-1 BS-2 Echoes
+> xzy
+> Fig. 2. Low-altitude ISAC system based on spherical DCAA.
+
+rotated aligned with (ϕ, θ ) could receive/steering significant power, while the power of all other sUPAs whose boresights deviate from (ϕ, θ ) is almost negligible. 
+
+Remark 2 : The azimuth and elevation angular resolutions, defined as the half of the null-to-null beamwidth of the mainlobe in (4), are respectively given by 
+
+∆ϕ(ϑ) = arcsin 
+
+ 2
+
+M cos ϑ
+
+
+
+, ∆θ = arcsin 
+
+ 2
+
+M
+
+
+
+, (6) where the elevation angular resolution is independent from the incoming signal direction (θ, ϕ ), while although the azimuth angular resolution increases with the elevation angle θ, it has the uniform azimuth angular resolution when the elevation angle is fixed, which is different from the conventional UPA. It implies that the spherical DCAA achieves a more uniform and superior resolution than conventional UPA, especially at the high-elevation regions [33]. 
+
+Remark 3 : According to (4), the 3D angular coverage is naturally divided by the spherical DCAA, where each sUPA is only responsible for a small portion of the total coverage. Thus, spherical DCAA offers a new design degree-of-freedom (DoF) to configure the radiation pattern Gn(·) of each sUPA n
+
+to meet different performance requirements. The aforementioned advantages render the spherical DCAA particular appealing for the emerging low-altitude ISAC ap-plications. In such scenarios, communication users or aerial targets easily traverse the coverage hole of the BS equipped with traditional planar arrays, leading to the degraded commu-nication and sensing performance. In contrast, the spherical DCAA enables full 3D coverage and superior and uniform angular resolution. This thus motivate our current work. 
+
+B. Spherical DCAA-based Low-Altitude ISAC 
+
+As shown in Fig. 2, we consider a spherical DCAA-based low-altitude ISAC system, where BS-1 equipped with the spherical DCAA wishes to communicate with K ground single-antenna user equipments (UEs) while simultaneously providing sensing coverage to the prescribed region A ∈ R3,by cooperating with the BS-2 1. Consider the system operated 
+
+> 1As the transmit signals of BS-1 can be known by BS-2 via backhual, they can serve as the bi-static radar for target sensing.
+
+at the mmWave frequency band and under the far-field wireless propagation assumption. 
+
+1) Communication Model: Let K = {1, · · · , K } be the in-dex set of all K UEs. The multi-path downlink communication channel from the nth sUPA to the kth UE is given by 
+
+hnk = XLk 
+
+> l=1
+
+βkl ¯a(un, vn, wkl ), n ∈ N , k ∈ K , (7) where Lk is the number of multi-paths for user k, βkl 
+
+denotes the complex-valued path gain for the lth path, wkl 
+
+is the normalized wave vector of the lth path, which is given by wkl = [cos θkl cos ϕkl , cos θkl sin ϕkl , sin θkl ]T , with ϕkl 
+
+and θkl being the elevation and azimuth angle-of-departure (AoD), respectively, and ¯a(un, vn, wkl ) is the array response vector of the nth sUPA as given by (3), with the orientation vectors un = R(ηn, ϑ n)u and vn = R(ηn, ϑ n)v. Note that to avoid the blockage, the transmit paths must lie on the same side of the sUPA. This yields the following constraint, 
+
+wTkl p(ηn, ϑ n) > 0, l = 1 , · · · , L k. Therefore, for the spherical DCAA, the downlink communication channels from all N
+
+sUPAs to the kth UE can be compactly expressed as 
+
+¯hk = [ hT
+
+> 1k
+
+, · · · , hTN k ]T = XLl=1 βkl vec( A(wkl )) , (8) where ¯hk ∈ CM 2N ×1 and A(wkl ) ≜ [¯ a(un, vn, wkl )] n∈N .Here, we assume that all K UEs have the same number of multi-paths, i.e., Lk = L, ∀k, for notation simplicity. Denote by s = [ s1, · · · , s K ]T the transmit information-bearing symbol vector for all K UEs, with E[ss H ] = IK .The digital transmit beamforming matrix of the BS-1 is given by F = [f1, · · · , fK ] ∈ CNRF ×K , where fk ∈ CNRF ×1
+
+denotes the transmit beamforming vector for the kth UE, with 
+
+NRF being the number RF chains. Here, it considers that 
+
+K ≤ NRF < N . The baseband processing output is x = Fs .After that, the array selection network (ASN) is introduced to dynamically select NRF out of N sUPAs to connect with the RF chains for transmission. The array selection matrix is defined as U ∈ RNRF ×N , which is binary matrix, satisfying that ∥[U]i, :∥0 = 1 and ∥[U]:,j ∥0 ≤ 1 for i = 1 , · · · , N RF and 
+
+j = 1 , · · · , N . The transmit output of the ASN is 
+
+¯x = UH x = UH Fs . (9) For signal transmission, the power splitter is directly con-nected with all M × M antenna elements of each sUPA. Finally, the equivalent transmit signal of the spherical DCAA for all M 2N antenna elements is 
+
+xt = ¯ x ⊗ p1/M 21M 2×1. (10) The transmit power of xt satisfies that 
+
+E[∥xt∥2] = E
+
+
+
+¯x ⊗ p1/M 21M 2×1
+
+> 2
+
+
+
+= E[∥¯x∥2] · p1/M 21M 2×1
+
+> 2
+
+= E[∥UH Fs ∥2] (a)
+
+= XKk=1 ∥fk∥2 = Pt,
+
+(11) where Pt denotes the total transmit power and (a) holds since 
+
+UU H = INRF and E[ss H ] = IK .5
+
+With the downlink communication channel in (8), the re-ceived signal at the kth UE is 
+
+yk = ¯hHk xt + zk
+
+=   X Ll=1 βkl vec( A(wkl )) H  ¯x ⊗ p1/M 21M 2×1
+
+ + zk
+
+=   X Ll=1 βkl 
+
+p1/M 21M 2×1A(wkl )H ¯x + zk
+
+=   X Ll=1 βkl r(wkl )H ¯x + zk,
+
+(12) where r(wkl ) ≜ [r(u1, v1, wkl ), · · · , r (uN , vN , wkl )] T ∈
+
+CN ×1 with r(un, vn, wkl ), n ∈ N according to (4), and zk ∼CN (0 , σ 2) is the additive white Gaussian noise (AWGN). Denote by ¯hek ≜ PLl=1 βkl r(wkl ) the equivalent channel from 
+
+N sUPAs to the kth UE. The received SINR of the kth UE is 
+
+γk(U, F) = 
+
+¯hHek UH fk
+
+> 2
+
+P
+
+> i̸=k
+
+¯hHek UH fi 
+
+> 2
+
++ σ2 , k ∈ K . (13) 
+
+2) Sensing Model: The sensing coverage region is defined as A = D × Φ × Θ, with D = [ dmin , d max ], Φ = [ ϕmin , ϕ max ],and Θ = [ θmin , θ max ]. Consider a point-like target within the sensing coverage region A, whose location can be expressed 
+
+t = dsws, where ws ≜ [cos θs cos ϕs, cos θs sin ϕs, sin θs]T
+
+denotes the normalized wave vector towards (ϕs, θ s) and ds
+
+is the rational distance from the target to BS-1, with ds ∈ D ,
+
+ϕs ∈ Φ, and θs ∈ Θ, respectively. For bistatic sensing, denote by (ϕ′
+
+> s
+
+, θ ′
+
+> s
+
+) the AoA from the target to BS-2. The echo signal received at BS-2 is 
+
+ys(t) = αs(t)b(ϕ′
+
+> s
+
+, θ ′
+
+> s
+
+)r(ws)H ¯x + zs
+
+= αs(t)b(ϕ′
+
+> s
+
+, θ ′
+
+> s
+
+)r(ws)H UH Fs + zs, t ∈ A , (14) where αs(t) ≜
+
+q δ2 
+
+> RCS λ2
+> 4π(4 π∥t∥·∥ t−o2∥)2
+
+ejω s is the complex chan-nel coefficient, with δRCS , o2 ∈ R3, and ωs being the radar cross section (RCS) of the target, the location of BS-2, and the phase rotation, respectively, b(ϕ′
+
+> s
+
+, θ ′
+
+> s
+
+) ∈ CNR×1 is the normalized receive steering vector, and zs is the AWGN vector, satisfying that E[zszHs ] = σ2 
+
+> s
+
+INR , where NR is the number of receive antenna of the BS-2. Note that since the information-bearing symbols s can be prior known by the cooperative BS-2, the randomness of the received echoes can be removed. Moreover, to highlight the potentials of spherical DCAA for sensing, we focus on the AoD (ϕs, θ s) estimation and assume that an optimal receiver beamformer, denoted by g = b(θ′
+
+> s
+
+, ϕ ′
+
+> s
+
+), is applied at BS-2. Thus, the resulting received signal is 
+
+ys(t) = XKk=1 αs(t)r(ws)H UH fk + zs, t ∈ A . (15) The received sensing SNR for a target located at t ∈ A is 
+
+γs(U, F; t) = XKk=1 αs(t)r(ws)H UH fk 
+
+> 2
+
+/σ 2 
+
+> s
+
+. (16) From (13) and (16), it observes that both communication and sensing performance critically depend on the array selec-tion and digital beamforming matrix, i.e., U and F. In the following, we first analyze the spherical DCAA-based sensing performance. After that, a joint array selection and beam-forming optimization problem is considered to simultaneously guaranteeing both communication and sensing performance. III. S ENSING PERFORMANCE ANALYSIS 
+
+In this section, we first analyze the sensing performance of the spherical DCAA. For fairness, we consider the UPA composed of M × M antenna elements as the benchmark, whose normal vector is aligned with the positive y-axis. The steering vector of the UPA towards the target direction 
+
+(ϕs, θ s) can be expressed as 
+
+aUPA (ϕs, θ s) = a(θs) ⊗ a(θs, ϕ s), (17) where a(θs) = [1 , e jπ sin θ, ··· ,e jπ (M −1) sin θs 
+
+]T and a(θs, ϕ s) = [1 , e jπ cos θs sin ϕs , · · · , e jπ (M −1) cos θs sin ϕs ]T . For ease of im-plementation, the conventional KPC is considered for transmit beamforming. The (p, q )-th codeword of the KPC is given by 
+
+fp,q = fq ⊗ fp, with 
+
+fq = 1 /√M [1 , e jπ 2qM , · · · , e jπ (M −1) 2qM ]T ,
+
+fp = 1 /√M [1 , e jπ 2pM , · · · , e jπ (M −1) 2pM ]T , (18) where q ∈ {− Nv −12 , · · · , Nv −12 }, p ∈ {− Nh−12 , · · · , Nh−12 },with Nv = 2 ⌊ M sin θmax  
+
+> 2
+
+⌋+1 and Nh = 2 ⌊ M sin ϕmax  
+
+> 2
+
+⌋+1 being the number of elevation and azimuth codewords, respectively. 
+
+A. Sensing SNR 1) Spherical DCAA: To maximize the sensing SNR of the spherical DCAA for a target located at t ∈ A, dis-regarding the communication constraints, a single RF chain is sufficient. For such scenarios, the problem becomes to select the optimal sUPA n∗ ∈ N , whose normal vector 
+
+p(ηn∗ , ϑ n∗ ) aligns most closely with the wave vector ws,with n∗ = arg max n∈N (wTs p(ηn, ϑ n)) . Therefore, according to (4) and (16), the maximum achievable sensing SNR is 
+
+γs(t) = |αs(t)|2 ¯PtM 2Gn∗ (ηn∗ − ϕs, ϑ n∗ − θs)
+
+× | f (ϕs, θ s; ηn∗ , ϑ n∗ )|2, (19) where ¯Pt ≜ Pt/σ 2 
+
+> s
+
+. Note that the sensing SNR depends on the target location t, parameterized by {ds, ϕ s, θ s}. Since the path-loss factor |αs(t)|2 is governed by the product of the bistatic ranges, i.e., ∥t∥·∥ t−o2∥, to characterize the angular sensitivity of the spherical DCAA independent of |αs(t)|2, we analyze the sensing SNR on a specific Cassini oval Ac ⊆ A [34]. For 
+
+t ∈ A c, it has ∥t∥ · ∥ t − o2∥ = C0, with C0 being a constant, and thus αs(t) = αs.In this case, the sensing SNR primarily depends on the AoD 
+
+(ϕs, θ s) associated with the target location t. When (ϕs, θ s) is aligned with the boresight of the n∗th sUPA, such that ϕs −
+
+ηn∗ = 0 and θs − ϑn∗ = 0 , (19) reduces to 
+
+γs, best = |αs|2 ¯PtM 2Gn∗ (0 , 0) , (20) which corresponds to the best case. In contrast, the worst case occurs when the target is located at the edge of the mainlobe, i.e., |ϕs − ηn∗ | = ∆ ϕ(ϑ∗
+
+> n
+
+)/2 and |θs − ϑn∗ | = ∆ θ/ 2. The maximum achievable sensing SNR for the worst case is 
+
+γs, worst =|αs|2 ¯PtM 2Gn∗
+
+ ∆ϕ(ϑn∗ )2 , ∆θ
+
+2
+
+
+
+× | f (ϕs, θ s; ηn∗ , ϑ n∗ )|2.
+
+(21) 6
+
+To ensure seamless sensing coverage, the sensing SNR for the worst case should be no smaller than γth , i.e., γs, worst ≥ γth .Thus, the antenna element pattern Gn∗ (·, ·) should satisfy that 
+
+Gn∗ (∆ ϕ(ϑn∗ )/2, ∆θ/ 2) ≥ γth 
+
+ξ|f (ϕs, θ s; ηn∗ , ϑ n∗ )|2 , (22) where ξ ≜ |αs|2 ¯PtM 2, and the 3dB beamwidth of Gn∗ (·, ·)
+
+should be no smaller than the angular resolution, i.e., ϕ3dB ≥
+
+∆ϕ(ϑn∗ ) and θ3dB ≥ ∆θ.
+
+2) UPA: Similar to (19), when the codeword fp∗,q ∗ of the KPC aligned with the steering vector aUPA (ϕs, θ s) of UPA, the resulting sensing SNR incorporating the antenna pattern is 
+
+γUPA (ϕs, θ s; p∗, q ∗)= |αs|2 ¯PtM 2GUPA (ϕs, θ s) aH
+
+> UPA
+
+(ϕs, θ s)fp∗,q ∗
+
+> 2
+
+= |αs|2 ¯PtM 2GUPA (ϕs, θ s)×|H M (cos θs sin ϕs − 2p∗/M )HM (sin θs − 2q∗/M )|2
+
+| {z }
+
+> |fBF (ϕs,θ s;p∗,q ∗)|2
+
+,
+
+(23) where GUPA (ϕs, θ s) denotes the antenna pattern of the UPA to-wards the AoD (ϕs, θ s), which only peaks at (ϕs, θ s) = (0 , 0) ,and |fBF (ϕs, θ s; p∗, q ∗)|2 represents the transmit beampattern. Thus, for the best case, i.e., sin θs = 2q∗ 
+
+> M
+
+and sin ϕs =   
+
+> 2p∗
+> Mcos θs
+
+= 2p∗
+
+> M
+> q
+> 1−
+
+( 2q∗ 
+
+> M
+
+)2 , (23) reduces to 
+
+γUPA,best (ϕs, θ s) = |αs|2 ¯PtM 2GUPA (ϕs, θ s). (24) On the other hand, similar to (21), when | sin θs − 2q∗ 
+
+> M
+
+| = 1
+
+> M
+
+and | cos θs sin θs − 2p∗ 
+
+> M
+
+| = 1 
+
+> M
+
+, the worst case of maximum achievable sensing SNR for UPA is derived as 
+
+γUPA,worst (ϕs, θ s) = |αs|2 ¯PtM 2GUPA (ϕs, θ s)|H M (1 /M )|4.
+
+(25) Note that as the boresight of UPA is always aligned with the positive y-axis, to guarantee the seamless coverage, the 3dB beamwidth of UPA antenna pattern, denoted by 
+
+(ϕ3dB,UPA , θ 3dB,UPA ), should cover the whole angular region of interest, i.e., ϕ3dB,UPA ≥ ϕmax − ϕmin and θ3dB,UPA ≥
+
+θmax − θmin . In contrast, for the spherical DCAA, since each sUPA only needs to cover a portion of the whole region, directional antenna elements with enhanced energy-focusing capability can be applied for improving the sensing SNR, while guaranteeing the seamless sensing coverage. Specifically, given the sum of antenna gain as Gsum =R ∞−∞ 
+
+R ∞−∞ G(ϕ, θ )d ϕdθ, the peak antenna gain can be approx-imated expressed as G(0 , 0) ≈ Gsum /(ϵϕ 3dB θ3dB ) [35], where 
+
+ϵ is a positive factor. As the required 3dB beamwidth of UPA is significantly wider than that of the spherical DCAA, with a fixed Gsum , it follows that 
+
+Gn(0 , 0) 
+
+GUPA (0 , 0) = ϕ3dB,UPA θ3dB,UPA 
+
+ϕ3dB ,n θ3dB ,n 
+
+≫ 1, (26) which implies that the spherical DCAA can achieve higher beamforming gain than conventional UPA. Fig. 3 compares the sensing SNR distributions of the con-ventional UPA and the spherical DCAA with omnidirectional and directional antenna patterns, respectively. It observes that (a) (b) (c) (d)  
+
+> Fig. 3. Comparison of the sensing SNR distributions. (a) UPA with omni-directional antenna. (b) UPA with directional antenna. (c) Spherical DCAA with omnidirectional antenna. (d) Spherical DCAA with directional antenna.
+
+the conventional UPA suffers from evident coverage non-uniformity. With omnidirectional antennas, the UPA exhibits strong periodic beam fluctuations, while with directional an-tennas, high sensing SNR is mainly concentrated around the boresight direction, leaving severe low SNR regions at large angular deviations. In contrast, the spherical DCAA provides much more uniform and higher sensing SNR over the considered angular region. Moreover, as each sUPA only needs to cover a small angular sector, when directional antennas are employed, the higher sensing SNR coverage can be achieved, which demonstrates the superiority of the spherical DCAA in terms of the 3D sensing coverage than conventional UPA. The above results are based on point-wise sensing SNR comparison. In the next subsection, we further analyze the average probability of detection over the prescribed sensing region, that provides a more direct characterization of the sensing coverage advantage brought by the spherical DCAA. 
+
+B. Average Probability of Detection 
+
+For a non-fluctuating point target, consider the linear detec-tion under the circularly symmetric complex Gaussian (CSCG) noise, the probability of target detection with a given false alarm probability Pfa is given by [8] 
+
+PD(ϕs, θ s) = Q1
+
+p 2γ(ϕs, θ s), p−2 ln Pfa 
+
+
+
+, (27) where Q1(·, ·) denotes the first-order Marcum Q-function. Assuming that the target angle is uniformly distributed over the angular sensing region Ω ≜ [ϕmin , ϕ max ] × [θmin , θ max ],the average probability of detection is defined as 
+
+¯PD = 1
+
+|Ω|
+
+Z θmax 
+
+> θmin
+
+Z ϕmax 
+
+> ϕmin
+
+PD(ϕs, θ s)dϕ sdθ s
+
+= 1
+
+|Ω|
+
+Z θmax 
+
+> θmin
+
+Z ϕmax 
+
+> ϕmin
+
+Q1
+
+p 2γ(ϕs, θ s), p−2 ln Pfa 
+
+
+
+dϕ sdθ s.
+
+(28) Note that it is difficult to directly obtain the closed-form expression of (28) due to the nonlinear Marcum-Q function and the angle-dependent sensing SNR. 7-30 -20 -10 0 10 20 30 40  
+
+> Transmit Power (dBm)
+> 00.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1
+> Average Probability of Detection
+> UPA, omni. antenna
+> UPA, direct. antenna
+> S-DCAA, omni. antenna
+> S-DCAA, direct. antenna
+> Fig. 4. Average probability of detection comparison for the spherical DCAA and the conventional UPA with omnidirectional and directional antennas.
+
+Nevertheless, as Q1(p2γ(ϕs, θ s), √2 ln Pfa ) is monotoni-cally increasing with the sensing SNR γ(ϕs, θ s) for a given 
+
+Pfa , we obtain that if 
+
+γs(ϕs, θ s) ≥ γUPA (ϕs, θ s), ∀(ϕs, θ s) ∈ Ω, (29) it follows that ¯PD,s ≥ ¯PD, UPA , where ¯Ps,D and ¯Ps, UPA are the average probability of detection of the spherical DCAA and the conventional UPA, respectively, derived according to (27) and (28). In particular, according to the sensing SNR analysis in Section III-A, (29) is guaranteed if 
+
+γs, worst ≥ γUPA,best (ϕs, θ s), ∀(ϕs, θ s) ∈ Ω. (30) By comparing (21) and (24), it has that (30) holds as long as 
+
+Gn∗
+
+ ∆ϕ(ϑn∗ )2 , ∆θ
+
+2
+
+
+
+≥ GUPA (ϕs, θ s)
+
+|f (ϕs, θ s; ηn∗ , ϑ n∗ )|2 . (31) This indicates that the sensing SNR of the spherical DCAA is consistently superior to that of UPA, achieving a higher average probability of detection. Fig. 4 compares the average probability of detection be-tween the spherical DCAA and the conventional UPA with omnidirectional and directional antenna patterns, respectively. It is expected that the spherical DCAA with directional antennas achieves the best detection performance among all considered schemes. Moreover, even with omnidirectional antennas, the spherical DCAA still achieves slightly better detection performance than the UPA. This is because that the spherical DCAA can effectively mitigate the SNR degradation at large azimuth and elevation angles, as shown in Fig. 3(c). In contrast, although the UPA with directional antennas can improve the peak sensing SNR near the array boresight, its fixed orientation causes severe SNR degradation when the target direction deviates from the boresight direction, resulting in the worst average detection performance. 
+
+C. CRLB for Angle Estimation 
+
+In this subsection, we further analyze the CRLBs of the spherical DCAA for both azimuth and elevation angle esti-mation. According to (15), the received sensing signal corre-sponding to the nth probing beam is 
+
+yn = αsrn(ϕs, θ s) + zn, n = 1 , · · · , N, (32) where zn ∼ CN (0 , σ 2 
+
+> s
+
+) and rn(ϕs, θ s) is the sensing response function, which is given by 
+
+rn(ϕs, θ s) = ejω 0 pM 2G(ηn − ϕs, ϑ n − θs)HM (x1,n )HM (x2,n ),
+
+(33) 
+
+according to (4), with 
+
+(x1,n ≜ cos θs sin( ϕs − ηn)
+
+x2,n ≜ sin θs cos ϑn − cos θs sin ϑn cos( ϕs − ηn). (34) Note that since the target reflection coefficient αs is in-dependent to the angle estimation, we assume that it is a deterministic coefficient during the observation interval [36]. Define the stacked observation vector as y = [ y1, · · · , y N ]T .The mean of y is given by μ(ϕs, θ s) = αsr(ϕs, θ s), where 
+
+r(ϕs, θ s) = [ r1(ϕs, θ s), · · · , r N (ϕs, θ s)] T is the sensing re-sponse vector. Let the parameter vector of interest be ξ =[ϕs, θ s]T . The Fisher information matrix (FIM) w.r.t. ξ is 
+
+J = 2|αs|2
+
+σ2
+
+> s
+
+ℜ
+
+ rHϕ rϕ rHϕ rθ
+
+rHθ rϕ rHθ rθ
+
+ 
+
+≜
+
+Jϕϕ Jϕθ 
+
+Jθϕ Jθθ 
+
+
+
+, (35) where rϕ ≜ ∂r(ϕs,θ s) 
+
+> ∂ϕ s
+
+and rθ ≜ ∂r(ϕs,θ s) 
+
+> ∂θ s
+
+. Therefore, the CRLBs of azimuth and elevation angle estimation are 
+
+CRLB ϕs = Jθθ 
+
+Jϕϕ Jθθ − | Jϕθ |2 , (36a) 
+
+CRLB θs = Jϕϕ 
+
+Jϕϕ Jθθ − | Jϕθ |2 . (36b) To gain some insights, suppose that the target direction is aligned with the orientation of the n∗th sUPA, i.e., ϕs ≈ ηn∗
+
+and θs ≈ ϑn∗ . Then, we have the following Theorem 1. 
+
+Theorem 1 : Under the assumption of the slow variation of antenna pattern, i.e., G(ηn − ϕs, ϑ n − θs) ≈ G(0 , 0) , ∀n,the CRLBs for azimuth and elevation angle estimation can be approximately expressed as 
+
+CRLB ϕs ≈ 2σ2
+
+> s
+
+|αs|2π2(M − 1) 2M 2G(0 , 0) cos 2 θs
+
+, (37a) 
+
+CRLB θs ≈ 2σ2
+
+> s
+
+|αs|2π2(M − 1) 2M 2G(0 , 0) . (37b) 
+
+Proof: Please refer to Appendix. By contrast, according to (17) and (18), for the conventional UPA, the received sensing signal corresponding to the (p, q )th KPC probing beam is 
+
+yp,q = αsrUPA (ϕs, θ s; p, q ) + zp,q , (38) where zp,q ∼ CN (0 , σ 2 
+
+> s
+
+) and rUPA (ϕs, θ s; p, q ) denotes the sensing response of the UPA. According to the UPA response and KPC beamforming model, we have 
+
+rUPA (ϕs, θ s; p, q ) = ejω 0
+
+pM 2G(0 , 0) HM (xh)HM (xv ),
+
+(39) with xh ≜ cos θs sin ϕs − 2pM and xv ≜ sin θs − 2qM .Here, for fairness comparison, we consider an omnidirectional 8-80 -60 -40 -20 0 20 40 60 80            
+
+> 10 -6
+> 10 -4
+> 10 -2
+> 10 0
+> 10 2
+> UPA num.
+> UPA approx.
+> S-DCAA num.
+> S-DCAA approx.
+> (a) CRLB for azimuth angle estimation, ϕs= 80 ◦.-80 -60 -40 -20 020 40 60 80
+> 10 -6
+> 10 -4
+> 10 -2
+> 10 0
+> 10 2
+> UPA num.
+> UPA approx.
+> S-DCAA num.
+> S-DCAA approx.
+> (b) CRLB for elevation angle estimation. Fig. 5. CRLB comparison of spherical DCAA and conventional UPA.
+
+antenna pattern, i.e., G(ϕs, θ s) ≈ G(0 , 0) . Therefore, simi-lar to (37), suppose that the (p∗, q ∗)th KPC beam satisfies 
+
+cos θs sin ϕs − 2p⋆ 
+
+> M
+
+≈ 0 and sin θs − 2q⋆ 
+
+> M
+
+≈ 0. The CRLBs of conventional UPA for elevation and azimuth angle estimation can be approximated as 
+
+CRLB UPA  
+
+> ϕs
+
+≈ 2σ2
+
+> s
+
+|αs|2π2(M − 1) 2M 2G(0 , 0) cos 2 θs cos 2 ϕs
+
+(40a) 
+
+CRLB UPA  
+
+> θs
+
+≈ 2σ2
+
+> s
+
+|αs|2π2(M − 1) 2M 2G(0 , 0) cos 2 θs
+
+. (40b) Note that compared with the spherical DCAA, the conven-tional UPA suffers from the direction-dependent performance losses, where the azimuth and elevation CRLBs are degraded by the factors cos 2 ϕs and cos 2 θs, respectively. Since the effective aperture of the UPA decreases significantly when the target direction deviates from the array broadside direction. Fig. 5 compares the CRLB performance of the spherical DCAA and the conventional UPA for azimuth and elevation angle estimation, respectively. We obtain that the spherical DCAA achieves substantially lower CRLBs over the entire angular region and maintains relatively stable estimation ac-curacy due to its 3D spherical deployment. By contrast, the CRLBs of the UPA increase rapidly in large angle directions due to the antenna aperture projection loss. Moreover, the approximate CRLBs closely match with the exact results near the boresight regions, which verifies the accuracy of the proposed analytical approximation. The aforementioned sensing performance is critically deter-mined by the sensing SNR. Moreover, from (13) and (16), it observes that for the spherical DCAA, both communication SINR and sensing SNR depend on the array selection matrix 
+
+U and the digital beamforming matrix F. Therefore, in the fol-lowing, we investigate a joint array selection and beamforming optimization problem for low-altitude ISAC. IV. J OINT ARRAY SELECTION AND BEAMFORMING 
+
+OPTIMIZATION FOR ISAC To guarantee the sensing coverage over the prescribed region A, we aim to maximize the worst-case sensing SNR, while satisfying the communication SINR requirement. The corresponding optimization problem is formulated as 
+
+(P0) : max  
+
+> U,F
+
+min  
+
+> t∈A
+
+γs(U, F; t) (41) 
+
+s.t. γk(U, F) ≥ Γk, k ∈ K , (41a) 
+
+XKk=1 ∥fk∥2 ≤ Pt, (41b) 
+
+U ∈ { 0, 1}NRF ×N , (41c) 
+
+∥Ui, :∥0 = 1 , i = 1 , · · · , N RF , (41d) 
+
+∥U:,j ∥0 ≤ 1, n = 1 , · · · , N, (41e) where Γk > 0 denotes the communication SINR threshold of the kth UE. Note that (P0) is a mixed-integer non-convex optimization problem. To gain useful insights, we first study a special case of orthogonal multi-user communication and point-target sensing, and then extend the results to the general multi-user communication and regional sensing case. 
+
+A. Orthogonal Multi-User Communication and Point Sensing 
+
+According to (13) and (16), denote by as(U) ≜ αsUr (ws)
+
+and ˜hk(U) ≜ U¯hek the effective sensing and communication channel of the kth user, respectively, under a given array selection matrix U. Note that due to the energy-focusing capability of the spherical DCAA, when M ≫ KL and 
+
+NRF > KL , we can assume that the effective communication channels of difference users as well as the sensing channel are asymptotically orthogonal, i.e., ˜hHk1(U)˜hk2(U) = 0 , k1̸ = k2,and aHs (U)˜hk(U) = 0 , k ∈ K .In this case, the sensing and communication SNR can be rewritten as 
+
+γs(U, F; ts) = XKk=1 as(U)H fk 
+
+> 2
+
+/σ 2
+
+> s
+
+γk(U, fk) = |˜hHk (U)fk|2/σ 2
+
+(42) Thus, the problem (P0) reduces to 
+
+(P1) : max 
+
+> U,F
+
+XKk=1 as(U)H fk
+
+> 2
+
+s.t. |˜hHk (U)fk|2 ≥ Γkσ2, k ∈ K ,
+
+(41b)-(41e) .
+
+(43) 9
+
+To solve this problem, first consider a fixed U and the beamforming subproblem of (P1) is formulated as 
+
+(P1 .1) : max 
+
+> F
+
+XKk=1 as(U)H fk
+
+> 2
+
+s.t. |˜hHk (U)fk|2 ≥ Γkσ2, k ∈ K ,
+
+XKk=1 ∥fk∥2 ≤ Pt.
+
+(44) Note that under the orthogonality assumption, the optimal beamformer vector of each user k can be decomposed as 
+
+f ∗ 
+
+> k
+
+= pPc,k ek + pPs,k es, k ∈ K , (45) where ek = ˜hk(U)/∥˜hk(U)∥, es = as(U)/∥as(U)∥, and the communication power required by user k is Pc,k = Γk σ2  
+
+> ∥˜hk(U)∥2
+
+.
+
+To make the problem (P1 .1) feasible, the communication threshold should satisfy that PKk=1 Γk σ2  
+
+> ∥˜hk(U)∥2
+
+≤ Pt.The remaining power after satisfying all communication constraints is Ps = Pt − PKk=1 Pc,k . By evenly allocating the sensing power among K beamformers with Ps,k = Ps/K , the closed-form optimal beamformer is 
+
+f ⋆k =
+
+s
+
+Γkσ2
+
+∥˜hk(U)∥2 ek +
+
+s
+
+Pt − PKk=1 Γk σ2 
+
+> ∥˜hk(U)∥2
+
+K es, k ∈ K .
+
+(46) By substituting (46) into (42), the corresponding maximum sensing SNR is 
+
+γ⋆s (U) = K∥as(U)∥2
+
+σ2
+
+> s
+
+
+
+Pt − XKk=1 
+
+Γkσ2
+
+∥˜hk(U)∥2
+
+
+
+. (47) Then, the problem (P1) can reduce to 
+
+(P1 .2) : max  
+
+> U
+
+∥as(U)∥2
+
+
+
+Pt − XKk=1 
+
+Γkσ2
+
+∥˜hk(U)∥2
+
+
+
+s.t. (41c)-(41e) .
+
+(48) This is a combinatorial problem. Although exhaustive search can obtain the optimal solution, it has prohibitive complexity. By exploiting the closed-form sensing SNR in (47), we pro-pose a low-complexity greedy-based sUPA selection method. Specifically, for the preselected sUPA index set S, define the selection metric as 
+
+ζ(S) = As(S)
+
+
+
+Pt − XKk=1 
+
+Γkσ2
+
+Hk(S)
+
+
+
+, (49) where As(S) and Hk(S) are given by 
+
+As(S) = X 
+
+> n∈S
+
+|as,n |2, Hk(S) = X 
+
+> n∈S
+
+|hk,n |2 (50) with as,n and hc,k,n representing the nth entries of the sensing and communication channels before selection, respectively. Here, it comments that the selected sUPA index set should satisfy Pt − PKk=1 Γk σ2  
+
+> Hk(S)
+
+≥ 0.
+
+Based on (49), a low-complexity greedy-based array selec-tion method can be developed. To make the orthogonality assumption valid, the initial selected set S0 could include the index of the sUPAs matched to the dominant commu-nication and sensing directions, which is given by S(0) =
+
+{ns, n ∗
+
+> 1
+
+, · · · , n ∗ 
+
+> K
+
+}, where 
+
+n∗ 
+
+> k
+
+= arg max  
+
+> n∈N
+
+|rn(wk)|2, k ∈ K ,ns = arg max  
+
+> n∈N
+
+|rn(ws)|2. (51) At each iteration step i, the remain sUPA that gives the largest increase of ζ(S) is selected, i.e., 
+
+n⋆ = arg max  
+
+> n∈N \S
+
+ζ(S ∪ { n}). (52) Then, the selected index set is updated as S(i+1) = S(i)∪{ n⋆}.
+
+This procedure is repeated until |S| = NRF .
+
+B. General Multi-User Communication and Regional Sensing 
+
+For the genercal case, to make the original problem (P0) 
+
+tractable, the sensing region A is discretized into Q grid points, denoted by Q = {1, · · · , Q }. According to (16), the received sensing SNR at tq ∈ A can be rewritten as 
+
+γs(U, F; q) = κq
+
+XKk=1 (Ur (wq )) H fk
+
+> 2
+
+, q ∈ Q , (53) where κq = |αs(tq )|2/σ 2 
+
+> s
+
+. By introducing an auxiliary variable 
+
+Γs that denotes the minimum sensing SNR over all sensing grid points, (P0) can be reformulated as 
+
+(P2) : max 
+
+> U,F,Γs
+
+Γs
+
+s.t. γs(U, F; q) ≥ Γs, q ∈ Q ,
+
+(41a)-(41e) .
+
+(54) It is difficult to directly solving this problem, due to the coupling between the optimization variables U and F, as well as the associated non-convex constraints. Motivated by the analytic results for the special case in Section IV-A, in the following, we propose a novel greedy-based optimization framework to effectively solve this problem. 
+
+1) Greedy-Based Optimization Framework: Starting from the initial set S(0) = {n∗
+
+> 1
+
+, · · · , n ∗ 
+
+> K
+
+}, at the uth iteration (u ≥
+
+0) , for the nth candidate sUPA, with n ∈ N \ S (u), according to (41a) and (53), the communication feasibility margin and the worst-case sensing SNR can be measured as 
+
+μn = min 
+
+> k∈K
+
+γk(U(u) 
+
+> n
+
+, F(u) 
+
+> n
+
+)Γk
+
+, (55a) 
+
+Γs,n = min  
+
+> q∈Q
+
+γs(U(u) 
+
+> n
+
+, F(u) 
+
+> n
+
+; q), (55b) where U(u) 
+
+> n
+
+= Matrix  S(u) ∪ { n} and F(u) 
+
+> n
+
+is the solved beamforming matrix under U(u) 
+
+> n
+
+, which will be presented later in the subsequent subsection. At each iteration u, the candidate sUPA n that maximizes the worst-case sensing SNR while satisfying the communica-tion constraints is selected, i.e., 
+
+n⋆ = arg max 
+
+> n∈F S
+
+Γs,n , (56) 10 
+
+where FS = {n | μn ≥ 1}. Note that if no feasible candidate exists, i.e., FS = ∅, the candidate sUPA that maximizes the communication margin is selected, i.e., 
+
+n⋆ = arg max  
+
+> n
+
+μn. (57) Then, the selected set is updated as S(u+1) = S(u) ∪ { n∗}.This procedure is repeated utill |S| = NRF . The selection matrix can be finally obtained as U∗ = Matrix( S∗), with S
+
+being the final selected index set. In the following, we present that how to optimize the digital beamforming matrix F with the given selection matrix U at each iteration u.
+
+2) Optimization of F With Given U: Define the effective sensing channels at the qth grid as ˜rq = Ur (wq ). The subproblem of (P2) for F optimization can be formulated as 
+
+(P2 .1) : max 
+
+> F,Γs
+
+Γs
+
+s.t. XKk=1 |˜rHq fk|2 ≥ Γs/κ q , q ∈ Q ,
+
+|˜hHk fk|2
+
+P 
+
+> i̸=k
+
+|˜hHk fi|2 + σ2 ≥ Γk, k ∈ K ,
+
+XKk=1 ∥fk∥2 ≤ Pt,
+
+(58) where the communication SINR constraint can be rewritten as the convex second-order cone (SOC) constraints as 
+
+˜hHk f1, · · · , ˜hHk fK , σ ≤
+
+r
+
+1 + 1Γk
+
+Re( ˜hHk fk),
+
+Im( ˜hHk fk) = 0 .
+
+(59) However, as the sensing constraint is non-convex and difficult be transformed into a SOC constraint, here the successive convex approximation (SCA) technique is adopted to deal with the non-convex sensing constraint. Specifically, let gq (F) = PKk=1 |˜rHq fk|2. Since gq (F) is convex, it can be lower bounded by its first-order Taylor expansion at F(i) for the ith iteration, i.e., 
+
+gq (F) ≥gq (F(i)) + 2 XKk=1 Re 
+
+n
+
+(f (i) 
+
+> k
+
+)H ˜rq˜rHq (fk − f (i) 
+
+> k
+
+)
+
+o
+
+≜φq (F, F(i)).
+
+(60) For each iteration i, (P2 .1) can be approximated as 
+
+(P2 .1.1) : max 
+
+> F,Γs
+
+Γs
+
+s.t. φq (F, F(l)) ≥ Γs/κ q , q ∈ Q ,
+
+(59) , k ∈ K ,
+
+XKk=1 ∥fk∥2 ≤ Pt,
+
+(61) which is a convex SOCP problem. It can be efficiently solved by using CVX toolbox. Then, by iteratively updating the local point as F(i+1) = F∗ and iteratively solving a sequence of 
+
+(P2 .1.1) , the problem (P2 .1) can be effectively solved. The overall procedure is summarized in Algorithm 1. The computational complexity is on the order of 
+
+O(N N RF ISCA CSOCP ), where CSCOP denotes the complexity for solving the SCOP subproblem (P2 .1.1) in each SCA iteration, and ISCA represents the number of SCA iterations required for convergence. Although the proposed algorithm is 
+
+Algorithm 1: Greedy-Based SCA for Solving (P2)  
+
+> 1
+
+Input : {¯he,k , Γk}Kk=1 , {r(wq ), κ q }Qq=1 , Pt, ϵ. 
+
+> 2
+
+Output : F∗, U∗, Γ∗ 
+
+> s
+
+. 
+
+> 3
+
+Initialize S(0) = {n∗
+
+> 1
+
+, · · · , n ∗ 
+
+> K
+
+}, u = 0 . 
+
+> 4
+
+while |S (u)| < N RF do  
+
+> 5
+
+Set FS = ∅. 
+
+> 6
+
+for n ∈ N \ S (u) do  
+
+> 7
+
+U(u) 
+
+> n
+
+= Matrix( S(u) ∪ n). 
+
+> 8
+
+Initialize F(0) , Γ(0)  
+
+> s
+
+, i = 0 . 
+
+> 9
+
+repeat  
+
+> 10
+
+Solve (P2 .1.1) to obtain F∗ and Γ∗ 
+
+> s
+
+. 
+
+> 11
+
+Update F(i+1) = F∗. 
+
+> 12
+
+Update Γ(i+1)  
+
+> s
+
+= Γ ∗ 
+
+> s
+
+. 
+
+> 13
+
+i = i + 1 ; 
+
+> 14
+
+until |Γ(i+1)  
+
+> s
+
+− Γ(i) 
+
+> s
+
+| ≤ ϵ; 
+
+> 15
+
+Update F(u) 
+
+> n
+
+= F∗. 
+
+> 16
+
+Compute μn = min     
+
+> k∈K
+> γk(U(u)
+> n,F(u)
+> n)Γk
+
+. 
+
+> 17
+
+Compute Γs,n = min  
+
+> q∈Q
+
+γs(U(u) 
+
+> n
+
+, F(u) 
+
+> n
+
+; q). 
+
+> 18
+
+if μn ≥ 1; then  
+
+> 19
+
+FS = FS ∪ { n}. 
+
+> 20
+
+end  
+
+> 21
+
+end  
+
+> 22
+
+if FS̸ = ∅ then  
+
+> 23
+
+n∗ = arg max 
+
+> n∈F S
+
+Γs,n  
+
+> 24
+
+end  
+
+> 25
+
+else  
+
+> 26
+
+n∗ = arg max 
+
+> n∈N \S (u−1)
+
+μn. 
+
+> 27
+
+end  
+
+> 28
+
+Update S(u+1) = S(u) ∪ { n∗}. 
+
+> 29
+
+u = u + 1 ; 
+
+> 30
+
+end  
+
+> 31
+
+Output U∗ = Matrix( S(u)), F∗, Γ∗ 
+
+> s
+
+.still computational demanding, it provides a tractable solution to the mixed-integer non-convex problem compared to the exhaustive search method. In practice, the SCA-based beam-forming can be replaced by low-complexity beamforming met-ric, such as maximum ratio transmission (MRT) or minimum mean-square error (MMSE), to further reduce the complexity but at the cost of some performance loss. V. S IMULATION RESULTS 
+
+In this section, simulation results are presented to eval-uate the performance of spherical DCAA for low-altitude ISAC systems. For spherical DCAA, each sUPA consists of 
+
+M × M = 64 antenna elements. The maximum elevation and azimuth orientation angles of the sUPA are ϑmax =
+
+ηmax = π/ 2. According to the architecture described in Section II, the resulting spherical DCAA contains N = 101 
+
+candidate sUPAs. For fairness comparison, a conventional UPA composed of M × M = 64 antenna elements is adopted as the benchmark, which employs the KPC with the 11 
+
+beamforming codewords are given by fq,p = fq ⊗ fp, where 
+
+q, p ∈ {− 4, · · · , −1, 0, 1, · · · , 4}. For both spherical DCAA and UPA, the number of RF chains is set to NRF = 7 .In the following, we first present simulation results for the special case in Section IV-A to gain insights into the proposed joint array selection and beamforming design. Then, the effec-tiveness of the proposed optimization framework is evaluated in the general multi-user communication and regional sensing scenario described in Section IV-B. 
+
+A. Orthogonal Multi-User Communication and Point Sensing 
+
+For the special case, we consider three ground communi-cation UEs and a point-like sensing target that are spatially well separated. As a result, the communication and sensing channels are assumed to be approximately orthogonal. Fig. 6(a) illustrates the convergence of the proposed greedy-based sUPA selection algorithm presented in Section IV-A. It can be observed that the sensing SNR monotonically increases as more sUPAs are selected. This is because additional RF chains provide more spatial DoF, which can be exploited to improve the sensing performance once the communica-tion SINR requirements have been satisfied. Furthermore, the sensing performance achieved by the proposed greedy method approaches to that of exhaustive search method, which demonstrates the effectiveness of the proposed method. Furthermore, the final sUPAs selection results is shown in Fig. 6(b), where the gray dots denotes the placement of all sUPAs, while the red and blue markers correspond to the sUPAs selected by the exhaustive search and the proposed greedy method, respectively. Note that the selected sUPAs are mainly distributed around the directions of the sensing target and communication UEs, to provide strong communication and sensing channel gains, thereby improving the sensing SNR while guaranteeing the communication performance. Moreover, it observes that the sUPAs selected by the proposed greedy method coincide with those obtained by exhaustive search, which validates the effectiveness of the proposed selec-tion criterion based on communication feasibility and sensing performance. In addition, Fig. 6(c) depicts the optimized transmit beampattern obtained by using the selected sUPAs. It can be obtained that the main beam is steered towards the sensing target direction to maximize the sensing SNR, while the sidelobe energy is allocated towards the UE directions to satisfy the communication requirements. Fig. 7 further compares the communication–sensing trade-off achieved by the spherical DCAA and conventional UPA systems. It observes that the sensing SNR decreases as the communication SINR threshold Γc increases. Moreover, the spherical DCAA equipped with omnidirectional antenna el-ements exhibits similar performance as that of conventional UPA with KPC for point target sensing. In contrast, where directional antenna elements are adopted, spherical DCAA achieves a more favorable communication–sensing tradeoff than the conventional UPA. Moreover, it is worth noting that the performance gain becomes larger as the communication SNR threshold increases. This attributes to that each sUPA of the spherical DCAA only needs to cover a portion of 2 3 4 5 6 7Number of selected sUPAs         
+
+> 24 25 26 27 28 29 30 31 32 33 Sensing SNR (dB)
+> Proposed greedy method
+> Exhaustive search benchmark
+> (a) Convergence of the proposed greedy sUPA selection method. -100 -50 050 100 Azimuth orientation (deg)
+> -80 -60 -40 -20 020 40 60 80 Elevation orientation  (deg)
+> All sUPAs
+> Exhaustive selected
+> Greedy selected
+> Sensing target
+> Users
+> (b) Selected sUPAs of the spherical DCAA. -50 050 Azimuth angle (deg)
+> -80 -60 -40 -20 020 40 60 80 Elevation angle  (deg)
+> -80 -70 -60 -50 -40 -30 -20 -10 0
+> Sensing target
+> Users
+> (c) Optimized transmit beampattern with selected sUPA Fig. 6. Performance evaluation of the proposed greedy sUPA selection method for the special case.
+
+overall coverage region, highly directional antenna elements with enhanced energy-focusing capability can be employed, leading to the antenna gain for both communication and sensing performance improvement. 12 -10 -5 0 5 10 15 20  
+
+> 26 28 30 32 34 36 38
+> S-DCAA, omni. antenna
+> S-DCAA, direct. antenna
+> UPA with KPC Codebook
+> Fig. 7. Comparison of the communication-sensing performance tradeoff between the spherical DCAA and UPA for low-altitude ISAC systems.
+
+B. General Multi-User Communication and Regional Sensing 
+
+We now consider a general low-altitude ISAC scenario, where the BS equipped with a spherical DCAA simultaneously communicates with multiple UEs and provides aerial sensing coverage over a prescribe region. In contrast to the orthogonal multi-user communication case, inter-user interference (IUI) among different UEs is considered. The sensing region spans 
+
+[30 ◦, 80 ◦] in elevation and [10 ◦, 50 ◦] in azimuth, respectively. First, we evaluate the effectiveness of the proposed greedy-based optimization method. To reduce the computational com-plexity of the proposed method, as discussed in Section IV-B, the low-complexity MRT and MMSE beamformimg metrics are also considered and evaluated. Specifically, let Faux =[f1,aux , · · · , fK, aux ] denote the auxiliary beamforming matrix. Under the assumption that the aerial sensing and ground communication channels are approximately orthogonal, the auxiliary beamforming vector can be constructed as 
+
+fk, aux = √ρc,k ek + √ρs,k es, k = 1 , · · · , K, (62) where es = a(U)/∥a(U)∥ is the normalized sensing steering vector, ek is the normalized communication vector computed according to the chosen metric, e.g., MMSE or MRT, ρc,k and 
+
+ρs,k are the power ratio factor, with 0 < ρ c,k , ρ s,k < 1. By substituting Faux into (55a) and (55b), the greedy-based array selection is performed following Algorithm 1. Fig. 8 shows the performance of the proposed greedy-based array selection method under different beamforming metrics. It can be observed that the SCA-based beamforming outper-forms the MMSE- and MRT-based surrogate metrics, even with higher computational complexity, which demonstrates the effectiveness of the proposed method. Fig. 9 compares the aerial sensing coverage achieved by the spherical DCAA and the conventional UPA benchmark. We obtain that the spherical DCAA forms a more concentrated and higher-gain sensing beam within the prescribed cover-age region, whereas the conventional UPA exhibits broader sidelobes and lower peak gains. This result confirms that the spherical DCAA enjoys the energy-focusing capability toward 4 4.5 5 5.5 6 6.5 7      
+
+> Number of selected sUPAs
+> -15 -10 -5 0510
+> Worst-case regional sensing SNR (dB)
+> SCA-based
+> MMSE-based
+> MRT-based
+> Fig. 8. The performance of the proposed greedy selection method under different beamforming schemes S-DCAA
+> 20 40 Azimuth angle (deg)
+> 30 40 50 60 70 80 Elevation angle  (deg)
+> -10 -5 0510 15
+> UPA with KPC
+> 20 40 Azimuth angle (deg)
+> 30 40 50 60 70 80 Elevation angle  (deg)
+> -60 -50 -40 -30 -20 -10 0
+> Fig. 9. Comparison of the aerial sensing coverage between spherical DCAA and conventional UPA for low-altitude ISAC.
+
+the sensing region, thereby enhancing sensing performance while maintaining communication requirements. VI. C ONCLUSION 
+
+In this paper, we investigated low-altitude ISAC system enabled by the spherical DCAA. The sensing performance of spherical DCAA was characterized in terms of sensing SNR, area average probability of detection, and the CRLBs for eleva-tion and azimuth angle estimation. Furthermore, a low-altitude ISAC optimization problem was formulated to maximize the worst-case sensing SNR over a prescribed aerial region while satisfying the communication requirements of ground users. To solve the resulting mixed-integer non-convex problem, a novel greedy-based joint array selection and beamforming algorithm was developed. Simulation results demonstrated that spherical DCAA significantly outperforms conventional UPA in terms of sensing coverage, angle estimation accuracy, and communication-sensing performance tradeoff, highlighting its potential for future low-altitude ISAC systems. 13 
+
+APPENDIX 
+
+PROOF OF THEOREM 1According to the chain rule, the partial derivation of 
+
+rn(ϕs, θ s) in (33) w.r.t. ϕs and θs are given by 
+
+∂r n(ϕs, θ s)
+
+∂ϕ s
+
+=ejω 0
+
+pM 2G(0 , 0) 
+
+"
+
+H′ 
+
+> M
+
+(x1,n ) ∂x 1,n 
+
+∂ϕ s
+
+HM (x2,n )+ HM (x1,n )H′ 
+
+> M
+
+(x2,n ) ∂x 2,n 
+
+∂ϕ s
+
+#
+
+,
+
+(63a) 
+
+∂r n(ϕs, θ s)
+
+∂θ s
+
+=ejω 0
+
+pM 2G(0 , 0) 
+
+"
+
+H′ 
+
+> M
+
+(x1,n ) ∂x 1,n 
+
+∂θ s
+
+HM (x2,n )+ HM (x1,n )H′ 
+
+> M
+
+(x2,n ) ∂x 2,n 
+
+∂θ s
+
+#
+
+.
+
+(63b) Note that for ϕs ≈ ηn∗ and θs ≈ ϑn∗ , it has 
+
+
+
+x1,n ∗ ≈ 0, x 2,n ∗ ≈ 0
+
+∂x 1,n ∗
+
+∂ϕ s
+
+≈ cos θs, ∂x 2,n ∗
+
+∂ϕ s
+
+≈ 0
+
+∂x 1,n ∗
+
+∂θ s
+
+≈ 0, ∂x 2,n ∗
+
+∂θ s
+
+≈ 1
+
+HM (0) = 1 , H′ 
+
+> M
+
+(0) = jπ (M − 1) /2.
+
+(64) For other sUPAs n̸ = n∗, it can be assumed that HM (x1,n ) and 
+
+HM (x2,n ) are negligible, since the target direction deviates from the boresights of these sUPAs, thus we have ∂r n(ϕs,θ s) 
+
+> ∂ϕ s
+
+≈
+
+0 and ∂r n(ϕs,θ s) 
+
+> ∂θ s
+
+≈ 0.Therefore, according to (63) and (64), it has 
+
+
+
+rHϕ rϕ ≈ ∂r n∗ (ϕs, θ s)
+
+∂ϕ s
+
+> 2
+
+≈ M 2G(0 , 0) π2(M − 1) 2
+
+4 cos 2 θs
+
+rHθ rθ ≈ ∂r n∗ (ϕs, θ s)
+
+∂θ s
+
+> 2
+
+≈ M 2Gn⋆ (0 , 0) π2(M − 1) 2
+
+4
+
+rHϕ rθ ≈
+
+ ∂r n∗ (ϕs, θ s)
+
+∂ϕ s
+
+† ∂r n∗ (ϕs, θ s)
+
+∂θ s
+
+≈ 0
+
+rHθ rϕ ≈
+
+ ∂r n∗ (ϕs, θ s)
+
+∂θ s
+
+† ∂r n∗ (ϕs, θ s)
+
+∂ϕ s
+
+≈ 0.
+
+(65) Thus, it has 
+
+
+
+Jϕϕ ≈ |αs|2π2(M − 1) 2M 2G(0 , 0) cos 2 ϑn
+
+2σ2
+
+> s
+
+Jθθ ≈ |αs|2π2(M − 1) 2M 2G(0 , 0) 2σ2
+
+> s
+
+Jϕθ = Jθϕ ≈ 0.
+
+(66) By substituting (66) into (36), the approximation of CRLBs for azimuth and elevation angle estimation can be derived. This completes the proof. REFERENCES [1] Y. Jiang, X. Li, G. Zhu, H. Li, J. Deng, K. Han, C. Shen, Q. Shi, and R. Zhang, “Integrated sensing and communication for low altitude economy: Opportunities and challenges,” IEEE Commun. Mag. , vol. 63, no. 2, pp. 72–78, Dec. 2025. [2] Y. Song, Y. Zeng, Y. Yang et al. , “An overview of cellular ISAC for low-altitude UAV: New opportunities and challenges,” IEEE Commun. Mag. , vol. 63, no. 12, pp. 88–95, Jul. 2025. [3] J. Wu, Y. Yang, W. Yuan et al. , “Low-altitude wireless networks: A comprehensive survey,” China Commun. , vol. 23, no. 3, pp. 99–141, Mar. 2026. [4] G. Cheng, X. Song, Z. Lyu et al. , “Networked ISAC for low-altitude economy: Coordinated transmit beamforming and uav trajectory design,” 
+
+IEEE Trans. Commun. , vol. 73, no. 8, pp. 5832–5847, Aug. 2025. [5] C. Zhao, Y. Feng, H. Luo, F. Gao, F. Liu, and S. Jin, “Networked ISAC-based UAV tracking and handover toward low-altitude economy,” IEEE Trans. Wireless Commun. , vol. 24, no. 9, pp. 7670–7685, Sep. 2025. [6] Y. Zhang, J. Zhang, H. Gong et al. , “A unified RCS modeling of typical targets for 3GPP ISAC channel standardization and experimental analysis,” IEEE J. Sel. Areas Commun. , vol. 44, pp. 702–716, Sep. 2025. [7] Y. Xiong, F. Liu, Y. Cui, W. Yuan, T. X. Han, and G. Caire, “On the fundamental tradeoff of integrated sensing and communications under Gaussian channels,” IEEE Tran. Inf. Theory , vol. 69, no. 9, pp. 5723– 5751, 2023. [8] Z. Xiao and Y. Zeng, “Waveform design and performance analysis for full-duplex integrated sensing and communication,” IEEE J. Sel. Areas Commun. , vol. 40, no. 6, pp. 1823–1837, Jun. 2022. [9] Z. Xiao, S. Chen, and Y. Zeng, “Simultaneous multi-beam sweeping for mmWave massive MIMO integrated sensing and communication,” IEEE Trans. Vehi. Tech. , vol. 73, no. 6, pp. 8141–8152, Jan. 2024. [10] K. Meng, C. Masouros, A. P. Petropulu et al. , “Cooperative ISAC networks: Performance analysis, scaling laws and optimization,” IEEE Trans. Wireless Commun. , vol. 24, no. 2, pp. 877–892, Feb. 2024. [11] X. Luo, Q. Lin, R. Zhang et al. , “ISAC–a survey on its layered architecture, technologies, standardizations, prototypes and testbeds,” 
+
+IEEE Commun. Surveys Tuts. , vol. 28, pp. 485–526, Apr. 2025. [12] J. Zhang, Z. Zheng, Y. Zhang, J. Xi, X. Zhao, and G. Gui, “3D MIMO for 5G NR: Several observations from 32 to massive 256 antennas based on channel measurement,” IEEE Commun. Mag. , vol. 56, no. 3, pp. 62– 70, Mar. 2018. [13] Y. Wang, K. Zu, L. Xiang, Q. Zhang, Z. Feng, J. Hu, and K. Yang, “ISAC enabled cooperative detection for cellular-connected UAV network,” 
+
+IEEE Trans. Wireless Commun. , vol. 24, no. 2, pp. 1541–1554, Dec. 2024. [14] J. Tang, Y. Yu, C. Pan et al. , “Cooperative ISAC-empowered low-altitude economy,” IEEE Trans. Wireless Commun. , vol. 24, no. 5, pp. 3837– 3853, Feb. 2025. [15] G. Liu, R. Xi, X. Wang, L. Han, X. Gui, J. Jin, J. Dong, N. Wei, H. He, L. Xia et al. , “Cooperative sensing for isac: Challenges, system design, beam management, and performance validation,” IEEE J. Sel. Areas Commun. , vol. 44, pp. 608–625, Sep. 2025. [16] H. Min, X. Li, R. Li, and Y. Zeng, “Integrated localization and communication with sparse MIMO: Will virtual array technology also benefit wireless communication?” IEEE Trans. Signal Process. , vol. 73, pp. 5090–5105, Nov. 2025. [17] O. El Ayach, S. Rajagopal, S. Abu-Surra, Z. Pi, and R. W. Heath, “Spatially sparse precoding in millimeter wave MIMO systems,” IEEE Trans. Wireless Commun. , vol. 13, no. 3, pp. 1499–1513, 2014. [18] J. Deng, P. Burasa, and K. Wu, “Compact 140–220 GHz E/H waveguide phase shifter and its application to terahertz multiport circuits,” IEEE Trans. Terahertz Sci. Tech. , vol. 13, no. 5, pp. 511–525, Jul. 2023. [19] Y. Zeng, L. Yang, and R. Zhang, “Multi-user millimeter wave MIMO with full-dimensional lens antenna array,” IEEE Trans. Wireless Com-mun. , vol. 17, no. 4, pp. 2800–2814, Apr. 2018. [20] J.-N. Shim, H. Park, C.-B. Chae, D. K. Kim, and Y. C. Eldar, “Cram´ er– Rao lower bound on AoA estimation using an RF lens-embedded antenna array,” IEEE Antennas Wireless Propag. Lett. , vol. 17, no. 12, pp. 2359–2363, 2018. [21] M. R. Castellanos, S. Yang, C.-B. Chae, and R. W. Heath, “Embracing reconfigurable antennas in the tri-hybrid MIMO architecture for 6G and beyond,” IEEE Trans. Commun. , vol. 74, pp. 381–401, 2026. [22] X. Wang, F. Gini, and K. Cai, “Reconfigurable integrated sensing and communications (RISAC): Sparse MIMO and hybrid beamforming in far and near fields,” Proceedings of IEEE , 2026, early Access. [23] X. Li, H. Min, Y. Zeng, S. Jin, L. Dai, Y. Yuan, and R. Zhang, “Sparse MIMO for ISAC: New opportunities and challenges,” IEEE Wireless Commun. , vol. 32, no. 4, pp. 170–178, Aug. 2025. [24] L. Zhou, J. Yao, M. Jin, T. Wu, and K.-K. Wong, “Fluid antenna-assisted ISAC systems,” IEEE Wireless Commun. Lett. , vol. 13, no. 12, pp. 3533– 3537, 2024. 14 
+
+[25] W. Ma, L. Zhu, and R. Zhang, “Movable antenna enhanced wireless sensing via antenna position optimization,” IEEE Trans. Wireless Com-mun. , vol. 23, no. 11, pp. 16 575–16 589, Aug. 2024. [26] C. Ouyang, Z. Wang, Y. Liu, and Z. Ding, “Rate region of ISAC for pinching-antenna systems,” IEEE Trans. Commun. , vol. 74, pp. 5849– 5866, Feb. 2026. [27] X. Xiong, B. Zheng, W. Wu et al. , “Intelligent rotatable antenna for integrated sensing, communication, and computation: Challenges and opportunities,” IEEE Wireless Commun. , vol. 33, no. 1, pp. 173–180, Nov. 2025. [28] R. W. Heath, J. Carlson, N. V. Deshpande, M. R. Castellanos, M. Akrout, and C.-B. Chae, “The tri-hybrid MIMO architecture,” IEEE Wireless Commun. , 2025. [29] Z. Dong, Z. Zhou, and Y. Zeng, “A novel cost-effective MIMO archi-tecture with ray antenna array for enhanced wireless communication performance,” IEEE Transa. Wireless Commun. , vol. 25, pp. 15 166– 15 182, Apr. 2026. [30] H. Jiang and Y. Zeng, “Ray antenna array achieves uniform angular resolution cost-effectively for low-altitude UAV swarm ISAC,” IEEE Trans. Wireless Commun. , vol. 25, pp. 9200–9213, Dec. 2025. [31] Z. Xiao, T. Zhang, H. Wu, X. Qiao, J. Zhang, Z. Dong, and Y. Zeng, “Ray antenna array enhanced low-altitude ISAC: Performance analysis and beamforming design,” in Proc. IEEE Wireless Commun. Netw. Conf. (WCNC) , Kuala Lumpur, Malaysia, 2026, pp. 1–6, accepted. [32] X. Zhu, Z. Zhou, Z. Dong, and Y. Zeng, “Cost-effective XL-MIMO communication with cylinder directly connected antenna array,” IEEE Trans. Wireless Commun. , vol. 25, pp. 17 559–17 575, May 2026. [33] H. Jiang, Z. Dong, Z. Zhou, and Y. Zeng, “3D spherical directly-connected antenna array for low-altitude UAV swarm ISAC,” arXiv preprint arXiv:2603.17620 , 2026. [34] H. Kuschel, D. Cristallini, and K. E. Olsen, “Tutorial: Passive radar tutorial,” IEEE Aerosp. Electron. Syst. Mag. , vol. 34, no. 2, pp. 2–19, 2019. [35] C. A. Balanis, Antenna theory: analysis and design . John wiley & sons, 2015. [36] H. Wang, Z. Xiao, and Y. Zeng, “Cram´ er-rao bounds for near-field sensing with extremely large-scale mimo,” IEEE Trans. Signal Process. ,vol. 72, pp. 701–717, 2024.

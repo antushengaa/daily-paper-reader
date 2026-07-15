@@ -1,0 +1,1268 @@
+Title: DOA Estimation from One-Bit Magnitude-Only Measurements via Sign-Consistency Optimization
+
+URL Source: https://arxiv.org/pdf/2607.12491v1
+
+Published Time: Wed, 15 Jul 2026 11:57:22 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+> 1
+
+# DOA Estimation from One-Bit Magnitude-only Measurements via Sign-Consistency Optimization 
+
+Xicheng Lu, Wei Liu, Senior Member, IEEE and Akram Alomainy, Senior Member, IEEE 
+
+Abstract —The direction-of-arrival (DOA) estimation problem using one-bit quantized magnitude-only measurements is studied, where magnitude-only measurements offer the advantage of ro-bustness against phase errors, thereby avoiding the need for array calibration, while the use of one-bit quantization significantly reduces hardware cost and system complexity. As their direct combination results in meaningless constant measurements, we have formulated a sign-consistency optimization problem using a smooth logistic surrogate with ℓ2,1-norm regularization to pro-mote joint sparsity. To solve this, a proximal-gradient algorithm is developed with guaranteed convergence to a critical point. Numerical results demonstrate that the proposed method achieves accuracy comparable to coherent one-bit baselines under ideal conditions, while maintaining robust performance under severe phase errors that substantially impair coherent methods. 
+
+Index Terms —One-bit quantization, DOA estimation, magnitude-only measurements, phase retrieval, non-coherent, group sparsity 
+
+I. I NTRODUCTION 
+
+Direction-of-arrival (DOA) estimation is a fundamental problem in radar, sonar, and wireless communications [ 1]– [3]. Traditional high-resolution algorithms such as subspace-based methods [ 4], [ 5], and sparsity-based formulations [ 6]– [10 ], assume access to complex-valued snapshots with phase information preserved and a well-calibrated array. In practice, sensor gain mismatches and phase errors will inevitably degrade their performance, and many robust DOA estimation methods have been developed in this direction, such as those based on eigenstructure [ 11 ], [ 12 ], sparse Bayesian learning (SBL) [ 13 ], [ 14 ], and atomic norm minimization [ 15 ]. However, they still rely on coherent complex measurements and attempt to mitigate phase errors through enhanced mod-eling rather than eliminating the dependence on phase infor-mation. A more recent approach is to estimate DOAs directly from magnitude/intensity-only measurements, where phase informa-tion is inherently unavailable. This non-coherent setting is closely related to the phase retrieval problem, where one aims to recover a signal from the magnitudes of linear measure-ments [ 16 ], [ 17 ]. Early methods considered sparse nonlinear 
+
+This work has been submitted to the IEEE for possible publication. Copyright may be transferred without notice, after which this version may no longer be accessible. X. Lu and A. Alomainy are with the School of Electronic Engineering and Computer Science, Queen Mary University of London, London, UK (e-mail:xicheng.lu@qmul.ac.uk, a.alomainy@qmul.ac.uk). W. Liu is with the Department of Electrical and Electronic Engineer-ing, The Hong Kong Polytechnic University, Hong Kong SAR (email: wei2.liu@polyu.edu.hk). 
+
+least-squares formulations solved via local search or greedy procedures [ 18 ], as well as harmonic spectral estimation from magnitude-squared data [ 19 ]. However, the lack of phase information may introduce intrinsic ambiguities in magnitude-only DOA estimation, in-cluding the mirroring, spatial shift, and spatial order ambi-guities [ 18 ], [ 20 ]. To remove these ambiguities, one or more reference sources with known DOA can be employed [ 18 ], [19 ]. Other approaches square the sample covariance matrix over multiple snapshots to obtain a linearized sparse recov-ery model [ 21 ], or incorporate group-sparsity regularization within majorization-minimization to enhance robustness [ 20 ]. Alternatively, dual uniform linear array (ULA) geometries can resolve all three ambiguities via inter-subarray magnitude discrepancies [ 20 ], while uniform circular arrays (UCAs) can avoid the mirroring ambiguity due to the lack of conjugate symmetry in their steering vectors [ 22 ], [ 23 ]. Despite these advances, existing magnitude-only DOA methods are normally developed under the assumption of full-precision measure-ments. In parallel, low-resolution analog-to-digital converters (ADCs), including one-bit, 1.5-bit, and two-bit quantizers, have attracted growing interest due to their reduced power consumption, hardware complexity, and data storage require-ments [ 24 ]. Among these, one-bit quantization has been most extensively studied. In subspace-based methods, Bussgang’s theorem [ 25 ] and the Van Vleck arcsine law [ 26 ] establish a closed-form relationship between the correlation of sign-quantized Gaussian data and that of the unquantized one. Built on this, the arcsine law was applied to sparse arrays for one-bit DOA estimation in [ 27 ], and one-bit MUSIC was proposed by exploiting this relationship to enable subspace-based DOA estimation from one-bit measurements [ 28 ]. Sub-sequent work generalized covariance recovery to non-zero thresholds [ 29 ], estimators for time-varying thresholds under both non-stationary and stationary signal models were pro-posed in [ 30 ], [ 31 ], and a unified algorithm with analyti-cal performance guarantees was presented in [ 32 ]. From a compressed-sensing perspective, one-bit DOA estimation was formulated as a sparse recovery problem with sign-consistency constraints in [ 33 ], where the complex-valued binary itera-tive hard thresholding (CBIHT-ℓ2) algorithm was proposed. Joint sparse representation was exploited for improved signal reconstruction in [ 34 ]. More recently, the Robust One-bit Compressed Sensing (ROCS) framework [ 35 ] employed a 
+
+tanh surrogate to approximate the discontinuous sign func-tion, enabling robust gradient-based recovery under model mismatches. arXiv:2607.12491v1 [eess.SP] 14 Jul 2026 2
+
+On the other hand, one-bit phase retrieval has received con-siderable attention from the mathematical perspective. Early work established that sparse signals can be recovered from one-bit magnitude measurements using greedy refinement pro-cedures [ 36 ]. Subsequent algorithmic developments include approximate message passing tailored to quantized phase retrieval [ 37 ] and variants of Wirtinger Flow adapted for binary observations [ 38 ]. The interplay between sample complexity and computational cost was analyzed in [ 39 ], showing that more measurements can reduce the iterations required for convergence. More recently, minimax-optimal recovery rates and computationally efficient algorithms have been established in [ 40 ]. Despite this progress, a clear gap remains between these two research directions. Existing magnitude-only DOA meth-ods [ 18 ], [ 20 ], [ 22 ] are based on full-precision measurements and cannot exploit the hardware benefits of low-resolution ADCs, while prevalent one-bit DOA estimation schemes [ 28 ], [33 ], [ 35 ] rely on coherent processing that preserves phase information and thus degrade severely under sensor phase errors. In particular, coherent one-bit methods suffer from the same performance degradation under phase errors as full-precision methods. Conversely, full-precision magnitude-only methods discard phase information entirely for robustness, but do not address the practical need for low-cost, low-power consumption. To the best of our knowledge, no existing work jointly addresses one-bit quantization and magnitude-only processing for DOA estimation. Motivated by the robustness of magnitude-only measurements to phase errors and the hardware efficiency of one-bit quantization, we study one-bit magnitude-only DOA estimation in this work, bridging the gap between hardware-efficient sampling and phase-error-robust non-coherent processing. The methods on one-bit phase retrieval introduced earlier above address a closely related problem of recovering signals from one-bit quantized magnitudes of linear projections, and the non-zero threshold requirement identified therein (since 
+
+sign( |z|) = 1 for all z 6 = 0 under zero thresholds) applies equally to our present DOA estimation problem; however, these methods assume random measurement matrices, and their theoretical guarantees do not directly extend to the deterministic structured steering matrix encountered in array signal processing, nor do they exploit the property of multi-snapshot joint sparsity that is central to DOA estimation. Based on this insight, we cast the studied problem as a struc-tured instance of one-bit phase retrieval that leverages array geometry and joint sparsity across snapshots, and develop a sign-consistency formulation for one-bit magnitude-only DOA estimation with UCAs. A smoothed proximal-gradient algorithm, termed One-BI t Magnitude-Only DOA Estimation via Sign-consistency and group sparsi Ty ( OBI-MODEST ), is proposed to solve the resulting nonconvex group-sparse prob-lem. Under ideal conditions without sensor phase errors, OBI-MODEST achieves a DOA estimation accuracy comparable to representative coherent one-bit sparse recovery solutions (e.g., CBIHT-ℓ2 [33 ] and ROCS [ 35 ]), despite using only one-bit magnitude information. More importantly, under sensor phase errors, the proposed scheme and algorithm remain robust, offering a favorable trade-off between reliability and hardware complexity. The main contributions are summarized as follows.  
+
+> •
+
+Problem formulation and motivation: We formulate DOA estimation from one-bit quantized magnitude-only measurements with non-zero thresholds. Since taking magnitudes removes phase information, this signal model is inherently immune to per-sensor phase errors. We first show that conventional magnitude-fitting objectives are ill-suited to one-bit data because only binary threshold comparisons are available, and then establish a local constancy property showing that small perturbations in the signal matrix do not change the one-bit output, which causes zero gradients and motivates a continuous surrogate.  
+
+> •
+
+Proposed algorithm: We propose a sign-consistency formulation that combines a logistic surrogate loss [ 41 ], [42 ] with a smoothed magnitude operator to ensure differentiability, together with ℓ2,1-norm regularization to exploit joint sparsity across snapshots. We develop the OBI-MODEST algorithm based on proximal-gradient iterations and derive a closed-form shrinkage update that enables efficient computation.  
+
+> •
+
+Convergence analysis and simulation validation: We establish Lipschitz continuity of the gradient and prove convergence to a critical point. Simulations on uniform circular arrays show that OBI-MODEST achieves accu-racy comparable to coherent one-bit baselines under ideal conditions. Under sensor phase errors, coherent methods degrade by more than an order of magnitude while OBI-MODEST remains stable, demonstrating the robustness advantage of magnitude-only processing. The remainder of this paper is organized as follows. The one-bit magnitude-only DOA estimation problem is formu-lated in Section II , and the developed OBI-MODEST algo-rithm with its convergence properties are presented in Sec-tion III . Section IV provides simulation results, and Section V
+
+concludes the paper. A list of notations is provided in Table I.II. P ROBLEM FORMULATION 
+
+A. Signal Model 
+
+Consider K narrowband far-field sources with wavelength 
+
+λ impinging on an M-sensor UCA with a radius R. The m-th sensor is placed at the angular position γm = 2 π(m − 1) /M ,
+
+m = 1 , . . . , M . The wavenumber is k0 = 2 π/λ , and with 
+
+ξ = k0R, the array steering vector for an azimuth angle θ is 
+
+a(θ) = [ejξ cos( θ−γ1), . . . , e jξ cos( θ−γM )]T ∈ CM . (1) Let θ = {θ1, . . . , θ K } denote the set of true DOAs in the angular search domain D, and define the steering matrix 
+
+A(θ) = [ a(θ1), . . . , a(θK )] ∈ CM×K . (2) At snapshot index p ∈ { 1, . . . , P }, the complex amplitude of the k-th source is denoted by sk[p] ∈ C, and the source signal vector is s[p] = [ s1[p], . . . , s K [p] ] T ∈ CK .3                                                                                 
+
+> Table I: List of Notations
+> Symbol Description
+> A,a, a Matrices, column vectors, and scalars
+> [A]i, :i-th row of matrix A
+> [A]:,j j-th column of matrix A
+> [A]i,j (i, j )-th entry of matrix A
+> [a]ii-th entry of vector a
+> (·)TTranspose of a real matrix/vector
+> (·)HHermitian (conjugate) transpose
+> (·)∗Complex conjugate
+> RM×NReal-valued M×Nmatrices
+> CM×NComplex-valued M×Nmatrices
+> 0,InAll-zero matrix; n×nidentity matrix
+> 1nAll-one column vector of length n
+> |z|Magnitude of a complex scalar z
+> |Z|magnitude of a complex matrix
+> |z|ǫSmoothed magnitude: √|z|2+ǫ2
+> ⊙Hadamard product
+> 〈A,B〉Frobenius inner product: Re tr( AHB)
+> ‖ · ‖ 2Euclidean norm
+> ‖ · ‖ FFrobenius norm of a matrix
+> ‖ · ‖ ∞‖Z‖∞= max i,j |[Z]i,j |‖ · ‖ 2,1Mixed ℓ2,1norm: ∑
+> g‖[X]g, :‖2
+> I(·)Indicator function ( 1if true, 0otherwise)
+> sign( ·)sign ( +1 if ≥0,−1otherwise)
+> ∇f(·)Gradient of function f∂f (·)Limiting subdifferential of f
+> prox γf (·)Proximal operator of fwith parameter γ > 0
+> O(·)Big-O (asymptotic order) notation
+
+Sensor phase errors are modeled by a diagonal matrix D =diag( ejφ1 , . . . , e jφM ), where φm denotes the phase error of the 
+
+m-th sensor. The received signal vector (without noise) is thus 
+
+x[p] = DA (θ) s[p] ∈ CM . (3) A key property of magnitude-only processing is that the phase error matrix D does not affect the magnitude measurements. Since D is diagonal, the m-th entry of Dx equals ejφm xm,whose magnitude satisfies |ejφm xm| = |ejφm | · | xm| = |xm|.Consequently, the magnitude is invariant to phase errors: 
+
+|DA (θ) s[p]| = |A(θ) s[p]|. (4) The corresponding magnitude-only measurement vector at snapshot p is modeled as 
+
+y[p] = |x[p]| + n[p] = ∣∣A(θ) s[p]∣∣ + n[p], (5) where n[p] ∈ RM denotes zero-mean additive white Gaussian noise with variance σ2
+
+> n
+
+.To enable sparse representation, we discretize D into an angular grid Θ = {ϑg }Gg=1 with G ≫ K, and form the overcomplete steering matrix 
+
+A(Θ) = [ a(ϑ1), . . . , a(ϑG)] ∈ CM×G. (6) The source signal vector s[p] admits a sparse representation on the angular grid Θ as 
+
+˜s[p] = [ ˜ s1[p], . . . , ˜sG[p] ] T ∈ CG, (7) where ˜sg [p] denotes the coefficient associated with grid angle 
+
+ϑg at snapshot p. Under this representation, the magnitude-only model in ( 5) becomes 
+
+y[p] = ∣∣A(Θ) ˜ s[p]∣∣ + n[p]. (8) The source signals are assumed to be uncorrelated with power 
+
+σ2 
+
+> s
+
+. Collecting P snapshots yields the multiple-measurement-vector (MMV) model 
+
+Y = ∣∣A(Θ) ˜S∣∣ + N, (9) where Y = [ y[1] , . . . , y[P ]] ∈ RM×P denotes the magnitude-only data matrix, ˜S = [˜ s[1] , . . . , ˜s[P ]] ∈ CG×P is the sparse signal matrix, and N = [ n[1] , . . . , n[P ]] ∈ RM×P is the noise matrix. Since the K sources share the same DOAs across all snapshots, the matrix ˜S exhibits row sparsity that only K ≪
+
+G rows are nonzero, with the indices of these active rows corresponding to the grid angles closest to the true DOAs. Each magnitude-only snapshot is then quantized by a one-bit comparator: 
+
+y1bit [p] = sign (y[p] − τ ), (10) where τ = [ τ1, . . . , τ M ]T ∈ RM is the vector of quantization thresholds, assumed known, and sign( t) = +1 for t ≥ 0
+
+and −1 otherwise. Collecting the one-bit magnitude-only measurements as Y1bit = [ y1bit [1] , . . . , y1bit [P ]] and with 
+
+T = τ 1T 
+
+> P
+
+, the one-bit quantization model is 
+
+Y1bit = sign (Y − T) = sign (|A(Θ) ˜S| + N − T). (11) 
+
+B. Identifiability and Ambiguities 
+
+Magnitude-only DOA estimation using ULAs is fundamen-tally limited by inherent ambiguities, most notably mirroring ,
+
+spatial-shift , and spatial-order ambiguities [ 20 ], [ 22 ]. While the mirroring ambiguity in ULAs arises from the conjugate symmetry a(−θ) = a(θ)∗ , the UCA manifold naturally avoids this issue. Furthermore, the spatial-shift and spatial-order ambigui-ties in ULAs are direct consequences of the linear phase progression inherent to the Vandermonde structure, given by [a(θ)] m = ej(m−1) ̟ , where ̟ = k0d sin θ represents the spatial frequency. Specifically, the spatial-shift ambiguity 
+
+arises because an arbitrary linear phase shift δ(m − 1) implies 
+
+[a(θ)] mej(m−1) δ = ej(m−1)( ̟ +δ), which is mathematically indistinguishable from a signal arriving from a new direction corresponding to ̟ + δ. Similarly, the spatial-order ambi-guity (at d = λ/ 2) stems from the 2π-periodicity condition 
+
+ej(m−1) ̟ = ej(m−1)( ̟ −2π). If a shift causes the spatial frequency to exceed the principal interval (i.e., ̟ + δ > π ), it wraps to an equivalent frequency ̟ ′ =̟ + δ − 2π.Since ̟ ′ corresponds to a valid angle θ′ (where sin θ′ =sin θ + δ/k 0d − 2π/k 0d), this wrapping mechanism can alter the spatial ordering of sources without affecting the magni-tude measurements. Conversely, for the UCA geometry, the adjacent phase increment varies with the sensor index m, as given by: 
+
+∆φm(θ) , ξ[ cos( θ − γm+1 ) − cos( θ − γm)]
+
+= 2 ξ sin 
+
+( π
+
+M
+
+)
+
+sin 
+
+(
+
+θ − π(2 m − 1) 
+
+M
+
+)
+
+. (12) As a result, the shift-invariance required for both spatial-shift and spatial-order ambiguities is strictly broken. Nevertheless, UCAs exhibit a specific 180 ◦ rotational am-biguity, as a(θ + π) = a(θ)∗ implies that {(θk, s k)} and 4
+
+{(θk + π, s ∗
+
+> k
+
+)} yield identical magnitude measurements. This is typically resolved by restricting the angular sector (e.g., to 
+
+[−π/ 2, π/ 2] ) or utilizing a reference source. 
+
+C. Limitations of Direct Loss Design 
+
+We adopt the sparsity signal model in ( 9)–( 11 ), where the unknown signal matrix ˜S ∈ CG×P is row-sparse with 
+
+K ≪ G nonzero rows. In the one-bit noncoherent setting, only the thresholded measurements Y1bit in ( 11 ) are observed. A natural approach is to directly match the predicted one-bit outputs ̂ Y1bit (˜S) , sign (|A(Θ) ˜S| − T) to the observations: 
+
+min 
+
+> ˜S
+
+∥∥Y1bit −̂ Y1bit (˜S)∥∥2 
+
+> F
+
++ η‖˜S‖2,1, (13) where η > 0 is the regularization parameter. Since the entries of both Y1bit and ̂ Y1bit (˜S) are constrained to {+1 , −1}, the squared Frobenius norm of their difference is proportional to the number of sign mismatches. Specifically, for any entry 
+
+(m, p ), the squared error ([ Y1bit ]m,p −[̂ Y1bit (˜S)] m,p )2 equals 
+
+0 if the signs match and 4 if they differ. Consequently, 
+
+∥∥Y1bit −̂ Y1bit (˜S)∥∥2 
+
+> F
+
+= 4 · dH
+
+(
+
+Y1bit ,̂ Y1bit (˜S)
+
+)
+
+, (14) where dH (·, ·) denotes the Hamming distance defined as: 
+
+dH (B, C) ,
+
+> M
+
+∑
+
+> m=1
+> P
+
+∑
+
+> p=1
+
+I([ B]m,p 6 = [ C]m,p ) . (15) 
+
+Lemma 1. Let ̂ Y1bit (˜S) , sign (|A(Θ) ˜S| − T) denote the one-bit prediction. Consider any point ˜S0 ∈ CG×P satisfying the non-degeneracy condition (i.e., no predicted magnitude lies exactly on the threshold): 
+
+∣∣[A(Θ) ˜S0]m,p 
+
+∣∣ 6 = τm, ∀ (m, p ). (16) 
+
+We define the minimum decision margin ρ as 
+
+ρ , min 
+
+> m,p
+
+∣∣∣∣∣[A(Θ) ˜S0]m,p 
+
+∣∣ − τm
+
+∣∣∣ . (17) 
+
+Condition (16 ) guarantees that ρ > 0. The one-bit output is locally constant, i.e., ̂ Y1bit (˜S) = ̂ Y1bit (˜S0), provided that the magnitude perturbation satisfies 
+
+∥∥|A(Θ) ˜S| − | A(Θ) ˜S0|∥∥∞ < ρ. (18) 
+
+Consequently, a sufficient condition in the variable domain is given by 
+
+‖˜S − ˜S0‖F < ρ
+
+‖A(Θ) ‖2
+
+. (19) The proof is provided in Appendix A.Equation ( 14 ) shows that the squared error in (13 ) is proportional to the Hamming distance, i.e., it counts the number of sign mismatches. Therefore, reducing the loss essentially requires discrete sign-flip decisions, which results in a nonsmooth and combinatorial optimization landscape. Moreover, Lemma 1 shows that sign( |A(Θ) ˜S| − T) is locally constant away from the thresholds. Consequently, the objective in ( 13 ) is piecewise constant over large regions and provides little useful descent information, so proximal-gradient iterations can be employed. These observations motivate us replacing sign( ·) by asmooth approximation. III. P ROPOSED METHOD 
+
+A. Sign-Consistency Formulation and Algorithm 
+
+We now introduce a smooth surrogate that retains the same threshold-side consistency while enabling gradient-based optimization. Define the thresholded magnitude residual matrix 
+
+R(˜S) , |A(Θ) ˜S| − T ∈ RM×P , (20) where [T]m,p = τm for all p. A natural consistency require-ment is that the predicted magnitudes lie on the same side of the thresholds as indicated by the one-bit observations: 
+
+[Y1bit ]m,p [R(˜S)] m,p ≥ 0, ∀ m, p. (21) When [R(˜S)] m,p 6 = 0 , ( 21 ) is equivalent to having no sign mismatches in ( 14 ); the equality case corresponds to the threshold boundary |[A(Θ) ˜S]m,p | = τm.To obtain a smooth surrogate for the sign-consistency re-quirement in ( 21 ), we replace the 0–1 mismatch count by a logistic surrogate. For each entry (m, p ), define 
+
+[ℓ(˜S)] m,p , log 
+
+(
+
+1 + exp ( − β [Y1bit ]m,p [R(˜S)] m,p 
+
+))
+
+, (22) where β > 0 controls the sharpness around the threshold. Aggregating over all entries yields the sign-consistency loss 
+
+L(˜S) , 1
+
+M P 
+
+> M
+
+∑
+
+> m=1
+> P
+
+∑
+
+> p=1
+
+[ℓ(˜S)] m,p . (23) The loss L(˜S) depends on the magnitudes ∣∣[A(Θ) ˜S]m,p 
+
+∣∣,which are non-differentiable when [A(Θ) ˜S]m,p = 0 . To obtain a smooth objective, we introduce the smoothed magnitude applied to A(Θ) ˜S:
+
+[ |A(Θ) ˜S|ǫ
+
+] 
+
+> m,p
+
+,
+
+√∣∣[A(Θ) ˜S]m,p 
+
+∣∣2 + ǫ2. (24) Here ǫ is a small smoothing parameter to regularize the magnitude operation and ensure differentiability at zero. Accordingly, define the smoothed threshold residual 
+
+Rǫ(˜S) , |A(Θ) ˜S|ǫ − T, (25) and the smooth sign-consistency loss 
+
+Lǫ(˜S) , 1
+
+M P 
+
+> M
+
+∑
+
+> m=1
+> P
+
+∑
+
+> p=1
+
+log 
+
+(
+
+1 + e−β [Y1bit ]m,p [Rǫ(˜S)] m,p 
+
+)
+
+.
+
+(26) Combining ( 26 ) with an ℓ2,1 penalty yields the proposed group sparsity formulation 
+
+min 
+
+> ˜S∈CG×P
+
+Fǫ(˜S) , Lǫ(˜S) + η‖˜S‖2,1, (27) where η > 0 and ‖˜S‖2,1 = ∑Gg=1 ‖˜Sg, :‖2. For reference, we also define the unsmoothed objective 
+
+F (˜S) , L(˜S) + η‖˜S‖2,1. (28) Problem ( 27 ) is tailored to one-bit observations, in that Lǫ
+
+depends only on the threshold-side information in Y1bit and avoids fitting unavailable full-precision magnitudes. 5
+
+The loss Lǫ(˜S) in ( 26 ) is continuously differentiable. Since it is real-valued and depends on complex variables, Wirtinger calculus is employed here. For notational convenience, let 
+
+Z = A(Θ) ˜S ∈ CM×P denote the noiseless array output. For each entry (m, p ), the partial derivative of log(1 + 
+
+e−β [Y1bit ]m,p (|Zm,p |ǫ−τm)) with respect to Z∗ 
+
+> m,p
+
+is 
+
+∂ℓ m,p 
+
+∂Z ∗
+
+> m,p
+
+= − β [Y1bit ]m,p 
+
+2|Zm,p |ǫ
+
+· σ( − β [Y1bit ]m,p (|Zm,p |ǫ − τm)) · Zm,p , (29) where σ(t) = (1 + e−t)−1 denotes the sigmoid function and |Zm,p |ǫ = √|Zm,p |2 + ǫ2. We adopt the standard con-vention for Wirtinger derivatives of real-valued functions as 
+
+∇Zf , 2 ∂f  
+
+> ∂Z∗
+
+. This definition ensures that the complex gradient corresponds directly to the direction of steepest ascent in the underlying real vector space. Collecting (29 ) over (m, p ) and applying the chain rule through Z = A(Θ) ˜S, the gradient of Lǫ =
+
+> 1
+> MP
+
+∑Mm=1 
+
+∑Pp=1 ℓm,p can be written as 
+
+∇Lǫ(˜S) = 1
+
+M P A(Θ) H(Pǫ ⊙ W), (30) and 
+
+[Pǫ]m,p , Zm,p 
+
+|Zm,p |ǫ
+
+, (31) 
+
+[W]m,p , −β [Y1bit ]m,p σ
+
+(
+
+− β [Y1bit ]m,p [Rǫ(˜S)] m,p 
+
+)
+
+,
+
+(32) with Rǫ(˜S) = |Z|ǫ − T as in ( 25 ). 
+
+Lemma 2. The gradient ∇Lǫ is Lipschitz continuous with constant 
+
+LLip = β‖A(Θ) ‖22
+
+M P 
+
+( β
+
+4 + 1
+
+ǫ
+
+)
+
+. (33) 
+
+Proof. See Appendix B.
+
+The constant LLip reflects the combined curvature of the lo-gistic loss and the smoothed magnitude. Specifically, the term 
+
+β2/4 bounds the second derivative of the logistic function, while β/ǫ arises from the Jacobian bound of the smoothed magnitude operator |z|ǫ. As ǫ → 0, the gradient changes more rapidly near zero, requiring a smaller step size. 
+
+Lemma 3. For any ˜S ∈ CG×P , |Lǫ(˜S) − L(˜S)| ≤ βǫ .
+
+The proof is provided in Appendix C. This uniform bound implies that the gap between the optimal objective values of the smoothed and unsmoothed problems is bounded by βǫ ,i.e., |Fǫ(˜S⋆ǫ ) − F (˜S⋆)| ≤ βǫ . This justifies using a moderate ǫ
+
+(e.g., 10 −3) to balance accuracy and conditioning. 
+
+Remark 1. As ǫ → 0, the smoothed magnitude |z|ǫ → | z| and the surrogate objective Lǫ recovers the original non-smooth loss L, but the Lipschitz constant LLip in ( 33 ) grows as 
+
+O(1 /ǫ ), requiring smaller step sizes and hence more itera-tions for convergence. Conversely, a larger ǫ yields a better-conditioned landscape with faster convergence, but introduces an approximation bias bounded by βǫ (Lemma 3). 
+
+Algorithm 1 The Proposed OBI-MODEST 
+
+Input: One-bit observations Y1bit ∈ {− 1, +1 }M×P , steering matrix A(Θ) ∈ CM×G, thresholds τ ∈ RM , and param-eters (β, η, ǫ, μ, δ tol , T max , N init , σ 0)
+
+Output: DOA estimates ˆθ 
+
+> 1:
+
+T ← τ 1T 
+
+> P
+> 2:
+
+for n = 1 , . . . , N init do  
+
+> 3:
+
+Initialize ˜S(0) ∼ CN (0, σ 20 I) 
+
+> 4:
+
+for t = 0 , 1, . . . , T max − 1 do  
+
+> 5:
+
+Z ← A(Θ) ˜S(t) 
+
+> 6:
+
+Compute |Z|ǫ via ( 24 ) 
+
+> 7:
+
+Compute Rǫ, Pǫ, W via ( 25 ), ( 31 ), ( 32 ) 
+
+> 8:
+
+Compute ∇Lǫ(˜S(t)) via ( 30 ) 
+
+> 9:
+
+Update ˜S(t+1) via ( 34 )–( 35 ) 
+
+> 10:
+
+∆rel ← ∣∣F (t+1)  
+
+> ǫ
+
+− F (t)
+
+> ǫ
+
+∣∣/F (t) 
+
+> ǫ
+> 11:
+
+if ∆rel < δ tol then break  
+
+> 12:
+
+end if  
+
+> 13:
+
+end for  
+
+> 14:
+
+Store (˜Sn, F ǫ(˜Sn))  
+
+> 15:
+
+end for  
+
+> 16:
+
+˜S⋆ ← arg min n Fǫ(˜Sn) 
+
+> 17:
+
+return ˆθ ← K grid angles with largest ‖˜S⋆g, :‖2
+
+With the gradient ( 30 ) and the Lipschitz bound ( 33 ), we minimize ( 27 ) using a proximal-gradient scheme. Starting from ˜S(0) , the update is 
+
+˜S(t+1) = prox μη ‖·‖ 2,1
+
+(˜S(t) − μ ∇Lǫ(˜S(t))
+
+)
+
+, (34) where the step size satisfies μ < 1/L Lip (e.g., μ = c/L Lip 
+
+with c ∈ (0 , 1) ). The proximal operator of the ℓ2,1 norm is the block soft-thresholding [ 43 ]: 
+
+[ prox γ‖·‖ 2,1 (X)] 
+
+> g, :
+
+=
+
+(
+
+1 − γ
+
+‖Xg, :‖2
+
+)
+
+> +
+
+Xg, :, (35) for g = 1, . . . , G , where (a)+ = max {a, 0} denotes the positive part of a. Hence an entire row is set to zero when 
+
+‖Xg, :‖2 ≤ γ, which promotes row sparsity across multiple snapshots. Since Fǫ is nonconvex, we use multiple random initializa-tions and select the run attaining the smallest objective value. Specifically, we draw ˜S(0) ∼ CN (0, σ 20 I), run ( 34 ) until the relative change of Fǫ falls below a tolerance δtol (or t = Tmax ), and repeat this for Ninit times. After selecting ˜S⋆, DOAs are obtained by taking the K grid angles corresponding to the largest row norms ‖˜S⋆g, :‖2.
+
+Remark 2. The objective Fǫ is nonconvex because, for each entry with [Y1bit ]m,p = +1 , log (1+ e−β(|z|ǫ−τm)) is the com-position of a convex nonincreasing function with the convex map z 7 → | z|ǫ, which does not preserve convexity. To mitigate the resulting local minima, we employ Ninit independent random restarts and retain ˜S⋆ = arg min 1≤n≤Ninit Fǫ(˜Sn) as described in Algorithm 1.The proposed One-BIt Magnitude-Only DOA Estimation via Sign-consistency and group sparsiTy (OBI-MODEST) algorithm is summarized in Algorithm 1.6
+
+B. Convergence Analysis 
+
+We now analyze the convergence properties of OBI-MODEST for minimizing the composite objective Fǫ(˜S) = 
+
+Lǫ(˜S) + η‖˜S‖2,1. Although the scalar logistic loss is convex, its composition with the magnitude of a complex linear map renders Lǫ generally nonconvex with respect to ˜S. Conse-quently, global optimality cannot be guaranteed; instead, we establish monotone descent and convergence to a critical point, as formalized in the following Lemma 4 and Theorem 1.
+
+Lemma 4. Let {˜S(t)}t≥0 be the sequence generated by OBI-MODEST with step size μ ∈ (0 , 1/L Lip ). Then, for all t ≥ 0,
+
+Fǫ(˜S(t+1) ) ≤ Fǫ(˜S(t)) − 1 − μL Lip 
+
+2μ ‖˜S(t+1) − ˜S(t)‖2 
+
+> F
+
+. (36) 
+
+In particular, {Fǫ(˜S(t))} is monotonically nonincreasing. 
+
+To ensure the existence of accumulation points, we consider the initial sublevel set 
+
+S0 , {˜S ∈ CG×P : Fǫ(˜S) ≤ Fǫ(˜S(0) )}. (37) By Lemma 4, all iterations satisfy ˜S(t) ∈ S 0. The bounded-ness of S0 is guaranteed by the coercivity of the objective. Specifically, since Lǫ(˜S) ≥ 0, we have 
+
+Fǫ(˜S) ≥ η‖˜S‖2,1 = η
+
+> G
+
+∑
+
+> g=1
+
+‖˜Sg, :‖2
+
+≥ η
+
+√√√√ G∑
+
+> g=1
+
+‖˜Sg, :‖22 = η‖˜S‖F , (38) which implies Fǫ(˜S) → ∞ as ‖˜S‖F → ∞ . Thus, S0 is bounded. 
+
+Theorem 1. Let {˜S(t)}t≥0 be generated by OBI-MODEST with step size μ ∈ (0 , 1/L Lip ). Then, the successive differ-ences vanish, i.e., ‖˜S(t+1) − ˜S(t)‖F → 0 as t → ∞ . The sequence admits at least one accumulation point, and every accumulation point ˜S⋆ satisfies the stationarity condition 
+
+0 ∈ ∇ Lǫ(˜S⋆) + ∂(η‖ · ‖ 2,1
+
+)(˜S⋆), (39) 
+
+meaning that ˜S⋆ is a critical point of Fǫ.
+
+The proofs of Lemma 4 and Theorem 1 are provided in Appendices D and E, respectively. 
+
+C. Computational Complexity 
+
+We analyze the computational complexity of the proposed OBI-MODEST algorithm and compare it with three methods: CBIHT-ℓ2 [33 ], ToyBar [ 20 ], and GESPAR [ 18 ]. Let M denote the number of sensors, G the grid size, P the number of snapshots, and K the number of sources. The per-iteration cost of OBI-MODEST is dominated by the forward transform Z = A(Θ) ˜S and the adjoint trans-form A(Θ) H(Pǫ ⊙ W), each requiring O(M GP ) complex multiply-add operations. The block soft-thresholding step in (35 ) costs O(GP ). All other computations are element-wise, including the formation of |Z|ǫ in ( 24 ), Rǫ in ( 25 ), and 
+
+(Pǫ, W) in ( 31 )–( 32 ), as well as the evaluation of Lǫ in (26 ); their total cost scales as O(M P ), which is a lower order compared with O(M GP ). Since the objective Fǫ is noncon-vex, we employ Ninit independent random initializations and select the solution with the smallest objective value. If each run terminates within Tmax iterations, the total complexity of the proposed algorithm is 
+
+O(Ninit · Tmax · M GP ). (40) Each iteration of CBIHT-ℓ2 [33 ] is dominated by two matrix-vector multiplications: one is the forward computation 
+
+AˆS and the other is the backward gradient step AH(Y1bit −
+
+sign( AˆS)) , both costing O(M GP ). A key advantage of CBIHT-ℓ2 is that it requires no random restarts; instead, it uses a deterministic initialization via back-projection of the measurements, i.e., ˆS(0) = AHY1bit . Since it typically con-verges in a small number of iterations TC , the total complexity is O(TC · M GP ), which effectively scales as O(M GP ).ToyBar [ 20 ] solves a majorization-minimization surrogate via proximal gradient with Nesterov acceleration. Its per-iteration structure is similar to the proposed algorithm, costing 
+
+O(M GP ). However, ToyBar also addresses a nonconvex problem and thus requires multiple random initializations. The total complexity is therefore O(NT · TT · M GP ).GESPAR [ 18 ] is a greedy algorithm that alternates between support refinement via local search and coefficient estimation via Damped Gauss-Newton (DGN). For multiple snapshots, the coefficients are estimated per column, requiring P calls to DGN solver per outer iteration. Each DGN step involves forming and solving a (K + Kref ) × (K + Kref ) linear system, costing O(K3), plus residual evaluations costing O(M K ).The local search phase considers candidate support swaps by examining O(GK ) index pairs. As multiple random initial-izations ( NG restarts) are required, with a maximum of TG
+
+iterations per restart, the total complexity scales as 
+
+O(NG · TG · (K3P + M KP + GK )). (41) In practice, the GK term from local search is often dominated by the M KP term from residual evaluations when M P ≫ G,which is typical in DOA estimation where many snapshots are collected. However, when G is large or the number of snapshots is small, the local search overhead becomes significant. Table II summarizes the results. Although the proposed OBI-MODEST algorithm, ToyBar, and CBIHT-ℓ2 share the same O(M GP ) per-iteration cost, their total complexities differ significantly due to the number of iterations and random restarts required. GESPAR incurs the highest cost due to its greedy search and per-snapshot DGN solver . IV. S IMULATION RESULTS 
+
+A. Simulation Setup 
+
+All simulations employ a 19-sensor UCA. The angular search grid spans [−90 ◦, 90 ◦] with 361 grid points. The sensor phase errors are modeled by D = diag( ejφ 1 , . . . , e jφ M ) with 
+
+φm ∼ N (0 , σ 2
+
+> φ
+
+). The signal-to-noise ratio (SNR) is defined as 
+
+SNR = 10 log 10 (σ2 
+
+> s
+
+/σ 2
+
+> n
+
+).7                                     
+
+> Table II: Computational Complexity Comparison
+> Method Per-Iter. Restarts Total Complexity
+> OBI-MODEST O(M GP )Ninit O(Ninit Tmax M GP )
+> CBIHT-ℓ2[33 ]O(M GP )1O(TCM GP )
+> ToyBar [ 20 ]O(M GP )NTO(NTTTM GP )
+> GESPAR [ 18 ]O(K3+M KP )NGO(NGTG(K3+M K )P)
+> NT,NG: number of restarts for ToyBar and GESPAR, respectively.
+> TC,TT,TG: number of iterations for CBIHT-ℓ2, ToyBar, and GESPAR.
+
+Since the algorithms under consideration are developed based on different signal models, we introduce their respective measurement formulations below. The proposed method operates on the one-bit magnitude-only measurements with unknown phase errors, i.e., Y1bit =sign (|DA (Θ) ˜S| + N − T). The coherent one-bit baselines (CBIHT-ℓ2 [33 ] and ROCS [ 35 ]) quantize the complex base-band samples directly as Ycoh 1bit = sign C
+
+(DA (Θ) ˜S + Nc
+
+),where Nc ∈ CM×P represents complex noise, and sign C(·) = sign( ℜ{·} ) + j sign( ℑ{·} ).For the unquantized benchmarks, GESPAR [ 18 ] utilizes intensity data Yint = |DA (Θ) ˜S + Nc|2, while ToyBar [ 20 ]employs magnitude data Ymag = |DA (Θ) ˜S|+ N. Finally, the unquantized coherent methods (MUSIC, one-bit MUSIC [ 28 ], and Eigenstructure [ 12 ]) operate on the standard measurements 
+
+Yc = DA (Θ) ˜S + Nc.For OBI-MODEST, we set the per-sensor threshold as τm =median ({[Y]m,p }Pp=1 
+
+). The logistic sharpness and smoothing parameters are fixed at β = 2 and ǫ = 10 −3, respectively. The step size is set to a conservative value of μ = 0 .25 /L Lip ,where LLip is computed via ( 33 ). Regarding initialization, the starting point ˜S(0) is initialized with ˜S(0) ∼ CN (0, 0.12I). The algorithm terminates when the relative change in the objective function falls below δtol = 10 −4 or the iteration count reaches 
+
+Tmax = 400 . Finally, to mitigate sensitivity to local minima, we employ Ninit = 5 independent random initializations and select the solution with the smallest final objective value. For baseline methods, we use the empirically tuned pa-rameters. CBIHT-ℓ2 runs for 10 iterations with deterministic initialization [ 33 ]; ROCS uses the tanh-smoothing parameter 
+
+cR = 1 , proximal parameter μR = 0 .05 , step size ηR = 0 .005 ,and penalty γR = 4 , with 50 outer and 30 inner iterations [ 35 ]; ToyBar and GESPAR use 5 random restarts with 200 iterations each. Performance is evaluated by the root mean square error (RMSE) in degrees: 
+
+RMSE = 
+
+√√√√ 1
+
+JK 
+
+> J
+
+∑
+
+> j=1
+> K
+
+∑
+
+> k=1
+
+(ˆθj,k − θk
+
+)2, (42) where J denotes the number of Monte Carlo trials and is chosen as 200 in corresponding simulations. 
+
+B. Verification of Theoretical Analysis 
+
+This subsection provides numerical validation of the theo-retical results established in Sections II and III , by considering 
+
+K = 3 sources at {− 40 ◦, 0◦, 30 .5◦} with P = 100 snapshots under SNR = 20 dB. 
+
+1) Magnitude-Fitting versus Sign-Consistency: We first il-lustrate a fundamental mismatch between magnitude-fitting objectives and one-bit measurements, which motivates the proposed sign-consistency formulation. Fix a true K-source coefficient matrix ˜Strue and form its noiseless magnitudes 
+
+|A˜Strue |. For each perturbation level δ ∈ [10 −3, 10 1.5], we generate 
+
+˜S(δ) = ˜Strue + δ ∆˜S, [∆ ˜S]g,p ∼ CN (0 , 1) i.i.d. , (43) and compute the corresponding one-bit outputs using the same thresholds 
+
+Y(δ)1bit = sign 
+
+(
+
+|A˜S(δ)| − T
+
+)
+
+. (44) We compare two metrics averaged over 200 random perturba-tions ∆˜S. The first is the one-bit agreement rate 
+
+r(δ) , 1
+
+M P 
+
+∑
+
+> m,p
+
+1
+
+{
+
+[Y(δ)1bit ]m,p = [ Ytrue 1bit ]m,p 
+
+}
+
+, (45) which directly measures sign consistency. The second is the magnitude change 
+
+‖∆R‖2 
+
+> F
+
+, ∥∥|A˜S(δ)| − | A˜Strue |∥∥2 
+
+> F
+
+, (46) which captures variations that are explicitly penalized by magnitude-fitting approaches (e.g., ToyBar), even when such variations do not alter the one-bit labels. Fig. 1(a) shows that small perturbations leave the one-bit labels nearly unchanged (e.g., r(δ) > 0.96 for δ < 10 −2), while r(δ) decays and eventually approaches 0.5 as δ in-creases, corresponding to near-independent labels. In contrast, Fig. 1(b) demonstrates that ‖∆R‖2 
+
+> F
+
+grows approximately on the order of δ2 even in the regime where r(δ) ≈ 1. Therefore, magnitude-fitting objectives can still produce non-negligible descent directions that do not affect the one-bit measurements, potentially moving the iteration away from the sign-consistent region. By comparison, the proposed sign-consistency loss depends on whether the predicted magnitudes fall on the correct side of the thresholds. Specifically, with ym,p ∈ { +1 , −1}, the desired condition for each entry is 
+
+ym,p 
+
+(∣∣[A˜S]m,p 
+
+∣∣ − τm
+
+)
+
+> 0. (47) 
+
+∣∣[A˜S]m,p 
+
+∣∣ > τ m when ym,p = +1 , and ∣∣[A˜S]m,p 
+
+∣∣ < τ m when 
+
+ym,p = −1. For the logistic loss ℓ(u) = log(1 + e−βu ), one has |ℓ′(u)| = β/ (1 + eβu ), which becomes negligible when (47 ) holds with a comfortable gap. Consequently, the updates concentrate on entries whose predictions lie on the wrong side of the thresholds, rather than on magnitude variations that are invisible to the one-bit quantizer. 
+
+2) Convergence Behavior: We evaluate Lemma 4 and The-orem 1 by tracking the objective Fǫ(˜S(t)) together with three stationarity diagnostics: 
+
+‖G(t) 
+
+> μ
+
+‖F = 1
+
+μ
+
+∥∥˜S(t) − ˜S(t+1) ∥∥F , (48) 
+
+κ(t)max = max  
+
+> g
+
+min  
+
+> ξ∈∂‖˜S(t)
+> g, :‖2
+
+∥∥∇g Lǫ(˜S(t)) + ηξ∥∥2, (49) 
+
+δt =
+
+∥∥˜S(t) − ˜S(t−1) ∥∥F∥∥˜S(t−1) ∥∥F
+
+. (50) 8    
+
+> 510 15 20 25
+> 0.5 0.6 0.7 0.8 0.9 1
+
+(a)      
+
+> 510 15 20 25
+> 00.5 11.5 22.5 10 8
+
+(b)           
+
+> Fig. 1. Mismatch between one-bit and magnitude objectives versus perturba-tion δ: (a) one-bit agreement rate r(δ); (b) magnitude change ‖∆R‖2
+> F.
+> 0200 400 600 800 1000
+> 02468
+
+(a)      
+
+> 0200 400 600 800 1000
+> 00.1 0.2 0.3 0.4 0.5 0.6
+> Value
+
+(b)         
+
+> Fig. 2. Convergence behavior: (a) objective value Fǫ(˜S(t))versus iteration; (b) diagnostics ‖G(t)
+> μ‖F,κ(t)max , and δt.
+
+Here ‖G(t) 
+
+> μ
+
+‖F is the normalized update step size, κ(t)max mea-sures the maximum KKT residual for the objective Lǫ(˜S) + 
+
+η‖˜S‖2,1, and δt reports the relative iteration change. Fig. 2(a) shows that Fǫ(˜S(t)) is monotonically nonin-creasing over 1000 iterations, which is consistent with the sufficient-decrease property in Lemma 4. In particular, Lemma 4 implies the descent inequality 
+
+Fǫ(˜S(t)) − Fǫ(˜S(t+1) ) ≥ c ∥∥˜S(t+1) − ˜S(t)∥∥2 
+
+> F
+
+, (51) for some constant c > 0 determined by the stepsize condition, and thus ‖˜S(t+1) − ˜S(t)‖F → 0.Fig. 2(b) further supports Theorem 1. ‖G(t) 
+
+> μ
+
+‖F and δt decay to the 10 −3–10 −4 level, indicating that successive updates van-ish and the iterations stabilize, while the concurrent reduction of κ(t)max indicates that the iterations approach a stationary point that approximately satisfies the KKT conditions associated with ( 27 ). 
+
+C. Regularization Parameter Selection 
+
+The regularization parameter η in ( 27 ) serves to balance the logistic loss Lǫ(˜S) against the row-sparsity penalty ‖˜S‖2,1.We examine the sensitivity of the algorithm to η under varying SNR levels and snapshot numbers. The simulation setup involves K = 3 sources located at {− 40 ◦, 0◦, 30 ◦} and 
+
+η is selected via grid search. Fig. 3(a) illustrates the RMSE as a function of η for various SNRs with P = 100 , and a characteristic U-shaped curve is observed. While small η values lead to insufficient sparsity, excessively large η values attenuate the signal of interest. Notably, across the tested SNR range of 5–20 dB,    
+
+> 0.01 0.02 0.03 0.04
+> 0123456
+
+(a)     
+
+> 0.01 0.02 0.03 0.04 0.05
+> 0123456
+
+(b)              
+
+> Fig. 3. RMSE versus regularization parameter η: (a) varying SNRs ( P=100 ); (b) varying snapshot counts P(SNR = 15 dB).
+> 510 15 20
+> SNR (dB)
+> 10 0
+> 10 1
+> RMSE (°)
+> Fig. 4. RMSE versus SNR with P= 80 snapshots and no phase errors.
+
+the empirical optimal η falls consistently within the narrow interval [0 .023 , 0.027] .Fig. 3(b) reveals that the optimal η is strongly dependent on the snapshot number P (shown for SNR = 15 dB). As P
+
+increases from 50 to 500 , the optimal parameter η⋆ decreases from 0.035 to 0.012 . To characterize this relationship, we analyze the product η⋆√P , which yields values of 0.247 ,
+
+0.250 , 0.255 , and 0.268 for P ∈ { 50 , 100 , 200 , 500 }, respec-tively. The approximate constancy of this product motivates the adoption of the following scaling law: 
+
+η⋆ ≈ α
+
+√P , with α ≈ 0.25 . (52) 
+
+D. DOA Estimation Performance 
+
+We first evaluate the DOA estimation performance under ideal conditions without sensor phase errors, with K = 3 
+
+sources at [−40 .7◦, 0.8◦, 30 .2◦].
+
+1) Effect of SNR: Fig. 4 presents the RMSE performance versus SNR ranging from 5 dB to 20 dB, with the snapshot number fixed at P = 80 .The coherent benchmarks such as Unquantized MUSIC, 1-bit MUSIC, and ROCS benefit from the availability of phase information. Specifically, Unquantized MUSIC and 1-bit MUSIC maintain a low RMSE ( < 0.4◦) across the entire SNR range. However, interesting trends emerge among the magnitude-based/non-coherent methods. The Eigenstructure method fails at low SNR ( 5–10 dB) due to its heavy re-liance on high-quality statistical accumulation but converges 9      
+
+> 20 50 80 100
+> Number of Snapshots
+> 10 0
+> 10 1
+> RMSE (°)
+> Fig. 5. RMSE versus number of snapshots at SNR = 15 dB with no phase errors.
+
+rapidly to high accuracy at 20 dB. ToyBar utilizes unquantized magnitude measurement, and exhibits significant improvement as SNR increases, clearly outperforming the 1-bit coherent method CBIHT-ℓ2 at SNR ≥ 10 dB. This suggests that precise amplitude information can sometimes compensate for the lack of phase information, whereas the convex relaxation in CBIHT-ℓ2 limits its resolution at higher SNRs. The proposed method demonstrates a moderate perfor-mance. Although it starts with a larger error at 5 dB due to severe information loss inherent in 1-bit magnitude quantiza-tion, its RMSE drops sharply to ≈ 1.1◦ at 10 dB. Crucially, for 
+
+SNR ≥ 10 dB, the proposed method surpasses the coherent 1-bit baseline CBIHT-ℓ2. Furthermore, despite using only coarse 1-bit magnitude measurements, our method achieves an accu-racy comparable to, and at 20 dB slightly superior to GESPAR, which utilizes full-precision magnitude measurements. This indicates that the proposed method effectively mitigating the effect of information deficit caused by extreme quantization and phase loss. 
+
+2) Effect of Number of Snapshots: Fig. 5 shows the RMSE versus the snapshot number P ∈ { 20 , 50 , 80 , 100 } at SNR = 15 dB. The Unquantized MUSIC has the best performance, while 1-bit MUSIC and ROCS gradually improve as P increases. In contrast, CBIHT-ℓ2 shows significant sensitivity to limited data, with its performance deteriorating to an RMSE above 
+
+7◦ at P = 20 and becomes competitive only when P is sufficiently large, indicating a higher sample requirement for its convex recovery step in this configuration. The Eigenstructure method performs poorly at P = 20 but improves sharply once P increases, consistent with the fact that its second-order-statistics construction is unreliable under limited averaging. ToyBar does not return a valid estimate at 
+
+P = 20 and becomes effective only for P ≥ 50 , after which its RMSE decreases rapidly with P , reflecting the difficulty of nonconvex magnitude fitting. GESPAR is comparatively stable across P but exhibits weaker dependence on P .The proposed method provides a meaningful estimate at 
+
+P = 20 with an RMSE of about 2.8◦, where ToyBar fails completely and both CBIHT-ℓ2 and Eigenstructure incur               
+
+> 015 30 45 60 75 90
+> Phase Error(°)
+> 10 0
+> 10 1
+> RMSE (°)
+> Fig. 6. RMSE versus phase error standard deviation σφat SNR = 15 dB with P= 80 snapshots.
+
+significant errors. 
+
+E. Phase Error Robustness 
+
+A primary advantage for adopting one-bit magnitude-only measurements is their robustness against phase errors. To validate this advantage numerically, we fix SNR = 15 dB and 
+
+P = 80 snapshots, and vary the phase-error standard deviation 
+
+σφ from 0◦ to 90 ◦.Fig. 6 plots the RMSE result versus σφ, which reveals a distinct crossover in performance. In the regime of small phase errors ( σφ < 15 ◦), coherent baselines (unquantized MUSIC, 1-bit MUSIC, and ROCS) indeed exhibit superior resolution compared to the proposed method, benefiting from relatively accurate phase information. However, as σφ increases, their performance degrades rapidly. Notably, when σφ exceeds 30 ◦,even unquantized MUSIC, which yields the lowest RMSE in the ideal case, deteriorates sufficiently to be outperformed by our proposed method. In contrast, the proposed method exhibits a flat RMSE curve across the entire range of σφ. Remarkably, despite utilizing only coarse 1-bit magnitude quantization, our method achieves a performance comparable to that of GESPAR. This highlights a fundamental trade-off where coherent methods offer higher precision under perfect calibration, whereas the proposed approach ensures robustness to phase errors while enabling a low-cost implementation. V. C ONCLUSION 
+
+The problem of DOA estimation from one-bit magnitude-only measurements has been addressed. Distinct from coherent estimators that degrade under phase errors and conventional non-coherent methods that rely on full-precision amplitude data, our proposed method formulates the problem as a sign-consistency optimization task using a smooth logistic surrogate to directly exploit binary threshold information. A proximal-gradient algorithm is developed with proven convergence to a critical point, specifically designed to handle the dual challenges of phase-less sensing and one-bit quantization. Numerical results demonstrate that the proposed method ef-fectively bridges the gap between robustness and efficiency, 10 
+
+and achieves accuracy comparable to coherent baselines un-der ideal conditions while delivering superior stability under severe phase errors, thereby establishing a practical solution for low-cost, uncalibrated array systems. APPENDIX APROOF OF LEMMA 1
+
+Proof. By the non-degeneracy assumption in ( 16 ), the quantity ∣∣[A(Θ) ˜S0]m,p 
+
+∣∣ − τm is nonzero for all (m, p ). Recall the definition of the minimum decision margin ρ from ( 17 ): 
+
+ρ = min 
+
+> m,p
+
+∣∣∣∣∣[A(Θ) ˜S0]m,p 
+
+∣∣ − τm
+
+∣∣∣ > 0. (53) Now, assume that the magnitude perturbation satisfies ( 18 ), i.e., ∥∥|A(Θ) ˜S| − | A(Θ) ˜S0|∥∥∞ < ρ. (54) For any index pair (m, p ), define the signed distance to the threshold for the unperturbed and perturbed signals, respec-tively, as: 
+
+u0 , ∣∣[A(Θ) ˜S0]m,p 
+
+∣∣ − τm, (55) 
+
+u , ∣∣[A(Θ) ˜S]m,p 
+
+∣∣ − τm. (56) By the definition of ρ, we have |u0| ≥ ρ. The perturbation condition implies that 
+
+|u − u0| =
+
+∣∣∣∣∣[A(Θ) ˜S]m,p 
+
+∣∣ − ∣∣[A(Θ) ˜S0]m,p 
+
+∣∣∣∣∣ < ρ. (57) Since |u − u0| < ρ ≤ | u0|, the value u cannot cross zero; hence, u must have the same sign as u0. Consequently, 
+
+sign( u) = sign( u0) = ⇒ [̂ Y1bit (˜S)] m,p = [ ̂ Y1bit (˜S0)] m,p .
+
+(58) Since this holds for all (m, p ), we conclude that ̂ Y1bit (˜S) = ̂
+
+Y1bit (˜S0).To prove the sufficient condition in the variable domain, we utilize the reverse triangle inequality ∣∣|a| − | b|∣∣ ≤ | a − b| and standard norm inequalities: 
+
+∥∥|A(Θ) ˜S| − | A(Θ) ˜S0|∥∥∞
+
+≤ ‖ A(Θ)( ˜S − ˜S0)‖∞
+
+≤ ‖ A(Θ)( ˜S − ˜S0)‖F
+
+≤ ‖ A(Θ) ‖2 ‖˜S − ˜S0‖F . (59) Therefore, if ‖˜S − ˜S0‖F < ρ/ ‖A(Θ) ‖2, the right-hand side of ( 59 ) is strictly less than ρ, which implies that ( 18 ) holds. This completes the proof. 
+
+APPENDIX BPROOF OF LEMMA 2
+
+Recall from ( 30 ) that 
+
+∇Lǫ(˜S) = 1
+
+M P A(Θ) H(Pǫ(˜S) ⊙ W(˜S)). (60) Take any ˜S1, ˜S2 ∈ CG×P and denote Zi = A(Θ) ˜Si for i =1, 2. Then 
+
+‖∇ Lǫ(˜S1) − ∇ Lǫ(˜S2)‖F
+
+= 1
+
+M P 
+
+∥∥∥A(Θ) H(Pǫ, 1 ⊙ W1 − Pǫ, 2 ⊙ W2
+
+)∥∥∥F
+
+≤ ‖A(Θ) ‖2
+
+M P 
+
+∥∥Pǫ, 1 ⊙ W1 − Pǫ, 2 ⊙ W2
+
+∥∥F , (61) where Pǫ,i = Pǫ(˜Si) and Wi = W(˜Si).Fix an entry (m, p ) and write zi = [ Zi]m,p . Let ui = |zi|ǫ =√|zi|2 + ǫ2 and 
+
+pi = zi
+
+ui
+
+, wi = −β y m,p σ( − β y m,p (ui − τm)), (62) so that [Pǫ,i ]m,p = pi and [Wi]m,p = wi. Then 
+
+p1w1 − p2w2 = p1(w1 − w2) + w2(p1 − p2), (63) and hence 
+
+|p1w1 − p2w2| ≤ | p1| | w1 − w2| + |w2| | p1 − p2|. (64) First, |p1| ≤ 1 since u1 ≥ |z1|, and |w2| ≤ β since 
+
+0 < σ (·) < 1. Moreover, the sigmoid satisfies σ(t)(1 −σ(t)) ≤
+
+1/4, so the scalar function r 7 → −β σ (−βr ) is (β2/4) -Lipschitz. Therefore, 
+
+|w1 − w2| ≤ β2
+
+4 |u1 − u2|≤ β2
+
+4
+
+∣∣|z1| − | z2|∣∣ ≤ β2
+
+4 |z1 − z2|, (65) where we used |u1 − u2| = ∣∣|z1|ǫ − | z2|ǫ
+
+∣∣ ≤ ∣∣|z1| − | z2|∣∣ (since 
+
+| · | ǫ is 1-Lipschitz in | · | ) and the reverse triangle inequality ∣∣|z1| − | z2|∣∣ ≤ | z1 − z2|.Second, the map g(z) = z/ √|z|2 + ǫ2 is (1 /ǫ )-Lipschitz, i.e., 
+
+|p1 − p2| = |g(z1) − g(z2)| ≤ 1
+
+ǫ |z1 − z2|. (66) Indeed, g is smooth on R2 and its Jacobian spectral norm is bounded by 1/ǫ because √|z|2 + ǫ2 ≥ ǫ.Combining ( 64 )–( 66 ) yields 
+
+|p1w1 − p2w2| ≤ 
+
+( β2
+
+4 + β
+
+ǫ
+
+)
+
+|z1 − z2|. (67) Applying ( 67 ) and summing over (m, p ) gives 
+
+∥∥Pǫ, 1 ⊙ W1 − Pǫ, 2 ⊙ W2
+
+∥∥F
+
+≤
+
+( β2
+
+4 + β
+
+ǫ
+
+)
+
+‖Z1 − Z2‖F . (68) Finally, ‖Z1 −Z2‖F = ‖A(Θ)( ˜S1 − ˜S2)‖F ≤ ‖ A(Θ) ‖2‖˜S1 −
+
+˜S2‖F . Substituting into ( 61 )–( 68 ) yields 
+
+‖∇ Lǫ(˜S1) − ∇ Lǫ(˜S2)‖F
+
+≤ β‖A(Θ) ‖22
+
+M P 
+
+( β
+
+4 + 1
+
+ǫ
+
+)
+
+‖˜S1 − ˜S2‖F , (69) which proves the claim. 
+
+APPENDIX CPROOF OF LEMMA 3
+
+Let ℓ(u) = log(1 + e−βu ). Since ℓ′(u) = −βσ (−βu ) and 
+
+0 < σ (·) < 1, we have |ℓ′(u)| ≤ β, i.e., ℓ(·) is β-Lipschitz. Fix any (m, p ) and denote a = ∣∣[A(Θ) ˜S]m,p 
+
+∣∣ ≥ 0 and 
+
+aǫ = √a2 + ǫ2. Then 
+
+0 ≤ aǫ − a = √a2 + ǫ2 − a ≤ ǫ, (70) where the last inequality follows from √a2 + ǫ2 ≤ a + ǫ.11 
+
+Using the β-Lipschitz property and |[Y1bit ]m,p | = 1 ,
+
+∣∣∣ℓ
+
+(
+
+[Y1bit ]m,p (aǫ − τm)
+
+)
+
+− ℓ
+
+(
+
+[Y1bit ]m,p (a − τm)
+
+)∣ ∣∣
+
+≤ β |aǫ − a| ≤ βǫ. (71) Averaging over all (m, p ) yields |Lǫ(˜S) − L(˜S)| ≤ βǫ . 
+
+APPENDIX DPROOF OF LEMMA 4
+
+Since ∇Lǫ is LLip -Lipschitz continuous, the descent lemma implies for any U, V ∈ CG×P [44 ]: 
+
+Lǫ(U) ≤ Lǫ(V) + Re 〈∇ Lǫ(V), U − V〉
+
++ LLip 
+
+2 ‖U − V‖2 
+
+> F
+
+. (72) The proximal-gradient update ( 34 ) is equivalently written as 
+
+˜S(t+1) ∈ arg min 
+
+> U
+
+{
+
+Re 〈∇ Lǫ(˜S(t)), U − ˜S(t)〉
+
++ 1
+
+2μ ‖U − ˜S(t)‖2 
+
+> F
+
++ η‖U‖2,1
+
+}
+
+. (73) By optimality of ˜S(t+1) , evaluating the minimized objective at U = ˜S(t) yields 
+
+Re 〈∇ Lǫ(˜S(t)), ˜S(t+1) − ˜S(t)〉
+
++ 1
+
+2μ ‖˜S(t+1) − ˜S(t)‖2 
+
+> F
+
++ η‖˜S(t+1) ‖2,1 ≤ η‖˜S(t)‖2,1.
+
+(74) Applying ( 72 ) with V = ˜S(t) and U = ˜S(t+1) gives 
+
+Lǫ(˜S(t+1) ) ≤ Lǫ(˜S(t))+ Re 〈∇ Lǫ(˜S(t)), ˜S(t+1) − ˜S(t)〉
+
++ LLip 
+
+2 ‖˜S(t+1) − ˜S(t)‖2 
+
+> F
+
+. (75) Combining ( 75 ) with ( 74 ) yields 
+
+Fǫ(˜S(t+1) ) = Lǫ(˜S(t+1) ) + η‖˜S(t+1) ‖2,1
+
+≤ Lǫ(˜S(t)) + η‖˜S(t)‖2,1
+
+−
+
+( 1
+
+2μ − LLip 
+
+2
+
+)
+
+‖˜S(t+1) − ˜S(t)‖2
+
+> F
+
+= Fǫ(˜S(t)) − 1 − μL Lip 
+
+2μ ‖˜S(t+1) − ˜S(t)‖2 
+
+> F
+
+. (76) If μ ∈ (0 , 1/L Lip ), then 1 − μL Lip > 0, proving ( 36 ). 
+
+APPENDIX EPROOF OF THEOREM 1
+
+By Lemma 4, {Fǫ(˜S(t))} is monotonically nonincreasing. Since Fǫ(˜S) ≥ 0, the limit F ∞ 
+
+> ǫ
+
+= lim t→∞ Fǫ(˜S(t)) exists. Summing ( 36 ) over t = 0 , . . . , T − 1 yields  
+
+> T−1
+
+∑
+
+> t=0
+
+‖˜S(t+1) − ˜S(t)‖2
+
+> F
+
+≤ 2μ
+
+1 − μL Lip 
+
+(
+
+Fǫ(˜S(0) ) − Fǫ(˜S(T ))
+
+)
+
+. (77) Letting T → ∞ gives 
+
+> ∞
+
+∑
+
+> t=0
+
+‖˜S(t+1) − ˜S(t)‖2
+
+> F
+
+≤ 2μ
+
+1 − μL Lip 
+
+(
+
+Fǫ(˜S(0) ) − F ∞
+
+> ǫ
+
+)
+
+< ∞, (78) which implies ‖˜S(t+1) − ˜S(t)‖F → 0.All iterations lie in the initial sublevel set S0 = {˜S :
+
+Fǫ(˜S) ≤ Fǫ(˜S(0) )}. As shown in Section III-B , S0 is closed and bounded, and hence compact. Therefore, {˜S(t)} admits at least one accumulation point: there exists a subsequence 
+
+{˜S(tk )} such that ˜S(tk ) → ˜S⋆. Moreover, since ‖˜S(t+1) −
+
+˜S(t)‖F → 0, we also have ˜S(tk +1) → ˜S⋆.Next we show that any accumulation point is a critical point of Fǫ. By the optimality condition of the proximal step ( 34 ), 
+
+0 ∈ ∇ Lǫ(˜S(t)) + 1
+
+μ
+
+(˜S(t+1) − ˜S(t))
+
++ η ∂ ‖ · ‖ 2,1
+
+(˜S(t+1) ), (79) where ∂‖·‖ 2,1 denotes the convex subdifferential. Equivalently, there exists V(t+1) ∈ ∂‖ · ‖ 2,1(˜S(t+1) ) such that 
+
+∇Lǫ(˜S(t)) + 1
+
+μ
+
+(˜S(t+1) − ˜S(t))
+
++ η V(t+1) = 0. (80) Take t = tk and let k → ∞ . Using the continuity of ∇Lǫ,
+
+˜S(tk ) → ˜S⋆, and ˜S(tk +1) − ˜S(tk ) → 0, we obtain 
+
+∇Lǫ(˜S⋆) + η V⋆ = 0 for some V⋆ ∈ ∂‖ · ‖ 2,1(˜S⋆), (81) where we used the closedness (outer semicontinuity) of the convex subdifferential mapping ∂‖ · ‖ 2,1. Hence, 
+
+0 ∈ ∇ Lǫ(˜S⋆) + η ∂ ‖ · ‖ 2,1(˜S⋆)= ∂F ǫ(˜S⋆), (82) which shows that every accumulation point is a critical point of Fǫ. 
+
+REFERENCES [1] H. L. V. Trees, Optimum Array Processing: Part IV of Detection, Estimation, and Modulation Theory . John Wiley & Sons, 2002. [2] H. Krim and M. Viberg, “Two decades of array signal processing research: the parametric approach,” IEEE Signal Process. Mag. , vol. 13, no. 4, pp. 67–94, Jul. 1996. [3] W. Liu, M. Haardt, M. S. Greco, C. F. Mecklenbr¨ auker, and P. Willett, “Twenty-five years of sensor array and multichannel signal processing: A review of progress to date and potential research directions,” IEEE Signal Process. Mag. , vol. 40, no. 4, pp. 80–91, 2023. [4] R. Schmidt, “Multiple emitter location and signal parameter estimation,” 
+
+IEEE Trans. Antennas Propag. , vol. 34, no. 3, pp. 276–280, Mar. 1986. [5] R. Roy and T. Kailath, “ESPRIT-estimation of signal parameters via rotational invariance techniques,” IEEE Trans. Acoust., Speech, Signal Process. , vol. 37, no. 7, pp. 984–995, Jul. 1989. [6] D. Malioutov, M. Cetin, and A. S. Willsky, “A sparse signal reconstruc-tion perspective for source localization with sensor arrays,” IEEE Trans. Signal Process. , vol. 53, no. 8, pp. 3010–3022, 2005. [7] P. Stoica, P. Babu, and J. Li, “SPICE: A sparse covariance-based estimation method for array processing,” IEEE Trans. Signal Process. ,vol. 59, no. 2, pp. 629–638, 2010. [8] J. M. Kim, O. K. Lee, and J. C. Ye, “Compressive music: Revisiting the link between compressive sensing and array signal processing,” IEEE Trans. Inf. Theory , vol. 58, no. 1, pp. 278–301, 2012. 12 
+
+[9] J. Zheng and M. Kaveh, “Sparse spatial spectral estimation: A covariance fitting algorithm, performance and regularization,” IEEE Trans. Signal Process. , vol. 61, no. 11, pp. 2767–2777, 2013. [10] Q. Shen, W. Liu, W. Cui, and S. Wu, “Underdetermined doa estimation under the compressive sensing framework: A review,” IEEE Access ,vol. 4, pp. 8865–8878, 2016. [11] A. J. Weiss and B. Friedlander, “Eigenstructure methods for direction finding with sensor gain and phase uncertainties,” Circuits, Systems, and Signal Processing , vol. 9, no. 3, pp. 271–300, 1990. [12] A. Liu, G. Liao, C. Zeng, Z. Yang, and Q. Xu, “An eigenstructure method for estimating DOA and sensor gain-phase errors,” IEEE Trans. Signal Process. , vol. 59, no. 12, pp. 5944–5956, 2011. [13] L. Zhao, G. Bi, L. Wang, and H. Zhang, “An improved auto-calibration algorithm based on sparse Bayesian learning framework,” IEEE Signal Process. Lett. , vol. 20, no. 9, pp. 889–892, 2013. [14] Z.-M. Liu and Y.-Y. Zhou, “A unified framework and sparse Bayesian perspective for direction-of-arrival estimation in the presence of array imperfections,” IEEE Trans. Signal Process. , vol. 61, no. 15, pp. 3786– 3798, 2013. [15] P. Chen, Z. Chen, Z. Cao, and X. Wang, “A new atomic norm for DOA estimation with gain-phase errors,” IEEE Trans. Signal Process. , vol. 68, pp. 4293–4306, 2020. [16] E. J. Candes, X. Li, and M. Soltanolkotabi, “Phase retrieval via Wirtinger flow: Theory and algorithms,” IEEE Trans. Inf. Theory , vol. 61, no. 4, pp. 1985–2007, 2015. [17] Y. Shechtman, Y. C. Eldar, O. Cohen, H. N. Chapman, J. Miao, and M. Segev, “Phase retrieval with application to optical imaging: Acontemporary overview,” IEEE Signal Process. Mag. , vol. 32, no. 3, pp. 87–109, 2015. [18] H. Kim, A. M. Haimovich, and Y. C. Eldar, “Non-coherent direction of arrival estimation from magnitude-only measurements,” IEEE Signal Process. Lett. , vol. 22, no. 7, pp. 925–929, 2014. [19] H. Zayyani and M. Korki, “Non-coherent direction of arrival estimation via frequency estimation,” arXiv preprint arXiv:1606.06423 , 2016. [20] Z. Wan and W. Liu, “Non-coherent DOA estimation via proximal gradient based on a dual-array structure,” IEEE Access , vol. 9, pp. 26 792–26 801, 2021. [21] Y. Tian, J. Shi, Y. Wang, and Q. Lian, “Non-coherent direction of arrival estimation utilizing linear model approximation,” Signal Process. , vol. 157, pp. 261–265, 2019. [22] Z. Wan and W. Liu, “Non-coherent DOA estimation of off-grid signals with uniform circular arrays,” in Proc. IEEE Int. Conf. Acoust., Speech, Signal Process. (ICASSP) , Jun. 2021, pp. 4370–4374. [23] Z. Wan, W. Liu, and P. Willett, “Target localization based on dis-tributed array networks with magnitude-only measurements,” IEEE Trans. Aerosp. Electron. Syst. , vol. 59, no. 6, pp. 9704–9710, 2023. [24] X. Lu, W. Liu, and A. Alomainy, “A 1.5-bit quantization scheme and its application to direction estimation,” IEEE Trans. Signal Process. ,vol. 73, pp. 4364–4378, 2025. [25] J. J. Bussgang, “Crosscorrelation functions of amplitude-distorted Gaus-sian signals,” Research Laboratory of Electronics, Massachusetts Insti-tute of Technology, Cambridge, MA, Tech. Rep. 216, 1952. [26] J. H. Van Vleck and D. Middleton, “The spectrum of clipped noise,” 
+
+Proc. IEEE , vol. 54, no. 1, pp. 2–19, 1966. [27] C.-L. Liu and P. P. Vaidyanathan, “One-bit sparse array DOA esti-mation,” in Proc. IEEE Int. Conf. Acoust., Speech, Signal Process. (ICASSP) , New Orleans, USA, March 2017, pp. 3126–3130. [28] X. Huang and B. Liao, “One-bit MUSIC,” IEEE Signal Process. Lett. ,vol. 26, no. 7, pp. 961–965, 2019. [29] C.-L. Liu and Z.-M. Lin, “One-bit autocorrelation estimation with non-zero thresholds,” in Proc. IEEE Int. Conf. Acoust., Speech, Signal Process. (ICASSP) , 2021, pp. 4520–4524. [30] A. Eamaz, F. Yeganegi, and M. Soltanalian, “Covariance recovery for one-bit sampled non-stationary signals with time-varying sampling thresholds,” IEEE Trans. Signal Process. , vol. 70, pp. 5222–5236, 2022. [31] ——, “Covariance recovery for one-bit sampled stationary signals with time-varying sampling thresholds,” Signal Process. , vol. 206, p. 108899, 2023. [32] Y.-H. Xiao, L. Huang, D. Ram´ ırez, C. Qian, and H. C. So, “Covariance matrix recovery from one-bit data with non-zero quantization thresholds: Algorithm and performance analysis,” IEEE Trans. Signal Process. ,vol. 71, pp. 4060–4076, 2023. [33] C. St¨ ockle, J. Munir, A. Mezghani, and J. A. Nossek, “1-bit direction of arrival estimation based on compressed sensing,” in Proc. IEEE Int. Workshop Signal Process. Adv. Wireless Commun. (SPAWC) , 2015, pp. 246–250. [34] K. Yu, Y. D. Zhang, M. Bao, Y.-H. Hu, and Z. Wang, “DOA estimation from one-bit compressed array data via joint sparse representation,” 
+
+IEEE Signal Process. Lett. , vol. 23, no. 9, pp. 1279–1283, 2016. [35] X.-P. Li, Z.-L. Shi, L. Huang, A. M.-C. So, and H. C. So, “ROCS: Robust one-bit compressed sensing with application to direction of arrival,” 
+
+IEEE Trans. Signal Process. , vol. 72, pp. 2407–2420, 2024. [36] Y. Mroueh and L. Rosasco, “Quantization and greed are good: One-Bit phase retrieval, robustness and greedy refinements,” arXiv , 2013, arXiv:1312.1830. [37] J. Zhu, Q. Yuan, C. Song, and Z. Xu, “Phase retrieval from quantized measurements via approximate message passing,” IEEE Signal Process. Lett. , vol. 26, no. 7, pp. 986–990, 2019. [38] V. Kishore and C. S. Seelamantula, “Wirtinger flow algorithms for phase retrieval from binary measurements,” in Proc. IEEE Int. Conf. Acoust., Speech, Signal Process. (ICASSP) , Barcelona, Spain, May 2020, pp. 5750–5754. [39] A. Eamaz, F. Yeganegi, and M. Soltanalian, “One-bit phase retrieval: More samples means less complexity?” IEEE Trans. Signal Process. ,vol. 70, pp. 4618–4632, 2022. [40] J. Chen and M. Yuan, “One-bit phase retrieval: Optimal rates and efficient algorithms,” arXiv , 2024, arXiv:2405.04733. [41] Y. Plan and R. Vershynin, “One-bit compressed sensing by linear programming,” Commun. Pure Appl. Math , vol. 66, no. 8, pp. 1275– 1297, 2013. [42] P. T. Boufounos and R. G. Baraniuk, “1-bit compressive sensing,” in 
+
+Proc. 42nd Annu. Conf. Inf. Sci. Syst. (CISS) , 2008, pp. 16–21. [43] N. Parikh and S. Boyd, “Proximal algorithms,” Found. Trends Optim. ,vol. 1, no. 3, pp. 127–239, 2014. [44] A. Beck and M. Teboulle, “A fast iterative shrinkage-thresholding algorithm for linear inverse problems,” SIAM J. Imaging Sci. , vol. 2, no. 1, pp. 183–202, 2009.
