@@ -1,0 +1,443 @@
+Title: DiffRadar: Differentiable Physics-Aware Radar SLAM with Gaussian Fields
+
+URL Source: https://arxiv.org/pdf/2607.12265v1
+
+Published Time: Wed, 15 Jul 2026 11:56:00 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# DiffRadar: Differentiable Physics-Aware Radar SLAM with Gaussian Fields 
+
+# Gaurav Bagwe 
+
+Clemson University Clemson, South Carolina, USA gbagwe@clemson.edu 
+
+# Xiaoyong (Brian) Yuan 
+
+Clemson University Clemson, South Carolina, USA xiaoyon@clemson.edu 
+
+# Yongji Wu 
+
+Clemson University Clemson, South Carolina, USA yongjiw@clemson.edu 
+
+# Lan Zhang 
+
+Clemson University Clemson, South Carolina, USA lan7@clemson.edu 
+
+## Abstract 
+
+Radar sensing is increasingly used in mobile systems because it operates reliably under poor lighting, adverse weather, and privacy-sensitive settings where cameras and LiDAR often fail. However, most existing radar SLAM systems es-timate motion through scan matching on discretized radar heatmaps, which breaks geometric continuity and fails to cap-ture key radar sensing properties, often leading to unstable pose estimation and degraded mapping in degenerate or dy-namically changing environments. We present DiffRadar , a real-time radar SLAM system that models radar observations as a differentiable, physics-aware Gaussian field rather than discrete scans. DiffRadar represents the scene as anisotropic Gaussian primitives and renders radar measurements in range–azimuth and Doppler–azimuth spaces through a dif-ferentiable radar forward model, enabling joint optimization of robot pose and scene structure directly from radar mea-surements. We implement DiffRadar on commodity FMCW radar hardware and evaluate it on both the public Radarize benchmark and a controlled stress-test suite that targets common radar SLAM failure modes, including corridor de-generacy, motion regime transitions, dynamic clutter, and long-horizon loop closures. DiffRadar achieves substantial reductions in trajectory error on the benchmark, with espe-cially large gains under feature-poor corridor motion, while more than doubling map consistency and maintaining real-time performance at 70 FPS. These results show that model-ing radar observations directly in the signal domain enables substantially more robust and consistent radar-only SLAM for mobile platforms. 
+
+## CCS Concepts 
+
+• Hardware → Signal processing systems ; • Computer systems organization → Sensors and actuators ; Robotic autonomy .
+
+## Keywords 
+
+Radar SLAM, mmWave Radar Sensing, Wireless Localization, Gaussian Fields, Differentiable Radar Rendering 
+
+ACM Reference Format: 
+
+Gaurav Bagwe, Xiaoyong (Brian) Yuan, Yongji Wu, and Lan Zhang. 2026. DiffRadar: Differentiable Physics-Aware Radar SLAM with Gaussian Fields . In . ACM, New York, NY, USA, 14 pages. https: //doi.org/10.1145/nnnnnnn.nnnnnnn 
+
+## 1 Introduction 
+
+Simultaneous Localization and Mapping (SLAM) is a fun-damental capability for mobile systems operating in unfa-miliar environments [ 11 , 32 , 35 , 37 ]. Autonomous robots, vehicles, and edge devices rely on SLAM to continuously estimate their positions while constructing a map of their surroundings [ 11 , 29 ]. Most modern SLAM systems rely on optical sensors such as cameras or LiDAR, which can achieve centimeter-level accuracy in structured scenes [ 28 , 43 ]. How-ever, these sensors degrade significantly under adverse sens-ing conditions, including poor lighting, fog, glare, or privacy-sensitive environments where optical sensing may be unde-sirable [ 4 , 31 ]. Enabling reliable SLAM under such conditions remains a key challenge for mobile and wireless systems. Millimeter-wave (mmWave) radar provides a promising sensing modality for robust localization in these scenarios. Radar sensing is largely invariant to lighting conditions and can penetrate common obscurants such as smoke, dust, and fog [ 26 , 27 , 36 ]. Modern mmWave radars are also compact, inexpensive, and increasingly integrated into commodity mobile platforms, making radar an attractive option for RF-based spatial perception when optical sensing is unreliable. However, radar perception differs fundamentally from optical sensing. Radar observations are sparse, noisy, and anisotropic, providing fine resolution in range but limited resolution in azimuth. Existing radar SLAM systems [ 24 , 27 ,33 , 36 ] typically process radar observations as discretized range–azimuth (RA) heatmaps and estimate motion through arXiv:2607.12265v1 [cs.RO] 14 Jul 2026 Conference’17, July 2017, Washington, DC, USA Gaurav Bagwe, Xiaoyong (Brian) Yuan, Yongji Wu, and Lan Zhang 
+
+Figure 1: From modular radar pipelines to differen-tiable radar SLAM. Existing radar SLAM systems pro-cess discretized radar heatmaps and estimate motion through separate modules. DiffRadar instead mod-els radar observations as a continuous physics-aware Gaussian field and performs joint pose-map optimiza-tion through differentiable rendering. 
+
+modular pipelines such as scan matching or Doppler-based odometry. While effective in some environments, this ab-straction limits the ability to exploit the underlying physics of radar sensing. Discretizing radar observations breaks geo-metric continuity and often treats radar intensity as isotropic, ignoring directional backscatter and Doppler structure. Con-sequently, motion estimation and mapping are handled in separate modules, reducing robustness when individual sens-ing cues become unreliable. At the core of these limitations lies a fundamental abstrac-tion mismatch: radar observations are typically treated as 
+
+images to be processed rather than physical signals governed by radar sensing physics . This observation suggests formu-lating radar SLAM directly in the radar signal domain rather than through discretized image representations. In particular, radar-specific properties such as anisotropic measurement uncertainty, directional scattering, and Doppler dynamics are difficult to incorporate within image-based pipelines. Figure 1 illustrates this abstraction mismatch. To address this abstraction mismatch, we propose DiffRadar ,a real-time radar SLAM system that models radar observa-tions through a differentiable, physics-aware Gaussian field. Unlike existing radar SLAM pipelines that operate on dis-cretized radar heatmaps, DiffRadar represents the environ-ment as a continuous field of anisotropic Gaussian primitives and jointly optimizes robot pose and scene structure through a radar-domain forward model. Each primitive encodes scene geometry and radar sensing characteristics, enabling radar measurements to be rendered in RA and DA spaces. DiffRadar integrates three key components. (1) Physics-aware Gaussian representation models radar scatterers as anisotropic Gaussian primitives whose spatial structure re-flects radar sensing characteristics such as range resolution and angular uncertainty. (2) Differentiable radar renderer 
+
+projects the Gaussian field into RA and DA measurement spaces, enabling gradients to propagate from measurement residuals to scene and pose parameters. (3) Unified pose–map optimization jointly refines the robot trajectory and scene representation by minimizing discrepancies between ren-dered and measured radar observations. By grounding radar SLAM in sensing physics, DiffRadar replaces modular heatmap-based processing with a unified differentiable optimization framework that yields stable mo-tion estimation and consistent mapping even in regimes where traditional radar SLAM pipelines are prone to drift or degeneracy. Our contributions are summarized as follows: 
+
+• Continuous physics-aware radar representation. 
+
+We introduce a Gaussian field representation for radar SLAM that models radar observations as continuous primitives rather than discretized heatmaps, enabling smooth geometric modeling and gradient-based opti-mization over scene structure and motion. 
+
+• Differentiable radar renderer. We design a radar-domain differentiable renderer that projects the Gauss-ian field into RA and DA measurement spaces while preserving radar sensing physics, allowing measure-ment residuals to propagate directly to scene and pose parameters. 
+
+• Unified pose-map optimization. We develop a joint optimization framework that refines robot trajectory and radar scene structure simultaneously through dif-ferentiable radar measurements, eliminating heuristic scan matching and improving robustness in degener-ate sensing conditions. 
+
+• System implementation and evaluation. We imple-ment DiffRadar on commodity FMCW radar hardware and evaluate it on both the public benchmark and a Radar Degeneracy Stress-Test (RDST) suite for radar-specific failure modes, including corridor degeneracy, speed transitions, dynamic clutter, and long-horizon drift. DiffRadar achieves up to a 6× reduction in bench-mark trajectory error and over 20 × improvement un-der feature-poor corridor motion, while maintaining real-time performance at 70 FPS and more than dou-bling map consistency. DiffRadar: Differentiable Physics-Aware Radar SLAM with Gaussian Fields Conference’17, July 2017, Washington, DC, USA 
+
+## 2 Radar Sensing and Representation 
+
+Radar Sensing and FMCW Fundamentals Millimeter-wave (mmWave) radars are increasingly accessible due to ad-vances in single-chip frequency-modulated continuous wave (FMCW) technology [ 20 , 38 , 39 ]. These sensors transmit chirps and measure reflected echoes to estimate the range, angle, and Doppler shift of surrounding reflectors. For a chirp with slope 𝑆 and round-trip delay 𝜏 = 2𝑟 /𝑐 , the beat frequency 𝑓 𝑏 = 𝑆𝜏 determines the target range 𝑟 , while radial motion produces a Doppler shift 𝑓 𝐷 = 2𝑣 /𝜆 . A key property of FMCW sensing is its anisotropic spatial resolution : radar achieves high precision in range but much coarser angular resolution due to the limited antenna aperture [39]. 
+
+Limitations of Discrete Radar Representations Con-ventional radar SLAM systems represent the environment us-ing occupancy grids or RA heatmaps [ 8 , 15 , 17 , 33 , 36 ]. While convenient for visualization and processing, such discretiza-tion poorly reflects the physical structure of radar sensing. Radar measurements exhibit correlated uncertainties intro-duced by beamforming and antenna sidelobes [ 38 ], yet grid representations treat cells independently and reduce the con-tinuous signal formation process to per-cell intensities. Local-ization is therefore typically performed through scan match-ing between discrete frames, which can become unstable in feature-sparse or repetitive environments [ 36 ]. Although DA cues can improve odometry, existing approaches still rely on discretized radar heatmaps and modular estimators that separate translation and rotation inference [27, 36]. 
+
+Towards Differentiable Radar Modeling Recent ad-vances in visual scene representation demonstrate the po-tential of differentiable modeling. In particular, 3D Gaussian Splatting (3DGS) represents scenes using anisotropic Gauss-ian primitives that can be rendered differentiably through op-tical alpha-compositing [ 19 ], enabling efficient optimization for tasks such as view synthesis and visual SLAM [ 18 , 44 , 46 ]. Recent work has explored neural scene representations for radar sensing, including neural radar fields and radar-aware Gaussian representations [ 23 , 34 , 46 ]. However, radar signal formation differs fundamentally from optical render-ing. Radar echoes arise from additive reflections governed by path loss and directional backscatter rather than optical occlusion, meaning that measurements may combine con-tributions from multiple scatterers along the same beam. Consequently, optical rendering models such as 3DGS are inconsistent with radar sensing physics. This observation motivates retaining the continuous Gauss-ian representation of 3DGS while replacing its optical ren-derer with a radar-consistent forward model aligned with FMCW sensing and antenna array physics. Such a formula-tion enables analytic gradients through both geometric and Doppler domains, allowing mapping and motion estimation to be optimized jointly within a differentiable framework. This design forms the basis of our DiffRadar system. 
+
+## 3 DiffRadar Overview 
+
+DiffRadar reformulates radar SLAM as a differentiable op-timization problem grounded in radar sensing physics. In-stead of separating signal processing, motion estimation, and mapping into independent stages, DiffRadar integrates radar measurements, scene representation, and trajectory estimation within a unified optimization framework. This de-sign enables scene structure and robot pose to be optimized jointly from radar observations. Designing such a system introduces three key challenges. First, radar observations exhibit anisotropic uncertainty in range and angle and are naturally expressed in polar coordi-nates, requiring a continuous representation compatible with gradient-based optimization. Second, radar measurements depend not only on geometry but also on sensing physics, including directional backscatter, Doppler shifts, and sensor resolution, which must be captured in the scene representa-tion. Third, motion estimation and mapping must be tightly coupled so that geometric and Doppler constraints can be exploited simultaneously during optimization. 
+
+System Overview . Figure 2 shows DiffRadar architecture, which forms a differentiable radar SLAM pipeline with three tightly coupled stages. Sections 4 to 6 describe the scene representation and optimization procedure in detail. 
+
+Stage 1: Radar Observation Processing. Raw radar I/Q measurements are processed through standard FMCW signal processing to produce RA and DA radar maps. Gaussian primitives are initialized from CFAR detections to provide an initial scene representation. 
+
+Stage 2: Differentiable Radar Rendering. The Gauss-ian scene representation is projected into radar measurement space using a differentiable radar renderer. The renderer mod-els radar signal formation using an additive reflection model consistent with FMCW sensing and antenna beam patterns. It produces synthetic RA and DA radar maps whose residuals with respect to observed measurements provide gradients for jointly optimizing scene parameters and trajectory. 
+
+Stage 3: Joint Optimization Backend. A unified opti-mization backend minimizes residuals between rendered and observed radar measurements to refine both scene structure and trajectory. Range–azimuth observations constrain geom-etry and orientation, while Doppler measurements provide complementary constraints on translation and velocity. 
+
+## 4 Physics-Aware Radar Representation 
+
+DiffRadar represents the environment as a continuous radar scene field parameterized by Gaussian primitives that encode both spatial geometry and radar scattering behavior. This Conference’17, July 2017, Washington, DC, USA Gaurav Bagwe, Xiaoyong (Brian) Yuan, Yongji Wu, and Lan Zhang 
+
+Figure 2: DiffRadar pipeline. Radar observations are processed into RA and DA maps, which initialize Gaussian primitives representing the scene. A differentiable renderer projects the Gaussian scene into radar measurement space, and residuals between rendered and observed measures drive joint optimization of the scene and trajectory. 
+
+representation allows radar observations to be rendered dif-ferentiably, enabling gradient-based refinement of both the scene structure and robot trajectory. This section describes the physics-grounded parameterization of these primitives. 
+
+## 4.1 Gaussian Primitive Model 
+
+Figure 3 illustrates the Gaussian primitive used in DiffRadar. The environment is represented as a collection of primitives 
+
+𝐺 𝑖 = {𝜇 𝑖 , Σ𝑖 , 𝛽 𝑖 , 𝐴 𝑖 (𝜙 ), 𝛼 𝑖 }, (1) where 𝜇 𝑖 denotes the spatial mean of primitive 𝑖 in the global map frame and Σ𝑖 its covariance capturing spatial uncer-tainty. The scalar 𝛽 𝑖 represents the reflectivity of the primi-tive, 𝐴 𝑖 (𝜙 ) models the directional dependence of radar backscat-ter with respect to azimuth angle 𝜙 , and 𝛼 𝑖 ∈ [ 0, 1] is a relia-bility weight derived from the signal-to-noise ratio (SNR). Each primitive jointly captures spatial geometry, radar sensing anisotropy, and viewpoint-dependent scattering be-havior. Representing radar scatterers as Gaussian primitives provides a continuous approximation of sparse radar mea-surements, enabling stable gradients for both pose and map parameters. This formulation parallels the use of Gaussian primitives in 3D Gaussian Splatting for differentiable scene modeling in vision-based systems [28]. 
+
+## 4.2 Radar Anisotropy Modeling 
+
+MmWave radars provide fine spatial resolution along range but significantly coarser separation across azimuth due to the limited antenna aperture. To capture this anisotropy, DiffRadar models each primitive’s spatial uncertainty using a rotation-scale decomposition 
+
+Σ𝑖 = 𝑅 𝑖 𝑆 2 
+
+> 𝑖
+
+𝑅 ⊤ 
+
+> 𝑖
+
+, (2) where 𝑅 𝑖 rotates the local range-cross-range coordinate sys-tem into the global map frame and 𝑆 𝑖 = diag (𝜎 𝑟 , 𝜎 𝜃 𝑟 𝑖 ) en-codes the anisotropic spatial scales along the radial and cross-range directions. Here 𝑟 𝑖 denotes the range from the radar 
+
+Figure 3: Physics-aware Gaussian primitive in DiffRadar. Each scatterer is modeled as a Gaussian capturing spatial anisotropy, directional backscatter, and contributions to RA and DA measurements. 
+
+to the primitive, while 𝜎 𝑟 and 𝜎 𝜃 correspond to the radar’s intrinsic sensing resolution. We have 𝜎 𝑟 = 𝑐  
+
+> 2𝐵
+
+and 𝜎 𝜃 = 𝜆 𝐷 ,where 𝑐 is the speed of light, 𝐵 the FMCW sweep bandwidth, 
+
+𝜆 the wavelength, and 𝐷 the effective antenna aperture. This construction produces primitives with narrow radial extent and cross-range uncertainty that grows with distance, con-sistent with the sensing geometry of FMCW radar. 
+
+## 4.3 Directional Backscatter 
+
+Radar reflections depend strongly on viewing direction due to surface geometry and antenna beam patterns. To model this effect, DiffRadar represents the azimuth-dependent re-flectivity of each primitive using a low-order harmonic ex-pansion 𝐴 𝑖 (𝜙 ) = Í𝐾 𝑘 =−𝐾 𝑎 𝑘 𝑒 𝑗𝑘𝜙 , where coefficients 𝑎 𝑘 cap-ture the directional scattering profile of the primitive. In practice, a small order 𝐾 ≤ 2 is sufficient to represent the smooth angular variations typically observed in mmWave radar returns while avoiding overfitting to noise. The final directional reflectivity of primitive 𝑖 is 
+
+𝑅 𝑖 (𝜙 ) = 𝛽 𝑖 𝐴 𝑖 (𝜙 ), (3) DiffRadar: Differentiable Physics-Aware Radar SLAM with Gaussian Fields Conference’17, July 2017, Washington, DC, USA 
+
+which provides a continuous approximation of viewpoint-dependent scattering. As reflectivity varies with observation angle, changes in pose produce predictable changes in ren-dered measurements, allowing directional scattering to con-tribute informative gradients for mapping and localization. Together, (Σ𝑖 , 𝐴 𝑖 (𝜙 ), 𝛽 𝑖 ) provide a physics-aligned param-eterization linking spatial geometry with radiometric behav-ior, enabling coherent optimization of scene structure and sensor motion. 
+
+## 5 Differentiable Radar Rendering 
+
+Given the Gaussian scene representation, DiffRadar predicts radar observations using a physics-consistent differentiable radar renderer. Unlike optical rendering in 3D Gaussian Splatting, radar returns accumulate additively from multi-ple scatterers along each beam. The renderer maps scene primitives and robot pose to RA and DA measurements, en-abling gradient-based refinement of both scene parameters and trajectory. 
+
+## 5.1 Range-Azimuth (RA) Rendering 
+
+Radar signal propagation is additive: the received power at a beam (𝜙, 𝑟 ) equals the sum of contributions from all illuminated scatterers. DiffRadar models this process using a differentiable renderer that projects Gaussian primitives into the radar’s polar observation space: 
+
+𝐼 (𝜙, 𝑟, 𝑡 ) =∑︁ 
+
+> 𝑖
+
+A𝑡 (𝑖 ) 𝛼 𝑖 𝛽 𝑖 𝐴 𝑖 (𝜙 ) 𝐺 𝑖 (𝑟 ; 𝜇 𝑖 , T𝑡 ), (4) where 𝐺 𝑖 (𝑟 ; 𝜇 𝑖 , T𝑡 ) denotes a Gaussian kernel centered at the projected range of primitive 𝑖 after transforming its mean 
+
+𝜇 𝑖 by the current pose T𝑡 . The association mask A𝑡 (𝑖 ) (com-puted via the visibility mechanism in Section 6) ensures that gradients propagate only via physically plausible scatterers, which is important for radar measurements that may include spurious reflections. The factor 𝛼 𝑖 down-weights unreliable or transient scatterers and is initialized from the normalized SNR. Because each primitive is transformed by the current pose estimate, the rendered intensity depends smoothly on both scene parameters and trajectory variables, enabling stable gradient-based optimization. 
+
+## 5.2 Doppler Rendering 
+
+Unlike reflectivity or spatial extent, Doppler arises from the relative motion between the radar and the scene. For a prim-itive at position 𝜇 𝑖 , the Doppler shift induced by ego-motion 
+
+v(𝑡 ) is 𝑓 𝐷,𝑖 (𝑡 )= 2 
+
+> 𝜆
+
+ˆr𝑖 (𝑡 )⊤ v(𝑡 ), where ˆr𝑖 (𝑡 ) is the unit vector from the radar to the primitive and 𝜆 is the radar wavelength. Radar systems estimate Doppler per azimuth beam rather than per individual scatterer, since returns from multiple scat-terers are aggregated within each beam. DiffRadar therefore 
+
+Figure 4: Measured and rendered radar observations used for optimization. Left: measured radar maps. Mid-dle: maps rendered from the Gaussian scene represen-tation. Right: residual maps used in the optimization objective. RA intensity (top), DA responses (bottom). 
+
+predicts the Doppler-azimuth (DA) profile by aggregating contributions from all primitives overlapping each beam: 
+
+ˆ𝑓 𝐷 (𝜙, 𝑡 ) =∑︁ 
+
+> 𝑖
+
+A𝑡 (𝑖 ) 𝑤 𝑖 (𝜙, 𝑡 ) 𝑓 𝐷,𝑖 (𝑡 ), (5) where the weights 𝑤 𝑖 (𝜙, 𝑡 ) reflect spatial proximity and radio-metric strength. In practice, we define 𝑤 𝑖 (𝜙, 𝑡 ) ∝ 𝛼 𝑖 𝛽 𝑖 𝐴 𝑖 (𝜙 )
+
+𝐺 𝑖 (𝑟 ; 𝜇 𝑖 , T𝑡 ), and normalize across all contributing primitives. This formulation ties Doppler prediction to the same physical factors governing RA intensity while keeping computation lightweight. Doppler residuals provide strong translation-sensitive gradients: modifying 𝜇 𝑖 or v(𝑡 ) changes 𝑓 𝐷,𝑖 (𝑡 ) in directionally informative ways. These cues complement the geometric gradients derived from intensity rendering and enable accurate motion estimation even in environments with weak structural features. 
+
+## 5.3 Unified Optimization Objective 
+
+DiffRadar jointly optimizes robot pose and Gaussian primi-tive parameters by minimizing residuals between rendered and measured radar observations: 
+
+L( T𝑡 , {𝐺 𝑖 }) = 𝜆 𝑅𝐴 ∥𝐼 rend − 𝐼 meas ∥22 + 𝜆 𝐷𝐴 ∥ ˆ𝑓 𝐷 − 𝑓 𝐷, meas ∥22.
+
+(6) Figure 4 illustrates this principle: the differentiable radar renderer generates synthetic radar maps whose residuals with respect to measured observations provide gradients for joint pose and scene refinement. The RA term enforces geometric consistency between rendered and measured radar intensity, adjusting primitive geometry and pose parameters. The Doppler term couples velocity, primitive geometry, and Conference’17, July 2017, Washington, DC, USA Gaurav Bagwe, Xiaoyong (Brian) Yuan, Yongji Wu, and Lan Zhang 
+
+Algorithm 1 DiffRadar Online SLAM 
+
+Require: Incoming radar frames {𝐼 𝑅𝐴 𝑡 , 𝐼 𝐷𝐴 𝑡 }
+
+Ensure: Estimated poses {T𝑡 } and Gaussian map G 
+
+> 1:
+
+Initialization:  
+
+> 2:
+
+Estimate rough initial poses using lightweight radar odometry  
+
+> 3:
+
+Initialize Gaussian primitives from CFAR detections  
+
+> 4:
+
+G ← { 𝜇 𝑖 , Σ𝑖 , 𝛼 𝑖 , 𝛽 𝑖 , 𝐴 𝑖 (𝜙 )}  
+
+> 5:
+
+for each incoming radar frame 𝑡 do  
+
+> 6:
+
+Extract detections and update candidate primitives  
+
+> 7:
+
+Compute association set A𝑡 using VDRF  
+
+> 8:
+
+Render predicted RA/DA measurements ˆ𝐼 𝑅𝐴 𝑡 , ˆ𝑓 𝐷,𝑡  
+
+> 9:
+
+Compute residual loss L using Eq. (6)  
+
+> 10:
+
+Update pose parameters (T𝑡 , v(𝑡 )) and Gaussian primitive parameters (𝜇 𝑖 , Σ𝑖 , 𝛽 𝑖 , 𝐴 𝑖 ) 
+
+> 11:
+
+Apply primitive lifecycle management: insert supported primitives and prune stale ones  
+
+> 12:
+
+return optimized trajectory {T𝑡 } and map G
+
+pose through the kinematic projection in Eq. (5) , providing strong translation-sensitive gradients. Together, Eqs. (4) and (5) link scene geometry, radar scat-tering, and motion through a unified differentiable objective. Section 6 describes how radar-side associations combine with these gradients to enable real-time SLAM. 
+
+## 6 Online SLAM System 
+
+While Sections 4 and 5 define the radar scene representation and differentiable rendering model, this section describes how they are integrated into an online SLAM backend. Radar observations are sparse, anisotropic, and Doppler-coupled, making direct optimization challenging. DiffRadar addresses this by combining radar-conditioned visibility with differ-entiable optimization to jointly refine the robot trajectory and Gaussian scene map. Algorithm 1 summarizes the online pose–map optimization procedure. 
+
+## 6.1 Primitive Lifecycle 
+
+The radar front-end converts radar detections into Gaussian primitives that anchor the differentiable SLAM optimiza-tion. Because mmWave radar measurements contain noise, sidelobes, and multipath artifacts, DiffRadar maintains a stable scene representation through primitive initialization, visibility-conditioned association, and lifecycle management. 
+
+Initialization and lifecycle management. CFAR (con-stant false alarm rate) detections in each RA frame instanti-ate Gaussian primitives using the parameterization defined in Section 4. Primitive means and covariances inherit the radar’s anisotropic sensing resolution, while reflectivity and reliability are initialized from measured power and SNR. Di-rectional scattering coefficients are initialized without prior structure and refined during optimization. During online SLAM, primitives are activated only after repeated observa-tion support, stale primitives are removed when no longer visible, and redundant scatterers are merged to maintain a compact and stable scene representation. 
+
+Visibility-conditioned association (VDRF). Given the current radar frame, DiffRadar determines which primitives can physically contribute to the measurement using a visi-bility function V𝑡 (𝑖 ) ∈ { 0, 1} that extends visibility concepts from visual 3DGS to radar sensing. A primitive is considered visible when its geometry, angular scattering, and Doppler-consistent motion jointly produce sufficient likelihood under the radar forward model: 
+
+V𝑡 (𝑖 ) =
+
+(
+
+1, 𝑝 (𝑧 𝑡 | 𝐺 𝑖 , T𝑡 ) > 𝜏, 
+
+0, otherwise .
+
+The likelihood is factorized as 
+
+𝑝 (𝑧 𝑡 | 𝐺 𝑖 , T𝑡 ) = 𝑝 (𝑟 𝑡 | 𝜇 𝑖 , Σ𝑖 ) 𝑝 (𝜙 𝑡 | 𝐴 𝑖 (𝜙 )) 𝑝 (𝑓 𝐷,𝑡 | 𝑓 𝐷,𝑖 (𝑡 )) ,
+
+where the three terms capture range consistency, angular scattering support, and Doppler-consistent motion for each detection 𝑧 𝑡 = (𝑟 𝑡 , 𝜙 𝑡 , 𝑓 𝐷,𝑡 ). The resulting association set 
+
+A𝑡 = {𝑖 | V 𝑡 (𝑖 ) = 1} determines which primitives partici-pate in the differentiable rendering in Eq. (4) . Unlike RGB-based 3DGS where visibility emerges from ray sampling, radar requires explicit physics-conditioned visibility to pre-vent gradients from propagating through spurious scatterers. 
+
+## 6.2 Joint Pose-Map Optimization 
+
+Given the association set A𝑡 , DiffRadar jointly refines the radar scene representation and robot trajectory by minimiz-ing the residual objective in Eq. (6) . Gradients derived from RA intensity and Doppler measurements update complemen-tary aspects of the scene and motion parameters. RA intensity residuals primarily constrain the spatial struc-ture of the scene. These gradients update the primitive means 
+
+𝜇 𝑖 and covariances Σ𝑖 , shifting primitives toward RA con-figurations that better explain observed radar returns while preserving radar-consistent anisotropy through the covari-ance structure in Eq. (2) . The same residuals also refine the radiometric parameters of each primitive, including reflectiv-ity 𝛽 𝑖 and the directional scattering function 𝐴 𝑖 (𝜙 ), allowing each primitive to learn a continuous azimuth-dependent backscatter pattern consistent with the measurements. Doppler residuals provide motion-sensitive constraints. Because Doppler depends on both primitive geometry and ego-motion v(𝑡 ), minimizing Doppler error refines the ve-locity estimate while simultaneously adjusting primitive po-sitions in translation-sensitive directions. These kinematic gradients complement the geometric constraints from RA measurements and significantly improve pose estimation in environments with sparse structural features. DiffRadar: Differentiable Physics-Aware Radar SLAM with Gaussian Fields Conference’17, July 2017, Washington, DC, USA 
+
+Figure 5: Gaussian scene map constructed by DiffRadar. Top: optimized Gaussian primitives (pink) represent-ing radar scatterers. Middle: distances between tra-jectory states and nearby primitives. Bottom: recon-structed radar map along the estimated trajectory. 
+
+Optimization proceeds through alternating pose and map refinement. With the map fixed, trajectory parameters (T𝑡 , v(𝑡 )) 
+
+are updated to explain the current radar frame. With the pose fixed, gradients update primitive parameters including geometry (𝜇 𝑖 , Σ𝑖 ), reflectivity 𝛽 𝑖 , and directional scattering 
+
+𝐴 𝑖 (𝜙 ). After each update, primitive covariances are repro-jected to maintain the radar-consistent anisotropic structure defined in Eq. (2) . Figure 5 illustrates the Gaussian scene map produced during SLAM. The optimized primitives form a structured radar representation that supports differentiable rendering and consistent pose–map refinement along the estimated trajectory. The resulting Gaussian scene field en-ables consistent joint estimation of trajectory and radar map structure. 
+
+## 7 Evaluation 
+
+We evaluate DiffRadar across four aspects: (i) SLAM accu-racy, (ii) robustness under radar degeneracy, (iii) map fidelity, and (iv) runtime efficiency. Experiments are conducted on two complementary datasets. We first evaluate trajectory accuracy on the public Radarize benchmark to enable di-rect comparison with prior radar SLAM systems. Second, we introduce a controlled degeneracy stress-test suite that iso-lates radar-specific failure regimes rarely captured in existing 
+
+Figure 6: Representative environments in the RDST stress-test suite. From left to right: a long feature-poor corridor, zig-zag motion with lateral excita-tion, in-place rotation sequences, and dynamic clut-ter with moving pedestrians. Additional cases, includ-ing scripted speed transitions and long loop closures (>100 m), are evaluated but not visualized here. 
+
+SLAM benchmarks, including corridor degeneracy, motion regime transitions, dynamic clutter, and long-horizon loop closures. Across these experiments, we evaluate trajectory accuracy, robustness under degeneracy and dynamic clutter, map consistency, and runtime performance. 
+
+## 7.1 Experimental Setup 
+
+Datasets. We evaluate on two datasets. (1) Radarize bench-mark. For direct comparison with prior radar SLAM systems, we use the public Radarize dataset [ 36 ], which provides syn-chronized RA and DA measurements and is widely used for radar-only odometry and SLAM evaluation. We follow the original dataset splits. Pseudo ground-truth trajectories are obtained from Intel RealSense T265 visual-inertial odometry; evaluation uses planar (𝑥, 𝑦,𝜓 ) components after SE(2) align-ment. (2) Radar Degeneracy Stress-Test (RDST) Suite. To evaluate radar SLAM under controlled failure regimes, we construct a RDST suite consisting of 52 trajectories collected across two indoor sites (approximately 1.8 km total) using handheld and cart-mounted platforms. These trajectories introduce motion and sensing conditions designed to expose challenging radar SLAM regimes, including (i) zig-zag mo-tion with lateral excitation, (ii) pure in-place rotations, (iii) dynamic clutter with moving humans, (iv) scripted speed transitions (slow →fast →slow), and (v) long loop closures exceeding 100 m. Figure 6 shows representative scenarios. Ground-truth trajectories are obtained using stereo/RGB-D visual-inertial SLAM and aligned to the radar frame via SE(2). 
+
+Hardware and radar processing. Experiments use com-modity 77 GHz FMCW radar platforms. For the Radarize benchmark, we use the TI IWR1843 radar config employed in the original dataset collection [ 36 ]. For the RDST dataset, we collect data using a TI AWR1843BOOST radar with a different antenna configuration and mounting setup. Conference’17, July 2017, Washington, DC, USA Gaurav Bagwe, Xiaoyong (Brian) Yuan, Yongji Wu, and Lan Zhang 
+
+For each radar frame, we compute (i) a RA intensity map and (ii) a DA map. To ensure fair comparison on the public benchmark, we follow Radarize-style preprocessing settings, including comparable maximum range, range resolution, angular binning, and frame rate [ 36 ]. DiffRadar consumes the same RA/DA inputs but refines pose and map estimates through differentiable radar rendering residuals instead of discrete scan matching. Unless otherwise stated, hyperpa-rameters remain fixed across datasets. 
+
+Implementation details. DiffRadar is implemented in PyTorch as an online fixed-lag SLAM optimizer over a dy-namic Gaussian map. Each radar scatterer is represented by a Gaussian primitive with learnable position, anisotropic co-variance, and reflectivity, initialized from RA detections and jointly refined with platform pose. We optimize a sliding win-dow of 8–12 frames using alternating pose and map updates with Adam and a robust Huber loss; Doppler consistency provides a velocity prior, while short-term motion regular-ization improves temporal stability. To keep the online map bounded, new primitives are confirmed only after persistent multi-view support and low-confidence or stale primitives are pruned during execution. Unless otherwise stated, the same optimization and map-management settings are used across all datasets and experiments; after stabilization, the active map typically contains approximately 100 Gaussian primitives at any given time, although over the full sequence the system may instantiate thousands cumulatively as old primitives are pruned or merged. 
+
+Metrics. We report Absolute Trajectory Error (ATE) and 
+
+Relative Error (RE) for both translation and yaw. ATE is com-puted after global SE(2) alignment to the reference trajec-tory, while RE is computed on fixed-length sub-trajectories. Loop drift is measured at loop closure and normalized by trajectory length (m per 100 m). For the RDST stress tests, we additionally evaluate robustness under controlled radar failure modes. Corridor stall rate measures the fraction of frames where the estimated translation magnitude falls be-low 𝜖 while ground-truth motion exceeds 𝜖 . Pure-rotation yaw error measures final yaw deviation after scripted in-place rotations. Speed-change error captures transient pose or velocity errors following scripted slow ↔fast transitions. 
+
+Dynamic-clutter robustness measures ATE and RE degrada-tion as the number of moving humans increases (0, 2, 4). To evaluate map quality, we report Map consistency (Map-Cons) , defined as the overlap between projected radar maps and occupancy derived from depth sensing, and Vertical arti-fact rate (V-Artifact) , the fraction of reconstructed primitives violating inferred floor or ceiling constraints. Finally, we report system efficiency including steady-state runtime, stage-wise latency, end-to-end frame rate (FPS), and scalability with respect to the number of active Gaussian primitives and the fixed-lag optimization window. 
+
+Table 1: End-to-end SLAM trajectory accuracy (public benchmark). † indicates reported values.                         
+
+> Method ATE 𝑡 ↓(m) ATE 𝜓 ↓(rad) RE 𝑡 ↓(m) RE 𝜓 ↓(rad) RNIN †3.299 0.541 0.020 0.522 milliEgo †3.900 0.808 0.022 0.780 Radarize †0.606 0.116 0.017 0.113
+> DiffRadar 0.103 0.084 0.025 0.034
+
+Baselines. We compare DiffRadar against three repre-sentative baselines: (i) Radarize , a radar-only SLAM system that combines Doppler-based translation estimation with correlation or learning-based rotation estimation on RA/DA heatmaps [ 36 ]; (ii) milliEgo , a radar–inertial odometry sys-tem that fuses mmWave radar with IMU measurements [ 27 ]; (iii) RNIN , a neural inertial navigation method based on re-current modeling of IMU sequences [ 10 ]. Where feasible, we re-run baselines under identical preprocessing settings; otherwise we report published results and mark them with †.
+
+## 7.2 Benchmark Evaluation on Radarize 
+
+End-to-End SLAM Accuracy. We first evaluate DiffRadar on the public Radarize benchmark using the same evaluation protocol as prior work. Table 1 summarizes trajectory accu-racy across all sequences. Overall, DiffRadar achieves the best global trajectory accuracy among all evaluated methods on the Radarize benchmark. In particular, DiffRadar reduces translational ATE from 0.606 m (Radarize) to 0.103 m, corre-sponding to roughly a 6× improvement, while also achiev-ing the lowest rotational error among all methods. These improvements arise from jointly optimizing RA and DA mea-surements within a physics-aware differentiable radar model. Doppler observations provide strong translation-sensitive constraints, while RA rendering residuals stabilize orienta-tion and enforce map consistency. Optimizing both signals within a unified pose–map framework enables DiffRadar to maintain stable trajectory estimates even in geometrically ambiguous environments such as long corridors. DiffRadar exhibits slightly higher relative translation er-ror (RE 𝑡 ) than Radarize. This difference reflects the design trade-off between local odometry accuracy and global tra-jectory consistency. Radarize estimates instantaneous trans-lation directly from Doppler measurements, which yields strong short-term motion estimates. In contrast, DiffRadar jointly optimizes pose and scene parameters, prioritizing globally consistent trajectories and significantly reducing long-horizon drift. 
+
+Qualitative Results. Figure 7 compares estimated tra-jectories for three representative Radarize sequences. The scenes include a feature-poor corridor, a long corridor with DiffRadar: Differentiable Physics-Aware Radar SLAM with Gaussian Fields Conference’17, July 2017, Washington, DC, USA 
+
+Figure 7: Top-down trajectory comparison on three Radarize sequences (units in meters). Columns show a narrow corridor sequence, a long L-shaped corridor trajectory, and a hallway intersection with multiple turns. Radarize (blue) accumulates drift in corridor seg-ments and around turns, while DiffRadar (red) closely follows the reference trajectory (black). 
+
+Figure 8: Radar map reconstruction comparison. Columns show Radarize, ground truth, and DiffRadar. Top: long corridor sequence with limited lateral struc-ture. Bottom: square-loop trajectory requiring con-sistent loop closure. DiffRadar produces sharper and more geometrically consistent radar maps. 
+
+a sharp turn, and a hallway intersection with multiple turns. Such environments are challenging for radar SLAM due to limited lateral structure and motion ambiguity. Radarize ac-cumulates noticeable drift along long corridors and near turns. In contrast, DiffRadar remains closely aligned with the reference trajectory, indicating that joint pose–map optimiza-tion improves motion estimation stability under challenging radar conditions. Figure 8 compares reconstructed radar maps for two rep-resentative scenarios. In the long corridor sequence, the Radarize baseline produces blurred and duplicated struc-tures due to accumulated trajectory drift, while DiffRadar reconstructs a cleaner corridor layout with consistent bound-aries. In the square-loop trajectory, baseline pipelines exhibit noticeable geometric distortions along the loop, indicating inconsistent pose estimates. DiffRadar instead preserves the 
+
+Table 2: E1. Motion observability under zig-zag excita-tion. Cart-mounted and handheld trajectories.                              
+
+> Method ATE 𝑡 ↓ATE 𝜓 ↓RE 𝑡 ↓RE 𝜓 ↓
+> (m) (rad) (m) (rad) Cart Radarize 0.830 0.161 0.008 0.036 DiffRadar 0.039 0.030 0.011 0.012
+> Walk Radarize 0.536 0.133 0.013 0.040 DiffRadar 0.085 0.060 0.025 0.032
+
+overall loop structure and produces a more coherent radar map, demonstrating that joint pose-map optimization pro-duces more globally consistent radar maps. 
+
+## 7.3 Controlled Stress Tests on RDST 
+
+Beyond standard benchmarking, we evaluate DiffRadar un-der controlled stress conditions using the RDST dataset intro-duced in Section 7.1. RDST serves as a diagnostic evaluation suite that isolates radar-specific challenges, including mo-tion degeneracy, rapid motion changes, dynamic clutter, and long-horizon trajectory drift. For fairness, all baselines are evaluated using their publicly released implementations with identical preprocessing pipelines, and learning-based base-lines are retrained on the Radarize dataset using the same training splits. Across these regimes, DiffRadar consistently achieves lower trajectory error and more stable behavior than heatmap-based radar SLAM pipelines. The results show that explicitly modeling radar sensing physics enables robust pose estimation even under motion degeneracy, dynamic in-terference, and long-horizon drift. 
+
+7.3.1 Stress-Test Experiments. We evaluate DiffRadar under progressively challenging regimes, from motion observabil-ity to dynamic interference and long-horizon consistency. 
+
+E1. Motion observability (zig-zag excitation). We eval-uate motion observability in feature-poor corridors using scripted zig-zag trajectories that introduce lateral excitation. Such motion exposes a common radar SLAM failure mode: when lateral structure is limited, scan-matching pipelines struggle to constrain translation. Table 2 reports trajectory accuracy for cart-mounted and handheld runs. DiffRadar dramatically improves global trajectory accuracy. For cart trajectories, translational ATE decreases from 0.830 m to 0.039 m (over 20 × improvement), while for handheld runs ATE decreases from 0.536 m to 0.085 m. REs remain compara-ble between methods. As discussed in Section 7.2, Radarize’s direct Doppler-based odometry can yield slightly lower short-term RE 𝑡 , while DiffRadar focuses on globally consistent optimization that substantially reduces trajectory drift. Figure 9 illustrates the qualitative behavior. Radarize pro-duces streak artifacts and noticeable trajectory drift due Conference’17, July 2017, Washington, DC, USA Gaurav Bagwe, Xiaoyong (Brian) Yuan, Yongji Wu, and Lan Zhang Radarize DiffRadar (ours) Trajectory 
+
+Figure 9: E1. Zig-zag excitation in a corridor. Left: Radarize reconstruction showing streak artifacts from multipath and scan degeneracy. Middle: DiffRadar re-construction with spatially consistent scatterers. Right: trajectory comparison against ground truth. DiffRadar closely follows the reference trajectory while Radarize exhibits noticeable drift. Table 3: E2. Motion dynamics under scripted speed transitions. Cart-mounted and handheld trajectories.                
+
+> Method Peak post-transition translation error ↓(m) ATE ↓(m) Cart Radarize 1.421 1.069 DiffRadar 0.206 0.148
+> Walk Radarize 7.717 3.933 DiffRadar 0.356 0.159
+
+to scan degeneracy, whereas DiffRadar reconstructs spa-tially consistent scatterers and closely follows the ground-truth trajectory. These results suggest that jointly optimizing pose and scene structure helps resolve motion ambiguity in feature-poor radar environments. 
+
+E2. Motion dynamics (speed transitions). We eval-uate robustness to motion-regime changes using scripted slow →fast →slow and fast →slow →fast schedules along iden-tical trajectories. Such transitions produce abrupt Doppler magnitude changes to destabilize radar odometry pipelines. Table 3 reports peak post-transition translation error and overall ATE. DiffRadar substantially reduces transient er-rors following speed transitions. For handheld trajectories, peak translation error decreases from 7.72 m to 0.36 m, while overall ATE drops from 3.93 m to 0.16 m. Similar improve-ments are observed for cart-mounted runs. These results indicate that the differentiable radar rendering model al-lows DiffRadar to maintain stable motion estimation under rapidly changing velocity regimes, whereas the baseline suf-fers large transient drift after speed transitions. Figure 10 
+
+> (a) Ground-truth and estimated velocity profiles.
+> (b) Translation error during motion-regime change.
+
+Figure 10: E2. Velocity profile and translation error during handheld speed transitions. Table 4: E3. Degenerate motion under in-place rotation.         
+
+> Method Final Yaw Error ↓(rad) Yaw Drift ↓(rad/s) Radarize 2.6919 0.098
+> DiffRadar 0.051 0.002
+
+illustrates the handheld experiment. The velocity profile con-firms the imposed speed transitions, while the error plot shows that DiffRadar maintains stable estimation with sig-nificantly smaller transient spikes than Radarize. 
+
+E3. Degenerate motion (in-place rotation). We evalu-ate the degenerate-motion regime using scripted pure rota-tions at fixed angular velocities. In this setting, translational Doppler cues vanish, and orientation must be inferred purely from spatial map consistency. Table 4 reports final yaw error and yaw drift rate. DiffRadar significantly improves orien-tation estimation, reducing final yaw error from 2.69 rad to 0.051 rad and yaw drift from 0.098 rad/s to 0.002 rad/s. This improvement arises as DiffRadar jointly optimizes pose and map structure, allowing spatial consistency constraints to stabilize orientation even when motion cues are degenerate. 
+
+E4. Environmental interference (dynamic clutter). 
+
+We evaluate robustness under dynamic interference by intro-ducing pedestrians crossing the radar field of view along the same trajectory. Experiments are conducted with increas-ing numbers of moving actors (0, 2, and 4). Table 5 reports trajectory error and map consistency. DiffRadar maintains stable performance under dynamic clutter, with ATE increas-ing only slightly from 0.085 m to 0.103 m as the number of DiffRadar: Differentiable Physics-Aware Radar SLAM with Gaussian Fields Conference’17, July 2017, Washington, DC, USA 
+
+Table 5: E4. Environmental interference under dy-namic clutter (0, 2, and 4 pedestrians).                      
+
+> Pedestrians Method ATE 𝑡 ↓(m) MapCons ↑(%) 0Radarize 1.820 40.59 DiffRadar 0.085 94.78
+> 2Radarize 1.755 46.32 DiffRadar 0.104 93.72
+> 4Radarize 1.344 47.65 DiffRadar 0.103 94.90
+
+Table 6: E5. Long-horizon consistency under loop clo-sures (>100 m). Cart-mounted & handheld trajectories.               
+
+> Method Loop Drift ↓(m/100m) ATE ↓(m) Cart Radarize 20.438 2.921 DiffRadar 0.511 0.017
+> Walk Radarize 26.438 6.295 DiffRadar 1.385 0.031
+
+Table 7: End-to-end SLAM trajectory accuracy on RDST.                 
+
+> Method ATE 𝑡 ↓(m) ATE 𝜓 ↓(rad) RE 𝑡 ↓(m) RE 𝜓 ↓(rad) Radarize 0.823 0.162 0.024 0.172 DiffRadar 0.129 0.051 0.036 0.035
+
+pedestrians increases. In contrast, Radarize exhibits substan-tially larger trajectory errors across all settings. DiffRadar also preserves high map consistency (approximately 94%), whereas Radarize produces maps with significantly lower structural consistency (40–47%). These results suggest that the visibility-conditioned radar field representation helps suppress transient scatterers caused by moving objects. 
+
+E5. Long-horizon consistency (loop closures). We eval-uate long-horizon consistency using trajectories with loops exceeding 100 m and repeated revisits. Table 6 reports loop drift and trajectory ATE for cart-mounted and handheld runs. DiffRadar dramatically reduces global drift. For cart-mounted runs, loop drift decreases from 20.44 m/100 m to 0.51 m/100 m, while ATE drops from 2.92 m to 0.017 m. Similar improve-ments are observed for handheld trajectories. These results indicate that jointly optimizing pose and scene structure enables DiffRadar to maintain globally consistent trajecto-ries over long horizons, whereas scan-matching pipelines accumulate substantial drift. 
+
+7.3.2 Overall SLAM Performance on RDST. Beyond regime-specific stress tests, we evaluate overall SLAM performance 
+
+Table 8: Map fidelity and artifact metrics on RDST.          
+
+> Method Loop Drift ↓MapCons ↑(%) V-Artifact ↓(%) (m/100m) Radarize 0.35 42.59 53.74 DiffRadar 0.18 94.78 38.61
+
+across the RDST dataset. Table 7 summarizes trajectory accu-racy averaged across all sequences. DiffRadar substantially improves global localization accuracy, achieving over a 6× re-duction in translational ATE and a 3× reduction in rotational ATE compared with Radarize. Although Radarize achieves slightly lower relative translation error (RE 𝑡 ) due to its direct Doppler-based odometry estimation, DiffRadar significantly reduces accumulated trajectory drift through joint pose–map optimization. We further evaluate map fidelity and structural consistency. As shown in Table 8, DiffRadar more than dou-bles map consistency (43% → 95%) while also reducing loop drift and vertical artifacts. These results indicate that the robustness gains observed in the controlled stress tests trans-late to more accurate trajectories and structurally consistent maps in realistic deployment scenarios. 
+
+## 7.4 Runtime and Ablation Analysis 
+
+Runtime Analysis. We evaluate the runtime efficiency of DiffRadar and compare it with Radarize. Table 9 reports steady-state system performance measured on the Radarize dataset after map stabilization. FPS reflects end-to-end SLAM throughput after initialization warm-up. DiffRadar achieves real-time performance while maintaining higher accuracy. In steady state, DiffRadar processes frames at 70 FPS compared with 55 FPS for Radarize. Despite optimizing a differentiable radar field representation, the system remains efficient due to two design choices: (i) the compact Gaussian scene represen-tation, which avoids storing dense radar heatmaps, and (ii) a fixed-lag optimization window that bounds per-frame com-putation. DiffRadar also maintains a substantially smaller memory footprint, requiring only 40 MB for the map com-pared with 162 MB for Radarize. Importantly, this efficiency remains stable over long tra-jectories. As demonstrated in the RDST long-horizon exper-iments (Table 6), DiffRadar maintains globally consistent trajectories on loops exceeding 100 m while operating in real time. These results indicate that DiffRadar scales well with trajectory length and remains practical for extended deployments. 
+
+Ablation Study. We analyze how key design components affect SLAM accuracy using the Radarize benchmark. Ta-ble 10 reports trajectory accuracy after removing individual components from the full system. The ablation highlights Conference’17, July 2017, Washington, DC, USA Gaurav Bagwe, Xiaoyong (Brian) Yuan, Yongji Wu, and Lan Zhang 
+
+Table 9: Steady-state runtime comparison. Initializa-tion denotes offline preprocessing before SLAM execu-tion. FPS measures end-to-end SLAM throughput after map stabilization.          
+
+> Method Initialization Time (hrs) FPS ↑Map Size (MB) Radarize 3.56 55 162 DiffRadar 1.35 70 40
+
+Table 10: Ablation study on the public benchmark.                                     
+
+> Method ATE 𝑡 ↓ATE 𝜓 ↓RE 𝑡 ↓RE 𝜓 ↓
+> (m) (rad) (m) (rad) Full DiffRadar 0.034 0.054 0.020 0.022
+> No Doppler residual 0.078 0.264 0.011 0.033 No RA residual 0.093 0.067 0.007 0.066 No Anisotropic covariance 0.085 0.135 0.013 0.032 No Visibility gating 0.085 0.134 0.012 0.027 Calibration ±5% 0.092 0.156 0.013 0.029
+
+the complementary roles of Doppler and spatial radar mea-surements. Removing Doppler residuals substantially de-grades translational accuracy, while removing RA residuals degrades both translation and orientation estimation, con-firming that Doppler cues and spatial radar structure jointly constrain motion. Physics-aware modeling further stabi-lizes optimization: replacing anisotropic covariance with isotropic covariance or removing visibility gating both in-crease trajectory errors, indicating that modeling radar sens-ing anisotropy and enforcing physically consistent visibility are important for accurate pose–map optimization. DiffRadar also remains robust to moderate calibration noise, as per-turbing radar calibration parameters ( 𝐷, 𝐵 ) by ±5% causes only moderate degradation. Some variants exhibit slightly lower RE despite worse global accuracy. This occurs because removing constraints can locally smooth short-term motion estimates while in-troducing larger long-horizon drift, which is reflected in increased ATE. Overall, the results confirm that each com-ponent contributes to accurate and stable radar SLAM. 
+
+## 8 Related Work 
+
+Prior work on radar-based mapping can be broadly divided into three categories: (i) radar SLAM and odometry systems, (ii) learning-based radar perception, and (iii) differentiable scene representations for radar sensing. 
+
+Radar SLAM and Doppler Odometry. Radar SLAM systems typically estimate motion by matching scans or fea-tures extracted from range–azimuth measurements. Early work demonstrated radar-only ego-motion estimation us-ing scan registration or graph matching between radar re-turns [ 7 – 9, 17 ]. Subsequent systems improved robustness through probabilistic estimation, learned feature extraction, and outlier-resistant odometry pipelines [ 1, 3 , 6 , 16 , 25 ]. More recent approaches incorporate Doppler measurements for improved motion estimation [ 5, 12 , 14 , 21 , 36 ], while radar– inertial systems fuse radar sensing with IMU measurements for improved trajectory estimation [ 2]. However, most prior pipelines operate on discretized radar images or point repre-sentations and rely on scan matching rather than a differen-tiable forward model [12, 27, 33, 36]. 
+
+Learning-Based Radar Perception. Deep learning has been widely applied to radar perception and odometry. Many approaches estimate ego-motion from range–Doppler or radar tensor representations using convolutional or recur-rent neural networks [ 26 , 27 , 36 ]. Other works attempt to improve spatial resolution or densify radar observations through learned representations and generative models, such as diffusion-based methods that jointly infer scene structure and motion from radar measurements [ 33 , 40 ]. These ap-proaches typically rely on supervised training and treat the radar sensing process implicitly. 
+
+Differentiable Scene Representations. Differentiable scene representations such as neural radiance fields and 3D Gaussian Splatting enable continuous modeling of scene ge-ometry and sensor poses through differentiable rendering [ 18 , 19 , 28 , 46 ]. Recent work has extended neural or Gauss-ian representations to radar sensing, including neural radar fields and SAR imaging models [ 13 , 23 , 34 , 45 ], as well as Gaussian-based radar perception and sensor fusion methods [ 22 , 30 , 41 , 42 ]. However, these systems focus primarily on rendering, reconstruction, or multi-sensor perception rather than radar-only SLAM grounded in a physics-consistent radar forward model. In contrast , DiffRadar integrates an FMCW-consistent radar forward model into a differentiable Gaussian scene representation, enabling joint optimization of robot pose and scene structure directly from radar mea-surements [18, 28]. 
+
+## 9 Conclusion and Discussion 
+
+Conclusion. We presented DiffRadar, a real-time radar SLAM system that models radar sensing as a differentiable physics-aware Gaussian field. By jointly optimizing sensing physics, scene structure, and ego-motion within a unified represen-tation, DiffRadar enables robust radar-native SLAM while maintaining real-time performance on commodity mmWave hardware. Experiments across benchmarks and controlled stress tests demonstrate substantial improvements in accu-racy and robustness under challenging conditions. These results suggest that integrating radar sensing physics with DiffRadar: Differentiable Physics-Aware Radar SLAM with Gaussian Fields Conference’17, July 2017, Washington, DC, USA 
+
+differentiable scene representations provides a promising direction for next-generation radar SLAM systems. 
+
+Limitations. Despite these improvements, several deploy-ment and evaluation considerations remain: (i) Our evalua-tion uses a specific commodity FMCW radar configuration with a fixed operating range, antenna layout, and sensing pa-rameters; adapting DiffRadar to substantially different radar hardware or sensing settings may require additional cali-bration or parameter tuning. (ii) Although DiffRadar shows robustness under moderate dynamic clutter (Section 7.3), environments with dense moving objects may still produce inconsistent radar returns that affect pose estimation. 
+
+## References 
+
+[1] Adolfsson, D., Magnusson, M., Alhashimi, A., Lilienthal, A. J., and Andreasson, H. Cfear radarodometry: Conservative filtering for efficient and accurate radar odometry. In 2021 IEEE/RSJ Interna-tional Conference on Intelligent Robots and Systems (IROS) (2021), IEEE, pp. 5462–5469. [2] Amodeo, F., Merino, L., and Caballero, F. 4d radar-inertial odometry based on gaussian modeling and multi-hypothesis scan matching. 
+
+arXiv preprint arXiv:2412.13639 (2024). [3] Barnes, D., Weston, R., and Posner, I. Masking by moving: Learning distraction-free radar odometry from pose information. In Proceedings of the Conference on Robot Learning (2020), vol. 100 of Proceedings of Machine Learning Research , PMLR, pp. 303–316. [4] Brune, M., Meisen, T., and Pomp, A. Survey of deep learning-based methods for fmcw radar odometry and ego-localization. Applied Sci-ences 14 , 6 (2024), 2267. [5] Burnett, K., Schoellig, A. P., and Barfoot, T. D. Do we need to compensate for motion distortion and doppler effects in spinning radar navigation? IEEE Robotics and Automation Letters 6 , 2 (2021), 771–778. [6] Burnett, K., Yoon, D. J., Schoellig, A. P., and Barfoot, T. D. Radar odometry combining probabilistic estimation and unsupervised feature learning. arXiv preprint arXiv:2105.14152 (2021). [7] Cen, S. H., and Newman, P. Precise ego-motion estimation with millimeter-wave radar under diverse and challenging conditions. In 
+
+2018 IEEE International Conference on Robotics and Automation (ICRA) 
+
+(2018), IEEE, pp. 6045–6052. [8] Cen, S. H., and Newman, P. Radar-only ego-motion estimation in difficult settings via graph matching. In 2019 International Conference on Robotics and Automation (ICRA) (2019), IEEE, pp. 298–304. [9] Checchin, P., Gérossier, F., Blanc, C., Chapuis, R., and Trassoudaine, L. Radar scan matching slam using the fourier-mellin transform. In Field and Service Robotics . Springer, 2010, pp. 151–161. [10] Chen, D., Wang, N., Xu, R., Xie, W., Bao, H., and Zhang, G. Rnin-vio: Robust neural inertial navigation aided visual-inertial odometry in challenging scenes. In ISMAR (2021), pp. 275–283. [11] Eliazar, A., and Parr, R. Dp-slam: Fast, robust simultaneous localiza-tion and mapping without predetermined landmarks. In IJCAI (2003), vol. 3, Acapulco, Mexico, pp. 1135–1142. [12] Gentil, C. L., Brizi, L., Lisus, D., Qiao, X., Grisetti, G., and Bar-foot, T. D. Dro: Doppler-aware direct radar odometry. arXiv preprint arXiv:2504.20339 (2025). [13] Giacomini, E., Di Giammarino, L., De Rebotti, L., Grisetti, G., and Oswald, M. R. Splat-loam: Gaussian splatting lidar odometry and mapping. In Proceedings of the IEEE/CVF International Conference on Computer Vision (2025), pp. 27630–27639. [14] Han, Z., Yang, S., Zhu, M., Zhang, F., Xu, S., Ghaffari, M., and Wang, J. Equi-ro: A 4d mmwave radar odometry via equivariant networks. 
+
+arXiv preprint arXiv:2509.20674 (2025). [15] Hess, W., Kohler, D., Rapp, H., and Andor, D. Real-time loop closure in 2d lidar slam. In 2016 IEEE international conference on robotics and automation (ICRA) (2016), IEEE, pp. 1271–1278. [16] Hilger, M., Mandischer, N., and Corves, B. Randt slam: Radar slam based on intensity-augmented normal distributions transform. In 2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) (2024), IEEE, pp. 7831–7838. [17] Hong, Z., Petillot, Y., Wallace, A., and Wang, S. Radar slam: A robust slam system for all weather conditions. arXiv preprint arXiv:2104.05347 (2021). [18] Keetha, N., Karhade, J., Jatavallabhula, K. M., Yang, G., Scherer, S., Ramanan, D., and Luiten, J. Splatam: Splat track & map 3d gaus-sians for dense rgb-d slam. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (2024), pp. 21357–21366. [19] Kerbl, B., Kopanas, G., Leimkühler, T., Drettakis, G., et al. 3d gaussian splatting for real-time radiance field rendering. ACM Trans. Graph. 42 , 4 (2023), 139–1. [20] Klarie Felic, G., Evans, R., Li, J., Skafidas, E., et al. Single-chip millimeter wave radar. Microwave Journal 58 , 1 (2015). [21] Kubelka, V., Fritz, E., and Magnusson, M. Do we need scan-matching in radar odometry? In 2024 IEEE International Conference on Robotics and Automation (ICRA) (2024), IEEE, pp. 13710–13716. [22] Kung, P.-C., Harisha, S., Vasudevan, R., Eid, A., and Skinner, K. A. 
+
+Radarsplat: Radar gaussian splatting for high-fidelity data synthesis and 3d reconstruction of autonomous driving scenes. arXiv preprint arXiv:2506.01379 (2025). [23] Lei, Z., Xu, F., Wei, J., Cai, F., Wang, F., and Jin, Y.-Q. Sar-nerf: Neural radiance fields for synthetic aperture radar multiview representation. 
+
+IEEE Transactions on Geoscience and Remote Sensing 62 (2024), 1–15. [24] Li, Z., Wang, W., Shen, Q., Zhao, Y., and Fang, Z. Super4dr: 4d radar-centric self-supervised odometry and gaussian-based map opti-mization. arXiv preprint arXiv:2512.09608 (2025). [25] Lim, H., Han, K., Shin, G., Kim, G., Hong, S., and Myung, H. Orora: Outlier-robust radar odometry. arXiv preprint arXiv:2303.01876 (2023). [26] Lu, C. X., Rosa, S., Zhao, P., Wang, B., Chen, C., Stankovic, J. A., Trigoni, N., and Markham, A. See through smoke: robust indoor mapping with low-cost mmwave radar. In Proceedings of the 18th International Conference on Mobile Systems, Applications, and Services 
+
+(2020), pp. 14–27. [27] Lu, C. X., Saputra, M. R. U., Zhao, P., Almalioglu, Y., De Gusmao, P. P., Chen, C., Sun, K., Trigoni, N., and Markham, A. milliego: single-chip mmwave radar aided egomotion estimation via deep sensor fusion. In Proceedings of the 18th Conference on Embedded Networked Sensor Systems (2020), pp. 109–122. [28] Matsuki, H., Murai, R., Kelly, P. H., and Davison, A. J. Gaussian splatting slam. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (2024), pp. 18039–18048. [29] Montemerlo, M., Thrun, S., Koller, D., Wegbreit, B., et al. Fast-slam: A factored solution to the simultaneous localization and mapping problem. Aaai/iaai 593598 , 2 (2002), 593–598. [30] Montiel-Marín, S., Antunes-García, M., Sánchez-García, F., Lla-mazares, A., Caesar, H., and Bergasa, L. M. Gaussiancar: Gaussian splatting for efficient camera-radar fusion. In Proceedings of the IEEE International Conference on Robotics and Automation (2026). arXiv preprint arXiv:2602.08784. [31] Pinchon, N., Cassignol, O., Nicolas, A., Bernardin, F., Leduc, P., Tarel, J.-P., Brémond, R., Bercier, E., and Brunet, J. All-weather vision for automotive safety: which spectral band? In International Forum on Advanced Microsystems for Automotive Applications (2018), Springer, pp. 3–15. Conference’17, July 2017, Washington, DC, USA Gaurav Bagwe, Xiaoyong (Brian) Yuan, Yongji Wu, and Lan Zhang 
+
+[32] Placed, J. A., Strader, J., Carrillo, H., Atanasov, N., Indelman, V., Carlone, L., and Castellanos, J. A. A survey on active simultaneous localization and mapping: State of the art and new frontiers. IEEE Transactions on Robotics 39 , 3 (2023), 1686–1705. [33] Prabhakara, A., Jin, T., Das, A., Bhatt, G., Kumari, L., Soltanaghai, E., Bilmes, J., Kumar, S., and Rowe, A. High resolution point clouds from mmwave radar. In 2023 IEEE International Conference on Robotics and Automation (ICRA) (2023), IEEE, pp. 4135–4142. [34] Rafidashti, M., Lan, J., Fatemi, M., Fu, J., Hammarstrand, L., and Svensson, L. Neuradar: Neural radiance fields for automotive radar point clouds. In Proceedings of the Computer Vision and Pattern Recog-nition Conference (2025), pp. 2488–2498. [35] Ress, V., Zhang, W., Skuddis, D., Haala, N., and Soergel, U. Slam for indoor mapping of wide area construction environments. arXiv preprint arXiv:2404.17215 (2024). [36] Sie, E., Wu, X., Guo, H., and Vasisht, D. Radarize: Enhancing radar slam with generalizable doppler-based odometry. In Proceedings of the 22nd Annual International Conference on Mobile Systems, Applications and Services (2024), pp. 331–344. [37] Taketomi, T., Uchiyama, H., and Ikeda, S. Visual slam algorithms: A survey from 2010 to 2016. IPSJ transactions on computer vision and applications 9 , 1 (2017), 16. [38] Texas Instruments . The fundamentals of millimeter wave radar sensors. https://www.ti.com/lit/an/swra553/swra553.pdf, 2018. Appli-cation Report SWRA553. [39] Texas Instruments . Iwr1843 single-chip 76-ghz to 81-ghz mmwave radar sensor integrating dsp, mcu and radar accelerator. https://www. ti.com/product/IWR1843, 2020. Accessed: 2026-03. [40] Wang, S., Luo, X., Xie, Y., and Wang, W. Sddiff: Boost radar perception via spatial-doppler diffusion. arXiv preprint arXiv:2506.16936 (2025). [41] Xiao, R., Liu, W., Chen, Y., and Hu, L. Liv-gs: Lidar-vision integration for 3d gaussian splatting slam in outdoor environments. IEEE Robotics and Automation Letters 10 , 1 (2024), 421–428. [42] Xiao, R., Liu, W., Zhang, Y., Chen, Y., Chen, J., Wang, Z., and Hu, L. Rad-gs: Radar-vision integration for 3d gaussian splatting slam in outdoor environments. IEEE Robotics and Automation Letters 10 , 12 (2025), 13359–13366. [43] Xu, J., Cao, H., Yang, Z., Shangguan, L., Zhang, J., He, X., and Liu, Y. {SwarmMap }: Scaling up real-time collaborative visual {SLAM }
+
+at the edge. In 19th USENIX Symposium on Networked Systems Design and Implementation (NSDI 22) (2022), pp. 977–993. [44] Yugay, V., Li, Y., Gevers, T., and Oswald, M. R. Gaussian-slam: Photo-realistic dense slam with gaussian splatting. arXiv preprint arXiv:2312.10070 (2023). [45] Zhang, J., Li, Z., Wang, C., and Wen, B. Rf4d: Neural radar fields for novel view synthesis in outdoor dynamic scenes. arXiv preprint arXiv:2505.20967 (2025). [46] Zhang, L., Sun, H., Berweger, S., Gentile, C., and Hu, R. Q. Rf-3dgs: Wireless channel modeling with radio radiance field and 3d gaussian splatting. IEEE Transactions on Wireless Communications 25 (2026), 10419–10433.

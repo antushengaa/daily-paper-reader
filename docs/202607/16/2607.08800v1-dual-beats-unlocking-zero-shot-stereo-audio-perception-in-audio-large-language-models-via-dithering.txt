@@ -1,0 +1,403 @@
+Title: Dual-BEATs: Unlocking Zero-Shot Stereo Audio Perception in Audio Large Language Models via Dithering
+
+URL Source: https://arxiv.org/pdf/2607.08800v1
+
+Published Time: Mon, 13 Jul 2026 00:04:05 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# Dual-BEATs: Unlocking Zero-Shot Stereo Audio Perception in Audio Large Language Models via Dithering 
+
+Shuo-Chun Lin 
+
+Institute of Information Science, Academia Sinica, Taiwan 
+
+shuochunlin@as.edu.tw 
+
+Hen-Hsen Huang 
+
+Institute of Information Science, Academia Sinica, Taiwan 
+
+hhhuang@iis.sinica.edu.tw 
+
+## Abstract 
+
+Multimodal Large Language Models (LLMs) have remarkable semantic audio understanding, yet they remain “spatially agnostic” due to their reliance on mono-channel audio representations. Currently, spatial audio perception methods mainly focus on complex room simulations and custom-trained, geometry-aware stereo encoders, which limits their accessibility and generalizability. In this paper, we introduce the Dual-BEATs architecture, in which the left and right audio channels are routed independently through two identical semantic encoders as an alternative to specialized spatial modules. To circumvent the architectural bottleneck where in-ternal normalization otherwise erases the inter-channel variance of stereo audio, we inject a static, uncorrelated dithering noise floor prior to encoding. This dithering intervention establishes a macro-variance floor that “smuggles” spatial geometry across the normalization layers. Evaluated on a ternary directional classification task (Left, Center, Right), we demonstrate that dithered models achieve exceptional spatial resolution—reaching up to 97.2% localization accuracy even on subtle 0.5 panning amplitudes—and demonstrates robust, zero-shot generalization to entirely unseen spatial configurations. Our results suggest that with the appropriate acoustic regularization, standard multimodal models are natively capable of generalized stereo audio understanding. 
+
+## 1 Introduction 
+
+The rapid evolution of multimodal Large Language Models (LLMs) has fundamentally transformed computational audio perception. Foundational open-weight architectures such as Audio Flamingo [ 1], SALMONN [ 2 ], and established end-to-end systems such as Qwen2-Audio [ 3] have demonstrated remarkable zero-shot capabilities across a wide range of audio-linguistic tasks. By mapping con-tinuous audio waveforms to the discrete textual embedding space of an LLM, these models can successfully reason about complex speech, acoustic environments, and semantic events, exhibiting profound semantic depth. However, despite these advanced semantic capabilities—exemplified by recent models such as Music Flamingo [ 4] which perform complex chain-of-thought reasoning over music theory—current foundational audio models operate under a restrictive architectural assumption: they process sound with no concept of physical space. The standard preprocessing pipeline for general audio LLMs routinely downmixes stereo or multi-channel audio into a single mono audio channel prior to 
+
+> Preprint. arXiv:2607.08800v1 [cs.SD] 9 Jul 2026
+
+encoding [ 5; 6]. This spatial deficit extends far beyond open-weight architectures—even state-of-the-art proprietary multimodal systems, such as the GPT-4 family [ 7; 8] and Gemini [ 9], rely on preprocessing pipelines that inherently flatten audio into mono mel-spectrograms. Consequently, because these models are architecturally deaf to inter-channel geometry, any spatial localization they output is purely an artifact of semantic hallucination rather than true acoustic perception. Recent efforts to address this spatial blindness often rely on complex 3D room simulations or custom-trained spatial encoders that are tightly coupled with their LLM backbones [ 10 ; 11 ]. While effective for specialized applications, these purpose-built architectures are highly sensitive to acoustic domain shifts. For instance, adapting an encoder optimized for meticulously simulated binaural environments to process standard, unsimulated stereo mixes can aggressively disrupt its pre-trained semantic alignment. A more intuitive and modular approach to generalized stereo perception bypasses these spatial encoders entirely by routing the left and right audio channels independently through two identical, standard semantic encoders, such as the BEATs architecture [12]. Yet, this straightforward dual-encoder approach remains largely unexplored. We hypothesize that this absence is due to a structural bottleneck within standard LLM architectures: internal normalization layers [ 13 ; 14 ]. Because normalizers are designed to forcefully standardize the variance of incoming latent vectors, they inadvertently act as dynamic compressors when processing continuous audio. While absolute, hard-panned boundaries (Panning Amplitude, P A = 0 .0) may present a large enough variance to survive this bottleneck, normalizers aggressively equalize the subtle inter-channel differences of intermediate panning amplitudes (e.g., P A = 0 .5, a mere ∼6dB differential). This effectively erases continuous spatial geometry, rendering the model blind to subtle spatial gradients and destroying its ability to generalize. Building on this modular approach, we propose the Dual-BEATs architecture augmented with a targeted acoustic intervention: a static, uncorrelated stereo dithering noise floor injected prior to encoding. This additive dither safely bridges the normalization layers, preserving the spatial amplitude delta by embedding it directly into the noise signature, thereby rendering the spatial geometry highly visible to the LLM’s cross-attention mechanisms. Through extensive empirical evaluation across distinct architectures and parameter scales (Gemma-3-1B and OLMo-3-7B) utilizing decoupled audio encoders, we demonstrate that this dithering intervention unlocks true spatial abstraction. Specifically, our primary contributions are twofold: • Zero-Shot Spatial Perception : We demonstrate that standard multimodal models can achieve exceptional spatial resolution without geometry-aware encoders. Models regularized by the uncorrelated noise floor reach up to 97% directional accuracy at subtle 0.50 panning amplitudes and exhibit robust, continuous zero-shot generalization to entirely unseen spatial configurations. • Bypassing the Normalization Bottleneck : We empirically identify the compressive lim-itations of internal normalization layers in continuous audio processing and establish un-correlated dithering as a fundamental, signal-level intervention that preserves inter-channel geometry across distinct normalization topologies, circumventing the need for specialized spatial encoders. 
+
+## 2 Related Works 
+
+General Audio LLMs Current audio-capable multimodal models typically rely on a standard tripartite architecture: a pre-trained acoustic encoder, a projection module, and the LLM backbone. Models such as Audio Flamingo [ 1 ], GAMA [ 15 ], and SALMONN [ 2] demonstrate remarkable zero-shot reasoning capabilities. Recent advancements, such as Music Flamingo [ 4], push these boundaries further to achieve near-human reasoning over complex acoustic structures. However, this semantic depth masks a fundamental limitation: general-purpose pipelines inherently assume a mono input. Multi-channel audio is routinely downmixed prior to encoding [ 5; 6 ; 16 ; 17 ]. Consequently, these bottlenecks render models structurally blind to spatial geometry; they can expertly reason about 
+
+what an acoustic event is, but not where it is. Critiques like The World is Not Mono [18 ] explicitly identify this downmixing as a critical barrier, arguing that genuine auditory scene analysis requires spatial intelligence. 2Specialized Spatial Encoders To address this spatial deficit, a rapidly expanding ecosystem of methods has emerged across various input-output representations [ 19 ], largely driven by downstream applications like the DCASE Sound Event Localization and Detection (SELD) challenges [ 20 ]. Initial explorations [ 21 ] demonstrated LLMs could achieve robust sound source localization given appropriate spatial cues. More recently, SAVVY [ 22 ] introduced a training-free pipeline for 3D spatial reasoning in audio-visual contexts, though it relies on integrating external localization modules. This spurred the development of specialized acoustic encoders explicitly designed for complex ambisonics and geometry-aware topologies. Frameworks like Spatial-AST (BAT) [ 10 ] map spatial characteristics using interaural phase differences. To make these systems hardware-agnostic, PhaseCoder [ 23 ]explicitly ingests microphone coordinate geometry alongside the audio stream. These dedicated architectures are increasingly deployed for reasoning tasks like spatial question answering and tracking dynamic source movements [ 24 ]. Recent hybrid architectures [ 18 ] extend this approach by deploying heterogeneous encoders in parallel—pairing a standard semantic model with a custom-built spatial encoder to explicitly combine meaning and geometry. While highly effective, these methods require significant architectural overhead, tightly coupled pre-training, or explicit geometric conditioning. A critical gap remains for generalized stereo perception directly from standard, off-the-shelf semantic encoders, without relying on heavy, phase-aware topologies. 
+
+The Normalization Constraint Processing left and right audio channels independently through identical semantic encoders offers an intuitive, decoupled path to stereo perception. However, applying this approach to modern LLMs presents a unique physical challenge. We hypothesize that standard internal regularization layers—such as variance-scaling normalizers [ 13 ; 14 ]—act as an aggressive bottleneck for continuous spatial audio. By forcefully standardizing the variance of incoming latent vectors, they inadvertently compress the microscopic inter-channel amplitude differentials required to perceive spatial panning. While noise injection is a well-established technique in deep learning—whether deployed to induce regularization during instruction tuning (e.g., NEFTune [25 ]) or to study adversarial robustness [ 26 ]—its application as a structural bypass mechanism for continuous multimodal signals remains largely unexplored. Drawing on the principles of Stochastic Resonance from classical physics and digital signal processing, where noise is utilized to elevate weak signals across functional thresholds [ 27 ; 28 ], we propose a novel architectural intervention. By injecting an uncorrelated dithered noise floor prior to encoding, we create a Stochastic Resonance bridge. This preserves the crucial left-right amplitude delta—the core geometric differential—across the normalization layers, unlocking spatiality without specialized encoders. 
+
+## 3 Methodology 
+
+3.1 Dual-BEATs Architecture and Spatial Routing 
+
+Standard audio models typically downmix multi-channel waveforms into a single mono channel, destroying spatial geometry. To bypass this without relying on geometry-specific encoders, we propose a decoupled routing topology. Given a stereo input, we isolate the left and right channels (WL, W R). As formalized in Section 3.2, these signals are first augmented with uncorrelated dithering noise to form W ′ 
+
+> L
+
+and W ′
+
+> R
+
+. We route these augmented signals through two identical, frozen BEATs encoders [12] individually. To formalize the spatial routing topology illustrated in Figure 1, let Eθ map inputs to a latent dimension d (e.g., d = 768 ). Parallel forward passes yield independent temporal sequences: 
+
+ZL = Eθ (W ′
+
+> L
+
+), ZR = Eθ (W ′
+
+> R
+
+) ∈ RT ×d
+
+To construct spatial geometry, we fuse these representations along the feature dimension. Unlike sequence-dimension concatenation ( 2T ×d), which presents the channels as temporally disjoint events, feature-dimension concatenation enforces a strict temporal lock. This yields a unified, time-aligned payload Zspatial = [ ZL; ZR] ∈ RT ×2d.This 1536-dimensional representation passes through a learnable projector Pϕ, which utilizes activa-tion and normalization functions mirroring the target LLM (e.g., LayerNorm [ 13 ] and SiLU [ 29 ] for OLMo, RMSNorm [ 14 ] and GELU [ 30 ] for Gemma) to map the acoustic features into the language model’s latent space: Haudio = Pϕ(Zspatial ).3LLM   
+
+> Audio (.wav)
+> BEATs (right)
+> [Time, 768]
+> [Time, 768]
+> left
+> BEATs (left)
+> (Audio Encoder)
+> right
+> [Time, llm_hidden size]
+
++
+
++ 
+
+> [Time, 1536 ]
+> concat
+> Projector
+> Linear
+> Activation
+> Normalization
+> Layer
+
++ 𝑁 𝐿 ∙ 𝐷𝐴 
+
+𝑊 𝐿 
+
+𝑊 𝑅 
+
++ 𝑁 𝑅 ∙ 𝐷𝐴 
+
+𝐸 𝜃 
+
+𝐸 𝜃 
+
+𝑍 𝐿 
+
+𝑍 𝑅 
+
+> 𝐻 𝑎𝑢𝑑𝑖𝑜
+
+𝑍 𝑠𝑝𝑎𝑡𝑖𝑎𝑙 
+
+> 𝑃 𝜙
+> (noise)
+> (noise)
+
+Figure 1: The Dual-BEATs Architecture. Uncorrelated dithering noise ( NL, N R), scaled by a Dithering Amplitude ( DA ), is injected into decoupled stereo channels prior to encoding. The independent encodings are feature-concatenated ( Zspatial ) before LLM ingestion. By projecting this time-aligned, feature-fused payload, Dual-BEATs transfers spatial localization directly to the LLM’s native attention mechanisms. Because the left and right acoustic tokens are permanently bound within a single temporal step, the model is forced to dynamically evaluate the inter-channel amplitude delta—the literal volume and feature differences—to successfully reason about the physical acoustic space. 
+
+3.2 The Normalization Bottleneck and Stochastic Resonance 
+
+While Dual-BEATs routing successfully isolates the acoustic streams, empirical evaluations reveal a critical vulnerability within standard LLM topologies: internal variance normalization layers (e.g., RMSNorm, LayerNorm). Physical spatial geometry is encoded via subtle inter-channel amplitude differentials. At extreme spatial boundaries ( P A = 0 .00 ), this differential is large enough to survive regularization. However, as the sound source moves toward the center ( P A = 0 .50 ), the left and right acoustic features are separated only by microscopic variance. Standard normalizers act as aggressive compressors on these subtle continuous gradients, dynamically scaling the representations such that Norm (ZL) ≈ Norm (ZR). This effectively equalizes the channels, completely erasing the physical spatial geometry before the attention layers can process it. 
+
+The Uncorrelated Dithering Intervention To circumvent this compressive architectural bottleneck, we introduce a signal-level intervention inspired by Stochastic Resonance. Prior to encoding, we inject static, uncorrelated Gaussian noise directly into the continuous waveforms WL and WR. Using a specific Dithering Amplitude ( DA ) scaling factor, we generate two strictly independent noise vectors from a standard normal distribution, NL, N R ∼ N (0 , 1) , yielding the augmented signals: 
+
+W ′ 
+
+> L
+
+= WL + ( NL · DA ), W ′ 
+
+> R
+
+= WR + ( NR · DA )
+
+Crucially, injecting strictly independent noise ( NL̸ = NR) establishes an artificial macro-variance floor. When these representations reach the LLM, the normalizer locks onto this dominant noise variance, safely floating the delicate acoustic amplitude delta across the architectural bottleneck. Furthermore, enforcing this uncorrelated property is essential to prevent shortcut learning [ 31 ]. If a shared noise vector were applied to center-panned audio ( WL = WR), it would yield perfectly mirrored latent representations, allowing the model to achieve artificially inflated localization accuracy via a shallow identity comparison. Because real-world acoustic environments inherently contain microscopic phase and pressure discrepancies, enforcing uncorrelated noise deliberately breaks this artificial mathematical symmetry. The attention mechanisms are therefore forced to look past the 4dither and extract the true uncompressed spatial geometry, ensuring robust, real-world generalization rather than the exploitation of mathematical artifacts. For all primary evaluations utilizing the Stochastic Resonance bridge, we establish the hyperparameter at DA = 0 .05 . This specific amplitude—approximating a -26 dB noise injection—was selected as a robust initial baseline. It ensures the injected macro-variance is substantial enough to survive the aggressive normalization compression without overwhelmingly obscuring the core semantic acoustic signal. 
+
+3.3 Dataset Formulation and Spatial Instruction Tuning Dataset and Unified Task To evaluate our architecture, we utilize the official balanced splits of the AudioSet corpus [ 32 ], curated via the filtering pipeline established by Spatial-AST [ 10 ]. This yields 18,373 samples for training and 17,148 samples for evaluation across 355 distinct acoustic labels (see Appendix A.1 for exact reproducibility protocols and label distributions). Rather than separating spatial and semantic reasoning, we formulate a unified instruction objective: given a stereo input, the model must generate semantic event labels and physical spatial direction within a single continuous sequence. 
+
+Spatial Instruction Tuning and LoRA Adaptation To bridge the modality gap, we must align the randomly initialized projector Pϕ and adapt the LLM to process the dithered stereo tokens. Crucially, empirical testing revealed that maintaining a strictly frozen LLM backbone resulted in a complete failure to learn spatial geometry. While the injected dither successfully preserves the inter-channel amplitude differentials across the normalization bottleneck, the LLM’s native attention mechanisms are not naturally calibrated to correlate these microscopic variances. Therefore, we conduct a unified spatial instruction tuning phase. We maintain the dual-BEATs audio encoders in a strictly frozen state to preserve their robust semantic representations. To overcome the LLM’s inherent spatial agnosticism while managing the massive memory footprint of uncompressed spatial tokens, we employ Quantized Low-Rank Adaptation (QLoRA) [ 33 ]. We freeze the LLM backbone in a memory-efficient quantized state and apply higher-precision adapter modules directly to the core attention projections [ 34 ]. This allows the attention heads to adapt to the spatial geometry without inducing catastrophic forgetting of their semantic priors (exact quantization and LoRA configurations are detailed in Appendix B). During this tuning phase, we expose the model to a 50/50 stochastic mixture of “List-First” and “Direction-First” instruction templates (detailed in Appendix A.2). This balanced prompt mixture forces the adapted attention heads to independently parse semantic and spatial features regardless of generation order, validating that our evaluations reflect true acoustic perception rather than autoregressive overfitting. 
+
+Strict Noise Floor Isolation To prevent the LLM from shortcut learning by memorizing the injected pseudo-random noise profiles, we enforce absolute stochastic isolation between phases. By strictly decoupling the random seeds used for noise generation during training and evaluation, we ensure all test-time noise signatures are fundamentally unseen. This guarantees that our localization accuracy reflects genuine inter-channel amplitude correlation rather than static artifact memorization (see Appendix A.3 for exact seed isolation protocols). 
+
+## 4 Experiments and Results 
+
+4.1 Spatial Resolution and the Center-Pan Crash 
+
+To evaluate the fundamental spatial capacity of the Dual-BEATs architecture, we analyzed directional accuracy (Left, Center, Right) across a spectrum of panning amplitudes ( P A ). We evaluated both architectures using a single-pass inference on the evaluation set. The results, detailed in Table 1, provide striking empirical evidence of the normalization bottleneck predicted in Section 3.2, alongside the efficacy of the Stochastic Resonance bridge. 
+
+The Center-Pan Crash (Undithered Baseline) When evaluated without the dithering intervention, both architectures exhibit an extreme, non-linear degradation in spatial perception. At the binary 5Table 1: Spatial directional accuracy (%) across panning amplitudes ( P A ). Undithered baselines (Off) suffer catastrophic spatial collapse at subtle amplitudes ( P A = 0 .50 ). Conversely, activating the uncorrelated noise floor (On, DA = 0 .05 ) preserves continuous, high-resolution spatial perception. 
+
+P A = 0 .00 P A = 0 .10 P A = 0 .25 P A = 0 .50 
+
+Architecture Off On Off On Off On Off On 
+
+Gemma-3-1B + Dual-BEATs 
+
+→ Direction-First 66.8 47.7 80.8 80.4 36.7 70.2 33.8 58.0 
+
+→ List-First 61.4 53.0 91.6 68.1 37.0 58.0 33.2 45.6 OLMo-3-7B + Dual-BEATs 
+
+→ Direction-First 99.5 99.0 94.3 98.4 80.2 98.6 37.9 97.1 
+
+→ List-First 99.8 99.1 96.1 98.7 83.4 98.4 37.9 96.3 
+
+acoustic extreme ( P A = 0 .00 )—where the inter-channel differential is large enough to survive layer normalization—the undithered OLMo-3-7B model effortlessly routes the signal, achieving 99.8% accuracy. However, as the spatial gradient narrows toward the center ( P A = 0 .50 ), the normalization compression triggers a catastrophic spatial collapse. The undithered OLMo-3-7B model’s accuracy plummets to 37.9%, while the Gemma-3-1B model falls to 33.2%. Because random chance in this ternary task is 33.3%, these scores indicate that the undithered models have been rendered completely spatially blind by the internal architectural bottleneck. 
+
+Stochastic Resonance Rescue Activating the uncorrelated dithering noise floor (DA 0.05) success-fully circumvents this compressive bottleneck. By insulating the continuous inter-channel variance, the dithered OLMo-3-7B maintains a near-perfect, flat resolution curve across the entire panning spectrum, securing 97.1% accuracy even at the most difficult P A = 0 .50 threshold. While the smaller Gemma-3-1B model demonstrates sensitivity to the noise-to-signal ratio at extreme amplitudes ( P A = 0 .00 )—where the dither briefly acts as an obfuscant rather than a carrier—it still strongly benefits from the resonance bridge at subtle amplitudes, rescuing it from random guessing (33.8% → 58.0%). However, the OLMo-3-7B results demonstrate the true ceiling of the Dual-BEATs architecture when supported by sufficient linguistic parameters. 
+
+Global Spatial Attention and Prompt Independence Crucially, the data demonstrates that this physical rescue translates to robust, generalized acoustic perception regardless of autoregressive load. Notably, the “Direction-First” formulation poses a significantly harder cognitive challenge, as the model must output the spatial localization token immediately, prior to unfolding the semantic sequence. Despite this, the dithered OLMo-3-7B model achieves its highest performance (97.1%) in this exact mode. This confirms that the Dual-BEATs architecture successfully grants the model “global” spatial attention across the entire audio context window before token generation begins, definitively proving that standard LLMs are capable of generalized stereo perception without dedicated stereo audio encoders. 
+
+4.2 Zero-Shot Spatial Generalization 
+
+To verify that the Dual-BEATs architecture achieves true spatial abstraction rather than merely memorizing discrete training artifacts, we evaluated its zero-shot generalization capabilities. Models fine-tuned exclusively on a single panning amplitude (Y-axis) were evaluated across a continuous spectrum of entirely unseen spatial environments ranging from P A = 0 .00 to P A = 0 .80 (X-axis). The resulting performance matrices are visualized in Figure 2. 
+
+The Brittle Diagonal (Undithered Baseline) As demonstrated in the left column of Figure 2, the undithered baselines fundamentally fail to generalize. While they occasionally memorize their specific training amplitudes, off-diagonal performance collapses to the random-chance floor ( 33.3%). This brittleness is most devastatingly illustrated in the undithered OLMo-3-7B model trained at 
+
+P A = 0 .00 (Figure 2c, top row). While it achieves 99.8% accuracy when evaluating identical 
+
+P A = 0 .00 inputs, shifting the evaluated audio to an acoustically adjacent, nearly imperceptible 
+
+P A = 0 .01 triggers an immediate collapse to 33.2%. This confirms that without the dithering 60.00 0.01 0.05 0.10 0.25 0.50 0.80 
+
+Evaluated Panning Amplitude (PA)                                           
+
+> 0.00 0.01 0.05 0.10 0.25 0.50 0.80
+> Trained Panning Amplitude (PA)  61.4 35.8 34.6 34.1 33.6 33.4 33.0
+> 99.3 97.4 84.1 70.9 48.8 36.7 33.6
+> 60.7 63.9 55.8 48.7 37.7 34.5 33.9
+> 92.9 95.1 93.9 91.6 78.7 52.4 36.5
+> 45.7 44.3 41.2 39.4 37.0 35.0 33.8
+> 36.8 33.3 33.3 33.5 33.4 33.2 33.2
+> 34.5 34.3 34.2 34.2 34.0 33.6 33.4
+> 30
+> 40
+> 50
+> 60
+> 70
+> 80
+> 90
+> 100
+> Directional Accuracy (%)
+
+(a) Gemma-3-1B-it (Undithered) 0.00 0.01 0.05 0.10 0.25 0.50 0.80 
+
+Evaluated Panning Amplitude (PA)                                            
+
+> 0.00 0.01 0.05 0.10 0.25 0.50 0.80
+> Trained Panning Amplitude (PA)  53.0 52.7 48.5 44.9 39.6 35.9 33.9
+> 79.3 79.2 70.8 60.8 47.5 38.4 34.3
+> 75.8 75.5 71.2 66.1 55.9 42.5 35.0
+> 76.2 76.4 75.4 68.1 54.5 50.3 41.0
+> 71.8 71.8 71.8 71.1 58.0 41.5 38.4
+> 41.3 41.3 41.9 43.2 57.2 45.6 34.2
+> 31.7 31.8 32.6 33.7 33.8 33.4 33.2
+> 30
+> 40
+> 50
+> 60
+> 70
+> 80
+> 90
+> 100
+> Directional Accuracy (%)
+
+(b) Gemma-3-1B-it (Dithered) 0.00 0.01 0.05 0.10 0.25 0.50 0.80 
+
+Evaluated Panning Amplitude (PA)                                           
+
+> 0.00 0.01 0.05 0.10 0.25 0.50 0.80
+> Trained Panning Amplitude (PA)  99.8 33.2 33.0 33.0 33.0 33.0 33.0
+> 98.6 98.8 87.9 68.3 42.9 35.3 33.5
+> 97.1 98.3 97.8 94.1 68.0 42.1 34.4
+> 96.1 96.1 97.0 96.1 83.6 51.4 36.0
+> 81.8 82.7 88.6 89.2 83.4 62.7 40.7
+> 44.9 64.7 57.5 52.8 44.4 37.9 34.2
+> 37.6 42.0 40.0 38.2 36.1 34.4 33.0
+> 30
+> 40
+> 50
+> 60
+> 70
+> 80
+> 90
+> 100
+> Directional Accuracy (%)
+
+(c) OLMo-3-7B (Undithered) 0.00 0.01 0.05 0.10 0.25 0.50 0.80 
+
+Evaluated Panning Amplitude (PA)                                            
+
+> 0.00 0.01 0.05 0.10 0.25 0.50 0.80
+> Trained Panning Amplitude (PA)  99.1 99.1 87.3 66.0 44.0 36.2 33.5
+> 99.1 99.0 88.1 66.7 44.2 36.2 33.6
+> 98.6 98.6 98.6 97.5 71.3 40.5 34.0
+> 98.8 98.8 98.8 98.7 93.2 51.6 34.2
+> 98.4 98.4 98.4 98.4 98.4 78.1 35.3
+> 96.3 96.3 97.0 97.1 97.2 96.3 57.7
+> 75.8 75.8 75.7 75.2 72.8 62.9 45.0
+> 30
+> 40
+> 50
+> 60
+> 70
+> 80
+> 90
+> 100
+> Directional Accuracy (%)
+
+(d) OLMo-3-7B (Dithered) 
+
+Figure 2: Zero-shot spatial generalization heatmaps (List-First condition). Undithered baselines (left) overfit to specific training amplitudes, exhibiting brittle off-diagonal fragmentation. In contrast, dithered models (right) achieve continuous, robust off-diagonal spatial mapping across entirely unseen acoustic geometries, validating the Stochastic Resonance bridge. intervention, the LLM fails to learn continuous acoustic geometry. Instead, it overfits to extreme mathematical artifacts—specifically the literal zero-value tensors produced by a fully muted audio channel at P A = 0 .00 .
+
+Continuous Spatial Abstraction (Dithered Models) Conversely, activating the Stochastic Res-onance bridge (right column) fundamentally transforms this behavior, replacing the fragmented diagonal with a massive, robust block of high-resolution spatial mapping. The OLMo-3-7B model demonstrates exceptional zero-shot capability across the spectrum. For example, a model trained exclusively on a mid-range amplitude ( P A = 0 .25 ) successfully extrapolates to entirely unseen extreme boundaries ( P A = 0 .00 ) with negligible degradation (98.4%), while maintaining a robust 78.1% on subtler panning amplitudes ( P A = 0 .50 ). Even more remarkably, training the dithered OLMo-3-7B model on the highly compressed P A = 0 .50 
+
+setting (Figure 2d, second row from bottom) acts as a universal spatial anchor. By forcing the model to resolve spatiality at this difficult acoustic threshold, it achieves over 96.3% zero-shot accuracy across every single higher-differential amplitude ( P A = 0 .00 to P A = 0 .25 ). This visual evidence solidifies the core architectural hypothesis: by safely floating the delicate spatial geometry across the normalization layers, the LLM is forced to learn the continuous physical gradient of the acoustic space, completely circumventing the need for domain-specific spatial encoders. 70.00 0.01 0.05 0.10 0.25 0.50 0.80       
+
+> Zero-Shot Panning Amplitude (PA)
+> 26
+> 28
+> 30
+> 32
+> 34
+> 36
+> 38
+> 40
+> 42
+> Semantic F1 Score (%)
+> 33.3%
+> 28.73%
+> Gemma-3-1B-it + Dual-BEATs
+> 0.00 0.01 0.05 0.10 0.25 0.50 0.80
+> Zero-Shot Panning Amplitude (PA)
+> 40.6%
+> 28.73%
+> OLMo-3-7B + Dual-BEATs
+> Mono BEATs Baseline
+> Floor ('Music; Speech' Prior)
+> Undithered
+> Dithered
+
+Figure 3: Zero-shot semantic retention evaluated under the strictly isolated “List-First” condition for models trained at P A = 0 .25 . Solid markers indicate zero-shot evaluations; hollow markers denote in-domain baselines. At the binary boundary ( P A = 0 .00 ), the undithered baseline (orange) suffers a normalization crash, reverting entirely to the 28.73% statistical prior. The dithered architecture (blue) preserves stable semantic extraction across the entire spatial spectrum. 
+
+The Psychoacoustic Resolution Limit ( P A = 0 .80 ) At the extreme boundary of subtlety ( P A =0.80 ), the inter-channel differential is approximately 1.9 dB. This borders on the Just Noticeable Difference (JND) threshold within human psychoacoustics, causing models trained exclusively at this amplitude to struggle with spatial convergence (visible in the bottom rows of Figure 2). However, the robust spatial anchor formed by training the dithered OLMo-3-7B model at P A = 0 .50 allows it to extrapolate into this difficult threshold. As shown in Figure 2d, it achieves a non-trivial 57.7% zero-shot accuracy on P A = 0 .80 evaluations—significantly outperforming the random chance baseline even at the absolute edge of the architecture’s physical resolution limit. 
+
+4.3 Semantic Retention and the Semantic Tax 
+
+While the Stochastic Resonance bridge flawlessly preserves spatial geometry, injecting static, uncal-ibrated noise inherently acts as an acoustic perturbation. To rigorously evaluate this trade-off, we isolated the semantic extraction performance using the “List-First” prompt to measure the resulting “Semantic Tax.” To properly contextualize these metrics, we must establish the dataset’s statistical baseline. As detailed in Appendix A.1, the inherent class imbalance of the official AudioSet evaluation corpus creates a massive statistical prior. A naive, deterministic model that completely ignores the audio and exclusively guesses the two most naturally frequent labels (“Music” and “Speech”) achieves a semantic F1 score of 28.73% without any genuine acoustic perception. Figure 3 details the zero-shot semantic retention curve for a representative OLMo-3-7B model fine-tuned at a mid-range amplitude ( P A = 0 .25 ). Under aggressive dithering ( DA = 0 .05 ), the Dual-BEATs architecture experiences a stable, expected reduction in semantic capacity (shifting from the theoretical mono ceiling of 40.6% to approximately 35.5% F1). Crucially, this dithered performance remains completely flat and robust across all zero-shot spatial amplitudes. In stark contrast, when the undithered baseline encounters the hard-panned P A = 0 .00 boundary, it violently collapses. The variance singularity mathematically shocks the normalizers, triggering a total acoustic ablation that drops the undithered model exactly down to the 28.73% statistical floor. The noise floor’s ability to safely float the semantic payload above this baseline crash definitively proves that continuous inter-channel geometry can be preserved without destroying the underlying acoustic tokens. 85 Limitations and Broader Impacts 
+
+Acoustic and Environmental Limitations While the Dual-BEATs architecture successfully by-passes normalizer constraints to extract spatial geometry via Inter-channel Level Differences (ICLD), our current evaluations are bounded by single-source, amplitude-panned acoustic environments. The resolution of multi-source, overlapping audio from distinct spatial coordinates remains untested. Furthermore, we have not yet evaluated the Stochastic Resonance bridge against true binaural audio, which introduces highly complex, non-linear Head-Related Transfer Functions (HRTFs) and micro-second phase delays not captured by simple deterministic amplitude panning. Finally, our reliance on the AudioSet corpus introduces ontological biases—heavily skewing toward “Speech” and “Music” (see Appendix A.1)—meaning spatial acuity for underrepresented acoustic classes remains an open question for equitable deployment. 
+
+Architectural and Computational Constraints While uncorrelated dithering bypasses normalizer constraints, the static noise floor introduces a measurable “Semantic Tax” (an approximate 5% reduction in baseline F1 score). Notably, our current evaluations used a fixed DA = 0 .05 . Because the normalization bottleneck equalizes microscopic variances aggressively—with undithered performance collapsing at a mere P A = 0 .01 -the minimum required variance floor may be lower than our baseline. Future work will map the dithering spectrum to optimize this trade-off and minimize semantic degradation. Additionally, our method requires an uncompressed feature density of 50 tokens per second. This sequence length, combined with FP32 upcasting to stabilize cross-modality gradients on hardware lacking native BF16 support, introduces substantial memory overhead during tuning. Finally, expanding this continuous spatial modality into larger language backbones (>10B parameters) risks severe modal shock, requiring datasets with massive volumetric density to stabilize projector gradients without inducing catastrophic unlearning. 
+
+Broader Societal Impacts The development of generalized spatial acoustic reasoning in Audio Large Language Models carries significant dual-use implications. On a positive societal vector, natively granting LLMs “stereo hearing” drastically expands the horizon for accessibility tools; for example, spatially aware AI assistants could provide critical environmental navigation cues (e.g., localizing sirens, hazards, or speakers) for visually impaired users. Conversely, the deployment of highly accurate, zero-shot acoustic scene analysis poses inherent privacy risks. If integrated into edge devices or public microphone arrays, this architecture could theoretically be misused for unauthorized, localized surveillance or the persistent acoustic tracking of individuals without their consent. Furthermore, the architecture’s reliance on a static noise floor introduces an adversarial vector: an actor intercepting the dither seed could inject imperceptible acoustic perturbations to spoof spatial perception. We urge the prioritization of robust consent frameworks and acoustic sanitization protocols as multimodal models transition toward physical environmental grounding. 
+
+## 6 Conclusion 
+
+This paper introduces the Dual-BEATs architecture, a novel multimodal routing topology that endows foundational Audio Large Language Models with true spatial acoustic perception without relying on specialized, geometry-aware spatial encoders. By physically decoupling the stereo signal, we empirically exposed a critical architectural vulnerability within standard LLM topologies: internal variance normalizers act as aggressive compressors on continuous audio, obliterating subtle inter-channel amplitude geometries and triggering catastrophic spatial collapse. To overcome this bottleneck, we proposed a targeted, signal-level intervention inspired by Stochastic Resonance. By injecting an uncorrelated, static noise floor prior to semantic encoding, we established an artificial macro-variance that safely floats the spatial geometry across the normalization layers. Our evaluations demonstrate that this intervention not only preserves robust spatial resolution at highly compressed, center-panned boundaries, but it also unlocks profound zero-shot spatial extrapolation across entirely unseen acoustic environments. Ultimately, this work establishes that standard LLM cross-attention mechanisms are fundamentally capable of high-resolution continuous spatial reasoning. By properly shielding the physical geometry from standard regularization, we provide a highly modular, scalable foundation for the next generation of spatially-aware multimodal systems. 9Acknowledgments and Disclosure of Funding 
+
+The successful completion of this research was made possible by the academic resources and advanced research infrastructure provided by the National Center for High-Performance Computing, National Institutes of Applied Research (NIAR), Taiwan. We gratefully acknowledge their invaluable support. 
+
+## References 
+
+[1] Arda Enver et al. Audio flamingo: A novel audio language model with few-shot learning and dialogue abilities. In Forty-first International Conference on Machine Learning , 2024. [2] Changli Tang et al. Salmonn: Towards generic hearing abilities for large language models. arXiv preprint arXiv:2310.13289 , 2023. [3] Yunfei Chu, Jin Xu, Qian Yang, Xipin Wei, et al. Qwen2-audio technical report. arXiv preprint arXiv:2407.10759 , 2024. [4] Sreyan Ghosh, Arushi Goel, Lasha Koroshinadze, Sang-gil Lee, Zhifeng Kong, João Felipe Santos, Ramani Duraiswami, Dinesh Manocha, Wei Ping, Mohammad Shoeybi, and Bryan Catanzaro. Music flamingo: Scaling music understanding in audio language models. In The Fourteenth International Conference on Learning Representations , 2026. URL https://openreview.net/forum?id=RS7T9S16Bl .[5] Alec Radford, Jong Wook Kim, Tao Xu, Greg Brockman, Christine McLeavey, and Ilya Sutskever. Robust speech recognition via large-scale weak supervision. In Proceedings of the 40th International Conference on Machine Learning , volume 202 of Proceedings of Machine Learning Research , pages 28492–28518. PMLR, 2023. [6] Benjamin Elizalde, Soham Deshmukh, Mahmoud Al Ismail, and Huaming Wang. CLAP learning audio concepts from natural language supervision. In ICASSP 2023-2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 1–5. IEEE, 2023. [7] OpenAI. Gpt-4 technical report. arXiv preprint arXiv:2303.08774 , 2023. [8] OpenAI. Gpt-4o system card. arXiv preprint arXiv:2410.21276 , 2024. [9] Gemini Team et al. Gemini: A family of highly capable multimodal models. arXiv preprint arXiv:2312.11805 , 2023. [10] Puyuan Peng et al. Spatial-ast: Binaural audio spectrogram transformer. arXiv preprint arXiv:2402.01591 ,2024. [11] Subrata Biswas, Mohammad Nur Hossain Khan, and Bashima Islam. OWL: Geometry-aware spatial reasoning for audio large language models. In The Fourteenth International Conference on Learning Representations , 2026. URL https://openreview.net/forum?id=zPv46YKv3w .[12] Sanyuan Chen et al. Beats: Audio pre-training with acoustic tokenizers. In Proceedings of the Fortieth International Conference on Machine Learning , 2023. [13] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization. arXiv preprint arXiv:1607.06450 , 2016. [14] Biao Zhang and Rico Sennrich. Root mean square layer normalization. Advances in Neural Information Processing Systems , 32, 2019. [15] Sreyan Ghosh, Sonal Kumar, Ashish Seth, Chandra Kiran Reddy Evuru, Utkarsh Tyagi, S Sakshi, Oriol Nieto, Ramani Duraiswami, and Dinesh Manocha. GAMA: A large audio-language model with advanced audio understanding and complex reasoning abilities. In Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing . Association for Computational Linguistics, 2024. [16] Alexei Baevski, Yuhao Zhou, Abdelrahman Mohamed, and Michael Auli. wav2vec 2.0: A framework for self-supervised learning of speech representations. In Advances in Neural Information Processing Systems ,volume 33, pages 12449–12460, 2020. [17] Wei-Ning Hsu, Benjamin Bolte, Yao-Hung Hubert Tsai, Kushal Lakhotia, Ruslan Salakhutdinov, and Abdelrahman Mohamed. Hubert: Self-supervised speech representation learning by masked prediction of hidden units. IEEE/ACM Transactions on Audio, Speech, and Language Processing , 29:3451–3460, 2021. 
+
+10 [18] Yuhuan You, Lai Wei, Xihong Wu, and Tianshu Qu. The world is not mono: Enabling spatial understanding in large audio-language models. arXiv preprint arXiv:2601.02954 , 2026. [19] Zhiyuan Zhu, Yu Zhang, Wenxiang Guo, Changhao Pan, and Zhou Zhao. ASAudio: A survey of advanced spatial audio research. arXiv preprint arXiv:2508.10924 , 2025. [20] Kazuki Shimada et al. Stereo sound event localization and detection with onscreen/offscreen classification. 
+
+arXiv preprint arXiv:2507.12042 , 2025. [21] Changli Tang, Wenyi Yu, Guangzhi Sun, Xianzhao Chen, Tian Tan, Wei Li, Jun Zhang, Lu Lu, Zejun Ma, Yuxuan Wang, and Chao Zhang. Can large language models understand spatial audio? arXiv preprint arXiv:2406.07914 , 2024. [22] Mingfei Chen, Zijun Cui, Xiulong Liu, Jinlin Xiang, Caleb Zheng, Jingyuan Li, and Eli Shlizerman. SAVVY: Spatial awareness via audio-visual LLMs through seeing and hearing. In The Thirty-ninth Annual Conference on Neural Information Processing Systems , 2026. URL https://openreview.net/forum? id=zwCb9cKHpd .[23] Artem Dementyev, Wazeer Zulfikar, Sinan Hersek, Pascal Getreuer, Anurag Kumar, and Vivek Kumar. Phasecoder: Microphone geometry-agnostic spatial audio understanding for multimodal llms. arXiv preprint arXiv:2601.21124 , 2026. [24] Arvind Krishna Sridhar, Yinyi Guo, and Erik Visser. Spatial audio question answering and reasoning on dynamic source movements. arXiv preprint arXiv:2509.14666 , 2025. [25] Neel Jain, Ping-yeh Chiang, Yuxin Wen, John Kirchenbauer, Hong-Min Chu, Gowthami Somepalli, Brian R. Bartoldson, Bhavya Kailkhura, Avi Schwarzschild, Aniruddha Saha, Micah Goldblum, Jonas Geiping, and Tom Goldstein. NEFTune: Noisy embeddings improve instruction finetuning. In The Twelfth International Conference on Learning Representations , 2024. URL https://openreview.net/forum? id=0bMmZ3fkCk .[26] Nicholas Carlini and David Wagner. Towards evaluating the robustness of neural networks. In 2017 ieee symposium on security and privacy (sp) , pages 39–57. IEEE, 2017. [27] Roberto Benzi, Alfonso Sutera, and Angelo Vulpiani. The mechanism of stochastic resonance. Journal of Physics A: mathematical and general , 14(11):L453, 1981. [28] John Vanderkooy and Stanley P Lipshitz. Dither in digital audio. Journal of the Audio Engineering Society ,35(12):966–975, 1987. [29] Stefan Elfwing, Eiji Uchibe, and Kenji Doya. Sigmoid-weighted linear units for neural network function approximation in reinforcement learning. Neural Networks , 107:3–11, 2018. [30] Dan Hendrycks and Kevin Gimpel. Gaussian error linear units (gelus). arXiv preprint arXiv:1606.08415 ,2016. [31] Robert Geirhos, Jörn-Henrik Jacobsen, Claudio Michaelis, Richard Zemel, Wieland Brendel, Matthias Bethge, and Felix A Wichmann. Shortcut learning in deep neural networks. Nature Machine Intelligence ,2(11):665–673, 2020. [32] Jort F. Gemmeke, Daniel P. W. Ellis, Dylan Freedman, Aren Jansen, Wade Lawrence, R. Channing Moore, Manoj Plakal, and Marvin Ritter. Audio set: An ontology and human-labeled dataset for audio events. In 2017 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 776–780, 2017. doi: 10.1109/ICASSP.2017.7952261. [33] Tim Dettmers, Artidoro Pagnoni, Ari Holtzman, and Luke Zettlemoyer. QLoRA: Efficient finetuning of quantized LLMs. In Thirty-seventh Conference on Neural Information Processing Systems , 2023. URL 
+
+https://openreview.net/forum?id=OUIFPHEgJU .[34] Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. LoRA: Low-rank adaptation of large language models. In International Conference on Learning Representations , 2022. URL https://openreview.net/forum?id=nZeVKeeFYf9 .
+
+11 A Appendix: Experimental Setup and Dataset Details 
+
+A.1 Dataset Curation and Label Distribution 
+
+Our evaluation uses the official balanced training and evaluation splits of the AudioSet corpus [ 32 ]. To ensure direct comparability with specialized spatial baselines, we strictly follow the curation pipeline established by Spatial-AST [ 10 ]. Because AudioSet relies on live YouTube URLs, the live corpus naturally diminishes over time due to video deletions. To guarantee reproducibility against this link attrition, our dataset relies on a frozen third-party snapshot from March 2024. This snapshot preserves 18,373 samples (out of 22,160) for the training split and 17,148 samples (out of 20,371) for the evaluation split. These available samples encompass a refined ontology of 355 distinct acoustic labels. However, the distribution is heavily skewed toward high-frequency priors: “Music” and “Speech” appear in 30.1% and 28.5% of evaluation samples, respectively (see Table 2). Table 2: Top 10 Most Frequent Acoustic Labels in the curated AudioSet subset.                                                 
+
+> Rank Label Train Freq. (%) Eval Freq. (%) Eval Count ( N)
+> 1Music 31.20% 30.13% 5,166 2Speech 28.58% 28.54% 4,894 3Vehicle 4.49% 4.34% 744 4Animal 3.77% 3.78% 648 5Musical instrument 2.82% 2.29% 393 6Singing 2.63% 1.95% 334 7Domestic animals 2.13% 1.90% 325 8Guitar 1.86% 1.70% 292 9Car †1.55% 1.56% 267 10 Water †[—] 1.53% 263
+> †Ranked by Eval frequency. In the Training set, “Plucked string instrument” appeared at Rank 9 (1.61%, N= 295 ) and “Car” appeared at Rank 10.
+
+Defense Against Shortcut Learning The prevalence of these tags presents a theoretical opportunity for shortcut learning. However, our 97.2% localization accuracy remains consistent across the 345 low-frequency categories. This confirms the Dual-BEATs architecture is performing genuine acoustic scene analysis rather than exploiting label co-occurrence. 
+
+A.2 Unified Instruction Task and Target Schema 
+
+We format the raw audio and labels into a unified instruction objective, requiring the model to simultaneously extract semantic events and localize their spatial origin. To mitigate autoregressive bias based on sequence order, we apply a 50/50 stochastic split between two instruction variants: • List-First: <audio> List the audio events, then state their spatial direction.” 
+
+• Direction-First: State the spatial direction, followed by the audio events.” 
+
+While we adopt the semantic ontology of Spatial-AST [ 10 ], we condense the output into a single conversational response, detailed in Table 3. Table 3: Unified Prompt Text and Target Response Schema       
+
+> Mode Input Prompt Target Response Format List-First “<audio> List the audio events, then state their spatial direction.”
+> [Event 1]; [Event 2]; ...; Direction: [d]
+> Direction-First “<audio> State the spatial direction, followed by the audio events.”
+> From the [d]: [Event 1]; [Event 2]; ...
+
+12 A.3 Amplitude Panning 
+
+During data loading, we spatialize mono sources W dynamically into stereo pairs (WL, W R) using deterministic amplitude panning. Samples have an equal 33.3% probability of Center, Left, or Right assignment, scaled by a Panning Amplitude ( P A ): • Center: WL = W, WR = W
+
+• Left: WL = W, WR = W · P A 
+
+• Right: WL = W · P A, WR = W
+
+While computationally simpler than room-impulse simulations, this method cleanly isolates Inter-channel Level Differences (ICLD). Table 4 translates experimental P A values into approximate acoustic decibel (dB) differentials. Table 4: Inter-channel Level Differences (ICLD) by Panning Amplitude                            
+
+> Panning Amplitude ( P A )Attenuated Channel Multiplier Approx. Acoustic Difference ( ∆dB)
+> 0.8 W·0.81.9 dB 0.5 (Primary Eval) W·0.56.0 dB 0.25 W·0.25 12.0 dB 0.10 W·0.10 20.0 dB 0.05 W·0.05 26.0 dB 0.01 W·0.01 40.0 dB
+
+A.4 Empirical Analysis of Shortcut Learning and Dither Correlation 
+
+Our strict requirements for uncorrelated noise and absolute seed isolation were driven by empirical observations of severe shortcut learning during early architectural ablations. Large Language Models are highly susceptible to exploiting superficial statistical artifacts to minimize loss, bypassing the intended acoustic scene analysis. 
+
+The Threat of Correlated Noise During initial testing with correlated dithering noise ( NL = NR), a spatially-deaf baseline unexpectedly achieved 66.7% accuracy. Analysis revealed the LLM acted as a superficial comparator: since W and N were identical, Center-panned audio yielded mathematically identical Left and Right embeddings. The model learned a binary shortcut: predict “Center” if embeddings match ( ZL = ZR), otherwise guess randomly between “Left” and “Right”. This comparator shortcut can be eliminated by enforcing strictly uncorrelated noise vectors ( NL̸ =
+
+NR) so that the Left and Right embeddings are never identical, thereby forcing the model to learn true Inter-channel Level Differences (ICLD). 
+
+Seed Memorization and Conflicting Cues We additionally observed severe performance dete-rioration when the random seed was not strictly isolated between training and evaluation phases (Strain = Seval ). Because the pseudo-random number generation stream is deterministic, reusing the training seed during evaluation generates the exact same sequence of uncorrelated noise tensors (NL, N R), albeit superimposed onto novel evaluation audio features. Through observation, we suspected that the LLM may be capable of memorizing these specific noise structures as superficial shortcuts for spatial direction. Consequently, our methodology strictly mandates Seval ̸ = Strain to neutralize this shortcut. We enforce absolute random seed isolation by using S = 42 for training and a completely unseen seed 
+
+S = 1337 for all evaluations. This isolation rigidly controls the prompt mixture selection, the spatial panning distribution, and the injection of the uncorrelated dithering noise floors ( NL, N R), ensuring that our high localization accuracy reflects true zero-shot acoustic perception. 13 B Appendix: Implementation and Optimization Details 
+
+B.1 Hardware constraints and High-Resolution Token Density 
+
+Training utilized NVIDIA V100 GPUs (32GB VRAM). To preserve microscopic amplitude differen-tials from dithering, we bypassed temporal pooling, maintaining an uncompressed feature density of 50 tokens per second. While vital for localization, this significantly expands the memory footprint. To accommodate this within V100 constraints, we used gradient accumulation to achieve an effective global batch size of 16. 
+
+B.2 Cross-Modality Numerical Stability and Projection 
+
+Aligning modalities across differing native precisions (e.g., Gemma’s BF16 vs. BEATs’ continuous features) on hardware lacking native BF16 acceleration risks gradient underflow. To ensure stability, FP16 acoustic features were explicitly upcasted to FP32 during the forward pass. The linear projector 
+
+Pϕ matches the exact hidden dimensions and architectural stacks of the respective LLMs: • Gemma-3-1B-it Mapping: Projector output dimension of 1152, utilizing an RMSNorm + GELU activation stack. • OLMo-3-7B-Instruct Mapping: Projector output dimension of 4096, utilizing a Layer-Norm + SiLU activation stack. 
+
+B.3 Optimization and LoRA Adaptation Configuration 
+
+Optimization used AdamW with a cosine scheduler, a 0.1 warmup ratio, a 0.3 max gradient norm, and ran for one epoch. 
+
+Base Model Quantization (QLoRA) To fit the uncompressed context window on 32GB GPUs, base LLMs were frozen in 4-bit NormalFloat (NF4) using QLoRA [ 33 ]. Computations remained in FP32 to protect delicate spatial gradients, bridging the FP32 projection layer with FP16 adapters applied to the attention mechanisms. Training hyperparameters and target modules are detailed in Table 5. Table 5: Fine-Tuning Hyperparameters and LoRA Target Modules                          
+
+> Hyperparameter Gemma-3-1B-it OLMo-3-7B-Instruct
+> Optimizer AdamW AdamW Peak Learning Rate 2e-5 1e-5 LR Scheduler Cosine Cosine Warmup Ratio 0.1 0.1 Max Gradient Norm 0.3 0.3 Effective Batch Size 16 16 Training Epochs 11Base Backbone Precision 4-bit (NF4) 4-bit (NF4) Compute / Adapter Precision FP16 (FP32 Bridge) FP16 (FP32 Bridge)
+> LoRA Target Modules q_proj, k_proj, v_proj, o_proj, qkv_proj, o_proj, gate_proj, up_proj, down_proj gate_up_proj, down_proj
+> Modules to Save embed_tokens, lm_head embed_tokens, lm_head
+
+B.4 Evaluation Inference Hardware 
+
+Zero-shot evaluations were executed on NVIDIA H100 GPUs (80GB VRAM) with a batch size of 64 in native bfloat16 (BF16). We enforced greedy decoding to ensure deterministic metric extraction. Mapping the full zero-shot spatial matrix (Figure 2) required 196 full-dataset evaluations (14 inference passes across 14 trained models), demanding approximately 82 total GPU hours of compute. 14

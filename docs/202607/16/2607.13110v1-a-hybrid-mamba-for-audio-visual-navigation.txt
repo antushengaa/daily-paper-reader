@@ -1,0 +1,331 @@
+Title: A Hybrid Mamba for Audio-Visual Navigation
+
+URL Source: https://arxiv.org/pdf/2607.13110v1
+
+Published Time: Thu, 16 Jul 2026 00:06:59 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+## A Hybrid Mamba for Audio-Visual Navigation †
+
+Yi Wang 1,2,3, and Yinfeng Yu 1,2,3,B
+
+Abstract — Since the paradigm centered on convolutional neural networks and recurrent architectures was established in 2020, the fundamental backbone networks for audio-visual navigation have undergone no essential changes for more than five years, making them inadequate to support efficient rep-resentation of dynamic multimodal sequences. This paper pro-poses Samba(A Hybrid Mamba for Audio-Visual Navigation). It uses the adaptive selection-enabled Mamba State Encoder (M-SE) to replace conventional GRUs for temporal aggregation, and constructs an Audio Mamba Encoder (AME) to remedy the limitations of convolutional operators in capturing global time-frequency dependencies in spectrograms. Experiments demonstrate that Samba exhibits exceptional generalization performance when facing unheard sound sources and unseen scenes. On the Matterport3D dataset, it improves the navigation success rate (SR) by 11.3% compared with existing state-of-the-art models, and the performance gain is even more pronounced on the Replica dataset, which features finer scene structures. Such modernized architectural reconstruction unlocks stronger embodied representation capabilities at a lower computational cost, thereby providing a highly robust technical pathway for paradigm evolution in the field of audio-visual navigation. 
+
+I. INTRODUCTION Audio-visual navigation (AVN) [1], [2] requires agents to localize sound sources in unmapped environments by coupling local visual geometry with long-range auditory guidance, a task heavily relying on the backbone architecture for multimodal representation and temporal state tracking. Despite recent progress, mainstream frameworks like AV-WaN [1], [3] still suffer from representation mismatches due to traditional paradigms: their gated recurrent units utilize non-selective state updates that dilute critical acoustic signals with redundant environmental observations, while their convolutional neural networks introduce a local bias that disrupts the global time-frequency topological dependen-cies of spectrograms. These backbone-level representational limitations have become a substantial bottleneck restricting further breakthroughs in navigation performance. To address the above limitations, and inspired by the outstanding performance of structured state-space models [4] in sequence modeling, this paper constructs a hybrid state-space architecture named Samba. This framework estab-lishes a heterogeneous hybrid modeling paradigm driven by 
+
+†This research was financially supported by the National Natural Science Foundation of China (Grant No. 62463029). 
+
+> 1
+
+School of Computer Science and Technology, Xinjiang Univer-sity, Urumqi 830017, China. 
+
+> 2
+
+Joint Research Laboratory for Embodied Intelligence, Xinjiang University. 
+
+> 3
+
+Joint International Research Laboratory of Silk Road Multilin-gual Cognitive Computing, Xinjiang University. 
+
+BYinfeng Yu is the corresponding author (Email: yuyin-feng@xju.edu.cn). 
+
+Mamba [4], aiming to enhance the system’s representation capability by introducing a data-adaptive selective scanning mechanism. We design the Mamba State Encoder to replace traditional gated recurrent units, enabling accurate extraction and preservation of critical navigation states within com-plex sequences. Meanwhile, we build a bidirectional Audio Mamba Encoder, whose global modeling property resolves the time-frequency fragmentation issue in spectrogram analy-sis encountered by conventional convolutional operators. Fur-thermore, this framework strategically retains convolutional architectures in the visual branch to leverage the advantages of spatial inductive bias. Ultimately, efficient interpretation of multimodal signals is achieved through Mamba’s linear complexity and content-aware characteristics. In summary, our main contributions are as follows:  
+
+> •
+
+We establish a hybrid state-space architecture named Samba, representing the first attempt to introduce state-space models as a backbone network in the field of audio-visual navigation.  
+
+> •
+
+We design an adaptive selection-aware Mamba State Encoder and a bidirectional Audio Mamba Encoder, which address the representation dilution issue in state modeling and the structural deficiency in acoustic fea-tures, respectively.  
+
+> •
+
+Extensive experiments validate that Samba achieves significant improvements in navigation success rate while maintaining parameter efficiency, outperforming all existing state-of-the-art baseline models. II. R ELATED WORK 
+
+A. Audio-Visual Navigation 
+
+The AVN task [1], [2] requires an agent to localize sound sources in complex 3D environments by jointly analyzing visual observations and binaural audio signals. Early research mainly focused on geometry-driven navigation strategies [5], while in recent years, the end-to-end paradigm based on deep reinforcement learning has become mainstream in this field. Within this paradigm, milestone works such as AV-WaN [3], [6], [7], [8], [9], [10], [11], [12] have established a standard backbone architecture that fuses audio, vision, and historical states. However, although these methods have achieved progress on standard simulation platforms such as SoundSpaces [1], [13], [14], their underlying architec-tures often suffer from a trade-off between representation efficiency and computational overhead. Most existing stud-ies [15], [16], [17] focus on improving multimodal fusion mechanisms. In contrast, this work goes further and attempts to enhance the perception and reasoning efficiency of the navigation system by reshaping the backbone network at a arXiv:2607.13110v1 [cs.LG] 14 Jul 2026 Right  
+
+> Left
+> Depth
+> Low High
+> Projection
+
+## Waypoint    
+
+> 𝐀 𝐀 =Δ𝐀 ,Δ𝐀
+> Tokenization
+
+## Environment Actor-Critic 
+
+## AME 
+
+> Occupied
+> Unexplored
+> Free
+> Agent
+
+## M-SE 
+
+ht-1 ht
+
+> Path Planner
+> Audio Intensity
+> 𝐀 𝐀
+
+𝐀 𝐀 
+
+𝐀 𝐀 
+
+𝐀 𝐀 
+
+> Waypoint
+> Agent
+> Navigable node
+> Planned path
+> Traversed path
+> 𝐀 𝐀
+
+𝐀 𝐀 
+
+𝐀 𝐀 
+
+𝐀 𝐀 Fig. 1: Overall Architecture of the Samba Framework .fundamental level [18], [19], [20], [21], [22], [23], [24], [25], [26], [27]. 
+
+B. State Space Models and Mamba 
+
+State Space Models (SSMs) [4], as an emerging deep learning architecture, are gradually becoming a strong alter-native to Recurrent Neural Networks (RNNs) [28] and Trans-formers [29] due to their superior performance in handling extremely long-sequence tasks. From the early Structured State Space model [4] to the recent Mamba [4] architecture, such models have successfully captured complex sequential dependencies while maintaining linear time complexity by introducing the Selective Scan Mechanism. In the fields of embodied intelligence and computer vision, Mamba [4] has demonstrated the potential to outperform traditional architectures, enabling efficient autoregressive inference with extremely low memory overhead. The research motivation of this paper stems precisely from this: to address the long-standing state aggregation bottleneck in navigation tasks by leveraging the hardware-aware efficiency of Mamba [4]. III. P ROPOSED METHOD 
+
+A. Framework Overview 
+
+Samba is an end-to-end system designed specifically for audio-visual navigation, which restructures perceptual encoding and state modeling operators using hierarchical selective state spaces. To ensure seamless integration in het-erogeneous environments and flexibility in policy sampling, the underlying system employs a lightweight Mamba [4] operator library built upon standard PyTorch [30] operators. As shown in Figure 1, at navigation step t, the agent takes a depth map, binaural spectrogram, and global geometric map 
+
+Gt as inputs. In the perception layer, the Audio Mamba Encoder(AME) extracts acoustic features bt with selective context through tokenization, which are then fed into the 
+
+Algorithm 1 Architectural Procedure of Audio Mamba Encoder 
+
+Require: Audio spectrogram St ∈ RB×C×F ×T
+
+Ensure: Audio state vector bt ∈ Rdout  
+
+> 1:
+
+B, C, F, T ← shape of St 
+
+> 2:
+
+x ← Reshape (Permute (St, (0 , 3, 2, 1)) , (B, T, C · F )) 
+
+{Tokenization and spectral flattening } 
+
+> 3:
+
+x ← ReLU (LayerNorm (Wpx)) {Project features to dmodel } 
+
+> 4:
+
+x ← x + P[: , : T, :] {Temporal positional encoding injection } 
+
+> 5:
+
+for i = 0 to Nlayers − 1 do  
+
+> 6:
+
+if i (mod 2) == 1 then  
+
+> 7:
+
+x ← Flip (x, dim = 1) {Sequence reversal } 
+
+> 8:
+
+x ← MambaLayer i(x) {Backward selective scanning } 
+
+> 9:
+
+x ← Flip (x, dim = 1) {Restore temporal order } 
+
+> 10:
+
+else  
+
+> 11:
+
+x ← MambaLayer i(x) {Forward selective scanning } 
+
+> 12:
+
+end if  
+
+> 13:
+
+end for  
+
+> 14:
+
+fb ← Mean (LayerNorm (x), dim = 1) {Global aggregate pooling } 
+
+> 15:
+
+bt ← Whfb {Final audio state projection } 
+
+> 16:
+
+return bt
+
+Mamba State Encoder (M-SE) together with the geometric vector gt derived from the depth map and the acoustic map feature at. Leveraging linear recurrence, M-SE updates the historical state ht−1 to the current global state ht, enabling high-fidelity modeling of long-range environmental char-acteristics. Subsequently, the Actor-Critic-based prediction network uses the PPO algorithm to sample non-myopic waypoints wt = (∆ x, ∆y) over the action map Wt. Finally, these waypoints drive the path planner to guide the agent to accurately reach the target sound source in unknown environments. 
+
+B. Audio Mamba Encoder 
+
+To address the lack of global context caused by limited −1        
+
+> 𝑥 𝑡 ℎ𝑡 −1
+> ℎ𝑡
+> ℎ𝑡
+> ′
+> Lin. Proj
+> Conv1d
+> SSM
+> SiLU
+> Conv1d
+> SiLU
+> 𝑥 𝑡
+> ҧ
+> 𝐴
+> ℎ𝑡 −1
+> ℎ𝑡
+> ത𝐵
+> SSM
+> 𝜎
+> 𝜎
+> 𝑡𝑎𝑛ℎ
+> ℎ𝑡
+> Discretization
+> Linear + Softplus Linear Linear
+> 𝐴 Δ𝐵 𝐶
+> Selection Mechanism
+> 𝑧 −1
+> 𝑥 𝑡
+> ത𝐵
+> GRU Mamba State Encoder (Ours)
+
+Fig. 2: Architectural Comparison between the baseline GRU and our proposed Mamba State Encoder (M-SE) . The left side illustrates the classic Gated Recurrent Unit, while the right side details the Audio Mamba State Encoder designed in this paper. local receptive fields in traditional convolutional architectures when processing complex acoustic observations, we design an Audio Mamba Encoder (AME) based on selective state-space models. The core logic of this module is to elevate the audio feature extraction process from local operator trans-formations to global selective scanning, thereby accurately capturing the cross-time-frequency directional characteristics embedded in the binaural spectrogram St ∈ RC×F ×T . As shown in Algorithm 1, in the feature tokenization stage, the system first linearly merges the channel and frequency dimensions of the original spectrogram via dimension per-mutation and rearrangement to construct a discrete token sequence. Specifically, for each time step τ ∈ { 1, . . . , T },we flatten its cross-dimensional features and project them into the hidden space, yielding the initial feature vector xτ
+
+as: 
+
+xτ = ReLU  LN( Wp · [S1,1,τ , . . . , S C,F,τ ]⊤ + bp), (1) where Wp ∈ Rdmodel ×(C×F ) denotes the learnable linear projection matrix. To compensate for the temporal position information that may be lost when state-space models pro-cess sequences, we introduce a positional embedding matrix 
+
+P and convert the projected sequence into a hidden input with temporal features zτ = xτ + Pτ .The inference logic of AME further leverages a bidirec-tional selective scan mechanism to enhance representations. Given that the interaural time difference and interaural level difference, on which sound source localization relies, exhibit strong temporal sensitivity, we abandon traditional static con-volutional operators and adopt a heterogeneous bidirectional Mamba architecture instead. At each operator layer i, the model models long-range dependencies in both forward and backward directions by alternately flipping the time axis of the sequence, whose layer-wise output yi can be formulated as: 
+
+yi =
+
+(
+
+MambaLayer i(z) if i is even 
+
+Flip  MambaLayer i(Flip( z))  if i is odd (2) This design ensures that the model can simultaneously parse the causal and anticausal correlations of audio signals in the time domain, achieving high-fidelity analysis of the sound field in complex static indoor scenes. Compared with parameter-redundant CNNs [31], AME can adaptively adjust the representation weights according to the intensity distri-bution of the current acoustic input. Finally, the sequence features after global average pooling are mapped into the audio state vector bt by a linear head, thereby providing high-quality acoustic semantic support for the subsequent global state aggregation. 
+
+C. Mamba State Encoder 
+
+We reformulate the state modeling operator of the back-bone network into the Mamba State Encoder (M-SE) based on selective state-space models, marking a complete shift from the traditional gated recurrent logic to a modern sequential modeling paradigm. As illustrated in Fig. 3, the M-SE takes multimodal fused features xt ∈ Rdmodel 
+
+from the perception layer and achieves real-time aggregation of navigation states in a fully data-driven manner. Before feeding into the core state-space operator, the input signal is first processed by a combination of linear projection and local 1D convolution, which effectively preserves local spatial correlations and feature smoothness during temporal sequence progression. Compared with the relatively fixed gating update mechanism of GRUs, the key advantage of M-SE lies in its selective mechanism: the parameters ∆, B,and C are no longer static weights, but functions dynamically generated conditioned on the current input xt.In terms of mathematical modeling, the underlying logic of M-SE originates from the discretization of continuous state-space equations. For the continuous hidden state h(t),its evolution is governed by the linear differential equation 
+
+˙h(t) = Ah(t) + Bx(t). To handle discrete navigation steps computationally, we apply the zero-order hold rule for discretization, thereby deriving the explicit expressions of the discrete transition matrix ¯A and input matrix ¯B:TABLE I: Performance comparison with other methods under the Depth setting. SPL, SR, SNA are percentages.                                                                                                                             
+
+> Replica Matterport3D Method Heard Unheard Heard Unheard SPL ↑SR ↑SNA ↑SPL ↑SR ↑SNA ↑SPL ↑SR ↑SNA ↑SPL ↑SR ↑SNA ↑
+> Random [3] 4.9 18.5 1.8 4.9 18.5 1.8 2.1 9.1 0.8 2.1 9.1 0.8 Direction Follower [3] 54.7 72.0 41.1 11.1 17.2 8.4 32.3 41.2 23.8 13.9 18.0 10.7 Frontier W [3] 44.0 63.9 35.2 6.5 14.8 5.1 30.6 42.8 22.2 10.9 16.4 8.1 Supervised W [3] 59.1 88.1 48.5 14.1 43.1 10.1 21.0 36.2 16.2 4.1 8.8 2.9 Gan et al. [2] 57.6 83.1 47.9 7.5 15.7 5.7 22.8 37.9 17.1 5.0 10.2 3.6 SoundSpaces [1] 74.4 91.4 48.1 34.7 50.9 16.7 54.3 67.7 31.3 21.9 33.5 10.4 CRFN [15] 76.7 93.1 47.3 41.6 55.7 22.5 57.3 70.3 33.2 27.7 40.1 13.5 AV-WaN [3] 86.6 98.7 70.7 34.7 52.8 27.1 72.3 93.6 54.8 40.9 56.7 30.6
+> Samba(Ours) 78.3 93.4 63.3 42.4 72.8 30.8 73.3 95.0 56.3 47.1 68.0 36.2
+
+¯A = exp(∆ A), (3) 
+
+¯B = (∆ A)−1 exp(∆ A) − I · ∆B. (4) In our practical lightweight PyTorch implementation, the above discretization procedure is further simplified to ¯A =exp(∆ A) and ¯B = ∆ B. Based on this, the recurrent update equation for the hidden state ht ∈ Rdinner ×dstate can be formulated as: 
+
+ht = ¯A h t−1 + ¯B xt, (5) this design endows the agent with stronger perceptual model-ing capabilities from a mathematical essence. When the agent faces the challenge of information representation dilution during exploration, M-SE can dynamically control the decay rate of historical memory by adjusting the step size ∆,thereby focusing on acoustic landmarks that are critical to target orientation. The computed hidden state is feature-mapped via the output parameter C, then fused with the residual path through a gating mechanism. The final global hidden state ht serves as the core input to the decision-making system. To balance the large-scale parallelism of policy train-ing and the real-time response requirements of embodied navigation, M-SE supports dual-mode switching between parallel and recurrent execution in its architecture. During training, the system employs a parallel scan algorithm for efficient gradient computation over long observation se-quences, while during deployment, it seamlessly switches to single-step recurrent mode to guarantee extremely low latency in decision-making. In the policy learning process, the system dynamically maintains the internal state matrices and local convolution buffers of the SSM through a specially designed state un-packing and packing mechanism. Particularly critical for adapting to the sampling nature of reinforcement learning, we introduce masking logic that forcibly resets Mamba’s internal hidden state at the end of each episode. This ef-fectively prevents state contamination from prior experience on new tasks and ensures the stability of PPO optimization. Through such a comprehensive upgrade from operators to the underlying state machine, M-SE provides Samba with far greater long-range modeling depth than traditional recurrent architectures, significantly enhancing the agent’s perceptual robustness in complex and unknown environments. IV. E XPERIMENTS 
+
+The experimental evaluation of this study mainly relies on the SoundSpaces acoustic simulation platform constructed on the Habitat simulator, and incorporates two widely adopted public datasets in the field of embodied intelligence namely Replica [32] and Matterport3D(MP3D) [33]. The MP3D dataset covers 85 real-world indoor environments dominated by residential spaces, providing the agent with complete 3D mesh models and corresponding panoramic image scanning data. The Replica [32] dataset contains 18 synthetic indoor scenes including apartments and hotels, which outperforms MP3D [33] in both the precision of geometric details and the realism of lighting effects. To reconstruct complex acoustic propagation characteris-tics in virtual scenes, the SoundSpaces platform synthesizes physically realistic sound sources in real time by convolving selected audio signals with binaural room impulse responses at corresponding spatial positions. In the specific experimen-tal setup, we adopt 102 distinct natural sounds as source stimuli to ensure that the model has sufficient generalization ability when facing diverse acoustic inputs. Through such a high-fidelity multimodal simulation environment, we are able to conduct a comprehensive and rigorous validation of the navigation performance of the Samba architecture under complex physical constraints. In our experiments, two different sound source conditions are included. (1) Heard: The target sound source is a tele-phone ringtone, which is used in the training, validation, and test sets. (2) Unheard: The 102 sound sources are divided into three non-overlapping groups. Specifically, 78 sound sources are used for training scenes, 11 for validation scenes, and the remaining 18 for test scenes [15]. All test scenes are unseen during training [15]. A. Evaluation Metrics 
+
+Following established protocols, the navigation perfor-mance is quantified via Success Rate ( SR ), Success weighted by Path Length ( SP L ), and Success Navigation Accuracy (SN A ). SR computes the fraction of runs where the agent successfully stops at the target. Trajectory optimality is captured by SP L by balancing the shortest path li against the execution path pi, whereas strategic precision is moni-tored by SN A , which uses the action count ai to suppress redundant maneuvers like in-place rotations. We formulate these definitions as follows: SR = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+Si, (6) SPL = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+Si · li
+
+max( pi, l i) [3], (7) SNA = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+Si · li
+
+ai
+
+[34 ], (8) In these expressions, N denotes the total number of test episodes while Si ∈ { 0, 1} serves as the binary success indi-cator for the i-th episode. The variables li and pi correspond to the shortest and actual path lengths respectively, and ai
+
+records the total count of actions executed throughout the navigation process. 
+
+B. Quantitative Experimental Results 
+
+As summarized in Table I, Samba consistently outperforms all existing baselines across all test environments. On the Replica dataset [32], for instance, it achieves a 72.8% success rate under the unheard-sound, unseen-scene setting, repre-senting a 20 percentage point absolute improvement over the prior state-of-the-art method AV-WaN [3]. We also observe notable improvements in trajectory and decision efficiency: SPL climbs from 34.7% to 42.4%, and SNA grows from 27.1% to 30.8%. These simultaneous gains suggest that our selective scanning mechanism supports robust state tracking and extracts precise directional features from dynamic obser-vation streams, which effectively reduces aimless wandering during navigation. The framework also adapts well to the more acoustically complex MP3D dataset [33]. When tested with unheard sound sources, Samba achieves a 68.0% SR, 47.1% SPL, and 36.2% SNA. Unlike conventional recurrent architectures that suffer from state dilution over long sequences, Samba maintains a better balance between audio and visual inputs. This result confirms that our redesigned backbone brings critical structural advantages for large-scale embodied navi-gation tasks. 
+
+C. Efficiency Analysis 
+
+Table II confirms that Samba achieves strong structural ef-ficiency through its core operator design. The audio encoder contains only 0.4M parameters, a 43% reduction from the 
+
+0.7M baseline, which demonstrates that a compact selective TABLE II: Quantitative comparison and analysis between the Samba architecture and the AV-WaN baseline model in terms of audio encoding modules, state encoding modules, and total parameter sizes across different datasets. Lower values indicate improved model efficiency.             
+
+> Method Audio Enc (M) ↓State Enc (M) ↓Total (M) ↓
+> Replica MP3D AV-WaN [3] 0.7 3.9 11.2 5.6 Samba (Ours) 0.4 2.7 10.5 4.6
+
+scanning mechanism captures global acoustic features more effectively than standard convolutional layers. We similarly trim state encoding parameters from 3.9M to 2.7M to cut architectural redundancy and maintain stable training when data is limited. Total parameter counts differ across datasets due to varying sensor resolutions, reaching 10 .5M on Replica and 4.6M on MP3D, yet Samba consistently outperforms AV-WaN in both settings. Overall, our redesigned backbone pre-serves critical environmental cues without redundant network stacking, and adapts the framework well for edge robotics deployment. 
+
+D. Ablation Studies 
+
+Ablation results in Table III and Table IV evaluate the incremental gains of our Mamba-based components, where “w/o AME” and “w/o M-SE” represent reverting the respec-tive modules back to the baseline CNN and GRU archi-tectures. Replacing AME triggers a substantial performance collapse, with SR for unheard sounds dropping from 72 .8% 
+
+to 59 .0% on Replica and from 68 .0% to 62 .6% on MP3D. Conversely, the configuration without M-SE results in rela-tively moderate fluctuations, with Replica SR maintaining 
+
+71 .0% . These findings confirm that perceptual precision is the dominant driver of success, validating our perception-centric architectural design. TABLE III: Ablation study on the Fusion Controller of CRFN on the Replica dataset.                                
+
+> Method Heard Unheard SPL ↑SR ↑SNA ↑SPL ↑SR ↑SNA ↑
+> w/o AME 77.9 92.2 63.3 40.0 59.0 31.4 w/o M-SE 82.5 97.3 66.5 44.1 71.0 33.7
+> Samba(Full) 78.3 93.4 63.3 42.4 72.8 30.8
+
+TABLE IV: Ablation study on the Fusion Controller of CRFN on the Matterport3D dataset.                                
+
+> Method Heard Unheard SPL ↑SR ↑SNA ↑SPL ↑SR ↑SNA ↑
+> w/o AME 72.1 93.6 54.5 41.8 62.6 31.6 w/o M-SE 71.8 93.5 55.6 42.8 60.2 32.1
+> Samba(Full) 73.3 95.0 56.3 47.1 68.0 36.2
+
+V. CONCLUSIONS We propose Samba, a hybrid architecture built on state-space models, to overcome the long-standing efficiency and modeling bottlenecks in audio-visual navigation. Samba in-tegrates an adaptive selective Mamba State Encoder with a bidirectional Audio Mamba Encoder; this combination suc-cessfully captures global time-frequency correlations where convolutions fail and prevents the representation dilution typical of recurrent units. Our empirical validation shows that updating the backbone not only yields stronger embodied representations but also slashes parameter size and com-putation. This shift provides an efficient, high-performance reference design for future embodied AI deployment. REFERENCES [1] C. Chen, U. Jain, C. Schissler, S. V. A. Gari, Z. Al-Halah, V. K. Ithapu, P. Robinson, and K. Grauman, “Soundspaces: Audio-visual navigation in 3d environments,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) . IEEE/CVF, 2020, pp. 17–36. [2] C. Gan, Y. Zhang, J. Wu, B. Gong, and J. B. Tenenbaum, “Look, listen, and act: Towards audio-visual embodied navigation,” in 2020 IEEE International Conference on Robotics and Automation (ICRA) .IEEE, 2020, pp. 9701–9707. [3] C. Chen, S. Majumder, Z. Al-Halah, R. Gao, S. K. Ramakrishnan, and K. Grauman, “Learning to set waypoints for audio-visual navigation,” in 9th International Conference on Learning Representations, ICLR 2021 . Virtual Event, Austria: OpenReview.net, May 3–7 2021. [4] A. Gu and T. Dao, “Mamba: Linear-time sequence modeling with selective state spaces,” in First conference on language modeling ,2024. [5] S. Argentieri, P. Danes, and P. Sou` eres, “A survey on sound source localization in robotics: From binaural to array processing methods,” 
+
+Computer Speech & Language , vol. 34, no. 1, pp. 87–112, 2015. [6] Y. Yu, L. Cao, F. Sun, C. Yang, H. Lai, and W. Huang, “Echo-enhanced embodied visual navigation,” Neural Computation , vol. 35, no. 5, pp. 958–976, 04 2023. [7] Y. Yu and D. Yang, “Dope: Dual object perception-enhancement network for vision-and-language navigation,” in Proceedings of the 2025 International Conference on Multimedia Retrieval , 2025, pp. 1739–1748. [8] Y. Yu, W. Huang, F. Sun, C. Chen, Y. Wang, and X. Liu, “Sound adversarial audio-visual navigation,” in The Tenth International Con-ference on Learning Representations, ICLR 2022, Virtual Event, April 25-29, 2022 . OpenReview.net, 2022. [9] X. Liu, S. Paul, M. Chatterjee, and A. Cherian, “Caven: An embodied conversational agent for efficient audio-visual navigation in noisy environments,” in Proceedings of the AAAI conference on artificial intelligence , vol. 38, 2024, pp. 3765–3773. [10] J. Chen, W. Wang, S. Liu, H. Li, and Y. Yang, “Omnidirectional information gathering for knowledge transfer-based audio-visual navi-gation,” in Proceedings of the IEEE/CVF International Conference on Computer Vision , 2023, pp. 10 993–11 003. [11] E. Kolve, R. Mottaghi, W. Han, E. VanderBilt, L. Weihs, A. Herrasti, M. Deitke, K. Ehsani, D. Gordon, Y. Zhu et al. , “Ai2-thor: An interac-tive 3d environment for visual ai,” arXiv preprint arXiv:1712.05474 ,2017. [12] Y. Yu, C. Chen, L. Cao, F. Yang, and F. Sun, “Measuring acoustics with collaborative multiple agents,” in Proceedings of the 32nd Inter-national Joint Conference on Artificial Intelligence (IJCAI-23) , Macao, China, August 2023. [13] M. Savva, A. Kadian, O. Maksymets, Y. Zhao, E. Wijmans, B. Jain, J. Straub, J. Liu, V. Koltun, J. Malik et al. , “Habitat: A platform for embodied ai research,” in Proceedings of the IEEE/CVF international conference on computer vision , 2019, pp. 9339–9347. [14] A. Szot, A. Clegg, E. Undersander, E. Wijmans, Y. Zhao, J. Turner, N. Maestre, M. Mukadam, D. S. Chaplot, O. Maksymets et al. ,“Habitat 2.0: Training home assistants to rearrange their habitat,” 
+
+Advances in neural information processing systems , vol. 34, pp. 251– 266, 2021. [15] Y. Wang, Y. Yu, and B. Ren, “Residual cross-modal fusion networks for audio-visual navigation,” arXiv preprint arXiv:2601.08868 , 2026. [16] Y. Yu, L. Cao, F. Sun, X. Liu, and L. Wang, “Pay self-attention to audio-visual navigation,” in 33rd British Machine Vision Conference 2022, BMVC 2022 . London, UK: BMVA Press, November 2022, p. 46. [17] J. Li, Y. Yu, L. Wang, F. Sun, and W. Zheng, “Audio-guided dynamic modality fusion with stereo-aware attention for audio-visual naviga-tion,” in International Conference on Neural Information Processing .Springer, 2025, pp. 346–359. [18] Y. Yu and S. Sun, “Dgfnet: End-to-end audio-visual source separation based on dynamic gating fusion,” in Proceedings of the 2025 Interna-tional Conference on Multimedia Retrieval , 2025, pp. 1730–1738. [19] Y. Yu, H. Zhang, and M. Zhu, “Dynamic multi-target fusion for efficient audio-visual navigation,” arXiv preprint arXiv:2509.21377 ,2025. [20] D. Yang, Y. Yu, and L. Wang, “Beyond textual knowledge: Leverag-ing multimodal knowledge bases for enhancing vision-and-language navigation,” Information Processing & Management , vol. 63, no. 6, p. 104766, 2026. [21] H. Zhang, Y. Yu, L. Wang, F. Sun, and W. Zheng, “Advancing audio-visual navigation through multi-agent collaboration in 3d environ-ments,” in International Conference on Neural Information Process-ing . Springer, 2025, pp. 502–516. [22] X. Wang, L. Wang, Y. Yu, and X. Jiao, “Modality-invariant bidirec-tional temporal representation distillation network for missing multi-modal sentiment analysis,” in ICASSP 2025-2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) .IEEE, 2025, pp. 1–5. [23] Y. Cao, Y. Li, L. Wang, and Y. Yu, “Vnet: A gan-based multi-tier discriminator network for speech synthesis vocoders,” in 2024 IEEE International Conference on Systems, Man, and Cybernetics (SMC) .IEEE, 2024, pp. 4384–4389. [24] J. Fu, Y. Yu, and L. Wang, “Fsdenet: A frequency and spatial do-mains based detail enhancement network for remote sensing semantic segmentation,” IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing , 2025. [25] A. Mattursun, L. Wang, and Y. Yu, “Bss-cffma: cross-domain feature fusion and multi-attention speech enhancement network based on self-supervised embedding,” in 2024 IEEE International Conference on Systems, Man, and Cybernetics (SMC) . IEEE, 2024, pp. 3589–3594. [26] J. Zhang, L. Wang, Y. Yu, and M. Xu, “Nonlinear regularization decoding method for speech recognition,” Sensors , vol. 24, no. 12, p. 3846, 2024. [27] H. Zhang, Y. Yu, L. Wang, F. Sun, and W. Zheng, “Iterative residual cross-attention mechanism: An integrated approach for audio-visual navigation tasks,” arXiv preprint arXiv:2509.25652 , 2025. [28] L. R. Medsker, L. Jain et al. , “Recurrent neural networks,” Design and applications , vol. 5, no. 64-67, p. 2, 2001. [29] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin, “Attention is all you need,” 
+
+Advances in neural information processing systems , vol. 30, 2017. [30] A. Paszke, S. Gross, F. Massa, A. Lerer, J. Bradbury, G. Chanan, T. Killeen, Z. Lin, N. Gimelshein, L. Antiga et al. , “Pytorch: An imperative style, high-performance deep learning library,” Advances in neural information processing systems , vol. 32, 2019. [31] J. Wu, “Introduction to convolutional neural networks,” National Key Lab for Novel Software Technology. Nanjing University. China , vol. 5, no. 23, p. 495, 2017. [32] J. Straub, T. Whelan, L. Ma, Y. Chen, E. Wijmans, S. Green, J. J. Engel, R. Mur-Artal, C. Ren, S. Verma et al. , “The replica dataset: A digital replica of indoor spaces,” arXiv preprint arXiv:1906.05797 ,2019. [33] A. Chang, A. Dai, T. Funkhouser, M. Halber, M. Niebner, M. Savva, S. Song, A. Zeng, and Y. Zhang, “Matterport3d: Learning from rgb-d data in indoor environments,” in 7th IEEE International Conference on 3D Vision, 3DV 2017 . Institute of Electrical and Electronics Engineers Inc., 2018, pp. 667–676. [34] P. Anderson, A. Chang, D. S. Chaplot, A. Dosovitskiy, S. Gupta, V. Koltun, J. Kosecka, J. Malik, R. Mottaghi, M. Savva et al. ,“On evaluation of embodied navigation agents,” arXiv preprint arXiv:1807.06757 , 2018.

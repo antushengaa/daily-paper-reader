@@ -1,0 +1,440 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-16T21:25:52.025540+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 8,
+    "quick_skim_target": 11,
+    "quick_selected": 8
+  },
+  "deep_dive": [
+    {
+      "id": "2607.12529v1",
+      "source": "arxiv",
+      "title": "Listen first: Output-based multi-microphone speech enhancement",
+      "abstract": "Traditionally, hearing-aid speech enhancement (SE) algorithms rely on input-based feature estimation, often derived by a voice activity detector (VAD), to configure beamformers. Yet features extracted from noisy microphone signals can become unreliable in challenging acoustic scenes where users most need help. We introduce a novel paradigm in which the settings of a sound processing system are determined by evaluating characteristics of its output. To demonstrate this idea, we employ an output-based system that selects among a set of minimum power distortionless response (MPDR) beamformers. Although MPDR beamformers are typically avoided due to their sensitivity to steering errors, we show that they become effective within an output-based framework. We compare the proposed system to a conventional input-based minimum variance distortionless response (MVDR) baseline. Experimental results show that the proposed system consistently outperforms the MVDR baseline, particularly at low SNRs, in terms of SNR, ESTOI and PESQ.",
+      "authors": [
+        "Panos Apostolidis",
+        "Svend Feldt",
+        "Zheng-Hua Tan",
+        "Jan Østergaard",
+        "Jesper Jensen"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS"
+      ],
+      "published": "2026-07-14T09:04:29+00:00",
+      "link": "https://arxiv.org/pdf/2607.12529v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "output-based multi-microphone beamforming for speech enhancement",
+      "llm_evidence_cn": "基于输出的多麦克风波束形成用于语音增强",
+      "llm_evidence": "基于输出的多麦克风波束形成用于语音增强",
+      "canonical_evidence": "基于输出的多麦克风波束形成用于语音增强",
+      "llm_tldr_en": "Listen first introduces an output-based paradigm for multi-microphone speech enhancement, selecting among MPDR beamformers based on output characteristics, overcoming steering error sensitivity.",
+      "llm_tldr_cn": "该论文针对传统基于输入特征估计的语音增强算法在噪声场景中不可靠的问题，提出基于输出评估的多麦克风语音增强范式。系统根据输出信号特性从一组最小功率无失真响应（MPDR）波束形成器中选择最优者，避免了传统方法对导向误差的敏感。实验表明，该输出导向框架在挑战性声学场景中显著提升了语音增强性能，为阵列信号处理提供了新思路。",
+      "llm_tldr": "该论文针对传统基于输入特征估计的语音增强算法在噪声场景中不可靠的问题，提出基于输出评估的多麦克风语音增强范式。系统根据输出信号特性从一组最小功率无失真响应（MPDR）波束形成器中选择最优者，避免了传统方法对导向误差的敏感。实验表明，该输出导向框架在挑战性声学场景中显著提升了语音增强性能，为阵列信号处理提供了新思路。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.12265v1",
+      "source": "arxiv",
+      "title": "DiffRadar: Differentiable Physics-Aware Radar SLAM with Gaussian Fields",
+      "abstract": "Radar sensing is increasingly used in mobile systems because it operates reliably under poor lighting, adverse weather, and privacy-sensitive settings where cameras and LiDAR often fail. However, most existing radar SLAM systems estimate motion through scan matching on discretized radar heatmaps, which breaks geometric continuity and fails to capture key radar sensing properties, often leading to unstable pose estimation and degraded mapping in regenerate or dynamically changing environments. We present DiffRadar, a real-time radar SLAM system that models radar observations as a differentiable, physics-aware Gaussian field rather than discrete scans. DiffRadar represents the scene as anisotropic Gaussian primitives and renders radar measurements in range-azimuth and Doppler-azimuth spaces through a differentiable radar forward model, enabling joint optimization of robot pose and scene structure directly from radar measurements. We implement DiffRadar on commodity FMCW radar hardware and evaluate it on both the public Radarize benchmark and a controlled stress-test suite that targets common radar SLAM failure modes, including corridor degeneracy, motion regime transitions, dynamic clutter, and long-horizon loop closures. DiffRadar achieves substantial reductions in trajectory error on the benchmark, with especially large gains under feature-poor corridor motion, while more than doubling map consistency and maintaining real-time performance at 70 FPS. These results show that modeling radar observations directly in the signal domain enables substantially more robust and consistent radar-only SLAM for mobile platforms.",
+      "authors": [
+        "Gaurav Bagwe",
+        "Xiaoyong Yuan",
+        "Yongji Wu",
+        "Lan Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "eess.SY"
+      ],
+      "published": "2026-07-14T02:08:14+00:00",
+      "link": "https://arxiv.org/pdf/2607.12265v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "differentiable radar SLAM with Gaussian fields for sensor alignment",
+      "llm_evidence_cn": "基于高斯场的可微雷达SLAM实现传感器对齐",
+      "llm_evidence": "基于高斯场的可微雷达SLAM实现传感器对齐",
+      "canonical_evidence": "基于高斯场的可微雷达SLAM实现传感器对齐",
+      "llm_tldr_en": "Proposes DiffRadar, a radar SLAM system modeling observations as differentiable Gaussian fields for continuous geometry, enabling robust pose estimation and mapping.",
+      "llm_tldr_cn": "针对传统雷达SLAM基于离散热图匹配导致几何不连续和位姿估计不稳定的问题，本文提出DiffRadar，将雷达观测建模为可微的物理感知高斯场，利用各向异性高斯基元表示场景并通过射线传播渲染测量值。该系统实现实时运行，在动态环境下显著提升位姿估计和建图鲁棒性，为雷达传感器对齐提供了新范式。",
+      "llm_tldr": "针对传统雷达SLAM基于离散热图匹配导致几何不连续和位姿估计不稳定的问题，本文提出DiffRadar，将雷达观测建模为可微的物理感知高斯场，利用各向异性高斯基元表示场景并通过射线传播渲染测量值。该系统实现实时运行，在动态环境下显著提升位姿估计和建图鲁棒性，为雷达传感器对齐提供了新范式。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.13509v1",
+      "source": "arxiv",
+      "title": "Reconstruct the ambient noise source from the multi-frequency sparse correlation data",
+      "abstract": "In this paper, we develop a novel multi-frequency factorization method to reconstruct the spatial support of the ambient noise source. The proposed method only requires sparse correlation data and has low computational cost. Numerical experiments in two and three dimensions are presented to demonstrate the effectiveness of the proposed method.",
+      "authors": [
+        "Hao Gu",
+        "Hongxia Guo",
+        "Xiang Xu",
+        "Yue Zhao"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-07-15T07:02:54+00:00",
+      "link": "https://arxiv.org/pdf/2607.13509v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multi-frequency factorization method to reconstruct spatial support of ambient noise source",
+      "llm_evidence_cn": "多频分解方法重建环境噪声源的空间支撑",
+      "llm_evidence": "多频分解方法重建环境噪声源的空间支撑",
+      "canonical_evidence": "多频分解方法重建环境噪声源的空间支撑",
+      "llm_tldr_en": "Develops a multi-frequency factorization method to reconstruct the spatial support of ambient noise source from sparse correlation data with low computational cost.",
+      "llm_tldr_cn": "本文针对环境噪声源的空间支撑重建问题，提出了一种新颖的多频分解方法。该方法仅需稀疏的相关数据，计算成本低，并通过二维和三维数值实验验证了有效性。这一成果为环境噪声源定位提供了高效的理论工具，适用于稀疏观测条件下的声源重建。",
+      "llm_tldr": "本文针对环境噪声源的空间支撑重建问题，提出了一种新颖的多频分解方法。该方法仅需稀疏的相关数据，计算成本低，并通过二维和三维数值实验验证了有效性。这一成果为环境噪声源定位提供了高效的理论工具，适用于稀疏观测条件下的声源重建。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.10754v1",
+      "source": "arxiv",
+      "title": "TriCons-Pose: Triangle-Invariant Geometric Consistency Learning for Category-Level Object Pose Estimation",
+      "abstract": "Category-level object pose estimation is a crucial yet challenging task in both academia and industry, and has achieved remarkable success by leveraging keypoint-based correspondence paradigms. However, most existing methods increasingly rely on stronger feature learning while overlooking whether the established correspondences are geometrically stable across diverse perturbations. This often results in fragile pose recovery under intra-class shape variations and occlusions. To tackle this challenge, we develop a novel Triangle-Invariant Geometric Consistency Learning for Category-Level Object Pose Estimation (TriCons-Pose) to anchor stable keypoints and aggregate pose-invariant cues, yielding reliable canonical mapping and accurate pose estimation. Specifically, a Structure-Consistent Keypoint Detector (SCKD) is designed to identify robust keypoints by enforcing cross-view structural consistency via normalized pairwise distance matching. Moreover, we propose a Pose-Invariant Geometric Aggregator (PIGA) to augment keypoint representations by injecting triangle-based pose-invariant descriptors into a local-to-global attention mechanism. The proposed framework is optimized using standard objective functions while incorporating an additional geometry consistency loss. Extensive experiments on REAL275, CAMERA25, and HouseCat6D datasets demonstrate the effectiveness of the proposed approach.",
+      "authors": [
+        "Zuzhi Yang",
+        "Shuai Wang",
+        "Mounir Kaaniche",
+        "Ziwei Li",
+        "Zhiming Cheng",
+        "Zhidong Zhao",
+        "Chenggang Yan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-12T13:05:12+00:00",
+      "link": "https://arxiv.org/pdf/2607.10754v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "geometric consistency learning for pose estimation transferable to sensor alignment",
+      "llm_evidence_cn": "用于姿态估计的几何一致性学习可迁移至传感器对准",
+      "llm_evidence": "用于姿态估计的几何一致性学习可迁移至传感器对准",
+      "canonical_evidence": "用于姿态估计的几何一致性学习可迁移至传感器对准",
+      "llm_tldr_en": "TriCons-Pose proposes triangle-invariant geometric consistency learning to anchor stable keypoints and aggregate pose-invariant cues for category-level object pose estimation, enhancing robustness to shape variations and occlusions.",
+      "llm_tldr_cn": "该论文针对类别级物体姿态估计中对应点几何不稳定的问题，提出了三角形不变几何一致性学习方法（TriCons-Pose），通过锚定稳定关键点并聚合姿态不变线索获得可靠规范映射。实验表明，该方法在多种干扰下保持几何稳定性，显著提升了姿态估计鲁棒性。此几何一致性学习框架可推广至传感器校准中的几何对准问题。",
+      "llm_tldr": "该论文针对类别级物体姿态估计中对应点几何不稳定的问题，提出了三角形不变几何一致性学习方法（TriCons-Pose），通过锚定稳定关键点并聚合姿态不变线索获得可靠规范映射。实验表明，该方法在多种干扰下保持几何稳定性，显著提升了姿态估计鲁棒性。此几何一致性学习框架可推广至传感器校准中的几何对准问题。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.08800v1",
+      "source": "arxiv",
+      "title": "Dual-BEATs: Unlocking Zero-Shot Stereo Audio Perception in Audio Large Language Models via Dithering",
+      "abstract": "Multimodal Large Language Models (LLMs) have remarkable semantic audio understanding, yet they remain \"spatially agnostic\" due to their reliance on mono-channel audio representations. Currently, spatial audio perception methods mainly focus on complex room simulations and custom-trained, geometry-aware stereo encoders, which limits their accessibility and generalizability. In this paper, we introduce the Dual-BEATs architecture, in which the left and right audio channels are routed independently through two identical semantic encoders as an alternative to specialized spatial modules. To circumvent the architectural bottleneck where internal normalization otherwise erases the inter-channel variance of stereo audio, we inject a static, uncorrelated dithering noise floor prior to encoding. This dithering intervention establishes a macro-variance floor that \"smuggles\" spatial geometry across the normalization layers. Evaluated on a ternary directional classification task (Left, Center, Right), we demonstrate that dithered models achieve exceptional spatial resolution--reaching up to 97.2% localization accuracy even on subtle 0.5 panning amplitudes--and demonstrates robust, zero-shot generalization to entirely unseen spatial configurations. Our results suggest that with the appropriate acoustic regularization, standard multimodal models are natively capable of generalized stereo audio understanding.",
+      "authors": [
+        "Shuo-Chun Lin",
+        "Hen-Hsen Huang"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD"
+      ],
+      "published": "2026-07-09T03:10:16+00:00",
+      "link": "https://arxiv.org/pdf/2607.08800v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "stereo audio perception for spatial audio localization",
+      "llm_evidence_cn": "立体声感知用于空间音频定位",
+      "llm_evidence": "立体声感知用于空间音频定位",
+      "canonical_evidence": "立体声感知用于空间音频定位",
+      "llm_tldr_en": "Dual-BEATs routes left and right audio channels through two identical semantic encoders to achieve zero-shot stereo perception, enabling audio LLMs to localize sound sources without specialized spatial modules.",
+      "llm_tldr_cn": "该论文针对音频大语言模型缺乏空间感知能力的问题，提出了Dual-BEATs架构，将左右声道分别送入两个相同的语义编码器，通过抖动技术保留声道间差异，实现了零样本的立体声感知。实验表明，该方法无需复杂的房间模拟或定制空间编码器即可有效进行声源定位，为音频大语言模型在空间音频任务中的应用奠定了基础。",
+      "llm_tldr": "该论文针对音频大语言模型缺乏空间感知能力的问题，提出了Dual-BEATs架构，将左右声道分别送入两个相同的语义编码器，通过抖动技术保留声道间差异，实现了零样本的立体声感知。实验表明，该方法无需复杂的房间模拟或定制空间编码器即可有效进行声源定位，为音频大语言模型在空间音频任务中的应用奠定了基础。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.13110v1",
+      "source": "arxiv",
+      "title": "A Hybrid Mamba for Audio-Visual Navigation",
+      "abstract": "Since the paradigm centered on convolutional neural networks and recurrent architectures was established in 2020, the fundamental backbone networks for audio-visual navigation have undergone no essential changes for more than five years, making them inadequate to support efficient representation of dynamic multimodal sequences. This paper proposes Samba(A Hybrid Mamba for Audio-Visual Navigation). It uses the adaptive selection-enabled Mamba State Encoder (M-SE) to replace conventional GRUs for temporal aggregation, and constructs an Audio Mamba Encoder (AME) to remedy the limitations of convolutional operators in capturing global time-frequency dependencies in spectrograms. Experiments demonstrate that Samba exhibits exceptional generalization performance when facing unheard sound sources and unseen scenes. On the Matterport3D dataset, it improves the navigation success rate (SR) by 11.3\\% compared with existing state-of-the-art models, and the performance gain is even more pronounced on the Replica dataset, which features finer scene structures. Such modernized architectural reconstruction unlocks stronger embodied representation capabilities at a lower computational cost, thereby providing a highly robust technical pathway for paradigm evolution in the field of audio-visual navigation.",
+      "authors": [
+        "Yi Wang",
+        "Yinfeng Yu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "eess.SP"
+      ],
+      "published": "2026-07-14T11:55:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.13110v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "audio-visual navigation with sound source localization for target tracking",
+      "llm_evidence_cn": "音频-视觉导航中利用声源定位进行目标追踪",
+      "llm_evidence": "音频-视觉导航中利用声源定位进行目标追踪",
+      "canonical_evidence": "音频-视觉导航中利用声源定位进行目标追踪",
+      "llm_tldr_en": "Proposes Samba, a hybrid Mamba for audio-visual navigation, using Mamba State Encoder and Audio Mamba Encoder for efficient temporal and spectral representation, achieving robust unseen sound generalization.",
+      "llm_tldr_cn": "该论文针对音频-视觉导航中传统CNN-RNN骨干网络对动态多模态序列表示效率低的问题，提出Samba混合Mamba架构。核心是用自适应选择Mamba状态编码器替换GRU进行时序聚合，并设计音频Mamba编码器弥补卷积在时频依赖捕获上的不足。实验表明，Samba在未见过的声音环境下表现出优异的泛化性能，有效提升了导航成功率。",
+      "llm_tldr": "该论文针对音频-视觉导航中传统CNN-RNN骨干网络对动态多模态序列表示效率低的问题，提出Samba混合Mamba架构。核心是用自适应选择Mamba状态编码器替换GRU进行时序聚合，并设计音频Mamba编码器弥补卷积在时频依赖捕获上的不足。实验表明，Samba在未见过的声音环境下表现出优异的泛化性能，有效提升了导航成功率。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic target tracking methods",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.11083v1",
+      "source": "arxiv",
+      "title": "The SonicAGI System for the REAL-TSE Challenge",
+      "abstract": "Real-world target speaker extraction (TSE) remains challenging because target speech, interference, and enrollment are recorded under mismatched acoustic conditions with reverberation, noise, and irregular conversational overlap. This paper describes the SonicAGI submission to the REAL-TSE Challenge (IEEE SLT 2026). We take a data-centric approach that combines fully simulated mixtures from clean speech with real meeting overlaps, and use a frozen offline enhancer to provide a denoised mirror of real targets for auxiliary supervision. For the online track, we introduce SwiftNet-Lookahead, which inserts a single bounded-lookahead module before a strictly causal iterative separator and keeps the total system latency at 96 ms. For the offline track, we use a frame-level enrollment cross-attention USEF-TFGridNet with a magnitude-domain fusion stage that trades off perceptual quality and speaker fidelity. In the official evaluation, SwiftNet-Lookahead ranks second in Track~1 and USEF-TFGridNet ranks fifth in Track~2, both exceeding the challenge baselines. These results suggest that real-data-oriented training and track-specific modeling are effective for conversational TSE.",
+      "authors": [
+        "Kai Li",
+        "Wendi Sang",
+        "Jintao Cheng",
+        "Xiaolin Hu"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD"
+      ],
+      "published": "2026-07-13T04:53:15+00:00",
+      "link": "https://arxiv.org/pdf/2607.11083v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "acoustic array processing for target speaker extraction",
+      "llm_evidence_cn": "用于目标说话人提取的声学阵列处理",
+      "llm_evidence": "用于目标说话人提取的声学阵列处理",
+      "canonical_evidence": "用于目标说话人提取的声学阵列处理",
+      "llm_tldr_en": "Describes SonicAGI system for target speaker extraction using data-centric approach with simulated and real mixtures, and SwiftNet-Lookahead for low-latency online processing.",
+      "llm_tldr_cn": "针对真实环境中目标说话人提取受混响、噪声和对话重叠影响的问题，本文提出SonicAGI系统，采用数据驱动方法结合全模拟混合与真实会议重叠，并引入SwiftNet-Lookahead模块在保持96ms延迟的同时提升在线提取性能。该系统在REAL-TSE挑战中展示了阵列处理在说话人分离中的有效性。",
+      "llm_tldr": "针对真实环境中目标说话人提取受混响、噪声和对话重叠影响的问题，本文提出SonicAGI系统，采用数据驱动方法结合全模拟混合与真实会议重叠，并引入SwiftNet-Lookahead模块在保持96ms延迟的同时提升在线提取性能。该系统在REAL-TSE挑战中展示了阵列处理在说话人分离中的有效性。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "sound source localization using array processing",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.13417v1",
+      "source": "arxiv",
+      "title": "Parametric Diffraction-Based Object Sensing: Modeling, Estimation, and Fundamental Limits",
+      "abstract": "This paper proposes a rigorous framework for sensing of environmental objects using diffraction mechanisms prevalent at wireless communication frequencies. Specifically, we develop a physics-consistent parameterized diffraction channel model, derive maximum likelihood (ML) approaches for estimating the blockage shape, range, and source directions of arrival (DoAs), and quantify fundamental performance limits via the Cramér--Rao bound (CRB). In our physics-based modeling, we integrate various approximations for the wave propagation (far-field, paraxial Fresnel, and exact near-field regimes), enabling a wide range of applicability. The underlying model is frequency-agnostic, and we derive Fresnel-number scaling laws that map the diffraction pattern, and hence the estimation problem, across carrier frequency, object size, and range. We quantify the maximum likelihood estimation performance and its relationship to the CRB, and we study the impact of the modeling approximations developed in this work. Numerical results demonstrate that ML estimators closely approach the CRB at moderate to high signal-to-noise ratio (SNR), and highlight the utility of diffraction-based modeling for high-fidelity blockage characterization.",
+      "authors": [
+        "Jiaqi Xu",
+        "Bjorn Ottersten",
+        "A. Lee Swindlehurst"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP",
+        "cs.IT"
+      ],
+      "published": "2026-07-15T03:35:44+00:00",
+      "link": "https://arxiv.org/pdf/2607.13417v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "DoA estimation using diffraction modeling, directly transferable to acoustic source localization",
+      "llm_evidence_cn": "基于衍射建模的到达方向估计，可直接迁移至声源定位",
+      "llm_evidence": "基于衍射建模的到达方向估计，可直接迁移至声源定位",
+      "canonical_evidence": "基于衍射建模的到达方向估计，可直接迁移至声源定位",
+      "llm_tldr_en": "Develops a physics-consistent parametric diffraction model for object sensing, deriving ML estimation for blockage shape, range, and source DoA, and quantifying CRB limits, applicable to localization tasks.",
+      "llm_tldr_cn": "论文建立了一个参数化衍射信道模型，用于环境物体感知，并推导了最大似然估计方法以获取阻塞物形状、距离和源到达方向（DoA），同时通过克拉美-罗界量化极限性能。该模型频率无关，覆盖近场到远场，为基于衍射的定位提供了理论基础，其DoA估计方法可直接应用于声源定位系统。",
+      "llm_tldr": "论文建立了一个参数化衍射信道模型，用于环境物体感知，并推导了最大似然估计方法以获取阻塞物形状、距离和源到达方向（DoA），同时通过克拉美-罗界量化极限性能。该模型频率无关，覆盖近场到远场，为基于衍射的定位提供了理论基础，其DoA估计方法可直接应用于声源定位系统。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.13516v1",
+      "source": "arxiv",
+      "title": "Improving Map Consistency in Graph-Based LiDAR SLAM Through Information-Aware Odometry and Retroactive Loop Closure",
+      "abstract": "High-quality maps are fundamental for robotics tasks such as navigation and planning. Although modern graph-based LiDAR SLAM systems achieve good trajectory accuracies, a low trajectory error alone does not guarantee geometrically consistent maps, particularly at revisit locations where missed loop closures and residual drift can produce local misalignments. In this work, we address the problem of jointly improving global trajectory estimation and local map quality in 3D LiDAR SLAM. We first propose a framework to efficiently estimate geometry-dependent information matrices for ICP, enabling principled weighting of odometry constraints in a pose graph. We then introduce a hierarchical loop-closure module that decouples place recognition from geometric registration, together with a retroactive loop-closure module that exploits the optimized pose graph to recover missed loop closures. We also propose an evaluation protocol to measure map consistency at revisit locations. We evaluate our SLAM system on several datasets against state-of-the-art LiDAR SLAM systems. Experimental results demonstrate global trajectory accuracies on par with or better than existing methods while consistently improving local geometric map consistency at revisit locations. These results suggest that coupling uncertainty-aware odometry with geometry-guided loop-closure refinement leads to more accurate trajectories and higher-quality maps.",
+      "authors": [
+        "Saurabh Gupta",
+        "Niklas Trekel",
+        "Louis Wiesmann",
+        "Cyrill Stachniss"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-15T07:12:14+00:00",
+      "link": "https://arxiv.org/pdf/2607.13516v1",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "improves map consistency via information-aware odometry, relates to geometric calibration for sensor alignment",
+      "llm_evidence_cn": "通过信息感知里程计改进地图一致性，与传感器对齐的几何校准相关",
+      "llm_evidence": "通过信息感知里程计改进地图一致性，与传感器对齐的几何校准相关",
+      "canonical_evidence": "通过信息感知里程计改进地图一致性，与传感器对齐的几何校准相关",
+      "llm_tldr_en": "Proposes information-aware ICP weighting and hierarchical loop closure for LiDAR SLAM to improve map consistency, offering a geometric calibration-like method for sensor alignment.",
+      "llm_tldr_cn": "本文针对图优化SLAM中轨迹精度高但地图几何一致性差的问题，提出一种信息感知的ICP权重框架，通过估计几何相关的信息矩阵来约束里程计，并引入分层闭环模块。该方法有效减少了重复场景中的局部错位，提升了全局地图的几何一致性。虽然面向SLAM，但其核心思想——利用几何信息优化传感器相对位姿——对传感器阵列的几何校准具有方法借鉴意义。",
+      "llm_tldr": "本文针对图优化SLAM中轨迹精度高但地图几何一致性差的问题，提出一种信息感知的ICP权重框架，通过估计几何相关的信息矩阵来约束里程计，并引入分层闭环模块。该方法有效减少了重复场景中的局部错位，提升了全局地图的几何一致性。虽然面向SLAM，但其核心思想——利用几何信息优化传感器相对位姿——对传感器阵列的几何校准具有方法借鉴意义。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "biorxiv-10-64898-2026-06-29-735028-v2",
+      "source": "biorxiv",
+      "title": "NucleiSky enables cross-scale multimodal registration of microscopy data using nuclei constellations",
+      "abstract": "Integrating tissue-level organisation with sub-cellular resolution and molecular information often requires combining multiple microscopy modalities and scales. However, aligning images acquired with different modalities, settings, or instruments remains challenging. Here, we introduce NucleiSky, a microscopy image registration framework that utilises the spatial arrangement of nuclei or other landmarks as an intrinsic biological fingerprint. NucleiSky represents images as constellations of centroids and aligns them using geometric algorithms and spatial consensus scoring. In benchmark datasets, NucleiSky could localise query regions within larger reference images using as few as five nuclei. We show that NucleiSky can locate high-magnification fields of view within low-magnification overview scans, map these alignments to additional channels, support live brightfield-to-fixed registration using synthetic nuclear labels, and guide microscope retargeting. We further show that the same constellation-matching principle can be extended to 3D localisation and to non-nuclear landmarks. These findings establish local landmark geometry as an intrinsic spatial fingerprint that enables localisation and registration across imaging scales, modalities and microscopy platforms. NucleiSky is available as an open-source Python package and as notebook-based applications.",
+      "authors": [
+        "Cenalmor, I. H.",
+        "Olguin-Olguin, A.",
+        "Prieto, C.",
+        "Ahnlide, J. K.",
+        "Nordenfelt, P.",
+        "Henriques, R.",
+        "Del Rosario, M.",
+        "Jacquemet, G."
+      ],
+      "primary_category": "cell biology",
+      "categories": [
+        "cell biology"
+      ],
+      "published": "2026-07-09T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2026.06.29.735028v2.full.pdf",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "geometric registration using nuclei constellations",
+      "llm_evidence_cn": "利用细胞核星座进行几何配准",
+      "llm_evidence": "利用细胞核星座进行几何配准",
+      "canonical_evidence": "利用细胞核星座进行几何配准",
+      "llm_tldr_en": "Introduces NucleiSky, a microscopy image registration framework using spatial arrangement of nuclei as biological fingerprint, aligning images with geometric algorithms and spatial consensus scoring.",
+      "llm_tldr_cn": "针对不同显微镜模态和尺度图像配准困难的问题，本文提出NucleiSky框架，利用细胞核的空间排列作为内在生物指纹，将图像表示为质心星座，通过几何算法和空间一致性评分进行对齐。在基准数据集上，仅需五个细胞核即可在参考图像中定位查询区域。该方法为生物图像配准提供了高效且可迁移的几何校准思路。",
+      "llm_tldr": "针对不同显微镜模态和尺度图像配准困难的问题，本文提出NucleiSky框架，利用细胞核的空间排列作为内在生物指纹，将图像表示为质心星座，通过几何算法和空间一致性评分进行对齐。在基准数据集上，仅需五个细胞核即可在参考图像中定位查询区域。该方法为生物图像配准提供了高效且可迁移的几何校准思路。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "geometric calibration techniques for sensor alignment",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "biorxiv-10-64898-2026-07-14-738435-v1",
+      "source": "biorxiv",
+      "title": "Nanobubble-Based Ultrasound Localization Microscopy through Interactive Adaptive Processing",
+      "abstract": "This study presents the use of sub-micron nanobubbles (NBs) as contrast agents for ultrasound localization microscopy (ULM), a super-resolution imaging technique that visualizes microvascular structure and flow beyond the acoustic diffraction limit. While ULM has traditionally relied on micron-sized microbubbles (MBs), the reduced dimensions and prolonged circulation times of NBs make them attractive candidates for localization-based imaging. However, their weaker acoustic responses present significant challenges for reliable detection and tracking. To address this challenge, we developed the ULM Master GUI, an interactive framework for optimization of the complete ULM processing pipeline. Using custom ultrasound-compatible wall-less gelatin flow phantoms containing vessel-mimicking channels and bifurcations ranging from 100 to 500 m, we demonstrate that NB-based ULM achieves velocity reconstruction and flow partitioning measurements comparable to conventional MB-based ULM. Across all investigated geometries, NBs faithfully reproduced the underlying flow patterns and hemodynamic behavior despite their substantially reduced acoustic scattering. These findings establish the feasibility of NB-based ULM, expand the range of contrast agents available for localization microscopy, and provide a foundation for future super-resolution ultrasound imaging using nanoscale acoustic contrast agents. The ULM processing GUI is publicly available at https://github.com/grisha1998/ulm-super-resolution-toolbox.",
+      "authors": [
+        "Ilovitsh, T.",
+        "Shapiro, G.",
+        "Gershman, Y.",
+        "Bismuth, M."
+      ],
+      "primary_category": "bioengineering",
+      "categories": [
+        "bioengineering"
+      ],
+      "published": "2026-07-15T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2026.07.14.738435v1.full.pdf",
+      "tags": [
+        "keyword:gso",
+        "query:gso"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "ultrasound localization microscopy for localizing nanobubbles as acoustic sources",
+      "llm_evidence_cn": "超声定位显微镜通过纳米气泡对比剂进行声源定位",
+      "llm_evidence": "超声定位显微镜通过纳米气泡对比剂进行声源定位",
+      "canonical_evidence": "超声定位显微镜通过纳米气泡对比剂进行声源定位",
+      "llm_tldr_en": "Presents nanobubble-based ultrasound localization microscopy with an interactive GUI for optimizing detection and tracking of sub-micron acoustic contrast agents.",
+      "llm_tldr_cn": "本研究利用亚微米纳米气泡作为超声定位显微镜的对比剂，提出交互式自适应处理框架以克服其弱声学响应带来的检测难题。通过开发ULM Master GUI优化整个处理流程，实现了超分辨率微血管成像。该方法突破了传统微米气泡的限制，具有更长循环时间和更小尺寸优势，为超声定位显微镜提供了新的对比剂方案。",
+      "llm_tldr": "本研究利用亚微米纳米气泡作为超声定位显微镜的对比剂，提出交互式自适应处理框架以克服其弱声学响应带来的检测难题。通过开发ULM Master GUI优化整个处理流程，实现了超分辨率微血管成像。该方法突破了传统微米气泡的限制，具有更长循环时间和更小尺寸优势，为超声定位显微镜提供了新的对比剂方案。",
+      "llm_tags": [
+        "query:gso"
+      ],
+      "matched_query_tag": "query:gso",
+      "matched_query_text": "acoustic source localization",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

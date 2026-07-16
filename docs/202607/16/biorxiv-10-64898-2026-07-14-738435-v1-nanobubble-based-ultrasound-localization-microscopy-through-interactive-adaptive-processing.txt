@@ -1,0 +1,1429 @@
+Title: Nanobubble-Based Ultrasound Localization Microscopy through Interactive Adaptive Processing
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.14.738435v1.full.pdf
+
+Number of Pages: 22
+
+Markdown Content:
+Nanobubble -Based Ultrasound Localization Microscopy through 
+
+# Interactive Adaptive Processing 
+
+Grigori Shapiro 1, Yarin Gershman 1, Mike Bismuth 1, and Tali Ilovitsh 1,2 * 
+
+> 1
+
+School of Biomedical Engineering, Tel Aviv University, Tel Aviv 6997801, Israel  
+
+> 2
+
+The Sagol School of Neuroscience, Tel Aviv University, Tel Aviv 6997801, Israel 
+
+* Corr esponding author:  ilovitsh@tauex.tau.ac.il 
+
+# Abstract 
+
+This study presents the use of sub -micron nanobubbles (NBs) as contrast agents for 
+
+ultrasound localization microscopy (ULM), a super -resolution imaging technique that 
+
+visualizes microvascular structure and flow beyond the acoustic diffraction limit. While ULM 
+
+has traditionally relied on micron -sized microbubbles (MBs), the reduced dimensions and 
+
+prolonged circulation times of NBs make them attractive candidates for localization -based 
+
+imaging. However, their weaker acoustic responses present significant chal lenges for reliable 
+
+detection and tracking. To address this challenge, we developed the ULM Master GUI, an 
+
+interactive framework for optimization of the complete ULM processing pipeline. Using custom 
+
+ultrasound -compatible wall -less gelatin flow phantoms co ntaining vessel -mimicking channels 
+
+and bifurcations ranging from 100 to 500 μm, we demonstrate that NB -based ULM achieves 
+
+velocity reconstruction and flow partitioning measurements comparable to conventional MB -
+
+based ULM. Across all investigated geometries , NBs faithfully reproduced the underlying flow 
+
+patterns and hemodynamic behavior despite their substantially reduced acoustic scattering. 
+
+These findings establish the feasibility of NB -based ULM, expand the range of contrast agents 
+
+available for localizat ion microscopy, and provide a foundation for future super -resolution 
+
+ultrasound imaging using nanoscale acoustic contrast agents . The ULM processing GUI is 
+
+publicly available at https://github.com/grisha1998/ulm -super -resolution -toolbox .
+
+Keywords: ultrasound localization microscopy, nanobubble , contrast -enhanced ultrasound, signal 
+
+processing, microvascular imaging .
+
+# Introduction 
+
+The visualization of the microvascular network is critical for the early detection and 
+
+characterization of pathologies ranging from tumor neoangiogenesis to neurodegenerative 
+
+diseases [1] . Conventional medical ultrasound, however, is fundamentally constrained by the 
+
+acoustic diffraction limit, which dictates that spatial resolution is restricted to approximately 
+
+half the acoustic wavelength [2] . This constraint creates an inherent trade -off between imaging 
+
+depth and resolution, leaving deep -seated microvasculature, such as the human cerebral or 
+
+abdominal microcirculation, largely inaccessible to standard B -mode or Power Doppler 
+
+techniques [3] . ULM emerged as a paradigm shift to bypass this barrier, inspired by optical 
+
+super -resolution techniques such as PALM and STORM [4] . This approach utilizes MBs , which 
+
+are gas -filled, shell -encapsulated contrast agents typically 1.5 -10 μm in diameter that serve 
+
+as highly echogenic intravascular tracers [5] . In ULM , individual MB signals are isolated and 
+
+localized across thousands of ultrafast imaging frames, enabling reconstruction of super -
+
+resolved vascular maps with spatial resolution far beyond the system point spread function 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+(PSF) [6] . However, due to their micron -scale size, MBs may provide less efficient coverage 
+
+of the smallest microvascular compartments, particularly capillary beds with diameters of 2-6
+
+μm [7] . In ULM studies of the brain microvasculature, reconstruction of capillary networks 
+
+requires substantially longer acquisition times than larger vessels, owing to sparse MB 
+
+passages and slo wer blood flow in these regions [8] . Similarly, fo cused ultrasound -mediated 
+
+blood brain barrier opening studies have reported reduced effects in the smallest capillary 
+
+segments  [9], [10] , highlighting the challenges of achieving uniform MB -mediated bioeffects 
+
+throughout the microvascular network. Furthermore, because MBs remain largely 
+
+intravascular, their penetration into the extravascular tumor space is inherently limited [11], 
+
+[12] .
+
+To overcome these limitations, sub -micron NBs have emerged as a promising next 
+
+frontier i n contrast -enhanced ultrasound . Beyond their ability to traverse narrower channels, 
+
+NBs exhibit significantly longer circulation half -lives and enhanced mechanical stability 
+
+compared to MBs [10], [13] . Their small size also enables improved interaction with capillary -
+
+scale vasculature and offers the potential for molecular targeting and extravasation through 
+
+the leaky tumor microenvironment via the enhan ced permeability and retention effect [14], 
+
+[15] . However, the small size of NBs also makes them substantially more challenging to detect 
+
+with ultrasound, as their weak acoustic echoes are frequently obscured by tissue clutter and 
+
+electronic noise [5], [16] . This presents a key challenge for NB -based ULM . Here, we introduce 
+
+NB -based ULM and demonstrate, to the best of our knowledge, the first implementation of 
+
+ULM using NBs as the primary contrast agent . While NBs have been extensively investigated 
+
+as contrast agents for diffraction -limited contrast -enhanced ultrasound, including molecular 
+
+imaging of tumors and characterization of tissue perfusion kinetics [17], [18], [19] , these 
+
+studies  have not pursued sub -pixel localization or trajectory -based super -resolution velocity 
+
+mapping. Similarly, nanodroplet -based super -resolution approaches have demonstrated 
+
+localization microscopy using phase -change agents [20], [21] , however , acoustic vaporization 
+
+transforms the NDs into MB -like contrast agents during imaging . To address the processing 
+
+challenges associated with the weak acoustic signals of NBs, we developed the ULM Master 
+
+GUI, an interactive framework that integrates the complete ULM pipeline and provides real -
+
+time visual and quantitative feedback for systematic optimization of the ULM processing 
+
+pipeline . Using custom ultrasound -compatible wall -less blood vessel flow phantoms [22], [23] ,
+
+we then evaluated the feasibility of NB -based ULM and compared its performance with 
+
+conventional MB -based ULM . These findings establish the feasibility of NB -based ULM and 
+
+provide a foundation for future super -resolution imaging applications using nanoscale 
+
+ultrasound contrast agents. 
+
+# Materials and Methods 
+
+Contrast Agent Synthesis and Characterization 
+
+Lipid -shelled MBs were synthesized using a custom phospholipid formulation comprising 
+
+DSPC and DSPE -PEG2K dissolved in a propylene glycol / glycerol mixture at a 1:3 ratio (high -
+
+glycerol content) . The lipid phases were combined with PBS and sonicated at 62°C to ensure 
+
+homogeneity, then aliquoted into 3 mL headspace vials and saturated with perfluorobutane 
+
+C4F10 gas [11] . This high -glycerol formulation promotes a flexible lipid arrangement that 
+
+enhances the nonlinear acoustic signature [24] . Prior to use, vials were activated by 
+
+mechanical shaking (45 s, VialMix) and purified via centrifugation to isolate the target size 
+
+fraction and remove excess lipid debris [25] . NBs were formulated from a four -component lipid 
+
+shell , C22, DPPA, DPPE, and DSPE -PEG2K , dissolved in propylene glycol, glycerol and PBS 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+at 80°C, owing to the elevated phase transition temperature of C22. Aliquots were saturated 
+
+with Octafluoropropane C3F8 gas . Prior to use, vials were activated by mechanical shaking 
+
+(45 s, VialMix) . The sub -micron NB fraction was isolated from residual larger bubbles by 
+
+buoyancy -based fractionation: inverted centrifugation at 500 rpm for 5 min, with the NB -
+
+enriched fraction extracted from the bottom of the inverted vial [10], [16], [26] . Post -synthesis 
+
+characterization (Accusizer FXNano, Particle Sizing Systems, Entegris, MA) confirmed a 
+
+mean MB diameter of 1.3 ±0.3 μm at a total number concentration of 1.40 ×10 10 mL -1 (Figure 
+
+1 a) and a mean NB diameter of 1 68 ±5.5 nm at a total number concentration of 1. 64 ×10 12
+
+mL -1 (Figure 1 b), establishing the two independent contrast agent populations required for 
+
+comparative analysis .
+
+According to the Rayleigh scattering theory, the scattering cross -section,  σ𝑠 , of a 
+
+bubble much smaller than the ultrasound wavelength is proportional to the sixth power of its 
+
+radius,  𝑟  [27] :
+
+𝜎 𝑠 ∝ 𝑟 6
+
+𝜆 4 (1) 
+
+The resulting 10 -fold reduction in mean radius from MBs to NBs leads to a 10 6 decrease in 
+
+scattering power, implying a theoretical backscattered intensity penalty of ~60 dB [5], [17] .
+
+This severe signal loss motivates the development of the specialized, interactive processing 
+
+framework described in this study to preserve and resolve these faint acoustic signatures [7] .
+
+Tissue -mimicking Phantom Fabrication and Experimental Setup 
+
+Custom ultrasound -compatible wall -less blood vessel flow phantoms were fabricated as 
+
+previously described in [22], [23] . The phantoms contained blood -vessel -mimicking channel 
+
+geometries and served as controlled flow environments for ULM experiments . A 12% (w/v) 
+
+gelatin solution (18 g in 150 mL deionized water) was selected as the matrix material for its 
+
+ability to approximate the speed of sound (c  ≈ 1540 m/s) and acoustic attenuation of soft 
+
+tissue [22], [28], [29] . Custom wall -less flow phantoms containing vessel -mimicking channels 
+
+with diameters ranging from 100 to 500 μm were fabricated using a two -part CNC -machined 
+
+aluminum mold (Figure 2 a,c ). The liquid gelatin was poured into the mold, gelled at 4°C for 2 
+
+h, and subsequently bonded for 24 h to form a sealed flow phantom (Figure 2 b,d ). The wall -
+
+less architecture eliminated acoustic reflections from tubing interfaces, thereby minimizing 
+
+Figure 1: Size distribution of MB and NB. (a) Microbubbles. (b) Nanobubbles. measured by 
+
+Accusizer FXNano, verifying the distinct size populations. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+interference with low -amplitude NB signals. Diluted NB or MB solutions were infused through 
+
+the phantom via a programmable syringe pump (GenieTouch, Kent Scientific, Torrington) at 
+
+constant flow rates between 0.01 and 0.25 mL min -1 [22], [23] . Both agent types were prepared 
+
+via serial dilution of the post -activation stock: 5 μL were added to 10 mL PBS (×2,000), 1 mL 
+
+of this intermediate was transferred to 10 mL PBS (×10), and 2 mL of the resulting solution 
+
+were transferred to the final 2.5 mL sy ringe (×1.25), yielding a total dilution factor of 1:25,000. 
+
+The solution s were utilized for experiments within 3 h of activation. 
+
+To establish a ground truth for the flow validation, the theoretical peak flow velocity ( 𝑉 𝑝𝑒𝑎𝑘 )
+
+within the phantom channels was calculated assuming a fully developed laminar flow profile 
+
+(Eq. 2) [23] . In such a profile, the peak velocity at the center of the channel is approximately 
+
+twice the average velocity ( 𝑉 𝑎𝑣𝑔 ), which is determined by the relationship between the 
+
+volumetric flow rate ( 𝑄 ) and the channel's cross -sectional area ( 𝐴 ): 
+
+𝑉 𝑝𝑒𝑎𝑘 = 2 ⋅ 𝑉 𝑎𝑣𝑔 = 2 ⋅ 𝑄 
+
+𝐴  (2)
+
+where  𝑄  is the volumetric flow rate programmed into the syringe pump. Since the phantom 
+
+channels possess a rectangular cross -section, the area  𝐴  was defined as  𝐴 = 𝑊 ⋅ 𝐻 , where 
+
+𝐻  is the constant channel height 300 μm and  𝑊  is the specified channel width. These 
+
+calculated values served as the baseline to evaluate the accuracy of the velocities 
+
+reconstructed by the ULM processing pipeline. 
+
+Ultrasound Data Acquisition 
+
+All US data were acquired using the Verasonics Vantage 256 programmable research system 
+
+(Verasonics Inc., Kirkland, WA, USA) with the L22 -14vX high -frequency linear array 
+
+transducer (128 elements, 0.10 mm pitch, 18 MHz center frequency , fixed elevation focus at 
+
+Figure 2: Design and assembly of the custom -made gelatin phantom. (a) Top mold component 
+
+featuring the microvascular -mimicking channel structure and inlet/outlet connectors. (b) Superior view 
+
+of the finalized phantom with internal vascular channels visible through the gelatin and microfluidic 
+
+tubing connected for flow. (c) Bottom gelatin layer providing the flat bonding surface. (d) Lateral view 
+
+of the complete dual -layer assembly. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+8 mm). A high -frame -rate coherent plane -wave (PW) compounding sequence across three 
+
+steered angles ( −5°, 0 °, +5 °) was employed to balance spatial resolution, SNR, and temporal 
+
+fidelity. Compounded IQ frames were streamed in real time into a pre -allocated RAM buffer 
+
+and batch -transferred to SSD upon sequence completion, ensuring temporal continuity of 
+
+bubble trajecto ries. The inter -frame bubble displacement was maintained at approximately 1 –
+
+2 pixels throughout all experiments. The axial imaging window was set between 14 and 20 
+
+mm depth (6 mm active zone), yielding a native pixel size of ~49 μm in both lateral and axial 
+
+dimensions. Imaging was performed at two transmit voltage levels, 20 V and 30 V . Acoustic 
+
+calibration was carried out using a needle hydrophone (NH0200, Precision Acoustics, U.K.) in 
+
+a degassed water tank. The lower voltage (20 V) was used for the localization algorithm 
+
+comparison experiments, while both voltage levels were employed for velocity profile 
+
+reconstruction and flow validation studies to evaluate NB detection sensitivity across acoustic 
+
+conditions. 
+
+ULM Processing Pipeline 
+
+ULM processing was performed using a custom MATLAB framework comprising clutter 
+
+filtering, localization, tracking, and rendering stages [4], [6], [30] . Tissue clutter was removed 
+
+using SVD -based filtering [31] , with thresholds selected using the Spatial Similarity Matrix 
+
+method [32] . Bubble locations were identified through regional -maxima detection and localized 
+
+at sub -pixel resolution using either Radial Symmetry or 2D Gaussian Fitting [33], [34] . Quality -
+
+control filters were applied to reject low -confidence localizations [35] . The tracking engine 
+
+supports four algorithms evaluated comparatively: Nearest Neighbor (NN, greedy baseline) 
+
+[6] , Global Hungarian Tracker (HT, linear assignment with the Munkres solver) [36] , Kalman 
+
+Tracker (KT, constant -velocity predictive state estimation with gap -closing) [35] . All trackers 
+
+beyond NN can operate with a Smart Cost Matrix (SC) that augments the base spatial cost 
+
+with multiplicative penalty terms. Trajectory direction is estimated via linear regression over 
+
+the last  𝑁  Kalman -smoothed positions to mitigate sub -pixel jitter, informing both a hard angular 
+
+gate and a ramped directional penalty ( 𝑃 𝑎𝑛𝑔𝑙𝑒 ) for deviations exceeding a specified threshold. 
+
+Additionally, a brightness consistency penalty ( 𝑃 𝑖𝑛𝑡𝑒𝑛𝑠𝑖𝑡𝑦 ) scales with the normalized difference 
+
+between the candidate intensity and the track’s incrementally cached mean brightness . This 
+
+formulation substantially reduces false links at bifurcations without relying on proximity alone 
+
+[37] . Reconstructed trajectories are projected onto a super -resolution grid upsampled 10 ×
+
+relative to native pixel size. Prior to projection, tracks are smoothed with a Savitzky -Golay filter 
+
+and densely interpolated using cubic splines to suppress localization jitter while preserving 
+
+vessel geometry [6] . The rendering engine produces four outputs: a vessel density map 
+
+(power -law compression,  𝛾  = 0.3), an HSV velocity -density fusion (hue encodes velocity; 
+
+brightness encodes density), and raw and lightly smoothed velocity maps [22], [23] . Rendering 
+
+is decoupled from tracking, enabling rapid iterative post -processing without recomputing the 
+
+full pipeline 
+
+Interactive  Optimization: The ULM Master GUI 
+
+The ULM Master GUI is a MATLAB -based interactive platform for optimization and 
+
+visualization of the ULM processing pipeline (Figure 3). The GUI integrates clutter filtering, 
+
+localization, tracking, and rendering within a single environment and provides visual and 
+
+quantitative feedback at each processing stage. Real -time SVD filtering is implemented 
+
+together with Spatial Similarity Matrix visualization [32] , facilitating selection of the clutter -
+
+filtering rank range . Detected candidate events are displayed as overlays on filtered B -mode 
+
+images, and localization statistics are provided for assessment of detection performance. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+Trajectories are visualized on a TMIP background to facilitate evaluation of tracking continuity, 
+
+and rendering parameters can be adjusted with immediate visualization of the resulting super -
+
+resolution maps. A metadata -driven initialization step extracts acquisition parameters and 
+
+automatically computes spatial calibration factors used for velocity estimation and image 
+
+rendering. Optimization is performed through four sequential stages: (1) SVD rank selection 
+
+using the Spatial Similarity Matrix; (2) detecti on -threshold adjustment using localization 
+
+overlays on filtered B-mode images; (3) tracking -parameter tuning using trajectory 
+
+visualization on the TMIP background; and (4) rendering -threshold adjustment on the super -
+
+resolution grid. The sequential workflow allows verification of processing outputs at each stage 
+
+before proceeding to subsequent steps. The complete processing framework, including the 
+
+modular ULM pipeline and interactive GUI, is implemented in MATLAB and is publicly 
+
+available as an open -source toolbox (see Code Availability). 
+
+Quantitative Performance Metrics 
+
+Four metrics were used to evaluate and compare NB and MB performance. The Tortuosity 
+
+Index  𝜏  (Eq. 3), is defined as the ratio of actual path length to the straight -line Euclidean 
+
+distance between track endpoints [38], [39] , where  𝜏 ≈ 1 indicates smooth laminar trajectories 
+
+and  𝜏 ≫ 1 indicates erratic, jitter -dominated paths. 
+
+𝜏 = ∑ |𝑝 𝑖 +1 
+
+> 𝑁 −1
+> 𝑖 =1
+
+− 𝑝 𝑖 |
+
+|𝑝 𝑁 − 𝑝 1|
+
+(3)
+
+where  𝑝 𝑖  represents the spatial coordinates of the localized bubble at frame  𝑖 , and  𝑁  is the 
+
+total number of frames in the track. Track length distributions were analyzed as an indicator 
+
+of temporal continuity, with a shift toward longer tracks reflecting successful gap -closing [6], 
+
+[38] . Cross -sectional velocity profiles were extracted at defined phantom ROIs (pre -
+
+bifurcation, post -bifurcation, and branch segments) [23] and compared against the expected 
+
+parabolic profile as a direct validation of flow -tracing fidelity. Finally, vascular partitioning was 
+
+quantified via the partitioning ratio  𝑃 𝑏𝑟𝑎𝑛𝑐 ℎ (Eq. 4), calculated from localization counts in three 
+
+ROIs at each bifurcation. This concentration -normalized metric isolates hemodynamic 
+
+behavior from the ~100 × difference in native NB versus MB dose [10] , enabling a direct 
+
+functional comparison of the two agents [13], [40] .
+
+𝑃 𝑏𝑟𝑎𝑛𝑐 ℎ = 𝑁 𝑏𝑟𝑎𝑛𝑐 ℎ
+
+𝑁 𝑏𝑟𝑎𝑛𝑐 ℎ + 𝑁 𝑝𝑜𝑠𝑡 _𝑚𝑎𝑖𝑛 
+
+× 100  (4)
+
+where  𝑃 𝑏𝑟𝑎𝑛𝑐 ℎ represents the percentage of contrast agents diverted into the secondary 
+
+branch,  𝑁 𝑏𝑟𝑎𝑛𝑐 ℎ is the number of localizations detected within the branch ROI, and  𝑁 𝑝𝑜𝑠𝑡 _𝑚𝑎𝑖𝑛 
+
+is the number of localizations detected in the continuing main channel ROI. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+Figure 3: The ULM Master GUI - an interactive end -to -end optimization platform for ULM. The 
+
+interface exposes six sequential processing stages (tab bar, top right) with real -time visual feedback. 
+
+(a) Stage 1 - Clutter Filtering. Raw IQ data (Frame 1/1500) is shown with the SVD filter control panel 
+
+(insets): singular value cutoff range, optional Butterworth temporal bandpass, and Gaussian spatial 
+
+kernel. (b) Stage 2 - Detection. NB candidate localizations (red markers, inset) overlaid on the filtered 
+
+B-mode frame. The dashed red boundary defines the vessel ROI mask. Detection threshold and 
+
+maximum bubble count are set via the control panel (inset). (c) Stage 4 - Tracking. Color -encoded NB 
+
+trajectories a ccumulated over 1500 frames on a TMIP background. The Kalman tracker uses a 
+
+constant -velocity model with Hungarian assignment. The Advanced Cost Matrix Configuration panel 
+
+(inset) shows the active penalty terms: Direction Penalty and Angle Penalty, which t ogether define the 
+
+soft ramped cost for trajectory deviations, and Brightness Penalty which penalizes acoustic intensity 
+
+mismatches. The panel also allows for tuning the Dir History Pts, defining the number of previous 
+
+smoothed positions used for the linea r regression direction estimate. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+# Results 
+
+Tracking Algorithm Evaluation on NB 
+
+Following the development of the processing framework , a controlled in silico experiment was 
+
+conducted to determine the optimal tracking strategy for sub -wavelength NBs. The primary 
+
+objective was to evaluate how different tracking logics handle the reconstruction of complex 
+
+micro -channel geometries under controlled flow conditions. To this end, lipid -shell NBs were 
+
+infused into a custom ultrasound -compatible wall -less blood vessel flow phantom featuring a 
+
+300 μm primary channel that bifurcates into a 100 μm secondary branch. A syringe pump 
+
+maintained a steady flow rate of 0.03 mL min -1, with imaging at MI = 0.32, establishing a 
+
+laminar flow profile with a theoretical centerline velocity of approximately 11 mm ·s-1. To ensure 
+
+a valid comparison, all datasets were processed using identical clutter filtering and localization 
+
+parameters, with a strict minimum track length filter of 15 frames applied to isolate only robust 
+
+trajectories. 
+
+The impact of the tracking algorithm on the final super -resolution image is evaluated 
+
+by comparing the velocity maps generated by five progressively advanced tracking 
+
+configurations : Nearest Neighbor (NN), standard Hungarian Tracking (HT), standard Kalman 
+
+Tracking (KT), HT with a smart cost matrix (HT SC), and KT with a smart cost matrix (KT SC) 
+
+(Figure 4). The limitations of basic tracking algorithms are evident in the reconstructions using 
+
+the NN ( Figure 4 b-e) and the standard HT (Figure 4 f-i) methods. While both capture the basic 
+
+boundary layer effect, they are limited in resolving the distinct centerline peak characteristic of 
+
+laminar flow. Instead, the central flow regions appear homogeneous and noisy, exhibiting 
+
+frequent velocity fluctuations that lack spatial coherence ( Figure 4 b-i). Although the standard 
+
+HT method improves global track continuity compared to NN, the velocity profile remains 
+
+blunted, indicating an inability to resolve fine gradients. Configurations incorporating predictive 
+
+motion modeling or advanced cost constraints provide visible improvements in flow 
+
+visualization. The standard KT introduces a predictive motion model that smooths velocity 
+
+estimation, thereby revealing the parabolic nature of the flow ( Figure 4 j-m). However, tracking 
+
+noise and erroneous track associations persist outside the channel boundaries in this 
+
+configuration. Conversely, the HT method with a SC utilizes directional and brightness 
+
+penalties , implemented within the advanced cost calculation engine , to delineate the laminar 
+
+profile more clearly. Despite this clarity, the strict rejection criteria inherent to this configuration 
+
+result in a sparser map, particularly within the bifurcation zone where flow directions are more 
+
+complex ( Figure 4 n-q). Ultimately, the optimal reconstruction is achieved using the KT 
+
+integrated with the SC ( Figure 4 r-u). This configuration combines the advantages of predictive 
+
+modeling with the strict linkage constraints of the SC to resolve a fully developed laminar 
+
+profile. The resulting map demonstrates a dominant, high -velocity core that decays smoothly 
+
+toward th e vessel walls ( Figure 4 r-u). By effectively eliminating extra -luminal noise and 
+
+tracking artifacts seen in simpler methods, this integrated approach successfully reconstructs 
+
+the theoretical parabolic profile required for accurate microvascular analysis. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+While the velocity maps provide a qualitative assessment of the reconstruction, a 
+
+quantitative analysis is required to objectively measure the improvement in tracking fidelity. 
+
+Five tracking configurations were compared to isolate the independent contributions of two 
+
+algorithmic dimensions: the association strategy (greedy nearest -neighbor, globally optimal 
+
+Hungarian assignment, and predictive Kalman filtering) and the cost functio n design (standard 
+
+Euclidean distance versus the physics -informed SC ). This fac torial design enables attribution 
+
+of performance gains to specific algorithmic choices rather than confounded improvements. 
+
+Figure 4: Comparative evaluation of ULM tracking algorithms. (a) Full velocity map of a gelatin 
+
+phantom, reconstructed using KT SC; colored ROIs correspond to magnified regions in (b -u). (b -e) 
+
+Nearest Neighbor (NN). (f -i) Hungarian Tracking (HT). (j -m) Kalman Tracking (KT). (n -q) Hungarian 
+
+Tracking with smart cost matrix (HT SC). (r -u) Kalman Tracking with smart cost matrix (KT SC). 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+To this end, statistical distributions of track morphology were computed for the entire dataset 
+
+with all the tracks. For this analysis, the minimum track length filter was relaxed to 5 frames ,
+
+compared to 15 in the visual maps. This relaxation was necessary to expose the raw 
+
+performance of the tracking algorithms, including their tendency to generate short, 
+
+fragmented, or erroneous tracks in high -density scenarios. A key biomarker for healthy 
+
+microvascular flow in phantom channel s is laminarity, which impli es that trajectories should be 
+
+smooth and direct. This characteristic is quantified by the Tortuosity Index ().
+
+The baseline algorithms, NN and standard HT , exhibited a broad tortuosity distribution 
+
+with a heavy tail extending up to  = 8 (Figure 5 a, e). Crucially, the peak count at the ideal 
+
+laminar value (  ~ 1 ) was relatively low, at approximately 1300 tracks for both the NN and the 
+
+standard HT methods (Figure 5 a, e). When the data was filtered for tracks longer than 10 
+
+frames, the persistence of high -tortuosity outliers in these baseline methods remained evident, 
+
+with a median tortuosity value of 1.4 (Figure 5 c, g). Significant improvements were observed 
+
+when introducing the predictive motion models of the KT, which narrowed the distribution tail 
+
+and increased the frequency of laminar tracks to approximately 3000 and 3500 counts for the 
+
+raw and filtered datasets, respectively (Figure 5 i, k). The most substantial enhancement, 
+
+however, occurred with the integration of the SC. By applying directional and brightness 
+
+penalties to the linking cost, the SC configurations achieved a sharp peak at the ideal tortuosity 
+
+value, effectively concentrati ng the distribution at  ~ 1 and reaching a peak count of 3000 
+
+tracks with HT SC and almost 4500 with KT SC, even before the data was filtered for tracks 
+
+longer than 10 frames (Figure 5 m, q). 
+
+Furthermore, the total number of reconstructed tracks serves as a metric -based 
+
+indicator for the algorithm's selectivity versus its tendency toward fragmentation. The NN and 
+
+standard HT methods produced the highest raw yields, with 21,2 97 and 21 ,248 tracks 
+
+identified respectively ( Figure 5 b, f). However, given the high tortuosity observed in these 
+
+datasets, this surplus likely represents fragmented segments , where a single long vessel is 
+
+erroneously broken into multiple short tracks and residual noise artifacts ( Figure 5 d, h). The 
+
+standard KT reduced this count to 18, 891 tracks ( Figure 5 j) with a median tortuosity of 1.21 ,
+
+while the inclusion of the SC resulted in the lowest overall yield of 16,20 6 tracks for the Kalman 
+
+configuration (Figure 5 r) . Despite the lower quantity, this configuration achieved the highest 
+
+fidelity with the lowest overall tortuosity index of 1.09 for the unfiltered dataset (Figure 5 q) ,
+
+preserved after filtering for tracks > 10 frames ( Figure 5 s). This reduction, combined with the 
+
+increase in low -tortuosity tracks, confirms that the advanced algorithms successfully exchange 
+
+quantity for quality. Finally, by filtering out spurious data and preventing the fragmentation of 
+
+long vessels, the KT SC method reveals the physiological flow with the highest degree of 
+
+confidence. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+Quantitative Hemodynamic Profiling and Velocity Validation 
+
+To validate the quantitative accuracy of NB as flow tracers, we performed a direct comparative 
+
+analysis against MBs across three volumetric flow rates (0.01, 0.03, and 0.25 mL min -1). 
+
+Evaluations were conducted in both symmetric (300 -300 μm) and asymmetric (300 -100 μm) 
+
+bifurcation geometries cast within the gelatin phantoms. The velocity distribution analysis is 
+
+performed across three key hydrodynamic zones, including the main channel prior to the 
+
+bifurcation, the distal segment of the main channel, and the bifurcating branch (Figure 6).
+
+Figure 5: Statistical evaluation of tracking fidelity across algorithms. Histograms of Tortuosity 
+
+(Columns 1, 3) and Track Length (Columns 2, 4) for five tracking configurations . (a -d) NN. (e -h) HT, (i -
+
+l) KT . (m -p) HT SC . (q -t) KT SC. Columns 1 -2 show all tracks . Columns 3 -4 show tracks filtered for 
+
+length > 10 frames. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+Initially, we evaluated the imaging performance using a symmetric bifurcation phantom 
+
+300 -300 μm (Figure 6 a-h) . Both contrast agents successfully reconstructed the expected 
+
+laminar flow profiles. However, the agreement between the measured peak velocities in the 
+
+pre -bifurcation segment (black profiles) and the calculated theoretical maxima varied as a 
+
+function of the inlet flow rate. At the lowest flow rate (0.01 mL min -1), the measured velocities 
+
+demonstrated high agreement with the theoretical peak velocity of 3.9 mm ·s-1 (Figure 6 b, f). 
+
+This correlation decreased slightly, yet remained comparable, at 0.03 mL min -1, where the 
+
+theoretical peak is 11.7 mm ·s-1 (Figure 6 c, g). At the highest tested flow rate (0.25 mL min -1), 
+
+however, the measured peak velocities of approximately 60 mm ·s-1 underestimated the 
+
+theoretical maximum of 97.2 mm ·s-1 by approximately 38%, despite an acquisition rate of 1000 
+
+Hz (Figure 6 d, h). A distinct hydrodynamic behavior was observed post -bifurcation. While the 
+
+geometry is nominally symmetric, a velocity disparity emerged between the continuing main 
+
+channel (Blue ROI) and the bifurcating branch (Red ROI). At lower flow rates ( 0.0 1 mL min -1), 
+
+the velocities in both branches were comparable. However, at the highest flow rate of 0.25 mL 
+
+min -1 (Figure 6 d, h), the velocity in the straight channel was notably higher than in the 
+
+branching channel. This flow -rate -dependent velocity asymmetry in a nominally symmetric 
+
+geometry was observed consistently for both contrast agents and is analyzed in the 
+
+Discussion. Next, we examined the flow dynamics within an asymmetric bifurcation 
+
+configuration 300 -100 μm. The asymmetric phantom presented a high -resistance secondary 
+
+channel (Figure 6 i-p). As expected, the velocity in the main channel post -bifurcation (Blue 
+
+ROI) remained nearly identical to the pre -bifurcation velocity (Black ROI) across all flow rates. 
+
+Conversely, the velocity in the 100 μm branch (Red ROI) was markedly lower, consistent with 
+
+the preferential flow of fluid through the path of least resistance (the wide main channel). A 
+
+minor reduction in the main channel velocity was observed downstream, corresponding to the 
+
+small fraction o f mass conservation diverted to the narrow branch. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+Comparative Analysis of Microvascular Partitioning and Flow Distribution 
+
+Having validated the hemodynamic fidelity of NBs through velocity profiling, the next phase of 
+
+the analysis evaluated their ability to serve as accurate flow tracers within bifurcating 
+
+microvascular geometries. Because NB and MB suspensions differ substant ially in 
+
+concentration, we employed the localization -based Partitioning Ratio metric to compare their 
+
+flow distribution independent of contrast agent concentration. This approach isolates the 
+
+physical transport behavior of the agents and enables direct com parison of their partitioning 
+
+at vascular bifurcations . The results of this partitioning analysis, including super -resolved 
+
+velocity maps for each geometry and pie charts quantifying the fractional distribution between 
+
+branches, are presented across the various experimental regime s ( Figure 7). Overall, the 
+
+fractional distribution of NBs closely mirrored that of MBs across the majority of matched 
+
+experiments (Figure 7 d-l vs. m -u), indicating that despite their substantially smaller size, NBs 
+
+are subject to the same fluid dynamic forces that govern MB distribution in these channel 
+
+diameters (100 -500 μm). The sensitivity of the partitioning metric is confirmed by geometric 
+
+comparison: s ymmetric phantoms yielded near -equilibrium distributions, while asymmetric 
+
+geometries of 300 -100 μm (Figure 7 g-i, p -r) and 500 -200 μm (Figure 7 j-l, s -u) produced a 
+
+marked shift for both agents toward the low -resistance branch, confirming that NBs faithfully 
+
+trace the underlying hemodynamic resistance network. 
+
+Figure 6: Quantitative velocity profiling of MB versus NB in symmetric and asymmetric 
+
+bifurcation phantoms. (rows a -h) Comparative cross -sectional analysis across a symmetric 300 -300 
+
+μm bifurcation and an (rows i -p) asymmetric 300 -100 μm bifurcation, comparing MBs (rows a -d, i -l) to 
+
+NBs (rows e -h, m -p). (a, e, i, m) Super -resolved velocity maps at 0.03 mL min -1. ROIs mark the pre -
+
+bifurcation (white), post -bifurcation (blue), and branch (red) segments . Cross -sectional velocity profiles 
+
+are shown at (b, f, j, n) 0.01 mL min -1, (c, g, k, o) 0.03 mL min -1, (d, h, l, p) and 0.25 mL min -1. Axis 
+
+labels and flow rate annotations appear only in the top row (b -d). Solid lines : measured ULM velocity 
+
+profiles corresponding to the color -coded ROIs . Error bars represent ± SD across ROI axial positions 
+
+per radial bin .
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+Figure 7: Comparative perfusion distribution of NB versus MB. (a -c) Super -resolved velocity maps 
+
+for the three bifurcating phantom geometries. The central table lists the structural parameters and inlet 
+
+flow rates for each row. (d -l) Pie charts showing the fractional distribution of MBs between the branch 
+
+(red) and continuing main channel (blue). (m -u) Corresponding distribution s for NBs . Values represent 
+
+mean  ± standard deviation (n = 3 ). 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+# Discussion 
+
+To the best of our knowledge, this study presents the first demonstration of ULM using 
+
+sub -micron NBs as the primary contrast agent. Despite their substantially weaker acoustic 
+
+scattering compared with conventional MBs [5], [16] , NBs enabled accurate velocity 
+
+reconstruction, flow partitioning measurements, and trajectory tracking across all tested 
+
+phantom geometries. The close agreement between NB - and MB -based measurements 
+
+indicates that NBs can serve as reliable flow tracers fo r ULM within the inv estigated vessel 
+
+diameters (100 -500 μ m) Our results establish that NBs achieve hemodynamic mapping 
+
+accuracy and vascular partitioning ratios almost identical to those of traditional MBs within 
+
+100 -500 μm microvascular structures. The su ccessful implementation of NB -based ULM 
+
+highlights the importance of robust processing strategies when working with weakly scattering 
+
+contrast agents [16] . Reliable localization and tracking of NB signals was facilitated by the 
+
+ULM Master GUI, which provides an interactive environment for visualization and validation of 
+
+the processing pipeline .
+
+The comparison of tracking methodologies further demonstrated the importance of 
+
+predictive motion models for NB -based ULM. While Nearest Neighbor and Hungarian tracking 
+
+generated larger numbers of trajectories, these approaches produced shorter tracks and 
+
+increased fragmentation [33], [41] . In contrast, the Kalman Tracker with Smart Cost Matrix 
+
+(KT -SC) consistently yielded the lowest tortuosity values, ap proaching the ideal value of 1 
+
+observed for laminar flow. By incorporating motion prediction and trajectory -history 
+
+information, KT -SC improved track continuity and reduced false associations, particularly 
+
+under the high bubble densities required for NB imaging [35], [41] . These findings suggest that 
+
+predictive tracking strategies can improve trajectory continuity in high -density localization 
+
+datasets and may be beneficial for future NB -based ULM applications. 
+
+Several observations provide insight into the physical behavior of the phantom system 
+
+itself. The systematic underestimation of peak velocity observed at the hi ghest tested flow rate 
+
+(0.25 mL· min ⁻¹) is consistent with deformation of the gelatin channels under elevated internal 
+
+pressure [23], [28] . Applying the continuity equation to the measured 38% velocity reduction 
+
+predicts an effective increase in channel diameter from 300 μm to approximately 382 μm, 
+
+corresponding to a 27% dilation. This estimate is consistent with the compliant nature of 
+
+gela tin hydrogels and with the visible channel expansion observed during high -pressure 
+
+flushing [28] . Similarly, the velocity asymmetry observed at the nominally symmetric 
+
+bifurcation at high flow rates is consistent with flow redistribution at the junction, resulting in 
+
+preferential flow through the straight branch [22], [23] . Importantly, both phenomena were 
+
+observed consistently in the NB and MB datasets, supporting the conclusion that the 
+
+measured differences originated from the physical flow environment rather than from contrast -
+
+agent -specific effects or tracking artifacts .
+
+Several limitations should be considered when interpreting these results. First, the 
+
+validation experiments were performed in vessel -mimicking channels ranging from 100 to 500 
+
+μm in diameter. While these dimensions are relevant to small vessels and bifurca ting 
+
+microvascular structures, they remain substantially larger than true capillary networks where 
+
+differences arising from contrast -agent size may become more pronounced. Furthermore, the 
+
+investigated vessel diameters were near or above the acoustic diffr action limit, such that the 
+
+primary objective of this study was validation of NB localization and tracking rather than 
+
+demonstration of a unique super -resolution capability enabled by NBs. Consequently, the 
+
+present work establishes the feasibility and quan titative accuracy of NB -based ULM . Future 
+
+studies will employ advanced fabrication techniques, including selective laser melting and 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+powder -based 3D printing [28], [42], [43] , to generate vessel geometries approaching true 
+
+capillary dimensions [22], [44] , enabling direct evaluation of size -dependent differences 
+
+between MB and NB transport. Moreover , the present study was performed in blood vessel -
+
+mimicking phantoms. Translation to in vivo imaging will introduce additional challenges, 
+
+including increased tissue clutter, attenuation, and physiological motion [6] . Future studies will 
+
+therefore evaluate NB -based ULM in vivo and incorporate motion -compensation strategies to 
+
+account for respiratory, cardiac, and tissue motion [34], [45] . In addition , the origin of individual 
+
+localization events cannot be determined unequivocally. A detected signal may arise from a 
+
+single NB or from multiple closely spaced NBs whose echoes are unresolved by the imaging 
+
+system [46] . While the present study demonstrates reliable flow measurements despite this 
+
+ambiguity, its impact on localization accuracy and density estimation remains to be 
+
+systematically investigated. Finally, parameter optimization was performed interactively. 
+
+Although this approach provides flexibility across diverse datasets and imaging conditions, it 
+
+introduces operator dependence. Automated parameter -selection strategies and learning -
+
+based optimization approaches may reduce operator dependence and improve repro ducibility 
+
+across imaging platforms [47] .
+
+In terms of f uture directions , o ne particularly compelling application is the renal 
+
+glomerulus, whose dense capillary architecture presents a longstanding challenge for 
+
+conventional vascular imaging approaches [48] . Future studies will investigate whether NB -
+
+based ULM can improve visualization and quantification of glomerular microvascular structure 
+
+and density, potentially enabling non -invasive assessment of renal pathologies such as focal 
+
+segmental glomerulosclero sis [49], [50] . On the signal -processing side, future work will 
+
+explore advanced beamforming and coherence -based imaging approaches, including 
+
+Minimum Variance beamforming, Capon beamforming, and Short -Lag Spatial Coherence 
+
+imaging, which may further improve bubble -to -clutter contrast and enhance NB detectability 
+
+in low -SNR conditions [51] . Beyond lipid -shelled NBs, the framework developed here may also 
+
+be applicable to emerging classes of weakly scattering ultrasound contrast agents. In 
+
+particular, genetically encoded gas vesicles represent an intriguing opportunity for extending 
+
+localizat ion microscopy beyond vascular mapping toward molecularly targeted and genetically 
+
+encoded ultrasound imaging [52], [53] .
+
+# Conclusions 
+
+This work demonstrates the feasibility of performing ULM ith sub -micron NBs . Using custom 
+
+wall -less gelatin flow phantoms, NB -based ULM achieved velocity reconstruction, flow 
+
+partitioning, and tracking performance comparable to conventional microbubble -based ULM 
+
+across vessel geometries ranging from 100 to 500 μm. To facilitate p rocessing of low -SNR 
+
+NB datasets, we developed the ULM Master GUI, an interactive framework that integrates the 
+
+complete ULM processing pipeline and supports dataset -specific optimization. Together, 
+
+these results establish NBs as reliable flow tracers for localization microscopy and provide an 
+
+open -source framework for future investigations of NB -based ULM. 
+
+# Acknowledgements 
+
+This work was supported in part by the Israel Science Foundation under Grant 192/22, in part 
+
+by an ERC StG under Grant 101041118 (NanoBubbleBrain), the Israel Cancer Research Fund 
+
+(grant number 1286686), in part by the Alrov center for Digital Medicine, and in part by the 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+Nicholas and Elizabeth Slezak Super Center for Cardiac Research and Biomedical 
+
+Engineering at Tel Aviv University .
+
+Generative AI tools (Claude, Anthropic and Gemini, Google) were used to assist with language 
+
+editing and manuscript preparation. The authors reviewed and take full responsibility for all 
+
+content. 
+
+# Conflict of Interest 
+
+The authors declare no conflict of interest. 
+
+# Author contributions 
+
+G.S . designed and performed the research, analyzed the data, and wrote the paper. Y.G. and 
+
+M.B., assisted in experiments and data analysis. T.I. guided, advised, and designed the 
+
+research and wrote the paper. All authors approved the final manuscript. 
+
+# Code Availability 
+
+The ULM Super -Resolution Toolbox , comprising the end -to -end processing pipeline (clutter 
+
+filtering, sub -pixel localization, multi -algorithm tracking, and rendering) together with the ULM 
+
+Master GUI optimization platform , is available at: https://github.com/grisha1998/ulm -super -
+
+resolution -toolbox. The toolbox is implemented in MATLAB and includes full documentation .
+
+# Data availability 
+
+The datasets used in this study are available from the corresponding author on reasonable 
+
+request. 
+
+# References 
+
+[1] K. Christensen -Jeffries et al. , “Super -resolution Ultrasound Imaging,” Ultrasound Med. 
+
+Biol. , vol. 46, no. 4, pp. 865 –891, Apr. 2020, doi: 10.1016/j.ultrasmedbio.2019.11.013. 
+
+[2] O. M. Viessmann, R. J. Eckersley, K. Christensen -Jeffries, M. X. Tang, and C. Dunsby, 
+
+“Acoustic super -resolution with ultrasound and microbubbles,” Phys. Med. Biol. , vol. 58, 
+
+no. 18, p. 6447, Sep. 2013, doi: 10.1088/0031 -9155/58/18/6447. 
+
+[3] C. Errico et al. , “Ultrafast ultrasound localization microscopy for deep super -resolution 
+
+vascular imaging,” Nature 2015 527:7579 , vol. 527, no. 7579, pp. 499 –502, Nov. 2015, 
+
+doi: 10.1038/nature16066. 
+
+[4] O. Couture, V. Hingot, B. Heiles, P. Muleki -Seya, and M. Tanter, “Ultrasound 
+
+localization microscopy and super -resolution: A state of the art,” IEEE Trans. Ultrason. 
+
+Ferroelectr. Freq. Control , vol. 65, no. 8, pp. 1304 –1320, Aug. 2018, doi: 
+
+10.1109/TUFFC.2018.2850811. 
+
+[5] B. Helfield, Y. Zou, and N. Matsuura, “Acoustically -Stimulated Nanobubbles: 
+
+Opportunities in Medical Ultrasound Imaging and Therapy,” Front. Phys. , vol. 9, p. 
+
+654374, May 2021, doi: 10.3389/fphy.2021.654374. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+[6] S. Dencks et al. , “Super -Resolution Ultrasound: From Data Acquisition and Motion 
+
+Correction to Localization, Tracking, and Evaluation,” IEEE Trans. Ultrason. 
+
+Ferroelectr. Freq. Control , vol. 72, no. 4, pp. 408 –426, 2025, doi: 
+
+10.1109/TUFFC.2025.3543322. 
+
+[7] M. Sheth et al. , “Size matters: Micro - versus nanobubbles in ultrasound imaging and 
+
+therapy,” Science Advances , vol. 11, no. 29, p. 2177, Jul. 2025, doi: 
+
+10.1126/sciadv.ads2177. 
+
+[8] V. Hingot, C. Errico, B. Heiles, L. Rahal, M. Tanter, and O. Couture, “Microvascular flow 
+
+dictates the compromise between spatial resolution and acquisition time in Ultrasound 
+
+Localization Microscopy,” Scientific Reports 2019 9:1 , vol. 9, no. 1, pp. 2456 -, Feb. 
+
+2019, doi: 10.1038/s41598 -018 -38349 -x. 
+
+[9] S. Katz, R. Gattegno, L. Peko, R. Zarik, Y. Hagani, and T. Ilovitsh, “Diameter -dependent 
+
+assessment of microvascular leakage following ultrasound -mediated blood -brain 
+
+barrier opening,” iScience , vol. 26, no. 6, p. 106965, Jun. 2023, doi: 
+
+10.1016/j.isci.2023.106965. 
+
+[10] R. Gattegno, L. Arbel, N. Riess, H. Shinar, S. Katz, and T. Ilovitsh, “Enhanced capillary 
+
+delivery with nanobubble -mediated blood -brain barrier opening and advanced high 
+
+resolution vascular segmentation,” Journal of Controlled Release , vol. 369, pp. 506 –
+
+516, May 2024, doi: 10.1016/j.jconrel.2024.04.001. 
+
+[11] M. Bismuth, S. Katz, H. Rosenblatt, M. Twito, R. Aronovich, and T. Ilovitsh, “Acoustically 
+
+Detonated Microbubbles Coupled with Low Frequency Insonation: Multiparameter 
+
+Evaluation of Low Energy Mechanical Ablation,” Bioconjug. Chem. , vol. 33, no. 6, pp. 
+
+1069 –1079, Jun. 2021, doi: 10.1021/acs.bioconjchem.1c00203. 
+
+[12] M. Bismuth et al. , “Low frequency nanobubble -enhanced ultrasound mechanotherapy 
+
+for noninvasive cancer surgery,” Nanoscale , vol. 14, no. 37, pp. 13614 –13627, Sep. 
+
+2022, doi: 10.1039/d2nr01367c. 
+
+[13] E. C. Abenojar et al. , “Effect of Bubble Concentration on the in Vitro and in Vivo 
+
+Performance of Highly Stable Lipid Shell -Stabilized Micro - and Nanoscale Ultrasound 
+
+Contrast Agents,” Langmuir , vol. 35, no. 31, pp. 10192 –10202, Aug. 2019, doi: 
+
+10.1021/acs.langmuir.9b00462. 
+
+[14] T. Yin et al. , “Nanobubbles for enhanced ultrasound imaging of tumors,” Int. J. 
+
+Nanomedicine , vol. 7, pp. 895 –904, Feb. 2012, doi: 10.2147/IJN.S28830. 
+
+[15] R. Perera et al. , “Real Time Ultrasound Molecular Imaging of Prostate Cancer with 
+
+PSMA -targeted Nanobubbles,” bioRxiv , p. 634444, May 2019, doi: 10.1101/634444. 
+
+[16] K. T. Karlinsky, M. Bismuth, R. Aronovich, and T. Ilovitsh, “Nonlinear Frequency Mixing 
+
+Ultrasound Imaging of Nanoscale Contrast Agents,” IEEE Trans. Biomed. Eng. , vol. 71, 
+
+no. 3, pp. 866 –875, Mar. 2024, doi: 10.1109/TBME.2023.3321743. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+[17] D. Wegierak et al. , “Nanobubble Contrast Enhanced Ultrasound Imaging: A Review,” 
+
+Wiley Interdiscip. Rev. Nanomed. Nanobiotechnol. , vol. 16, no. 6, p. e2007, Nov. 2024, 
+
+doi: 10.1002/wnan.2007. 
+
+[18] Y. Wang et al. , “Molecular imaging of orthotopic prostate cancer with nanobubble 
+
+ultrasound contrast agents targeted to PSMA,” Scientific Reports 2021 11:1 , vol. 11, 
+
+no. 1, pp. 4726 -, Feb. 2021, doi: 10.1038/s41598 -021 -84072 -5. 
+
+[19] J. Du, X. Y. Li, H. Hu, L. Xu, S. P. Yang, and F. H. Li, “Preparation and Imaging 
+
+Investigation of Dual -targeted C3F8 -filled PLGA Nanobubbles as a Novel Ultrasound 
+
+Contrast Agent for Breast Cancer,” Scientific Reports 2018 8:1 , vol. 8, no. 1, pp. 3887 -
+
+, Mar. 2018, doi: 10.1038/s41598 -018 -21502 -x. 
+
+[20] G. Zhang et al. , “Nanodroplet -Based Super -Resolution Ultrasound Localization 
+
+Microscopy,” ACS Sens. , vol. 8, no. 9, pp. 3294 –3306, Sep. 2023, doi: 
+
+10.1021/acssensors.3c00418. 
+
+[21] G. Zhang et al. , “Fast acoustic wave sparsely activated localization microscopy: 
+
+Ultrasound super -resolution using plane -wave activation of nanodroplets,” IEEE Trans. 
+
+Ultrason. Ferroelectr. Freq. Control , vol. 66, no. 6, pp. 1039 –1046, Jun. 2019, doi: 
+
+10.1109/TUFFC.2019.2906496. 
+
+[22] Y. Gershman, G. Shapiro, T. Mano, and T. Ilovitsh, “Flow Analysis in Pathological 
+
+Microvascular Models by Ultrasound Localization Microscopy,” Adv. Mater. Technol. ,
+
+vol. 10, no. 19, p. e02208, Oct. 2025, doi: 10.1002/admt.202402208. 
+
+[23] T. Mano, T. Grutman, and T. Ilovitsh, “Versatile Ultrasound -Compatible Microfluidic 
+
+Platform for In Vitro Microvasculature Flow Research and Imaging Optimization,” ACS 
+
+Omega , vol. 8, no. 50, pp. 47667 –47677, Dec. 2023, doi: 10.1021/acsomega.3c05849. 
+
+[24] A. Jafari Sojahrood et al. , “Toward Precisely Controllable Acoustic Response of Shell -
+
+Stabilized Nanobubbles: High Yield and Narrow Dispersity,” ACS Nano , vol. 15, no. 3, 
+
+pp. 4901 –4915, Mar. 2021, doi: 10.1021/acsnano.0c09701. 
+
+[25] L. Peko, S. Katz, R. Gattegno, and T. Ilovitsh, “Protocol to assess extravasation of 
+
+fluorescent molecules in mice after ultrasound -mediated blood -brain barrier opening,” 
+
+STAR Protoc. , vol. 5, no. 1, p. 102770, Mar. 2024, doi: 10.1016/j.xpro.2023.102770. 
+
+[26] M. Bismuth, M. Eck, and T. Ilovitsh, “Nanobubble -mediated cancer cell sonoporation 
+
+using low -frequency ultrasound,” Nanoscale , vol. 15, no. 44, pp. 17899 –17909, Nov. 
+
+2023, doi: 10.1039/d3nr03226d. 
+
+[27] E. P. Nordberg and T. J. Hall, “Effective scatterer diameter estimates for broad scatterer 
+
+size distributions,” Ultrason. Imaging , vol. 37, no. 1, pp. 3–21, Jan. 2015, doi: 
+
+10.1177/0161734614534399. 
+
+[28] S. Adusei, R. Ternifi, M. Fatemi, and A. Alizad, “Custom -made flow phantoms for 
+
+quantitative ultrasound microvessel imaging,” Ultrasonics , vol. 134, p. 107092, Sep. 
+
+2023, doi: 10.1016/j.ultras.2023.107092. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+[29] P. Chen et al. , “Acoustic characterization of tissue -mimicking materials for ultrasound 
+
+perfusion imaging research,” Ultrasound Med. Biol. , vol. 48, no. 1, pp. 124 –142, Jan. 
+
+2022, doi: 10.1016/j.ultrasmedbio.2021.09.004. 
+
+[30] B. Huang, J. Yan, M. Morris, V. Sinnett, N. Somaiah, and M. X. Tang, “Acceleration -
+
+Based Kalman Tracking for Super -Resolution Ultrasound Imaging in Vivo,” IEEE Trans. 
+
+Ultrason. Ferroelectr. Freq. Control , vol. 70, no. 12, pp. 1739 –1748, Dec. 2023, doi: 
+
+10.1109/TUFFC.2023.3326863. 
+
+[31] C. Demené et al. , “Spatiotemporal Clutter Filtering of Ultrafast Ultrasound Data Highly 
+
+Increases Doppler and fUltrasound Sensitivity,” IEEE Trans. Med. Imaging , vol. 34, no. 
+
+11, pp. 2271 –2285, Nov. 2015, doi: 10.1109/TMI.2015.2428634. 
+
+[32] J. Baranger, J. Aguet, and O. Villemain, “Fast Thresholding of SVD Clutter Filter Using 
+
+the Spatial Similarity Matrix and a Sum -Table Algorithm,” IEEE Trans. Ultrason. 
+
+Ferroelectr. Freq. Control , vol. 70, no. 8, pp. 821 –830, Aug. 2023, doi: 
+
+10.1109/TUFFC.2023.3289235. 
+
+[33] B. Heiles, A. Chavignon, V. Hingot, P. Lopez, E. Teston, and O. Couture, “Performance 
+
+benchmarking of microbubble -localization algorithms for ultrasound localization 
+
+microscopy,” Nature Biomedical Engineering 2021 6:5 , vol. 6, no. 5, pp. 605 –616, Feb. 
+
+2022, doi: 10.1038/s41551 -021 -00824 -8. 
+
+[34] J. Foiret, H. Zhang, T. Ilovitsh, L. Mahakian, S. Tam, and K. W. Ferrara, “Ultrasound 
+
+localization microscopy to image and assess microvasculature in a rat kidney,” 
+
+Scientific Reports 2017 7:1 , vol. 7, no. 1, pp. 13662 -, Oct. 2017, doi: 10.1038/s41598 -
+
+017 -13676 -7. 
+
+[35] S. Tang et al. , “Kalman Filter -Based Microbubble Tracking for Robust Super -Resolution 
+
+Ultrasound Microvessel Imaging,” IEEE Trans. Ultrason. Ferroelectr. Freq. Control , vol. 
+
+67, no. 9, pp. 1738 –1751, Sep. 2020, doi: 10.1109/TUFFC.2020.2984384. 
+
+[36] P. Song et al. , “Improved Super -Resolution Ultrasound Microvessel Imaging with 
+
+Spatiotemporal Nonlocal Means Filtering and Bipartite Graph -Based Microbubble 
+
+Tracking,” IEEE Trans. Ultrason. Ferroelectr. Freq. Control , vol. 65, no. 2, p. 149, Feb. 
+
+2018, doi: 10.1109/TUFFC.2017.2778941. 
+
+[37] Y. Zhu et al. , “Velocity -Constraint Kalman Filtering for Enhanced Bubble Tracking in 
+
+Motion -Compensated Ultrasound Localization Microscopy,” Research , vol. 8, Jan. 
+
+2025, doi: 10.34133/research.0725. 
+
+[38] C. A. B. Smith, H. Wilson, J. Yan, and M. X. Tang, “Quantitative image markers of 
+
+super -resolution ultrasound,” EBioMedicine , vol. 124, p. 106108, Feb. 2026, doi: 
+
+10.1016/j.ebiom.2025.106108. 
+
+[39] M. Li et al. , “Super -resolution ultrasound localization microscopy for the non -invasive 
+
+imaging of human testicular microcirculation and its differential diagnosis role in male 
+
+infertility,” VIEW , vol. 5, no. 2, p. 20230093, Apr. 2024, doi: 10.1002/VIW.20230093. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+[40] S. Dencks and G. Schmitz, “Ultrasound localization microscopy,” Z. Med. Phys. , vol. 
+
+33, no. 3, pp. 292 –308, Aug. 2023, doi: 10.1016/j.zemedi.2023.02.004. 
+
+[41] I. Taghavi et al. , “Ultrasound super -resolution imaging with a hierarchical Kalman 
+
+tracker,” Ultrasonics , vol. 122, no. 18, p. 106695, May 2022, doi: 
+
+10.1016/j.ultras.2022.106695. 
+
+[42] S. J. Paulsen et al. , “Projection -based stereolithography for direct 3D printing of 
+
+heterogeneous ultrasound phantoms,” PLoS One , vol. 16, no. 12, p. e0260737, Dec. 
+
+2021, doi: 10.1371/journal.pone.0260737. 
+
+[43] M. L. Ommen et al. , “3D Printed Flow Phantoms with Fiducial Markers for Super -
+
+Resolution Ultrasound Imaging,” IEEE International Ultrasonics Symposium, IUS , vol. 
+
+2018 -October, Dec. 2018, doi: 10.1109/ULTSYM.2018.8580217. 
+
+[44] S. Kawara et al. , “Capillary -Scale Hydrogel Microchannel Networks by Wire 
+
+Templating,” Small , vol. 19, no. 42, p. 2301163, Oct. 2023, doi: 
+
+10.1002/smll.202301163. 
+
+[45] I. Taghavi, S. B. Andersen, C. A. V. Hoyos, M. B. Nielsen, C. M. Sorensen, and J. A. 
+
+Jensen, “In Vivo Motion Correction in Super -Resolution Imaging of Rat Kidneys,” IEEE 
+
+Trans. Ultrason. Ferroelectr. Freq. Control , vol. 68, no. 10, pp. 3082 –3093, Oct. 2021, 
+
+doi: 10.1109/TUFFC.2021.3086983. 
+
+[46] A. Xavier, H. Alarcon, and D. Espindola, “Characterization of Direct Localization 
+
+Algorithms for Ultrasound Super -Resolution Imaging in a Multibubble Environment: A 
+
+Numerical and Experimental Study,” IEEE Access , vol. 10, pp. 49991 –49999, 2022, 
+
+doi: 10.1109/ACCESS.2022.3173308. 
+
+[47] R. J. G. Van Sloun et al. , “Super -Resolution Ultrasound Localization Microscopy 
+
+through Deep Learning,” IEEE Trans. Med. Imaging , vol. 40, no. 3, pp. 829 –839, Mar. 
+
+2021, doi: 10.1109/TMI.2020.3037790. 
+
+[48] L. Denis et al. , “Sensing ultrasound localization microscopy for the visualization of 
+
+glomeruli in living rats and humans,” EBioMedicine , vol. 91, p. 104578, May 2023, doi: 
+
+10.1016/j.ebiom.2023.104578. 
+
+[49] S. Bodard et al. , “First clinical utility of sensing Ultrasound Localization Microscopy 
+
+(sULM): identifying renal pseudotumors,” Theranostics , vol. 15, no. 1, pp. 233 –244, 
+
+2025, doi: 10.7150/thno.100897. 
+
+[50] Q. Chen, J. Yu, B. M. Rush, S. D. Stocker, R. J. Tan, and K. Kim, “Ultrasound super -
+
+resolution imaging provides a noninvasive assessment of renal microvasculature 
+
+changes during mouse acute kidney injury,” Kidney Int. , vol. 98, no. 2, pp. 355 –365, 
+
+Aug. 2020, doi: 10.1016/j.kint.2020.02.011. 
+
+[51] K. Diamantis, T. Anderson, M. B. Butler, C. A. Villagomez -Hoyos, J. A. Jensen, and V. 
+
+Sboros, “Resolving ultrasound contrast microbubbles using minimum variance 
+
+beamforming,” IEEE Trans. Med. Imaging , vol. 38, no. 1, pp. 194 –204, Jan. 2019, doi: 
+
+10.1109/TMI.2018.2859262. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 15, 2026. ;https://doi.org/10.64898/2026.07.14.738435 doi: bioRxiv preprint
+
+[52] S. Zhang et al. , “The Vibration Behavior of Sub -Micrometer Gas Vesicles in Response 
+
+to Acoustic Excitation Determined via Laser Doppler Vibrometry,” Adv. Funct. Mater. ,
+
+vol. 30, no. 13, p. 2000239, Mar. 2020, doi: 
+
+10.1002/ADFM.202000239;REQUESTEDJOURNAL:JOURNAL:16163028;WGROUP: 
+
+STRING:PUBLICATION. 
+
+[53] A. Bar -Zion et al. , “Acoustically triggered mechanotherapy using genetically encoded 
+
+gas vesicles,” Nature Nanotechnology 2021 16:12 , vol. 16, no. 12, pp. 1403 –1412, Sep. 
+
+2021, doi: 10.1038/s41565 -021 -00971 -8. 
+
+# Table of Contents entry 
+
+Nanobubbles are established as a new class of contrast agents for ultrasound localization 
+
+microscopy. Using an interactive processing framework and biomimetic wall -less 
+
+microvascular phantoms, nanobubble -based imaging achieves accurate flow mapping and 
+
+vas cular partitioning, providing a foundation for super -resolution ultrasound imaging with 
+
+nanoscale acoustic contrast agents .

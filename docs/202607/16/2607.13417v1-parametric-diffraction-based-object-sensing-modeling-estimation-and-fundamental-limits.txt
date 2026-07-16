@@ -1,0 +1,1647 @@
+Title: Parametric Diffraction-Based Object Sensing: Modeling, Estimation, and Fundamental Limits
+
+URL Source: https://arxiv.org/pdf/2607.13417v1
+
+Published Time: Thu, 16 Jul 2026 00:44:23 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+<Society logo(s) and pub-lication title will appear here. >
+
+> Received XX Month, XXXX; revised XX Month, XXXX; accepted XX Month, XXXX; Date of publication XX Month, XXXX.
+> Digital Object Identifier 10.1109/XXXX.2022.1234567
+
+# Parametric Diffraction-Based Object Sensing: Modeling, Estimation, and Fundamental Limits 
+
+Jiaqi Xu 1, Björn Ottersten 2, Fellow, IEEE, and A. Lee Swindlehurst 1, Life Fellow, IEEE   
+
+> 1Department of Electrical Engineering & Computer Science, University of California Irvine, Irvine, CA 92617 USA
+> 2Interdisciplinary Centre for Security, Reliability and Trust, University of Luxembourg, L-1855 Luxembourg Corresponding author: A. Lee Swindlehurst (email: swindle@uci.edu).
+
+ABSTRACT This paper proposes a rigorous framework for sensing of environmental objects using diffraction mechanisms prevalent at wireless communication frequencies. Specifically, we develop a physics-consistent parameterized diffraction channel model, derive maximum likelihood (ML) approaches for estimating the blockage shape, range, and source directions of arrival (DoAs), and quantify fundamental performance limits via the Cramér–Rao bound (CRB). In our physics-based modeling, we integrate various approximations for the wave propagation (far-field, paraxial Fresnel, and exact near-field regimes), enabling a wide range of applicability. The underlying model is frequency-agnostic, and we derive Fresnel-number scaling laws that map the diffraction pattern, and hence the estimation problem, across carrier frequency, object size, and range. We quantify the maximum likelihood estimation performance and its relationship to the CRB, and we study the impact of the modeling approximations developed in this work. Numerical results demonstrate that ML estimators closely approach the CRB at moderate to high signal-to-noise ratio (SNR), and highlight the utility of diffraction-based modeling for high-fidelity blockage characterization. 
+
+INDEX TERMS Diffraction, wireless channel modeling, maximum likelihood estimation, shape estimation, millimeter-wave sensing, THz sensing, integrated sensing and communication (ISAC). 
+
+I. Introduction 
+
+Conventional wireless communication channel models either (i) assume unobstructed line-of-sight (LoS) paths or (ii) capture multipath through specular reflections and diffuse scattering. These abstractions neglect the rich diffraction phenomena produced by obstacles whose transverse dimension is on the order of a few wavelengths or more. Ignoring diffraction not only negatively affects coverage prediction, but also discards valuable geometric information that could be exploited for integrated sens-ing and communication (ISAC). When an object par-tially blocks the receive aperture, the Huygens-Fresnel principle predicts a gradual field transition, yielding Fresnel ripples that encode the object’s shape, range, and orientation. These signatures can be leveraged for sensing without wide-band radar waveforms or stringent transmitter-receiver synchronization. Diffraction modeling has a long history in classical electromagnetics, including the Fresnel and Fraunhofer integrals for diffraction field approximations and other methods from the Geometrical Theory of Diffraction (GTD) [1]. However, the models typically used for wire-less communications systems ignore such effects. Recent advances in ISAC, millimeter wave (mmWave) and THz sensing have begun to explore electromagnetic (EM)-based modeling of the radio environment, particularly for reflection-dominant scenarios [2]–[5]. Less work has concentrated on diffraction-dominant settings, which present unique opportunities and challenges. While diffraction typically reduces signal power, it provides geometric information about objects encountered by propagating signals. Prior studies on wedge diffraction [1] form the basis for edge-based channel modeling, yet do not fully address shape estimation, especially in near-field scenarios. In parallel, shape and direction-of-arrival (DoA) estimation have been extensively studied in radar and sonar [6], focusing on strong scattering or reflection points. Our work unifies these themes by developing a physics-based modeling approach, establishing perfor-mance bounds, and proposing an estimation algorithm  
+
+> This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/ VOLUME , 1arXiv:2607.13417v1 [eess.SP] 15 Jul 2026 Author et al.:
+
+for joint shape, range, and DoA under a physically consistent diffraction model. 
+
+> A. Related Work 1) Antenna Array Signal Processing
+
+Classical array signal processing has focused on far-field beamforming and DoA estimation using approaches such as the Minimum-Variance Distortionless-Response (MVDR) approach [7] and subspace-based methods such as the Multiple Signal Classification (MUSIC) algo-rithm [8]. Many of these methods can be cast in a subspace-fitting framework that, with proper weighting, are asymptotically equivalent to maximum likelihood (ML) estimation and yield performance that asymp-totically achieves the Cramér–Rao bound (CRB) [9]– [11]. This prior far-field-oriented work has assumed unobstructed Radio-Frequency (RF) propagation from the signal sources to the receiving antenna array, involv-ing models that only focus on signal parameters such as amplitude, DoA, polarization, etc., rather than the propagation environment itself. Instead, in this work we study diffraction-aware ML estimation of not only the signal parameters, but also parameters (e.g., shape, range, orientation) associated with objects in the envi-ronment that partially block the signals before reaching the array. In this sense, our approach takes the results of [9]–[11] to a new physical regime at mmWave/THz frequencies, bridging traditional array processing and emerging wireless sensing applications. 
+
+> 2) Near-Field Communications and Channel Modeling
+
+The move of communication systems to higher fre-quency bands has led to consideration of extremely large aperture arrays [12], whose radiating near-field region is large enough to encompass objects and communi-cation users [13]. Studies have developed non-uniform spherical wave and Green’s function based models [14] for LoS channels in such scenarios, as well as physi-cal propagation- or correlation-based stochastic models for non-LoS (NLoS) channels [15]. Simpler non-EM-oriented approaches have been proposed that account for blockages using shadow or mask-based “visibility regions” for the receive array, and algorithms have been developed for joint channel and shadow estimation [16]– [19]. However, except for that noted in the subsection below, relatively little work from the communications literature has focused on modeling reflecting/diffracting objects located within the near-field of a receiver array. 
+
+> 3) EM-Based Blockage Modeling in Wireless Channels
+
+Accurate blockage models require linking rigorous EM diffraction theory with tractable wireless-channel ab-stractions. A knife-edge diffraction (KED) model was used in [20] to go beyond the simple binary mask model for blockages noted above, but no attempt was made to use the diffraction pattern to sense the blockage. The most influential high-frequency model is the Uniform Geometrical Theory of Diffraction (UTD), which pro-vides closed-form expressions valid across reflection and shadow boundaries [21]. In [22], the authors compared KED, UTD, and physical-optics predictions against wireless channel data for randomly oriented blockers, finding that KED over-estimates loss when multiple curved edges interact. Most existing wireless studies either embed UTD/KED loss terms into ray-tracers or rely on empirical curve-fitting that hides the underlying EM structure, and thus these forward models cannot be directly inverted for sensing. In contrast, the blockage models we consider are based on Huygens principle and the Fresnel diffraction integral, which interpret every point on a wavefront as a secondary radiator whose spherical wavelets superimpose to form the next wavefront, providing a consistent approach for both near-and far-field propagation analysis. 
+
+> 4) Diffraction‐Based Imaging
+
+Unlike specular reflections which require a specific LoS geometry, edge diffraction can illuminate objects in deep shadow, and enable around-corner sensing. Recent work leverages these properties for high-resolution imaging, user localization, and ISAC. Early work on diffraction-based imaging focused on human-centric sensing. In [23], the authors used a double KED model to explain human blockages at 73 GHz and showed that diffracted energy contains stable geometric cues even when the LoS is fully obstructed. Diffraction can also assist positioning when strong reflections are absent, such as in [24] which leveraged the GTD and introduced an innovative approach for NLoS positioning. 
+
+> 5) Wave-Based Inverse Diffraction and Device-Free Sensing
+
+The present work is also connected to a broader literature on wave-based inverse imaging. Classical scalar diffraction theory and Fourier optics provide the Huygens–Fresnel, Fresnel, and Fraunhofer propagation models that underlie our diffraction-channel formulation [25], [26], and inverse diffraction problems have long been studied in optics through phase retrieval [27]– [30], diffraction tomography, and inverse EM scattering, which recover object structure, support, or material contrast from measured scattered fields [31]–[34]. The fundamental idea behind the GTD-based approach in [35] is similar to that explored in this paper, but a non-parametric scheme is employed to reconstruct the en-vironmental scene point-by-point, requiring prohibitive complexity. These works demonstrate that diffraction patterns contain recoverable geometric and phase infor-mation. However, they address optical or tomographic imaging settings and aim at finding dense field or contrast maps, whereas we consider scenarios where a low-dimensional parametric model is sufficient for char-acterizing blockage-induced diffraction. This approach  
+
+> 2VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+enables a relatively low-complexity joint estimation of the source DoAs and blockage parameters (range, shape, etc.) from wireless-array data with known or unknown communication waveforms. A body of complementary research exploits blockage effects for device-free sensing. In these approaches, ra-dio tomographic imaging is used to construct attenu-ation maps from received-signal-strength (RSS) mea-surements across many links [36], [37], in some cases with diffraction-inspired measurement models [38]. In addition, optical and RF NLoS systems recover hidden scenes or detect, track, and localize targets around corners from indirect propagation paths [39]–[41]. These studies reinforce the principle that non-specular wave phenomena provide useful scene information, but they generally rely on scalar RSS measurements and link-level attenuation models. In contrast, our framework uses the complex spatial field across an antenna array, and exploits the structured Fresnel diffraction pattern of partial blockages embedded in a physics-consistent array response, for parametric ML estimation and performance analysis. 
+
+> B. Motivations and Contributions
+
+Most ISAC schemes exploit specular reflections: an illuminating transmitter (TX) probes its surroundings and extracts range/angle information from echo sig-nals. Although powerful, such radar-style architectures typically require a large bandwidth and tight time-frequency synchronization between TX and receiver [42]. Existing models nearly always neglect the diffraction effects caused by blockages and rely on simple shadow- or mask-based functions, effectively zeroing out the received signal outside the visible regions. For objects whose size is on the order of or greater than several wavelengths, diffraction effects are strong and may dominate those due to reflection [43], producing a gradual field transition rather than an abrupt off-on shadow edge. This limita-tion of UTD/KED-based models hinders precise param-eter estimation as valuable geometrical information is lost in scenarios where diffraction cannot be ignored. By contrast, we develop a diffraction-based channel model that explicitly incorporates signal diffraction effects due to partial blockages using the Huygens-Fresnel integral. Table 1 positions our study within a simple taxon-omy. In terms of scene representation, one can use parametric models that concisely characterize the scene, or image-domain models to generate a pixel-based re-construction within the field of interest. In terms of physical mechanisms and depending on the dominating EM effects, sensing algorithms may focus on signal reflection, optical-based diffraction using UTD/KED, or wave-based diffraction using the Huygens-Fresnel integral. Classic radar sensing (upper-left cell) treats the target as one or a collection of point-like reflectors, whereas synthetic-aperture radar (SAR) (lower-left cell) reconstructs pixel maps but still assumes specular re-turns. Diffraction-aware sensing uses parametric models with UTD/KED coefficients or image-domain models for mmWave imaging. In the image domain, wave-based reconstruction that accounts for diffraction exists in optics and ultrasound in the form of diffraction tomography [31], [32], but it has not been formulated for wireless arrays with unknown source directions and communication waveforms. More importantly, no work occupies the upper-right cell, i.e., a Huygens-Fresnel kernel coupled with a low-order parametric model. Fill-ing this gap and analyzing its estimation limits is the main objective of this paper. We further emphasize that the resulting model is governed by the dimensionless Fresnel number F = d2/(λR ) rather than by the absolute carrier frequency. Identical diffraction signatures arise at microwave and at mmWave/THz frequencies for appro-priately scaled geometries (see Section VI-C), and the numerical studies in Section VI exploit this equivalence. Below we list the key contributions of this work: 
+
+• Physically-consistent diffraction channel modeling: Using the Huygens-Fresnel integral, we derive an-alytical expressions for the response vector of an array receiving far-field signals that encounter ar-bitrary planar blockages, and we provide closed-form kernels for far-field Fraunhofer and near-field paraxial regimes. 
+
+• Joint ML estimation of DoAs and blockage pa-rameters: Using B-spline, super-ellipse, or polygonal shape models, we parameterize the array response in terms of the blockage shape, range, and orientation, as well as the DoAs of the source signals. We then formulate ML algorithms for both conditional (de-terministic) and unconditional (stochastic) signal models that jointly estimate these parameters, and we derive the corresponding Cramér-Rao Bound (CRB) on the estimate variances. This analysis clarifies how estimation accuracy scales with SNR, carrier frequency, and array size. 
+
+• Numerical and full-wave validation: We conduct both synthetic experiments and full-wave simula-tions (Ansys HFSS) to verify the accuracy of the proposed diffraction model. The results demon-strate that the ML estimators provide accurate estimates of the blockage and DoA parameters that approach the CRB. We also demonstrate that the proposed approach can separate multiple laterally disjoint objects with different ranges. A preliminary version of this work was published in [47]. 
+
+> C. Paper Organization
+
+The remainder of the paper is organized as follows. Section II introduces the general diffraction channel model, while Section III discusses several closed-form results for blockages with canonical shapes and discusses           
+
+> VOLUME , 3Author et al.: TABLE 1. A two-dimensional taxonomy of sensing approaches.
+> Reflection Diffraction (UTD/KED) Diffraction (Huygens-Fresnel integral) Parametric models Radar sensing [44] Diffraction-aware sensing [23] This work Image-domain models Radar imaging [45] mmWave imaging [35], [46] Diffraction tomography (optics/ultrasound) [31], [32] Receive array Sources Blockages
+> FIGURE 1. Illustration of the considered scenario.
+
+numerical acceleration based on Babinet’s principle. Section IV presents the ML formulation for shape, range, and source DoA estimation, including various object parameterizations. Section V briefly derives the Cramér– Rao bounds and discusses some identifiability results. Simulation examples are provided in Section VI, and conclusions and future directions follow in Section VII. 
+
+II. Physically-Consistent Diffraction Channel Modeling 
+
+In this section, we derive a diffraction-based array response model for the scenario illustrated in Fig. 1, where a receive array observes one or more far-field sources whose LoS fields are partially blocked by objects located between the sources and the receive aperture. The key point is that a blockage does not simply create a binary visible/invisible region at the array. Instead, the field behind the blockage exhibits a structured diffraction pattern whose spatial variations depend on the object shape, range, and the source directions. We assume blockages that can be described by relatively low-dimensional models whose parameters uniquely corre-spond to the diffraction-induced spatial variations across the receive aperture. Throughout the paper, we denote the wavenumber by k0 = 2 π/λ and absorb the global phase and amplitude factors common to all receive antennas into the source waveform. 
+
+A. Aperture-Mask and Scalar Diffraction Model 
+
+As shown in Fig. 1, consider a planar object located in the plane z = 0 , parallel to the receive array, which lies in the plane z = R. A point on the object plane is denoted by 
+
+rs(x, y ) = [ x, y, 0] T ,
+
+and the position of the mth receive antenna is 
+
+rm = [ x′
+
+> m
+
+, y ′
+
+> m
+
+, R ]T .
+
+Let D(μ) ⊂ R2 denote the opaque cross-section of the blockage in the x-y plane, where μ denotes the set of parameters used to describe the physical characteristics of the blockage (to be described in detail later). We define the indicator function of the blockage by 
+
+χD (x, y ; μ) = 
+
+{
+
+1, (x, y ) ∈ D(μ),
+
+0, (x, y ) /∈ D(μ),
+
+and the corresponding aperture transmission function by 
+
+τ (x, y ; μ) = 1 − χD (x, y ; μ).
+
+Thus, τ = 0 inside the blockage and τ = 1 in the open region. This convention will be used throughout the paper. Let the kth source arrive from direction cosine vector 
+
+qk = [ qx,k , q y,k , q z,k ]T , qz,k =
+
+√
+
+1 − q2 
+
+> x,k
+
+− q2
+
+> y,k
+
+,
+
+where, for small angular offsets, one may take qx,k '
+
+sin θx,k and qy,k ' sin θy,k . The incident field on the blockage plane is modeled as the plane wave 
+
+U inc  
+
+> k
+
+(x, y ) = αk exp {jk 0 (qx,k x + qy,k y)} ,
+
+where αk is a complex source-dependent coefficient that is absorbed into the transmitted symbol. Under the scalar Huygens–Fresnel approximation, the diffracted field at the mth receive antenna is 
+
+Um,k =
+
+∫ ∫ 
+
+> R2
+
+τ (x, y ; μ)U inc  
+
+> k
+
+(x, y )K(rm, rs) dx dy, (1) where 
+
+K(rm, rs) = 1
+
+jλ 
+
+exp ( jk 0ρm(x, y )) 
+
+ρm(x, y ) Om(x, y ), (2) 
+
+ρm(x, y ) = ‖rm − rs(x, y )‖ (3) 
+
+= √(x′ 
+
+> m
+
+− x)2 + ( y′ 
+
+> m
+
+− y)2 + R2, (4) and Om(x, y ) denotes the obliquity factor. In the stan-dard paraxial regime considered below, Om(x, y ) ' 1,and the amplitude factor 1/ρ m(x, y ) is approximated by 
+
+1/R . The scalar model (1) is adopted under the following conditions: (i) the receive aperture lies in the paraxial region of the object, i.e., |x′ 
+
+> m
+
+− x|, |y′ 
+
+> m
+
+− y|  R; (ii) the object is (relatively) thin and opaque, with transverse dimension small relative to the range (later full-wave comparisons in Section VI indicate that the model remains accurate for d/R ≲ 0.3 and degrades appreciably by d/R = 1 /2); (iii) polarization effects and edge (fringe) currents on the object are neglected, which is a good approximation for strongly attenuating objects whose  
+
+> 4VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+dimensions exceed a few wavelengths, and a first-order approximation for lossy dielectric objects such as the human body, for which measured shadowing is typically deeper and smoother than knife-edge predictions [22], [43]; and (iv) the signal is narrowband relative to the carrier. When these conditions do not hold, more exact scalar or vector diffraction models (e.g., UTD or physical optics) or full-wave solvers can replace the kernel (2). The estimation framework developed in Sections IV and V is unaffected by such a substitution, since it requires only a differentiable forward model a(θ, μ).The corresponding array response matrix is 
+
+A(θ, μ) = [ a(θ1, μ), . . . , a(θK , μ)] ,
+
+where a(θk, μ) is the normalized field response due to the 
+
+kth source parameterized by DoA θk and the blockage parameters μ common to all sources. The received signal model is therefore 
+
+s(t) = A(θ, μ)x(t) + n(t), (5) where x(t) contains the complex source signals, including source-dependent propagation gains and common phase factors, and n(t) is additive noise. 
+
+> B. Paraxial Fresnel Model and Babinet Normalization
+
+When the lateral distances satisfy 
+
+|x′ 
+
+> m
+
+− x|  R, |y′ 
+
+> m
+
+− y|  R, 
+
+the propagation distance can be approximated by 
+
+ρm(x, y ) ' R + (x′ 
+
+> m
+
+− x)2 + ( y′ 
+
+> m
+
+− y)2
+
+2R . (6) Substituting (6) in (1) gives the Fresnel propagation formula 
+
+Um,k ' αkejk 0R
+
+jλR 
+
+∫ ∫ 
+
+> R2
+
+τ (x, y ; μ) exp {jk 0(qx,k x + qy,k y)}× exp 
+
+{
+
+j k0
+
+2R
+
+[(x′ 
+
+> m
+
+− x)2 + ( y′ 
+
+> m
+
+− y)2]}
+
+dx dy. 
+
+(7) It is useful to separate the unobstructed plane-wave array response from the diffraction-induced distortion. Completing the square in the phase of (7), and defining the source-dependent shifted receive coordinates 
+
+˜xm,k = x′ 
+
+> m
+
+− Rq x,k , ˜ym,k = y′ 
+
+> m
+
+− Rq y,k ,
+
+the unobstructed field corresponding to τ (x, y ) = 1 is proportional to 
+
+a(0)  
+
+> m,k
+
+= exp {jk 0(qx,k x′ 
+
+> m
+
++ qy,k y′
+
+> m
+
+)} ,
+
+where source-dependent constants independent of m
+
+have been absorbed into xk(t). The effect of the blockage can then be written as a multiplicative diffraction factor, 
+
+am(θk, μ) = a(0) 
+
+> m,k
+
+gm(θk, μ), (8) where 
+
+gm(θk, μ) = 1 − 1
+
+jλR 
+
+∫ ∫ 
+
+> D(μ)
+
+exp 
+
+{
+
+j k0
+
+2R
+
+[
+
+(x − ˜xm,k )2
+
++( y − ˜ym,k )2
+
+]}
+
+dx dy. (9) Eq. (9) follows directly from Babinet’s principle: the field behind an opaque object is the unobstructed field minus the field that would pass through an aperture with the same shape as the object. This approach avoids integration over the infinite open region and provides the desired normalization: 
+
+D = ∅ =⇒ gm = 1 .
+
+Thus, in the absence of a blockage, the response vector reduces to the ordinary plane-wave response vector. We now introduce dimensionless Fresnel coordinates 
+
+u =
+
+√ 2
+
+λR x, v =
+
+√ 2
+
+λR y, 
+
+and the shifted receive coordinates 
+
+u′ 
+
+> m,k
+
+=
+
+√ 2
+
+λR ˜xm,k , v′ 
+
+> m,k
+
+=
+
+√ 2
+
+λR ˜ym,k .
+
+Let Ds(μ, R ) denote the scaled version of the blockage: 
+
+Ds(μ, R ) = 
+
+{
+
+(u, v ) : 
+
+(√ λR 
+
+2 u, 
+
+√ λR 
+
+2 v
+
+)
+
+∈ D(μ)
+
+}
+
+.
+
+Then (9) becomes 
+
+gm(θk, μ) = 1 − 12j
+
+∫ ∫ 
+
+> Ds(μ,R )
+
+exp 
+
+{
+
+j π
+
+2
+
+[
+
+(u − u′
+
+> m,k
+
+)2
+
++( v − v′
+
+> m,k
+
+)2
+
+]} 
+
+du dv. (10) Equivalently, if τs(u, v ; μ, R ) = 1 − χDs (u, v ; μ, R ), then 
+
+gm(θk, μ) = 12j
+
+∫ ∫ 
+
+> R2
+
+τs(u, v ; μ, R ) (11) 
+
+× exp 
+
+{
+
+j π
+
+2
+
+[(u − u′
+
+> m,k
+
+)2 + ( v − v′
+
+> m,k
+
+)2]}
+
+du dv. 
+
+The two expressions are identical since 
+
+∫ ∫ 
+
+> R2
+
+exp 
+
+{
+
+j π
+
+2
+
+[(u − u′)2 + ( v − v′)2]}
+
+du dv = 2 j. 
+
+The finite-domain expression in (10) is usually more convenient numerically. 
+
+> C. Fraunhofer Approximation
+
+When the blockage dimensions are sufficiently small relative to the propagation distance, the quadratic phase terms over the object support may be neglected. More precisely, if aD is the maximum transverse dimension of the blockage, the Fraunhofer approximation is appropri-ate when 
+
+k0a2
+
+> D
+
+2R  1. 
+
+> VOLUME , 5Author et al.:
+
+Expanding the phase in (9) and neglecting terms pro-portional to x2 + y2 over D(μ) yields 
+
+gFF  
+
+> m
+
+(θk, μ) ' 1−
+
+exp 
+
+{
+
+j k0
+
+> 2R
+
+(˜x2 
+
+> m,k
+
++ ˜y2
+
+> m,k
+
+)} 
+
+jλR 
+
+×̂ χD
+
+( k0 ˜xm,k 
+
+R , k0 ˜ym,k 
+
+R
+
+)
+
+, (12) where ̂
+
+χD (κx, κ y ) = 
+
+∫ ∫ 
+
+> D(μ)
+
+e−j(κxx+κy y) dx dy 
+
+is the two-dimensional Fourier transform of the blockage indicator function. Thus, in the far field, the diffraction distortion is determined by the Fourier transform of the object shape. In the Fresnel regime, however, the quadratic phase over the object cannot be ignored, and the finite-domain Fresnel integral in (9) or (10) must be used. 
+
+D. Multiple Blockage Planes 
+
+The same notation also clarifies the extension to multiple blockage planes at different ranges. Suppose that the field propagates through B planes located at z =
+
+z1, . . . , z B , ordered from the source toward the receive array. Let τb(x, y ) denote the transmission function of the blockage in the bth plane. The field is updated by alternating free-space propagation and multiplication by the aperture mask: 
+
+U − 
+
+> b
+
+(x, y ) = P∆zb
+
+{U +
+
+> b−1
+
+(x, y )} (13) 
+
+U + 
+
+> b
+
+(x, y ) = τb(x, y )U − 
+
+> b
+
+(x, y ), (14) where P∆zb {·} denotes Fresnel or exact free-space prop-agation over the distance ∆zb between successive planes. The receive-array samples are obtained by one final propagation from the last blockage plane to z = R. This formulation ensures that each blockage acts on the field incident on its own plane, rather than imposing all masks at a single range. 
+
+III. Analytical Results based on Fresnel Integrals 
+
+Using the Fresnel/Babinet representation in (9)–(10), we can obtain closed-form analytical results for several canonical blockage geometries and finite-dimensional numerical integrations for more complicated shapes. In the following, we first present the straight-edge model illustrated in Fig. 2, then derive the rectangular-screen model illustrated in Fig. 3. The same Babinet-normalized convention is used in both cases. 
+
+A. Diffraction from a straight edge 
+
+Here, we assume the blockage is due to a semi-infinite screen located at z = 0 , as illustrated in Fig. 2(a). In this case, the vector of parameters reduces to μ = {yb, R },where yb is the y-coordinate of the diffraction edge and R     
+
+> (a) Blockage illustration. -0.5 00.5 11.5 2
+> Position y' (m)
+> 00.2 0.4 0.6 0.8 11.2
+> Normalized Gain
+> Analytical
+> Diffraction Edge
+> (b) Analytical gain variation.
+> FIGURE 2. Diffraction pattern of a straight edge.
+
+is the blockage range. The one-dimensional specialization of the diffraction factor in (8) reduces to 
+
+am(yb, R, θ ) = F
+
+[
+
+(sin θ − yb − y′
+
+> m
+
+rm
+
+)
+
+√ πr m
+
+λ
+
+]
+
+ejk 0y′   
+
+> msin θ
+
+,
+
+(15) where F (u) = 
+
+√ 2
+
+> π
+
+∫ ∞ 
+
+> u
+
+e−jv 2
+
+dv is the complex Fresnel integral, rm = √(yb − y′
+
+> m
+
+)2 + R2 is the distance from the mth receive antenna to the edge of the blockage, and y′ 
+
+> m
+
+is the coordinate of the mth receive antenna. In Fig. 2(b), we plot the amplitude of the received signal gain am for a straight edge at yb = 0 and one signal source with θ = (0 , 0) for a carrier frequency of 10 GHz and R = 10 m. We see that, due to diffraction effects, the signal power gradually increases when passing the shadow edge, then oscillates around the baseline value. According to (15), the position of the peak gain and the oscillation frequency depend on R.
+
+B. Diffraction of a Rectangular Screen 
+
+We next specialize (10) to a rectangular opaque object, as illustrated in Fig. 3(a). Let the blockage be centered at (xc, y c) with full width ∆x and full height ∆y , so that 
+
+D =
+
+[
+
+xc − ∆x
+
+2 , x c + ∆x
+
+2
+
+]
+
+×
+
+[
+
+yc − ∆y
+
+2 , y c + ∆y
+
+2
+
+]
+
+. 
+
+> 6VOLUME ,
+
+<Society logo(s) and publication title will appear here. >Signal sources           
+
+> (a) Blockage illustration. -1.5 -1 -0.5 00.5 11.5
+> Position x (m)
+> 00.2 0.4 0.6 0.8 11.2
+> Normalized Gain
+> Analytical
+> Edge ( x= 0.5 m)
+> Analytical
+> Edge ( x= 0.25 m)
+> (b) Analytical gain variation.
+> FIGURE 3. Diffraction pattern of a rectangle.
+
+In scaled Fresnel coordinates, the rectangle is 
+
+Ds = [ u1, u 2] × [v1, v 2],
+
+where 
+
+u1 =
+
+√ 2
+
+λR 
+
+(
+
+xc − ∆x
+
+2
+
+)
+
+, u2 =
+
+√ 2
+
+λR 
+
+(
+
+xc + ∆x
+
+2
+
+)
+
+,
+
+(16) 
+
+v1 =
+
+√ 2
+
+λR 
+
+(
+
+yc − ∆y
+
+2
+
+)
+
+, v2 =
+
+√ 2
+
+λR 
+
+(
+
+yc + ∆y
+
+2
+
+)
+
+.
+
+(17) For a source with direction cosine components (qx, q y ),the shifted receive coordinates are 
+
+u′ 
+
+> m
+
+=
+
+√ 2
+
+λR (x′ 
+
+> m
+
+− Rq x), v′ 
+
+> m
+
+=
+
+√ 2
+
+λR (y′ 
+
+> m
+
+− Rq y ).
+
+Substituting the rectangular support into (10), the obstruction term separates into the product of two one-dimensional Fresnel integrals: 
+
+grect  
+
+> m
+
+= 1 − 12j Iu(u′
+
+> m
+
+; u1, u 2)Iv (v′
+
+> m
+
+; v1, v 2), (18) where 
+
+Iu(u′
+
+> m
+
+; u1, u 2) = 
+
+∫ u2
+
+> u1
+
+exp 
+
+{
+
+j π
+
+2 (u − u′
+
+> m
+
+)2
+
+}
+
+du, (19) 
+
+Iv (v′
+
+> m
+
+; v1, v 2) = 
+
+∫ v2
+
+> v1
+
+exp 
+
+{
+
+j π
+
+2 (v − v′
+
+> m
+
+)2
+
+}
+
+dv. (20) For the standard Fresnel cosine and sine integrals 
+
+C(z) = 
+
+∫ z
+
+> 0
+
+cos 
+
+( π
+
+2 t2
+
+)
+
+dt S(z) = 
+
+∫ z
+
+> 0
+
+sin 
+
+( π
+
+2 t2
+
+)
+
+dt, 
+
+define 
+
+Cu = C(u2 − u′
+
+> m
+
+) − C(u1 − u′
+
+> m
+
+) (21) 
+
+Cv = C(v2 − v′
+
+> m
+
+) − C(v1 − v′
+
+> m
+
+). (22) and similarly Su and Sv for the sine integral. Then 
+
+Iu = Cu + jS u, Iv = Cv + jS v .
+
+Therefore, the normalized diffraction factor for the rectangular blockage can be written explicitly as 
+
+grect  
+
+> m
+
+= 1 − 12 (CuSv + SuCv ) + j 12 (CuCv − SuSv ) .
+
+(23) The full array response for the mth receive antenna then becomes 
+
+am(θ, μ) = exp {jk 0(qxx′ 
+
+> m
+
++ qy y′
+
+> m
+
+)} grect  
+
+> m
+
+,
+
+up to source-dependent constants that are absorbed into the transmitted symbol. When the blockage is absent, 
+
+D = ∅, we have IuIv = 0 and hence grect  
+
+> m
+
+= 1 . Thus the model reduces to the conventional plane-wave response vector. Figure 3(b) plots the resulting received-signal magnitude for two different rectangle widths, showing that the gain variation between and around the shadow edges is strongly shape-dependent. 
+
+C. Computational Use of Babinet’s Principle 
+
+The finite-domain formulations above are the computa-tional form of Babinet’s principle. In this convention, D
+
+denotes the opaque region, τ = 1 − χD the aperture transmission mask, and the field behind the object is obtained by subtracting the field that would pass through an aperture with the same support D from the unobstructed field. This avoids numerical integration over the unbounded open region ¯D and enforces the normalization gm = 1 when no blockage is present. The examples in Figs. 2 and 3 both use this normalization. The source DoAs enter through the shifted Fresnel coordinates x′ 
+
+> m
+
+− Rq x and y′ 
+
+> m
+
+− Rq y , so the diffraction pattern depends on the DoAs not only through the conventional response vector phase, but also through a lateral displacement of the Fresnel pattern across the receive aperture. 
+
+IV. Shape Parameterization and Estimation 
+
+For more complicated blockage shapes, generic parame-terizations beyond those for straight-edge and rectangu-lar objects are needed. In the following, we describe some standard shape parameterizations, and then present the ML estimation framework for source DoAs and blockage parameters. 
+
+A. Superellipse Shape Parametrization 
+
+For symmetrically shaped objects, the superellipse family can be used to model the blockage contour with a few generic parameters. Mathematically, the superellipse is  
+
+> VOLUME , 7Author et al.:
+
+defined as a set of points on the curve that satisfy the following equation: 
+
+( |˜x|
+
+a
+
+)2n
+
++
+
+( |˜y|
+
+a β 
+
+)2n
+
+≤ 1, (24) where (˜ x, ˜y) are local coordinates after translation to 
+
+(x0, y 0) and rotation by ϕ:
+
+(˜x
+
+˜y
+
+)
+
+=
+
+( cos ϕ sin ϕ
+
+− sin ϕ cos ϕ
+
+) ( x − x0
+
+y − y0
+
+)
+
+. (25) The shape parameters to estimate for this model are thus: { x0, y 0, a, β, ϕ, n }.
+
+• x0, y 0: center coordinates, 
+
+• a: scale (semi-axis in local u), 
+
+• β: aspect ratio, 
+
+• ϕ: rotation angle, 
+
+• n: superellipse exponent. As shown in Fig. 4(b), this yields a family of shapes from nearly circular ( n ≈ 1, β ≈ 1) to rectangular ( n > 1). 
+
+B. B-Spline Parameterization 
+
+To represent the shape of an arbitrary two-dimensional closed geometry, we can employ a cubic B-spline pa-rameterization. Suppose we have NB control points 
+
+{P1, P2, . . . , PNB } in the plane, where each Pi is a 2D vector (xi, y i)⊤. A cubic B-spline curve C(t) of length 
+
+NB in the parametric domain ξ ∈ [0 , N B ] can be written as: 
+
+C(ξ) =  
+
+> NB+3
+
+∑
+
+> i=1
+
+˜Pi Bi(ξ), (26) where Bi(ξ) are the standard B-spline basis functions, and { ˜Pi} is a set of control points. To form a closed loop, we replicate the first three control points at the end to create a periodic uniform B-spline that smoothly con-nects the end to the beginning. Figure 4(a) depicts the cubic B-spline defined by six distinct control points, and illustrates the smooth closed shape formed by the pa-rameterization. Increasing the number of control points 
+
+NB enables the representation of more intricate geome-tries with finer local detail. However, it simultaneously increases the complexity of the spline representation and imposes stricter identifiability constraints, requiring careful consideration in practical scenarios where shape estimation or fitting accuracy are critical. 
+
+C. Polygonal Shape Parametrization 
+
+Another simple shape parameterization is the polyg-onal model, which directly uses the NB locations of the polygon’s vertices. This model requires 2NB shape parameters corresponding to the x and y coordinates of these vertices. For both this and the B-spline method, the model order NB must either be known or determined from the data. One approach for doing this is the sequential likelihood ratio test, which is analogous to -1.5 -1 -0.5 0 0.5 1 1.5 2 2.5            
+
+> -1.5 -1 -0.5 00.5 11.5 2B-spline
+> Control points
+> (a) B-spline parameterization model. -1 -0.8 -0.6 -0.4 -0.2 00.2 0.4 0.6 0.8 1
+> -0.6 -0.4 -0.2 00.2 0.4 0.6
+> n = 5
+> n = 3
+> n = 2
+> n = 1
+> n = 0.7
+> (b) Superellipse model.
+> FIGURE 4. Illustration of parameterized shape models.
+
+the model order selection problem of determining the number of blockages discussed at the end of Section IV-E. A detailed treatment for solving this problem is left for future work. 
+
+D. ML Estimation of DoAs and Blockage Parameters 
+
+Let 
+
+γ ≜ [θT μT]T
+
+denote the vector of parameters to be estimated, includ-ing the source DoAs θ and the blockage parameters μ.For snapshot t, the received vector is 
+
+st = A(γ)xt + nt, nt ∼ CN (0, σ 2IM ), (27) where σ2 denotes the noise variance. The set Cγ defines feasible values for the parameters and includes physi-cal constraints such as positive ranges, positive object dimensions, admissible aspect ratios and orientations, non-self-intersecting polygonal or spline contours, etc. We are assuming scenarios in which the source and blockage parameters can be uniquely identified from the array response. This will likely be the case when large arrays are deployed and there are a small number of blockages with a low-dimensional parameterization. A thorough investigation of the identifiability conditions is beyond the scope of the paper and may be difficult to obtain. However, by numerical evaluation of the  
+
+> 8VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+CRB, which will be developed below, we can assess the identifiability for specific scenarios by observing the rank or condition number of the Fisher information matrix. For brevity, in what follows we will often write A(γ) as simply A.
+
+> 1) Deterministic, or Conditional, ML Model
+
+The deterministic ML model treats the source signals 
+
+{xt}Nt=1 as unknown deterministic parameters [48]. Con-ditioned on γ and {xt}, the likelihood is       
+
+> Ld(γ,{xt}, σ 2) = 1(πσ 2)M N exp
+> (
+> −1
+> σ2
+> N∑
+> t=1
+> ∥st−A(γ)xt∥22
+> )
+> .
+> (28)
+
+For the deterministic ML model, the noise variance can be treated as either known or unknown without any impact on estimating γ. For a fixed γ, the ML estimate of the signal vector is simply the least-squares estimate ̂
+
+xt(γ) = A†(γ)st, A† = (AHA)−1 AH, (29) provided that A has full column rank. Substituting (29) into (28) yields the concentrated criterion 
+
+Jd(γ) = 
+
+> N
+
+∑
+
+> t=1
+
+∥∥P⊥
+
+> A
+
+(γ)st
+
+∥∥22 , P⊥ 
+
+> A
+
+= IM −A(AHA)−1AH.
+
+(30) The conditional ML estimate is ̂
+
+γd = arg min 
+
+> γ∈C γ
+
+Jd(γ). (31) 
+
+> 2) Stochastic, or Unconditional, ML Model
+
+The stochastic ML model treats the source symbols as zero-mean i.i.d. random vectors with covariance Rx  0.Then 
+
+st ∼ CN (0, Rs) (32) 
+
+Rs(γ, Rx, σ 2) = A(γ)RxAH(γ) + σ2IM . (33) For N independent snapshots, the likelihood is 
+
+Ls(γ, Rx, σ 2) = 1
+
+πM N det( Rs)N exp 
+
+(
+
+−
+
+> N
+
+∑
+
+> t=1
+
+sH 
+
+> t
+
+R−1 
+
+> s
+
+st
+
+)
+
+.
+
+(34) Equivalently, after defining the sample covariance ̂
+
+Rs = 1
+
+N
+
+> N
+
+∑
+
+> t=1
+
+stsH 
+
+> t
+
+, (35) the stochastic model results in the objective 
+
+Js(γ, Rx, σ 2) = N log det Rs + N tr 
+
+{
+
+R−1
+
+> s
+
+̂ Rs
+
+}
+
+, (36) and the stochastic ML estimate is therefore obtained from the constrained optimization problem 
+
+(̂ γs,̂ Rx,̂ σ2) = arg min  
+
+> γ∈C γ,
+> Rx⪰0, σ 2>0
+
+Js(γ, Rx, σ 2). (37) If Rx and σ2 are unknown, they can be estimated in closed form for fixed gamma and resubstituted in (37) to form a concentrated objective function in terms of γ
+
+alone [10]. 
+
+> 3) Numerical Optimization
+
+Both ML approaches lead to nonconvex optimization problems since the response matrix depends nonlinearly on γ. Projected gradient or quasi-Newton iterations can be used to find local minima: 
+
+γ(ℓ+1) = Π Cγ
+
+[
+
+γ(ℓ) − αℓ∇γ J(γ(ℓ))
+
+]
+
+, (38) where J denotes the ML criteria in either (30) or (36), 
+
+αℓ > 0 is found via a line search, and ΠCγ is a projection onto the feasible parameter set. If analytical derivatives of the diffraction response are unavailable, the gradients can be approximated using central differences. The iterations are stopped when the relative decrease in J
+
+falls below a tolerance or when a prescribed iteration limit is reached. 
+
+> E. Shape Initialization
+
+A good initial estimate for μ significantly increases the likelihood of convergence to the global optimum. To discuss how to find such an initialization, let Uij (x′, y ′)
+
+denote the diffraction field measured by the receive antenna located at (x′
+
+> i
+
+, y ′ 
+
+> j
+
+). Taking a triangle blockage as an example, the task is to obtain an initial guess for the three vertices that define the Object: μ(0) =(x1, y 1, x 2, y 2, x 3, y 3)⊤.We first threshold the magnitude of the received data to extract a crude contour. Define the normalized receive magnitude 
+
+Mij =
+
+∣∣Uij 
+
+∣∣−Mmin 
+
+Mmax − Mmin 
+
+, (39) where Mmin = min i,j 
+
+∣∣Uij 
+
+∣∣ and Mmax = max i,j 
+
+∣∣Uij 
+
+∣∣.Since the magnitude drops near the shadow edge, we consider the window [ τmin , τ max ] ⊂ (0 , 1) and idenfity the elements that correspond to the shadow edge using a binary mask E:
+
+Eij =
+
+{
+
+1, τmin ≤ Mij ≤ τmax ,
+
+0, otherwise . (40) Second, using the 8-connected border-tracing algo-rithm [49], we find the largest connected component in E and extract its outer boundary, denoted as ∂E .Let {qℓ}Nh 
+
+> ℓ=1
+
+be the vertices of Hull( ∂E ). We can then select suitable initial vertices by fitting the polygon to the boundary points. Fig. 5 shows an example of the above procedures for a 20 × 20 UPA receive array subect to a triangular blockage. We choose suitable threshold values and then extract a closed contour illustrated by the solid pink line. After selecting three vertices, the initial guess is obtained as the black triangle. Fig. 5 illustrates that non-RF-informed image processing can only provide a crude estimate of the blockage shape without exploiting information about the diffraction field.        
+
+> VOLUME , 9Author et al.: -0.15 -0.1 -0.05 00.05 0.1 0.15
+> -0.05 00.05 0.1 0.15
+> 00.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1
+> Threshold boundary
+> True shape
+> Initial guess
+> Initial vertices
+> FIGURE 5. Illustration of shape initialization process.
+
+V. Cramér–Rao Bound Analysis 
+
+To characterize the fundamental limits for estimating 
+
+γ = [ θT μT]T, we use the CRB corresponding to the assumed ML model [6], [10], [48], [50]. The bounds corresponding to the DoA and shape parameters can be found from 
+
+CRB( θ) = (Fθθ − Fθμ F−1 
+
+> μμ
+
+Fμθ 
+
+)−1
+
+CRB( μ) = (Fμμ − Fμθ F−1 
+
+> θθ
+
+Fθμ 
+
+)−1 , (41) which are Schur complements of the partitioned Fisher Information Matrix (FIM) [50]: 
+
+Fγγ =
+
+[Fθθ Fθμ 
+
+Fμθ Fμμ 
+
+]
+
+. (42) 
+
+A. Deterministic and Stochastic CRBs 
+
+For the deterministic ML model, for each snapshot we define the Jacobian 
+
+Bt =
+
+[ ∂A
+
+∂γ 1
+
+xt, . . . , ∂A
+
+∂γ Pγ
+
+xt
+
+]
+
+∈ CM ×Pγ , (43) where Pγ is the total number of parameters. The FIM for 
+
+γ is given by the standard conditional-model result [48] 
+
+Fd 
+
+> γγ
+
+= 2
+
+σ2 Re 
+
+{ N∑
+
+> t=1
+
+BH 
+
+> t
+
+P⊥
+
+> A
+
+Bt
+
+}
+
+, (44) with P⊥ 
+
+> A
+
+as in (30). Only the components of the parameter derivatives that lie outside the column space of A carry information about γ.For the stochastic ML model, the FIM for known Rx
+
+and σ2 is given by the Slepian–Bangs formula for proper complex Gaussian data [50], [51]: 
+
+[Fs 
+
+> γγ
+
+]ij = N tr 
+
+{
+
+R−1 
+
+> s
+
+˙RiR−1 
+
+> s
+
+˙Rj
+
+}
+
+, ˙Ri ≜ ∂Rs
+
+∂γ i
+
+. (45) In either case, the CRBs for θ and μ follow by partition-ing the FIM as in (42) and applying (41). The case when 
+
+Rx or σ2 are unknown is not explicitly considered here, but follows from an analysis identical to that in [10], where it is further shown that the stochastic CRB is a tighter bound than in the deterministic case as the number of snapshots, N , increases. The only model-specific components in (44) and (45) are the derivatives ∂A/∂γ i. For a rectangular blockage, these are available in closed form by differentiating (8), (18), and (23); for B-spline, superellipse, and polygo-nal parameterizations, they are computed by numerical differentiation of the finite-domain Fresnel integral (10). 
+
+B. Identifiability of Object Scale and Range 
+
+The Fresnel/Babinet representation (10) reveals a struc-tural near-ambiguity between the overall transverse scale of the object and its range, which the CRB machinery above quantifies. Suppose the blockage parameters are decomposed into an overall transverse scale s (e.g., the width d of a rectangle) and scale-free shape parameters, and consider the one-parameter family of transforma-tions 
+
+s 7 → αs, R 7 → α2R, α > 0, (46) which leaves the Fresnel number F = d2/(λR ), and hence the scaled support Ds(μ, R ), unchanged. Under (46), the shifted receive coordinate of a broadside source scales as 
+
+u′ 
+
+> m,k
+
+7 → u′
+
+> m,k
+
+/α ; the identical Fresnel pattern is merely dilated by the factor α across the fixed physical aperture. Unambiguously resolving s and R is therefore achieved only by (i) this dilation of the pattern relative to the fixed array geometry, and (ii) the DoA-dependent lateral offsets Rq x,k and Rq y,k , which transform differently un-der (46) for oblique sources. When the aperture captures only a few Fresnel oscillations, i.e., when the aperture is small in the dimensionless coordinate u = √2/(λR ) x,the columns of the Jacobian columns ∂a/∂s and ∂a/∂R 
+
+become nearly collinear, the Schur complements in (41) become ill-conditioned, and the CRBs for scale and range grow even at high SNR (see Fig. 14(c) in the simulation section, where the range CRB grows with R
+
+as the diffraction features flatten across the aperture). The conditioning improves with electrically larger aper-tures, with multiple sources at distinct DoAs, and with wideband measurements, since F ∝ 1/λ varies across frequency and breaks the invariance in (46). We note that the ambiguity would be exact only if the receive aperture were scaled together with the geometry, as in the uniform scaling law of Section VI-C. For a fixed physical aperture, it manifests itself as ill-conditioning rather than exact nonidentifiability. 
+
+VI. Simulation Results and Discussion 
+
+In this section, we provide simulation results to validate the proposed diffraction model and evaluate the ML estimation performance for the blockage parameters. 
+
+A. Simulation Setup 
+
+We consider far-field transmitters illuminating an ob-stacle with cross-section σ(u, v ) at range R0 from an 
+
+M -element receive array configured as either a Uniform  
+
+> 10 VOLUME ,
+
+<Society logo(s) and publication title will appear here. >
+
+Linear Array (ULA) or a Uniform Planar Array (UPA) with half-wavelength antenna spacing. The studies below use carrier frequencies between 
+
+5.9 and 50 GHz. Since the paraxial diffraction pattern depends on the scene geometry only through the Fresnel number F = d2/(λR ) and the dimensionless aperture coordinates (Section VI-C), each configuration below is therefore representative of an entire equivalence class of scenarios at other carrier frequencies. For example, the 6 GHz shape-estimation scenario of Section VI-D (a ∼ 10 cm object at R = 0 .4 m) produces the same diffraction pattern, up to a lateral dilation, as a 
+
+10 cm object at approximately 6.7 m from the array at 100 GHz, provided the receive aperture spans the same range of dimensionless coordinates. The lower carrier frequencies used here keep the full-wave HFSS validations computationally tractable. 
+
+B. Validation of the Diffraction Model 
+
+To verify the diffraction model, we compare the analyt-ical received field to a full-wave simulation via finite element methods. Fig. 6 illustrates an Ansys high-frequency structure simulator (HFSS) setup for full-wave simulation of signal diffraction from a rectangular prism. The width of the prism is 5 mm, which is negligible compared to its other dimensions. As shown in Fig. 6(a), a 50 GHz plane wave impinges on the object with a 45 ◦ DoA. As the signal is partially blocked by the perfectly conducting object, a diffraction pattern is created and the complex magnitude of the electric field fluctuates near the shadow edges. In Fig. 6(b), we see that the analytical model given in (8) closely matches the simulation results. Due to the finite boundary limitation in HFSS, some discrepancies occur around the extreme points of the electric field magnitude, but the mean amplitude difference across the array is less than about 1 dB. In Section II, we assumed an infinitesimally thin pla-nar blockage to derive the analytical diffraction model. However, a blockage with finite width may induce a slightly different diffraction pattern. In Fig. 7(a), we cal-culate the analytical diffraction pattern for a 2D aperture with a non-negligible width in the z-dimension under normal signal incidence. Due to the periodic boundary requirements in HFSS, we ensure that the setup is trans-lational in the x-direction and observe the diffraction pattern over a ULA in the y-direction. Fig. 7(b) shows the relative root mean square error (RMSE) between the HFSS simulation and the analytical solution. When 
+
+d = 5 mm and d/R = 0 .07 → 0, the relative RMSE is around 2.6 × 10 −3. The HFSS simulation for this case (d = 5 mm) is shown in Fig. 6(b) and the discrepancy between the HFSS simulation and the analytical solution is mainly due to finite boundary limitation in HFSS. When d/R = 0.286 , the relative RMSE is around         
+
+> (a) HFSS setup. -80 -60 -40 -20 020 40 60 80
+> Position x (mm)
+> 00.2 0.4 0.6 0.8 11.2
+> Normalized Intensity
+> Analytical
+> Diffraction edge
+> HFSS
+> (b) Analytical model vs. HFSS.
+> FIGURE 6. Validation of the proposed analytical model using HFSS.
+
+2.9×10 −3, indicating that the proposed analytical model applies to scenarios where the width of blockage is small compared to the range. When d/R = 1 /2, the relative RMSE nearly doubles, indicating that a more accurate full-wave simulation may be required. 
+
+C. Fresnel Number and Scaling Laws 
+
+The physics-based diffraction channel model provides a powerful tool to understand how diffraction patterns scale with object size and range. Consider diffraction from a blockage with dimension d, e.g., a rectangular strip of width d, located at z = 0 whose diffraction pattern is observed by a ULA at z = R. In the following, we discuss the scaling behavior of signal diffraction pattern under either a global uniform scaling or aconstant-Fresnel number scaling. 
+
+1) Uniform Scaling 
+
+Based on the model in (1), the array response at a point 
+
+(x′, R ) on the linear array can be written as: 
+
+a(x′) ∝
+
+∫ d
+
+> 0
+
+e j 2πλ
+
+√(x−x′)2+R2
+
+R2 dx. (47)          
+
+> VOLUME , 11 Author et al.: 2D rectangular aperture
+> (a) HFSS setup. 0.071 0.286 0.500
+> 11.5 22.5 33.5 4
+> Relative RMSE
+> 10 -3
+> (b) Relative RMSE
+> FIGURE 7. Performance for blockages of different widths. -60 -40 -20 020 40 60
+> Position x (m)
+> 00.2 0.4 0.6 0.8 11.2
+> Complex Magnitude of E (V/m)
+> Edge
+> f = 10 GHz
+> f = 20 GHz
+> f = 10 GHz (scaled)
+> FIGURE 8. Scaling law validation via HFSS.
+
+A global scaling of all dimensions including λ by the factor α, i.e., 
+
+d 7 → α d, R 7 → α R, x′ 7 → α x ′, λ 7 → α λ, 
+
+leaves the diffraction integral invariant. Thus, the shape of the diffraction pattern is preserved up to a stretch in the transverse coordinate by the factor α.
+
+2) Constant-Fresnel Number Scaling 
+
+As long as a given blockage is within the Fresnel region of the receive array, keeping F = d2/(2 λ) constant ensures that the observed diffraction pattern remains the same. This is because, according to (8), within the paraxial field region the array response only depends on an integral over the scaled dimensionless coordinate 
+
+u =
+
+√ 2
+
+λ R x. (48) For a blockage with size d, the effective integral limit in 
+
+u-space is 
+
+d
+
+√ 2
+
+λ R ∝ √F . (49) Thus, the diffraction pattern depends on F and the dimensionless observation coordinate u. Preserving F
+
+ensures the same Fresnel diffraction pattern shape in u-space. Depending on how λ and R scale, the real-space pattern may stretch or compress. In particular, consider the two settings (d, λ, R ) and (d′, λ ′, R ′). The coordinate mapping that keeps the diffraction pattern constant is: 
+
+x′ = x
+
+√ λ′R′
+
+λR . (50) Thus, (i) if λ′R′ > λR , the pattern in x′-space is enlarged, (ii) if λ′R′ = λR , the pattern is the same size in x, and (iii) if λ′R′ < λR , the pattern is compressed. 
+
+3) HFSS validation 
+
+In Fig. 8, we use a full-wave simulation to verify the scaling laws discussed above for a ULA with arectangular blockage of width d. The black curve is the diffraction pattern for d = 20 cm, λ = 3 cm, and R = 0 .5
+
+m. The blue curve corresponds to a uniform scaling of 
+
+α = 0 .5, where d′ = 10 cm, λ = 1 .5 cm, and R = 0 .25 
+
+m. To see that the blue response is a compressed version of the one in black, we appropriately scale the black response and plot it as a dashed red line, which closely overlaps the blue response. Beyond providing physical insight, these scaling laws allow the estimation results reported in this section to be mapped directly to mmWave/THz configurations with the same Fresnel number, and they underlie the scale-range identifiability discussion in Section V-B. 
+
+D. Shape Estimation Performance 
+
+In Fig. 9, we employ the B-spline model of Section IV-B to image a triangular blockage with a 50 × 50 UPA. The source transmits at 6 GHz with normal incidence on the UPA, and the blockage is 0.4m from the UPA. In this case we assume the source DoA and blockage range are known, and we estimate the shape using the B-spline method with 4 vertices. The ML estimator is initialized with four control points around a circle centered at (0 , 0) with a diameter of 0.1 m. The algorithm then evaluates A(θ = 0 , μ) by numerical integration based on Babinet’s principle. Finally, gradient descent is performed to find the B-spline control point estimates. Fig. 9(a) plots the magnitude of the received signal on a linear scale, illustrating the oscillatory variations due to diffraction. Fig. 9(b) shows the true object shape in red,  
+
+> 12 VOLUME ,
+
+<Society logo(s) and publication title will appear here. >-0.15 -0.1 -0.05 0 0.05 0.1 0.15 
+
+> -0.15 -0.1 -0.05 00.05 0.1 0.15 0.2
+> 0.2 0.4 0.6 0.8 11.2
+
+(a) Received magnitude. -0.06 -0.04 -0.02 0 0.02 0.04 0.06  
+
+> 00.02 0.04 0.06 0.08 0.1 True Blockage Shape
+> Estimated B-spline Shape
+
+(b) True and estimated shapes. 
+
+> FIGURE 9. Shape estimation using the B-spline parameterization model.
+
+and the estimated B-spline shape after ML estimation. We observe that a reasonably accurate object shape estimate is obtained with a small number of control points. 
+
+E. Joint Shape and Range Estimation 
+
+This example considers a scenario similar to the previous section, with the same triangle blockage, location, and 6 GHz frequency. Unlike the previous case, we use the polygonal shape parameterization with NB = 3 rather than the B-spline model, we assume a 20 × 20 UPA at the receiver, and we estimate both the object shape and range assuming the source DoA is known. Fig. 10(a) plots the value of the cost function versus the number of iterations, showing that the search converges after approximately 150 iterations, and Fig. 10(b) indicates the estimate is a good match to the true triangle shape. Fig. 11 compares the RMSE and root-CRB (RCRB) of the estimated range and shape parameters versus SNR. Each point on the curve is the based on 60 Monte-Carlo trials involving 20 snapshots each. The ML search is initialized with the range estimate Rinit = 0 .5 m, and 0 50 100 150 200 250 300 
+
+> Iteration
+> 10 1
+> 10 2
+
+(a) Cost function vs. iterations. 
+
+(b) True and estimated shapes.      
+
+> FIGURE 10. Joint shape and range estimation using the polygonal model. 0510 15 20 25
+> SNR (dB)
+> 10 -3
+> 10 -2
+> 10 -1
+> 10 0
+> 10 1
+> 10 2
+> RMSE and RCRB (m)
+> Shape RCRB
+> Shape RMSE
+> Range RCRB
+> Range RMSE
+> FIGURE 11. RMSEs and RCRB for joint shape and range estimation.
+
+the method described in Section IV-E. We observe that the RMSE values approach the respective RCRB as the SNR increases, although the range estimate requires a higher SNR for this to occur.  
+
+> VOLUME , 13 Author et al.: Receive array Blockage Signal sources
+> E
+> Within shadow
+> Outside of shadow
+> FIGURE 12. Set up for the joint DoA and range estimation.
+
+F. Joint DoA and Range Estimation 
+
+This example considers the two-source scenario in Fig. 12 with DoAs θ1 = 15 ◦ and θ2 = −30 ◦ and carrier frequency of 5.9 GHz. The source signals are partially blocked by a rectangle of length L = 0 .5m before reaching a 41-element half-wavelength-spaced ULA with a D = 1 maperture. Since the blockage is rectangular, the results in (8), (18), and (23) allow us to find analytical derivatives of the likelihood with respect to the shape parameters. Figs. 13(a) and (b) plot the RMSE and corresponding stochastic CRB for the ML DoA estimates versus R when the blockage is taken into account. As in the previous example, the points on the plot represent the average of 60 independent trials involving 20 snapshots each. The RMSE when the blockage is present but ignored (solid red line) and the CRB that would be achieved without the blockage (black dashed line) are also included. We observe that the ML estimation performance matches the CRB, while ignoring the blockage leads to a considerable increase in estimation error. This demonstrates the advantage of incorporating the environmental factors μ
+
+into the model. Fig. 14 compares the deterministic and stochastic CRBs for the given scenario with and without a block-age present. The presence of the blockage significantly increases the DoA estimation bounds since a substantial portion of the signal energy does not reach the array. In addition, we note that as expected, the determinis-tic model always gives a more optimistic CRB result compared to the stochastic model. The stochastic CRB for θ2 first increases with R, reaches a peak at R = 6 ,then decreases for larger R. This can be explained by inspecting the shadow edge of the blockage. In Fig. 12, we use E to denote the edge of the shadow cast on the receive array by the second source. As R increases, E
+
+will move towards the top edge of the array. When R
+
+is sufficiently large, the entire array will be outside of the shadow. In other words, for large R, the blockage is moving outside of the first few Fresnel zones [52] of the LoS channel and thus the blockage has a smaller impact on the received signal. Fig. 14(c) also illustrate that both CRBs increase with R since the diffraction effects that are critical for determining R become weaker as the distance between the array and blockage increases. 
+
+G. Multiple Blockages at Different Ranges 
+
+Figure 15 shows the magnitude of the complex field recorded at a UPA when two rectangular screens are present, one at range R1 = 1 .5 m (black dashed contour) and the other at R2 = 4 m (red dashed contour). The reference pattern is generated with the full multi-blockage model described in Section II-D, where mutual shadowing and superposition are represented exactly. To recover the ranges, we fit a two-term ML model that approximates the measured field as the sum of the individual single-blockage responses and assumes the rectangular outlines are known. Despite this simplifica-tion, the ML algorithm returns accurate estimates of 
+
+ˆR1 = 1 .59 m and ˆR2 = 3 .81 m , corresponding to relative errors below 6% . This result demonstrates that 
+
+• the diffraction pattern encodes sufficient range in-formation to separate multiple laterally disjoint objects, 
+
+• usable range estimates can be extracted from a single diffraction snapshot, without echo timing or frequency sweeps. This demonstrates the potential of diffraction-only sens-ing in multi-object scenes. 
+
+VII. Conclusions 
+
+In this paper, we developed a comprehensive framework for diffraction-based sensing of object shapes and ranges using far-field signals of opportunity. The environmental parameters can be estimated simultaneously with the source DoAs and communication message decoding. We proposed a physically-consistent diffraction model that can accommodate far-field, paraxial Fresnel, or exact near-field regimes, and we formulated an ML approach to infer the cross-sectional shape, range, and signal DoAs. Our CRB analysis revealed fundamental limits on estimation accuracy, which were validated through extensive simulations. By viewing diffraction as a sensing asset rather than a nuisance, the proposed framework opens a new design dimension for next-generation ISAC nodes, particularly where specular echoes are weak or absent. 
+
+REFERENCES             
+
+> [1] P. H. Pathak, G. Carluccio, and M. Albani, “The uniform geometrical theory of diffraction and some of its applications,” IEEE Antennas and Propagation Mag., vol. 55, no. 4, pp. 41– 69, 2013. [2] B. Sambon et al., “Electromagnetic modelling of extended targets in a distributed antenna system,” IEEE Trans. Radar Systems, vol. 3, pp. 1257–1268, 2025. [3] Y. Jiang, F. Gao, and S. Jin, “Electromagnetic property sensing: A new paradigm of integrated sensing and commu-
+> 14 VOLUME ,
+
+<Society logo(s) and publication title will appear here. >2 3 4 5 6 7 8
+
+> True Range R (meters)
+> 10 -2
+> 10 -1
+> RMSE for  1 (degrees)
+> Stochastic MLE (blockage model)
+> Stochastic MLE (conventional model)
+> CRB (with blockage)
+> CRB (without blockage)
+
+(a) DoA estimation θ1.2 3 4 5 6 7 8 
+
+> True Range R (meters)
+> 10 -2
+> 10 -1
+> RMSE for  2 (degrees)
+> Stochastic MLE (blockage model)
+> Stochastic MLE (conventional model)
+> CRB (with blockage)
+> CRB (without blockage)
+
+(b) DoA estimation θ2.2 3 4 5 6 7 8 
+
+> True Range R (meters)
+> 0.005 0.01 0.015 0.02 0.025
+> RMSE for R (meters)
+> Stochastic MLE (blockage model)
+> CRB (with blockage)
+
+(c) Range estimation R.
+
+FIGURE 13. RMSEs for stochastic ML with blockage estimation (proposed) and blockage ignorance (conventional). 2 3 4 5 6 7 8
+
+> True Range R (meters)
+> 0.012 0.013 0.014 0.015 0.016 0.017 0.018 0.019
+> RCRB for  1 (degree)
+> Deterministic (blockage model)
+> Stochastic (blockage model)
+> Deterministic (without blockage)
+> Stochastic (without blockage)
+
+(a) CRBs for θ1.2 3 4 5 6 7 8 
+
+> True Range R (meters)
+> 0.014 0.016 0.018 0.02 0.022 0.024 0.026
+> RCRB for  2 (degree)
+> Deterministic (blockage model)
+> Stochastic (blockage model)
+> Deterministic (without blockage)
+> Stochastic (without blockage)
+
+(b) CRBs for θ2.2 3 4 5 6 7 8 
+
+> True Range R (meters)
+> 0.004 0.006 0.008 0.01 0.012 0.014 0.016 0.018 0.02 0.022
+> RCRB for R (meters)
+> Deterministic (blockage model)
+> Stochastic (blockage model)
+
+(c) CRBs for range R.
+
+FIGURE 14. Root CRB (RCRB) versus true range for the blockage (proposed) and blockage-free (conventional) models. -0.15 -0.1 -0.05 0 0.05 0.1 0.15 
+
+-0.1 -0.05 00.05 0.1 
+
+> 0.2 0.4 0.6 0.8 11.2 1.4
+
+FIGURE 15. Received signal magnitude and range estimates. 
+
+nication,” IEEE Transactions on Wireless Communications, vol. 23, no. 10, pp. 13 471–13 483, 2024. [4] S. Savazzi et al., “Electromagnetic-informed generative models for passive rf sensing and perception of body motions,” IEEE Open J. of Antennas and Propagation, vol. 5, no. 4, pp. 958– 973, 2024. [5] A. Ziganshin et al., “Ray-based simulation of scattering from discretized curved bodies for vehicular and ISAC applica-tions,” arXiv preprint arXiv:2604.05991, 2026. [6] P. Stoica and A. Nehorai, “Music, maximum likelihood, and Cramér-Rao bound,” IEEE Trans. Acoustics, Speech, and Sig. Proc., vol. 37, no. 5, pp. 720–741, 1989. [7] J. Capon, “High-resolution frequency-wavenumber spectrum analysis,” Proc. IEEE, vol. 57, no. 8, pp. 1408–1418, 1969. [8] R. Schmidt, “Multiple emitter location and signal parameter estimation,” IEEE Trans. Antennas and Propagation, vol. 34, no. 3, pp. 276–280, 1986. [9] M. Viberg and B. Ottersten, “Sensor array processing based on subspace fitting,” IEEE Transactions on Signal Processing, vol. 39, no. 5, pp. 1110–1121, 1991. [10] B. Ottersten, M. Viberg, and T. Kailath, “Analysis of subspace fitting and ML techniques for parameter estimation from sensor array data,” IEEE Trans. Sig. Proc., vol. 40, no. 3, pp. 590–600, 1992. [11] M. Viberg, B. Ottersten, and A. Nehorai, “Performance analysis of direction finding with large arrays and finite data,” IEEE Transactions on Signal Processing, vol. 43, no. 2, pp. 469–477, 1995. [12] M. Cui et al., “Near-field MIMO communications for 6G: Fundamentals, challenges, potentials, and future directions,” IEEE Comm. Magazine, vol. 61, no. 1, pp. 40–46, 2023. [13] Y. Liu et al., “Near-field communications: A tutorial review,” IEEE Open J. Comm. Society, vol. 4, pp. 1999–2049, 2023. [14] J. Xu, X. Mu, and Y. Liu, “Exploiting STAR-RISs in near-field communications,” IEEE Trans. Wireless Comm., vol. 23, no. 3, pp. 2181–2196, 2024. [15] Y. Liu, C. Ouyang, Z. Wang, J. Xu, X. Mu, and A. Swindle-hurst, “Near-field communications: A comprehensive survey,” IEEE Comm. Surveys & Tutorials, vol. 27, no. 3, pp. 1687– 1728, 2025. [16] E. De Carvalho et al., “Non-stationarities in extra-large-scale massive MIMO,” IEEE Wireless Comm., vol. 27, no. 4, pp. 74–80, Aug. 2020. 
+
+VOLUME , 15 Author et al.: 
+
+[17] Y. Han et al., “Toward extra large-scale MIMO: New channel properties and low-cost designs,” IEEE Internet of Things J., vol. 10, no. 16, pp. 14 569–14 594, 2023. [18] A. Tang et al., “Joint visibility region and channel estima-tion for extremely large-scale MIMO systems,” IEEE Trans. Commun., vol. 72, no. 10, pp. 6087–6101, 2024. [19] H. Huang et al., “Joint near-field sensing and visibility re-gion detection with extremely large aperture arrays,” arXiv preprint arXiv:2502.21911, 2025. [20] T. Ceulemans et al., “Near-field spatial non-stationary channel estimation: Visibility-region-HMM-aided polar-domain simul-taneous OMP,” arXiv preprint arXiv:2508.04222, 2025. [21] R. Kouyoumjian and P. Pathak, “A uniform geometrical theory of diffraction for an edge in a perfectly conducting surface,” Proc. IEEE, vol. 62, no. 11, pp. 1448–1461, 1974. [22] S. Mukherjee et al., “Scalable modeling of human blockage at millimeter-wave: A comparative analysis of knife-edge diffrac-tion, the uniform theory of diffraction, and physical optics against 60 GHz channel measurements,” IEEE Access, vol. 10, pp. 133 643–133 654, 2022. [23] G. R. MacCartney, S. Deng, S. Sun, and T. S. Rappaport, “Millimeter-wave human blockage at 73 GHz with a simple double knife-edge diffraction model and extension for direc-tional antennas,” in Proc. IEEE 84th Vehicular Technology Conference (VTC-Fall), 2016. [24] G. Duggal et al., “Diffraction-aided wireless positioning,” IEEE Trans. Wireless Comm., vol. 24, no. 5, pp. 3653–3668, 2025. [25] M. Born and E. Wolf, Principles of Optics: Electromagnetic Theory of Propagation, Interference and Diffraction of Light, 7th ed. Cambridge, U.K.: Cambridge University Press, 1999. [26] J. W. Goodman, Introduction to Fourier Optics, 4th ed. New York, NY, USA: W. H. Freeman, 2017. [27] R. W. Gerchberg and W. O. Saxton, “A practical algorithm for the determination of phase from image and diffraction plane pictures,” Optik, vol. 35, no. 2, pp. 237–246, 1972. [28] J. R. Fienup, “Phase retrieval algorithms: A comparison,” Applied Optics, vol. 21, no. 15, pp. 2758–2769, 1982. [29] M. R. Teague, “Deterministic phase retrieval: A Green’s function solution,” J. Optical Society of America, vol. 73, no. 11, pp. 1434–1441, 1983. [30] Y. Shechtman et al., “Phase retrieval with application to optical imaging: A contemporary overview,” IEEE Sig. Proc. Magazine, vol. 32, no. 3, pp. 87–109, 2015. [31] E. Wolf, “Three-dimensional structure determination of semi-transparent objects from holographic data,” Optics Commu-nications, vol. 1, no. 4, pp. 153–156, 1969. [32] A. J. Devaney, “A filtered backpropagation algorithm for diffraction tomography,” Ultrasonic Imaging, vol. 4, no. 4, pp. 336–350, 1982. [33] D. Colton and R. Kress, Inverse Acoustic and Electromag-netic Scattering Theory, 4th ed., ser. Applied Mathematical Sciences. Cham, Switzerland: Springer, 2019, vol. 93. [34] M. Pastorino, Microwave Imaging, ser. Wiley Series in Mi-crowave and Optical Engineering. Hoboken, NJ, USA: John Wiley & Sons, 2010. [35] A. Pallaprolu, W. Hurst, and Y. Mostofi, “Embracing diffrac-tion: A paradigm shift in wireless sensing and communica-tion,” IEEE J. Sel. Topics in Electromagnetics, Antennas and Propagation, vol. 1, no. 1, pp. 150–164, 2025. [36] J. Wilson and N. Patwari, “Radio tomographic imaging with wireless networks,” IEEE Trans. Mobile Computing, vol. 9, no. 5, pp. 621–632, 2010. [37] N. Patwari and J. Wilson, “RF sensor networks for device-free localization: Measurements, models, and algorithms,” Proc. IEEE, vol. 98, no. 11, pp. 1961–1973, 2010. [38] Z. Wang, H. Liu, S. Xu, X. Bu, and J. An, “A diffraction measurement model and particle filter tracking method for RSS-based DFL,” IEEE J. Sel. Areas in Comm., vol. 33, no. 11, pp. 2391–2403, 2015. [39] D. Faccio, A. Velten, and G. Wetzstein, “Non-line-of-sight imaging,” Nature Reviews Physics, vol. 2, no. 6, pp. 318–327, 2020. [40] N. Scheiner et al., “Seeing around street corners: Non-line-of-sight detection and tracking in-the-wild using Doppler radar,” in Proc. IEEE/CVF Conf. on Computer Vision and Pattern Recognition (CVPR), 2020, pp. 2065–2074. [41] S. Yue et al., “CornerRadar: RF-based indoor localization around corners,” Proc. ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies, vol. 6, no. 1, pp. 34:1–34:24, 2022. [42] F. Liu et al., “Integrated sensing and communications: Toward dual-functional wireless networks for 6G and beyond,” IEEE J. Sel. Areas in Comm., vol. 40, no. 6, pp. 1728–1767, 2022. [43] U. T. Virk and K. Haneda, “Modeling human blockage at 5G millimeter-wave frequencies,” IEEE Trans. Antennas and Propagation, vol. 68, no. 3, pp. 2256–2266, 2020. [44] J. Li and P. Stoica, “MIMO radar with colocated antennas,” IEEE Sig. Proc. Magazine, vol. 24, no. 5, pp. 106–114, 2007. [45] M. Soumekh, “A system model and inversion for synthetic aperture radar imaging,” IEEE Trans. Image Processing, vol. 1, no. 1, pp. 64–76, 1992. [46] L. Dodds et al., “Around the corner mmwave imaging in practical environments,” in Proc. 30th ACM Int’l Conf. on Mobile Computing and Networking, New York, NY, USA, 2024, p. 953–967. [47] J. Xu, B. Ottersten, and A. Swindlehurst, “Partially-blocked near-field sensing: Joint source DoA and blockage range estimation,” in Proc. 58th Asilomar Conf. on Signals, Systems, and Computers, 2024, pp. 1871–1875. [48] P. Stoica and A. Nehorai, “Performance study of con-ditional and unconditional direction-of-arrival estimation,” IEEE Trans. Acoustics, Speech, and Sig. Proc., vol. 38, no. 10, pp. 1783–1795, 1990. [49] R. C. Gonzalez, R. E. Woods, and S. L. Eddins, Digital Image Processing using MATLAB. Pearson Education India, 2004. [50] S. M. Kay, Fundamentals of Statistical Signal Processing: Estimation Theory. Upper Saddle River, NJ, USA: Prentice-Hall, 1993. [51] P. Stoica and R. Moses, Spectral Analysis of Signals. Upper Saddle River, NJ, USA: Prentice-Hall, 2005. [52] R. E. Sheriff, “Understanding the Fresnel zone,” AAPG Ex-plorer, pp. 18–19, 1996.
