@@ -1,0 +1,410 @@
+Title: RadLoc: Radar-based 3-DoF Global Localization via Fast, Robust, and Lightweight Spatial Descriptor Across Diverse Environmental Scenarios
+
+URL Source: https://arxiv.org/pdf/2607.08115v1
+
+Published Time: Fri, 10 Jul 2026 00:28:01 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# RadLoc: Radar-based 3-DoF Global Localization via Fast, Robust, and Lightweight Spatial Descriptor Across Diverse Environmental Scenarios 
+
+Hogyun Kim 1, Jiwon Choi 1, Jungwoo Lee 1, and Younggun Cho 1†
+
+Abstract — While global localization using spinning radar has gained attention for its robustness to adverse weather and challenging environments, many studies have focused on indi-vidual components such as place recognition or pose estimation. In this paper, we take a holistic view of radar sensor-based global localization and present RadLoc , a fast, robust, and lightweight end-to-end pipeline from place recognition to 3-DoF pose estimation. RadLoc accelerates pre-processing using 1D CA-CFAR filtering and leverages the near-range dominance in spinning radar images to design a compact descriptor and an efficient hierarchical coarse-to-fine retrieval strategy. Moreover, coupled with phase correlation-based 3-DoF pose estimation, it forms a versatile global localization module applicable to SLAM and multi-session SLAM systems. Extensive experiments on 15 sequences across 5 datasets demonstrate that RadLoc achieves robust performance while maintaining the smallest descriptor size and fastest retrieval time among state-of-the-art approaches. The supplementary materials are available at 
+
+https://sparolab.github.io/research/radloc/ .
+
+I. I NTRODUCTION 
+
+Global localization, which recognizes revisited places ( i.e., 
+
+place recognition) and estimates the relative pose between them, is a fundamental capability for autonomous mobile robots, underpinning applications such as simultaneous lo-calization and mapping (SLAM) [1] and multi-session/multi-robot mapping [2, 3]. Unlike vision and light detection and ranging (LiDAR) sensor-based approaches that suffer from short-wavelength attenuation under adverse weather, radio detection and ranging (radar) sensors penetrate rain, fog, snow, and dust due to their longer wavelength. For this reason, radar sensor-based global localization has been actively studied and has demonstrated its effectiveness across diverse environments and weather conditions [4]. Despite remarkable progress [5–9] over the past decade, prior works have often focused on enhancing the perfor-mance of individual components ( e.g., place recognition or pose estimation), disregarding computational efficiency and the integration into an overall global localization framework. In particular, while recent learning-based approaches [10, 11] have shown strong recognition performance, they often re-quire extensive training data and substantial computational resources, limiting their deployability in new environments. While prior works primarily improve individual compo-nents, we instead adopt a holistic perspective on radar sensor-            
+
+> 1Hogyun Kim, 1Jiwon Choi, 1Jungwoo Lee, and 1†Younggun Cho are with the Electrical Engineering, Inha University, Incheon, South Korea
+
+[hg.kim, jiwon2, pihsdneirf]@inha.edu, yg.cho@inha.ac.kr        
+
+> This work was supported by National Research Foundation of Korea (NRF) grant (No. RS-2026-2555148 and RS-2025-02217000) and Institute of Information & communications Technology Planning & Evaluation (IITP) grant (RS-2022-II220448) funded by the Korea government (MSIT).
+
+Kidnapped SHeRLoc RSC 
+
+RaPlace RadVLAD RadFFTVLAD 
+
+ReFeree RadLoc (Proposed) 
+
+DCC 
+
+KAIST 
+
+Sejong 
+
+Oxford 
+
+Bellmouth 
+
+Hydro 
+
+Maree 
+
+Bridge 
+
+Mountain Rain 
+
+Snow 
+
+> Size [KB]
+> Runtime [s]
+
+Fig. 1: Comparison of Recall@1 (top), descriptor size (bottom-left), and retrieval runtime (bottom-right) with state-of-the-art ap-proaches [5–8, 10, 11] on 11 sequences across 5 datasets [5, 12– 15]. Despite variations in environments, weather conditions, and radar types, our RadLoc consistently demonstrates robust recall performance while achieving the smallest descriptor size and the fastest place recognition time ( i.e., description generation time and retrieval time) among all compared methods. 
+
+based global localization by jointly considering descriptor design, retrieval efficiency, and pose estimation within a unified framework. As shown in Fig. 1, in this paper, we propose RadLoc , a fast, robust, and lightweight global localization pipeline. Specifically, we first accelerate pre-processing by replac-ing costly feature extraction [16] with a fast 1D cell-averaging constant false alarm rate (CA-CFAR) [17] filtering along the range direction. Next, we leverage the near-range dominance in spinning radar images to design a range-aware descriptor and an efficient hierarchical coarse-to-fine retrieval scheme. Finally, combined with phase correlation-based 3-DoF pose estimation, our RadLoc forms an end-to-end global localization pipeline. Extensive experiments on 15 sequences across 5 datasets arXiv:2607.08115v1 [cs.RO] 9 Jul 2026 demonstrate that RadLoc achieves robust recognition across diverse environments and radar types, while maintaining the smallest descriptor size and the fastest retrieval run-time among state-of-the-art methods. Moreover, the proposed pipeline naturally extends to SLAM, multi-session SLAM, and cross-weather map management scenarios. II. R ELATED WORKS 
+
+In this section, we review prior works on global local-ization with LiDAR and radar sensors. Rather than enumer-ating individual methods, we analyze their common design patterns to clarify the gap that RadLoc addresses. 
+
+A. LiDAR sensor-based Global Localization 
+
+LiDAR sensor-based global localization has been exten-sively studied, particularly through bird’s-eye view (BEV) representations of 3D point clouds. Scan Context [18] pi-oneered a compact descriptor by encoding a 3D scan into a 2D polar BEV image, enabling efficient place recognition with 1-DoF yaw estimation via column-wise circular shifting. Scan Context++ [19] extended this idea to improve robust-ness against lateral variations while maintaining rotational alignment. Beyond handcrafted descriptors, RING [20] and RING++ [21] employed the Radon transform to construct rotation- and translation-invariant global descriptors from BEV images, estimating translation via cross-correlation and yaw via circular shifting. Learning-based approaches such as BEVPlace [22] further leveraged neural feature extraction on BEV representations to achieve robust recognition with 2-DoF position estimation, and BEVPlace++ [23] extended this to full 3-DoF pose estimation using rotation-equivariant local features and keypoint matching. Collectively, these methods share a common paradigm: projecting high-dimensional spatial measurements onto structured 2D representations, performing efficient place retrieval, and subsequently estimating relative pose via corre-lation or feature matching. This structured design pattern has proved effective for LiDAR sensor-based global localization. 
+
+B. Radar sensor-based Global Localization 
+
+Radar sensor-based global localization has primarily fo-cused on place recognition. Early works directly adapted LiDAR-inspired descriptors to scanning radar images. Radar Scan Context [5] transferred handcrafted polar descriptors, Kidnapped Radar [10] employed metric learning to improve discriminability, and RadVLAD [7] adopted VLAD-based aggregation on polar radar representations for efficient place retrieval. However, raw radar images are inherently affected by receiver saturation, multipath reflections, and speckle noise, which limit descriptor robustness. Subsequent studies introduced signal-level filtering and frequency-domain processing to mitigate these effects. RaPlace [6] utilized the Radon transform with adaptive thresholding for rotation- and translation-invariant matching, and RadFFTVLAD [7] applied frequency-domain filtering to enhance invariance properties. ReFeree [8] combined radar 
+
+TABLE I: Summary of related works on LiDAR and radar sensor-based global localization, highlighting the scope of pose estimation. Unlike LiDAR sensor-based methods that have progressed toward full 3-DoF pose estimation, existing radar sensor-based approaches remain limited to place recognition or 1-DoF yaw estimation.                                
+
+> Sensor Approach Venue Year Description LiDAR Scan Context [18] IROS 2018 Place Recognition + 1-DoF Yaw Estimation Scan Context++ [19] TRO 2022 Place Recognition + 1-DoF Yaw Estimation RING [20] IROS 2022 Place Recognition + 3-DoF Pose Estimation RING++ [21] TRO 2023 Place Recognition + 3-DoF Pose Estimation BEVPlace [22] ICCV 2023 Place Recognition + 2-DoF Position Estimation BEVPlace++ [23] TRO 2025 Place Recognition + 3-DoF Pose Estimation SOLiD [24] RA-L 2024 Place Recognition + 1-DoF Yaw Estimation Radar  ReFeree [8] RA-L 2024 Place Recognition + 1-DoF Yaw Estimation RadLoc (Proposed) —2026 Place Recognition + 3-DoF Pose Estimation
+
+feature extraction with binary representation-based descrip-tors to achieve robust place recognition with 1-DoF yaw estimation. However, its reliance on costly feature extraction during pre-processing limits computational efficiency, and its pose estimation remains restricted to yaw alignment. More recently, learning-based approaches such as SHeR-Loc [11] addressed cross-modal radar matching by learning discriminative embeddings that implicitly suppress noise and dynamic objects. However, such learning-based methods require extensive training data and substantial computational resources, limiting their deployability in new environments. Consequently, there remains a need for a lightweight and unified framework that integrates efficient retrieval with full 3-DoF pose estimation, as summarized in Table I. III. F AST , R OBUST , AND LIGHTWEIGHT RADAR -BASED 
+
+GLOBAL LOCALIZATION 
+
+An overview of the RadLoc pipeline is summarized in Fig. 2. Given a polar radar image from a spinning radar sen-sor, we convert it into a Cartesian representation for pose esti-mation while retaining the original polar image for descriptor construction. We then apply lightweight pre-processing to suppress radar-specific noise (Sec. III-A), and the processed image is used to construct a compact descriptor, which is stored in a database for efficient retrieval (Sec. III-B). Radar Polar        
+
+> Image
+> Lightweight and Rotation -Invariant
+> Descriptor Generation (Sec. III -B)
+> Polar Image
+> Database
+> Descriptor
+> Database
+> Inverse Polar
+> Transformation
+> Pre -processing
+> (Sec. III -A)
+> Place Recognition
+> (Hierarchical Searching; Sec. III -C)
+> 3-DoF Pose Estimation
+> (Phase Correlation; Sec. III -D) Cartesian Image
+> Database
+> Application: SLAM, Multi -session SLAM
+
+Fig. 2: Overview of the proposed RadLoc pipeline. Through fast pre-processing (Sec. III-A), lightweight and rotation-invariant de-scriptor generation (Sec. III-B), efficient hierarchical place recog-nition (Sec. III-C), and robust 3-DoF pose estimation (Sec. III-D), we present RadLoc applicable to various tasks such as SLAM and multi-session SLAM. At query time, RadLoc performs hierarchical coarse-to-fine place retrieval against the database (Sec. III-C), and retrieves the corresponding polar and Cartesian images of the matched place for 3-DoF pose estimation via phase correlation (Sec. III-D). In the following subsections, we detail each component. 
+
+A. Fast Radar Image Pre-processing 
+
+First, let Ipolar ∈ RNa×Nr denote a polar radar image, where Na is the number of azimuth bins and Nr is the number of range bins. Each element pij = Ipolar (i, j )
+
+represents the received power intensity at azimuth index 
+
+i ∈ { 1, · · · , N a} and range index j ∈ { 1, · · · , N r }. Here, since the radar performs a full 360 ◦ azimuth sweep with a known maximum range rmax , the metric-scale azimuth and range of each bin (i, j ) can be determined as θi = 2π(i−1)  
+
+> Na
+
+,
+
+rj = j · ∆r, where ∆r = rmax  
+
+> Nr
+
+denotes the range resolution. Raw radar images are inherently corrupted by various sources of noise, including speckle noise or receiver satu-ration, which degrade the quality of global localization [25]. To suppress these, existing methods typically rely on feature extraction techniques such as [16]. In addition, to improve robustness against radar noise, Kim et al. [8] leverage binary representation rather than occupancy, where fij ∈ { 0, 1} is binarized from the raw intensity pij via feature extraction. However, such feature extraction methods incur computa-tional overhead, and the binary representation is sensitive to the choice of extraction parameters, which may vary across radar types and environments (Fig. 3(a)). To address these issues, we replace costly feature extraction with a lightweight 1D CA-CFAR filtering [17] along the range direction, and retain its response as a continuous intensity representation. Together, utilizing 1D CA-CFAR and continuous intensity representation makes our pre-processing both fast and more discriminative (Fig. 3(b)). 
+
+B. Compact and Rotation-Invariant Descriptor Generation 
+
+Next, let ˜Ipolar ∈ RNa×Nr denote the pre-processed polar radar image, where each element ˜pij represents the pre-processed intensity. From this representation, we construct a compact descriptor that is both robust and efficient for place retrieval. To this end, we apply average pooling with patch size (Na, p r ) over the pre-processed polar image, aggregating the full azimuth sweep into a single value per range patch as: 
+
+dn = 1
+
+Na · prNaX 
+
+> i=1
+> n
+
+· prX 
+
+> j=( n−1) pr+1
+
+˜pij , n ∈ { 1, · · · , E }, (1) where E = Nr 
+
+> pr
+
+is the descriptor dimension. The resulting elements are then concatenated into a compact 1D descriptor as follows: 
+
+d = [ d1, d 2, · · · , d E ]⊤ ∈ RE . (2) This design offers two key advantages. First, aggrega-tion over the full azimuth dimension eliminates dependency on yaw alignment, yielding inherent rotational invariance. (a) ReFeree [8] ’s pre -processing (b) Proposed pre -processing  
+
+> Fig. 3: t-SNE visualization of descriptors generated by the pro-posed pipeline with (a) conventional radar feature- and binary representation-based pre-processing [8] and (b) our proposed pre-processing (Sec. III-A). Our pre-processing improves cluster sep-arability, as indicated by higher Silhouette scores (0.359 than 0.330) and Calinski–Harabasz scores (8339.89 than 963.56) across 5 datasets [5, 12–15].
+
+Second, the range pooling factor pr directly controls the descriptor dimensionality, allowing a compact representation even for long-range spinning radars and enabling efficient large-scale retrieval. For instance, in the MulRan dataset [5], where Nr = 3360 , setting pr = 84 reduces the descriptor dimension to only E = 40 , substantially lowering retrieval cost. 
+
+C. Simple yet Effective Hierarchical Searching 
+
+The spatial information density of polar radar measure-ments decreases with increasing range. As the range in-creases, received power decays according to the radar equa-tion, and each polar bin spans a larger Cartesian area, leading to reduced signal strength and structural resolution. As a result, discriminative structural cues concentrate in the near-to-mid range, while far-range responses become progressively less reliable. Importantly, the proposed descriptor preserves this radial ordering by construction. Since each descriptor element corresponds to a contiguous range segment after azimuth aggregation, the descriptor forms a radial structural profile of the scene, explicitly ordered from near- to far-range. This explicit radial structure naturally enables a hierarchical coarse-to-fine retrieval strategy: the coarse stage focuses on the informative near-to-mid range, while the fine stage verifies matches using the full descriptor. Building upon this, we partition each descriptor into a near-range segment and the full descriptor as follows: 
+
+dnear = [ d1, · · · , d K ], dfull = [ d1, · · · , d E ], (3) where K is a user-defined partition index. Based on the analysis of descriptor element contributions (Fig. 4), we set K = 20 in this study. Furthermore, while the first element exhibits a relatively small magnitude, it captures the immediate surrounding structure that is sensitive to abrupt local changes ( e.g., occlusions or nearby dynamic objects) and is therefore retained. 
+
+Coarse stage. Within the near-range segment, we observe a gradual decrease in contribution with range, which is Element of Descriptor              
+
+> Average of Difference Fig. 4: Average of difference per descriptor element for nega-tive loop pairs (distance >20 m) on the (left) snowy day, i.e.,
+> Mountain 03 ,in Hercules [14] and (right) sunny day, i.e.,
+> 21-01-19 , in Boreas [15] datasets. The 40 elements are ordered from near-range ( d1) to far-range ( d40 ), with green and red in-dicating elements below and above the third quartile ( Q3, 75 %) of the cumulative descriptor distance (approximately around d20 ), respectively.
+
+largely attributable to range-dependent attenuation rather than the absence of structural information. In typical outdoor scenes, mid-range regions ( e.g., tens of meters) may still contain stable and distinctive structures such as building facades, but their responses can be under-represented due to power decay. To compensate for this attenuation and reduce range-dependent bias within the near-range segment, we apply a monotonically increasing weighting as follows: 
+
+˜dnear = w ⊙ dnear , (4) where w = [w1, . . . , w K ]⊤ is a user-defined range-proportional model and ⊙ denotes the Hadamard product. While the observed difference reflects a genuine range-dependent characteristic of radar measurements, our goal is not to eliminate this effect but to moderate its domi-nance. In practice, we adopt a simple monotonic weighting 
+
+wk = √k, where k ∈ { 1, · · · , K }, to mildly compensate for range-dependent attenuation. This formulation provided stable retrieval performance without over-amplifying far-range responses. Using these weighted near-range descrip-tors {˜d(1) 
+
+> near
+
+, · · · , ˜d(Ndb ) 
+
+> near
+
+}, where Ndb denotes the number of descriptors stored in the database, we first construct a Kd-tree index Tnear . For a query descriptor d(q), its weighted near-range component ˜d(q) 
+
+> near
+
+is computed and used to retrieve the top-Nc nearest neighbors from Tnear by minimizing the 
+
+L2 distance as follows: 
+
+scoarse (m) = ˜d(q) 
+
+> near
+
+− ˜d(m) 
+
+> near 2
+
+, m ∈ I db , (5) where Idb = {1, · · · , N db }. The resulting candidate set is denoted as C ⊂ I db with |C| = Nc. This Kd-tree-based coarse retrieval substantially reduces the search space with logarithmic query complexity. As illustrated in Fig. 4, the average absolute difference at the d3 is approximately 7.5, whereas d20 is about 2.1.Under an L2 distance, this leads to a squared contribu-tion ratio of (7 .5/2.1) 2 ≈ 12 .8×, indicating strong near-range dominance. In contrast, a fully normalized L2 met-ric would collapse this ratio toward 1×, removing scale disparity altogether. With the proposed weighting ( w3 =√3, w20 = √20 ), the squared contribution ratio becomes 
+
+(√3 · 7.5) 2/(√20 · 2.1) 2 ≈ 1.9×, positioning our method between these two extremes and achieving a balanced atten-uation of range-dependent bias while preserving structural contrast. 
+
+Fine stage. The top-Nc candidates are then re-ranked using the full descriptor without range-dependent weighting as follows: 
+
+sfine (m) = d(q) 
+
+> full
+
+− d(m) 
+
+> full 2
+
+, m ∈ C . (6) Here, the top-ranked candidate after re-ranking is selected as the final retrieval result. We intentionally avoid apply-ing range-dependent weighting in this stage, since empha-sizing far-range bins may amplify low signal-to-noise ra-tio (SNR) and degrade matching stability. Using the original unweighted descriptor yields more reliable matching across the entire range extent. 
+
+D. 3-DoF Pose Estimation via Phase Correlation 
+
+Given the top-ranked candidate retrieved from the hierarchical search, we estimate the relative 3-DoF pose (∆ x, ∆y, ∆θ) between the query and the matched radar image using phase correlation. Phase correlation is based on the Fourier shift theorem: if two images differ by a translational shift, their cross-power spectrum exhibits a distinct peak at the corresponding offset. By leveraging the Fourier shift theorem in appropriate coordinate domains, rotation and translation can be estimated via peak detection in the cross-power spectrum. Inspired by [26], we decompose 3-DoF pose estimation into two sequential steps: rotation estimation in the log-polar domain, followed by translation estimation in the Cartesian domain. 
+
+Rotation estimation. Let I(q) 
+
+> cart
+
+and I(m) 
+
+> cart
+
+denote the Carte-sian radar images of the query and the matched candidate, re-spectively. Since each bin in the Cartesian image corresponds to a known metric-scale position derived from the radar’s azimuth and range resolution (Sec. III-A), the resulting pose estimates are inherently metric-scaled. The Cartesian images are converted into log-polar coordinates, in which a planar rotation corresponds to a horizontal translational shift. By applying phase correlation on the log-polar representations, we directly obtain the metric-scale rotational offset ∆θ.
+
+Translation estimation. After estimating the rotational offset ∆θ, we first compensate for this rotation in the polar domain by circularly shifting the polar image along the azimuth axis. The rotation-compensated polar image is then converted back into the Cartesian coordinate system to obtain I(m, rot ) 
+
+> cart
+
+. We subsequently apply 2D phase correlation between I(q) 
+
+> cart
+
+and the rotation-aligned I(m, rot ) 
+
+> cart
+
+to recover the metric-scale translational offset (∆ x, ∆y).This two-stage decomposition avoids coupling between rotation and translation, leading to stable and efficient 3-DoF pose estimation. TABLE II: Single-session place recognition performance compared with state-of-the-art approaches [5–8, 10, 11]. R@1 is evaluated under 10 m and 20 m loop closure thresholds across 15 sequences from 5 datasets [5, 12–15].                                                                                                                                                                                                                                                                                       
+
+> Datasets Oxford Radar Robotcar [12] ( )OORD [13] ( )Hercules [14] ( )Sequence 19-01-10 19-01-14 19-01-18 Bellmouth Hydro Maree Bridge 02 Mountain 02 Parking 01
+> Evaluation R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> Kidnapped [10] 0.458 0.422 0.373 0.341 0.433 0.422 0.105 0.107 0.022 0.047 0.025 0.029 0.413 0.408 0.562 0.622 0.597 0.671 SHeRLoc [11] 0.610 0.586 0.575 0.522 0.662 0.639 0.146 0.143 0.014 0.036 0.037 0.041 0.580 0.638 0.979 0.979 0.801 0.771 RSC [5] 0.589 0.582 0.566 0.522 0.635 0.619 0.638 0.682 0.684 0.916 0.448 0.557 0.553 0.574 0.932 0.939 0.936 0.832 RaPlace [6] 0.554 0.517 0.531 0.460 0.571 0.538 0.099 0.099 0.063 0.102 0.031 0.032 0.511 0.496 0.954 0.951 0.746 0.693 RadVLAD [7] 0.591 0.567 0.601 0.533 0.660 0.639 0.134 0.123 0.013 0.030 0.020 0.024 0.500 0.535 0.770 0.779 0.627 0.618 RadFFTVLAD [7] 0.578 0.554 0.518 0.468 0.608 0.579 0.684 0.743 0.640 0.865 0.557 0.682 0.539 0.571 0.830 0.850 0.831 0.757 ReFeree [8] 0.606 0.588 0.604 0.542 0.663 0.633 0.834 0.841 0.690 0.942 0.698 0.895 0.538 0.546 0.955 0.954 0.898 0.825 RadLoc (Proposed) 0.618 0.597 0.604 0.549 0.676 0.642 0.934 0.933 0.706 0.953 0.757 0.907 0.640 0.665 0.991 0.988 0.907 0.846
+> Datasets MulRan [5] ( )Boreas [15] ( )Sequence DCC 01 KAIST 03 Sejong 01 21-01-19 21-01-26 21-04-29
+> Evaluation R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> R@1
+> (10 m)
+> R@1
+> (20 m)
+> Kidnapped [10] 0.390 0.424 0.462 0.509 0.765 0.705 0.111 0.140 0.312 0.338 0.202 0.235 SHeRLoc [11] 0.711 0.688 0.974 0.963 0.990 0.918 0.166 0.235 0.384 0.414 0.288 0.368 RSC [5] 0.642 0.667 0.901 0.895 0.943 0.874 0.416 0.447 0.555 0.583 0.394 0.424 RaPlace [6] 0.655 0.640 0.944 0.926 0.910 0.837 0.163 0.166 0.378 0.377 0.219 0.222 RadVLAD [7] 0.607 0.594 0.922 0.910 0.906 0.833 0.110 0.137 0.323 0.338 0.203 0.214 RadFFTVLAD [7] 0.692 0.707 0.851 0.843 0.908 0.832 0.273 0.309 0.469 0.482 0.381 0.436 ReFeree [8] 0.689 0.715 0.962 0.953 0.943 0.864 0.392 0.443 0.545 0.561 0.406 0.443 RadLoc (Proposed) 0.690 0.738 0.972 0.963 0.948 0.868 0.454 0.499 0.597 0.605 0.464 0.490 Kidnapped SHeRLoc RSC RaPlace
+> RadVLAD RadFFTVLAD ReFeree Proposed
+> Runtime [s]
+
+Fig. 5: Place recognition runtime com-parison on the smallest (Parking 01 ) to the largest ( Maree ) dataset. 
+
+IV. E XPERIMENTS 
+
+This section evaluates the effectiveness and efficiency of the proposed method for radar sensor-based global lo-calization. We demonstrate that our RadLoc (i) achieves robust place recognition across diverse datasets and weather conditions, (ii) enables accurate and efficient 3-DoF pose estimation for SLAM, and (iii) provides better scalability and runtime performance compared to state-of-the-art methods. 
+
+A. Experimental Setup 
+
+First, we evaluate our RadLoc on five public radar datasets: Oxford Radar Robotcar [12] ( ), OORD [13] ( ),MulRan [5] ( ), Boreas [15] ( , , ), and Her-cules [14] ( , , ). These datasets span structured urban environments and unstructured off-road terrains, multiple weather conditions, and three different Navtech radar sen-sors, providing a comprehensive benchmark for radar sensor-based global localization. Note that weather conditions are indicated using icons: (sunny), (cloudy), (rainy), and (snowy). Next, we compare the proposed method against state-of-the-art learning-based and handcrafted approaches. SHeR-Loc [11] and Kidnapped Radar [10] employ deep learn-ing, whereas Radar Scan Context (RSC) [5], RaPlace [6], RadVLAD [7], RadFFTVLAD [7], and ReFeree [8] are handcrafted descriptor-based methods. For 3-DoF pose esti-mation, we additionally compare against a feature extraction with generalized iterative closest point (GICP) registration pipeline [8], serving as a strong feature-based baseline. In the following, we organize the evaluation into three categories. For place recognition (Sec. IV-B), we report descriptor generation and retrieval runtime, Recall@1 under 10 m and 20 m loop thresholds, area under the precision-recall curve (AUC), and maximum F1 score (F1). For 3-DoF global localization (Sec. IV-C), we report relative translation error (RTE), relative rotation error (RRE), success rate, and pose estimation runtime. A pose is considered successful if the estimated translation and rotation errors are within 5 m and 10 ◦, respectively. For ablation studies (Sec. IV-D), we evaluate the proposed range-dependent weighting and hierarchical retrieval using the Kolmogorov–Smirnov (KS) statistic, precision-recall curves, and runtime comparison. For clarity, we highlight the top three results in each table as 1st , 2nd, and 3rd. 
+
+B. Place Recognition Performance 
+
+We first analyze the computational efficiency of our Rad-Loc, followed by its recognition performance in single-session and multi-session settings. 
+
+Runtime analysis. As shown in Fig. 5, our RadLoc achieves the fastest total runtime among all compared methods on both the smallest (Parking 01 ) and the largest ( Maree ) datasets. The runtime advantage becomes increasingly pronounced as the database size grows, confirm-ing the scalability of the proposed hierarchical retrieval strat-egy. Note that this efficiency makes our RadLoc well-suited for large-scale and real-time global localization applications. 
+
+Single-session evaluation. Next, as reported in Table II, our RadLoc consistently achieves top-tier R@1 performance across 15 sequences spanning 5 datasets, multiple radar types, and diverse weather conditions. In unstructured off-road trajectories such as OORD, the proposed method outper-forms competing methods, demonstrating robustness under reverse traversal and sparse geometric landmarks. In struc-tured urban environments (MulRan and Hercules datasets), where dense loop candidates increase ambiguity, our RadLoc remains among the top-performing methods while effectively suppressing false positives. Notably, under adverse weather TABLE III: Multi-session place recognition performance on the OORD [13]. R@1, AUC, and F1 are reported for three sequences.                                                                                      
+
+> Sequence Bellmouth Hydro Maree
+> Evaluation R@1 AUC F1 R@1 AUC F1 R@1 AUC F1 Kidnapped [10] 0.008 0.009 0.020 0.008 0.006 0.013 0.003 0.002 0.006 SHeRLoc [11] 0.928 0.867 0.861 0.989 0.949 0.915 0.981 0.857 0.868
+> RSC [5] 0.772 0.860 0.761 0.954 0.921 0.881 0.634 0.709 0.626 RaPlace [6] 0.467 0.198 0.439 0.799 0.386 0.652 0.351 0.114 0.321 RadVLAD [7] 0.010 0.011 0.023 0.006 0.007 0.015 0.005 0.005 0.010 RadFFTVLAD [7] 0.915 0.721 0.798 0.932 0.684 0.771 0.854 0.463 0.664 ReFeree [8] 0.950 0.803 0.852 0.984 0.895 0.888 0.968 0.821 0.813 RadLoc (Proposed) 0.989 0.964 0.907 0.980 0.956 0.921 0.990 0.858 0.832 (a) SHeRLoc (c) ReFeree (d) Proposed
+> (b) RSC
+
+Fig. 6: Qualitative results of multi-session place recognition on three 
+
+Hydro sequences for the top-4 meth-ods. Green and red lines indicate true and false loop closures. TABLE IV: 3-DoF pose estimation performance on the Hercules dataset [14]. Each environment includes sequences captured under varying weather ( e.g., : sunny, : cloudy, : snowy).                                                                             
+
+> Sequence Method RTE [m] ↓RRE [ ◦]↓Success rate [%] ↑Runtime [s] ↓
+> Mountain 01 Feat. [16] + GICP 0.779 1.5 99.6 0.342 Proposed 0.643 0.9 100.0 0.036
+> Mountain 02 Feat. [16] + GICP 1.018 1.6 98.2 0.317 Proposed 0.881 0.9 99.9 0.034
+> Mountain 03 Feat. [16] + GICP 0.915 2.0 99.2 0.279 Proposed 0.778 1.1 99.8 0.061
+> Parking 01 Feat. [16] + GICP 0.409 3.5 97.4 0.297 Proposed 0.370 2.1 100.0 0.063
+> Parking 02 Feat. [16] + GICP 0.603 3.4 97.7 0.274 Proposed 0.570 1.9 99.2 0.067
+> Parking 03 Feat. [16] + GICP 0.824 4.6 93.4 0.283 Proposed 0.842 2.9 100.0 0.068
+> Parking 04 Feat. [16] + GICP 0.927 6.1 88.1 0.283 Proposed 0.698 3.6 100.0 0.070
+
+conditions in Boreas ( e.g., 21-01-26 , 21-04-29 ), our RadLoc maintains stable recall despite weather-induced in-tensity attenuation. 
+
+Multi-session evaluation. Furthermore, as shown in Ta-ble III and Fig. 6, several methods that perform competitively in single-session evaluation exhibit noticeable degradation when evaluated across sessions. SHeRLoc shows improved multi-session performance associated with the same direction traversals across sessions. Nevertheless, our RadLoc achieves the highest overall and most consistent results. 
+
+C. 3-DoF Global Localization 
+
+Next, we evaluate our RadLoc for full 3-DoF global local-ization, including pose estimation accuracy, SLAM integra-tion, and multi-session alignment under long-term variations. 
+
+Pose estimation accuracy. As reported in Table IV, our RadLoc achieves competitive RTE and RRE across all evaluated datasets. In particular, our RadLoc maintains a high success rate under the 5 m and 10 ◦ threshold criteria, demonstrating reliable pose initialization even in large-scale and perceptually ambiguous environments. Compared to the feature [16]-based GICP alignment, our RadLoc provides more stable initialization while substantially reducing com-putational overhead. 
+
+SLAM integration. One notable aspect of our RadLoc is its integration into a radar sensor-based SLAM pipeline to validate its practical applicability. As illustrated in Fig. 7, the proposed method enables accurate global re-localization and 
+
+Fig. 7: SLAM result on the KAIST 03 sequence. (Left) Odometry-only trajectory (red) with accumulated drift. (Right) Corrected trajectory (green) after loop closure using our RadLoc, producing a globally consistent map. 
+
+consistent trajectory alignment across sessions. These results confirm that our RadLoc not only performs well in retrieval metrics but also provides reliable global poses suitable for mapping and loop closure correction. 
+
+Multi-session and cross-weather alignment. In addi-tion, we evaluate cross-session SLAM under environmental and weather changes. As shown in Fig. 8 and Fig. 9, RadLoc successfully aligns trajectories acquired at differ-ent times and under different weather conditions. Despite long-term structural changes and appearance variations, the proposed descriptor maintains sufficient distinctiveness for accurate global alignment, confirming robustness beyond single-session evaluation. 
+
+Descriptor scalability. In multi-session map management, descriptor storage cost scales linearly with the number of ses-sions and map size, making compact representations essential for long-term deployment. As shown in Table V, RadLoc maintains the smallest descriptor size among all compared methods, enabling efficient storage and retrieval even as the map grows across multiple sessions and weather conditions. Note that this compactness is particularly beneficial for long-term mapping scenarios where memory and retrieval efficiency become critical. 
+
+D. Ablation Study 
+
+Finally, we conduct ablation studies to analyze the effects of the proposed range-dependent weighting and hierarchical retrieval strategies. 
+
+Effect of range-dependent weighting. We examine how the proposed weighting affects the relationship between Fig. 8: Multi-session SLAM result on the Oxford Radar Robotcar dataset [12] using two sequences captured 8 days apart ( 19-01-10 
+
+and 19-01-18 ). (Left) Before multi-session alignment, showing misaligned trajectories. (Right) After alignment using our RadLoc, we produced a globally consistent multi-session map. 
+
+Fig. 9: Cross-weather multi-session SLAM result on the Hercules dataset [14]. Green and red trajectories represent sessions captured under sunny ( ) and snowy ( ) conditions, respectively. (Left) Be-fore multi-session alignment. (Right) After alignment using our RadLoc, we demonstrate robust localization across substantially different weather conditions. TABLE V: Descriptor size comparison (unit: MB). RadLoc achieves the most compact representation, which is critical for scalable multi-session map management.                               
+
+> Method Kidnapped SHeRLoc RSC RaPlace RadVLAD ReFeree Ours 1st session ( )299.61 2.93 2.74 6.59 599.22 0.78 0.73
+> + 2nd session ( )199.70 1.95 1.83 4.39 399.40 0.52 0.49
+> Total [MB] 499.31 4.88 4.57 10.98 998.62 1.30 1.22
+
+descriptor distances and ground truth spatial distances. For both positive and negative pairs, we compare the distri-butions of ground truth distances and descriptor distances under weighted and unweighted formulations using the Kol-mogorov–Smirnov (KS) statistic. As shown in Fig. 10, the weighted formulation yields a closer alignment between descriptor distances and ground truth spatial separation for both positive and negative pairs. In contrast, the unweighted descriptor exhibits stronger near-range bias, resulting in a less consistent correspondence with geometric distance. We conclude that these results indicate the proposed weighting mitigates range-dependent bias while preserving consistency with underlying spatial relationships. 
+
+Effect of hierarchical retrieval. In addition, we evaluate the impact of the proposed hierarchical retrieval scheme. Notably, as shown in Fig. 11, hierarchical retrieval preserves (a) Positive pair (b) Negative pair 
+
+Fig. 10: Kolmogorov-Smirnov plots comparing descriptor distance distributions against ground truth for (a) positive and (b) negative pairs. Our weighted distance achieves lower KS statistics than the unweighted variant for both positive ( 0.2600 and 0.4880) and negative ( 0.1260 and 0.1720) pairs. All comparisons yield p-values below 0.005, confirming statistical significance. All distributions, including ground truth, are normalized to a common scale for fair comparison. Recall 
+
+> Precision
+
+Fig. 11: Precision-recall (PR) curves on three Oxford Radar Robot-car [12] sequences ( i.e., 19-01-10 , 19-01-14 , 19-01-18 ,from left to right) comparing KD-tree flat search using the full descriptor with our proposed hierarchical search (Sec. III-C). Fram e
+
+> Runtime  [ms ]
+
+Fig. 12: Retrieval runtime comparison between KD-tree flat search and our proposed hierarchical search on three datasets ( i.e., Her-cules [14], Oxford Radar Robotcar [12], OORD [13], from left to right). Datasets are ordered by database size for a clearer illustration of scalability differences. 
+
+recall performance comparable to exhaustive search. At the same time, the runtime comparison in Fig. 12 demonstrates substantial computational savings. Note that this confirms the hierarchical strategy effectively reduces search complexity without degrading recognition quality. 
+
+Effect of radial partition K. Finally, we analyze the sensitivity of the partition index K, which determines the near-range segment boundary in the coarse retrieval stage. As shown in Table VI, a clear trade-off emerges: increasing 
+
+K consistently improves R@1 by leveraging more structural information, while AUC and F1 gradually decrease as far-range bins are incorporated into the weighted coarse stage. Notably, this trend is consistent across both datasets despite differences in radar type and environment. In practice, K
+
+can be configured according to the application objective: a smaller K favors higher precision suitable for safety-critical TABLE VI: Sensitivity analysis of the number of radial partitions K
+
+via place recognition performance. We evaluate four representative quartile-level configurations, i.e., Q1, Q 2, Q 3, and Q4. Note that we select K=20 in all experiments unless otherwise specified.                                 
+
+> Sequence Mountain 03 21-01-19
+> Evaluation R@1 AUC F1 R@1 AUC F1
+> K=8 ( Q1)0.934 0.897 0.803 0.354 0.654 0.603
+> K=10 ( Q2)0.946 0.901 0.800 0.387 0.650 0.582
+> K=20 ( Q3)0.960 0.893 0.790 0.499 0.582 0.503
+> K=40 ( Q4)0.972 0.875 0.767 0.551 0.546 0.459
+
+loop closure verification, while a larger K prioritizes recall for broader candidate retrieval in exploratory scenarios. V. C ONCLUSION 
+
+In this paper, we presented RadLoc , a fast, robust, and lightweight global localization pipeline for spinning radar. By replacing costly feature extraction with 1D CA-CFAR filtering and leveraging range-dependent descriptor design with hierarchical retrieval, our RadLoc forms a holistic end-to-end module that unifies descriptor generation, retrieval, and 3-DoF pose estimation. Extensive experiments on 15 sequences across 5 datasets demonstrated robust performance across diverse environments, weather conditions, and radar types, while achieving the smallest descriptor size and fastest retrieval time among state-of-the-art methods. In future work, we plan to extend our RadLoc to multi-robot SLAM, where its compact descriptor and lightweight pipeline are particularly advantageous under limited inter-robot communication bandwidth. REFERENCES 
+
+[1] D. Adolfsson, M. Karlsson, V. Kubelka, M. Magnusson, and H. Andreasson, “Tbv radar slam–trust but verify loop candidates,” IEEE Robot. and Automat. Lett. , 2023. [2] H. Kim, J. Choi, J. Kim, G. Yang, S. Jeong, H. Lim, and Y. Cho, “Commerge: Communication-efficient, robust, and fast lidar map merging framework for multi-robot co-ordination in resource-constrained scenarios,” arXiv preprint arXiv:2606.25386 , 2026. [3] H. Kim, J. Choi, J. Kim, G. Yang, D. Cho, H. Lim, and Y. Cho, “Skid-slam: Robust, lightweight, and distributed multi-robot lidar slam in resource-constrained field environments,” arXiv preprint arXiv:2505.08230 , 2025. [4] Z. Hong, Y. Petillot, A. Wallace, and S. Wang, “Radarslam: A robust simultaneous localization and mapping system for all weather conditions,” Intl. J. of Robot. Research , vol. 41, no. 5, pp. 519–542, 2022. [5] G. Kim, Y. S. Park, Y. Cho, J. Jeong, and A. Kim, “Mulran: Multimodal range dataset for urban place recognition,” in 
+
+Proc. IEEE Intl. Conf. on Robot. and Automat. IEEE, 2020, pp. 6246–6253. [6] H. Jang, M. Jung, and A. Kim, “Raplace: Place recognition for imaging radar using radon transform and mutable threshold,” in Proc. IEEE/RSJ Intl. Conf. on Intell. Robots and Sys. IEEE, 2023, pp. 11 194–11 201. [7] M. Gadd and P. Newman, “Open-RadVLAD: Fast and Robust Radar Place Recognition,” 2024. [8] H. Kim, B. Choi, E. Choi, and Y. Cho, “Referee: Radar-based lightweight and robust localization using feature and free space,” IEEE Robot. and Automat. Lett. , vol. 9, no. 12, pp. 11 042–11 049, 2024. [9] B. Choi, H. Kim, and Y. Cho, “Referee: Radar-based efficient global descriptor using a feature and free space for place recognition,” arXiv preprint arXiv:2403.14176 , 2024. [10] S ¸ . S˘ aftescu, M. Gadd, D. De Martini, D. Barnes, and P. New-man, “Kidnapped radar: Topological radar localisation using rotationally-invariant metric learning,” in Proc. IEEE Intl. Conf. on Robot. and Automat. IEEE, 2020, pp. 4358–4364. [11] H. Kim, M. Jung, W. Yang, and A. Kim, “Sherloc: Synchro-nized heterogeneous radar place recognition for cross-modal localization,” IEEE Robot. and Automat. Lett. , 2025. [12] D. Barnes, M. Gadd, P. Murcutt, P. Newman, and I. Posner, “The oxford radar robotcar dataset: A radar extension to the oxford robotcar dataset,” in Proc. IEEE Intl. Conf. on Robot. and Automat. , 2020, pp. 6433–6438. [13] M. Gadd, D. D. Martini, O. Bartlett, P. Murcutt, M. Towl-son, M. Widojo, V. Mus ¸at, L. Robinson, E. Panagiotaki, G. Pramatarov, M. A. K¨ uhn, L. Marchegiani, P. Newman, and L. Kunze, “Oord: The oxford offroad radar dataset,” 2024. [14] H. Kim, M. Jung, C. Noh, S. Jung, H. Song, W. Yang, H. Jang, and A. Kim, “Hercules: Heterogeneous radar dataset in complex urban environment for multi-session radar slam,” in Proc. IEEE Intl. Conf. on Robot. and Automat. IEEE, 2025, pp. 4649–4656. [15] K. Burnett, D. J. Yoon, Y. Wu, A. Z. Li, H. Zhang, S. Lu, J. Qian, W.-K. Tseng, A. Lambert, K. Y. Leung et al. , “Boreas: A multi-season autonomous driving dataset,” Intl. J. of Robot. Research , vol. 42, no. 1-2, pp. 33–42, 2023. [16] S. H. Cen and P. Newman, “Precise ego-motion estimation with millimeter-wave radar under diverse and challenging conditions,” in Proc. IEEE Intl. Conf. on Robot. and Automat. 
+
+IEEE, 2018, pp. 6045–6052. [17] H. Rohling, “Ordered statistic cfar technique-an overview,” in 2011 12th International Radar Symposium (IRS) . IEEE, 2011, pp. 631–638. [18] G. Kim and A. Kim, “Scan context: Egocentric spatial de-scriptor for place recognition within 3d point cloud map,” in 
+
+Proc. IEEE/RSJ Intl. Conf. on Intell. Robots and Sys. IEEE, 2018, pp. 4802–4809. [19] G. Kim, S. Choi, and A. Kim, “Scan context++: Structural place recognition robust to rotation and lateral variations in urban environments,” IEEE Trans. Robot. , vol. 38, no. 3, pp. 1856–1874, 2021. [20] S. Lu, X. Xu, H. Yin, Z. Chen, R. Xiong, and Y. Wang, “One ring to rule them all: Radon sinogram for place recognition, orientation and translation estimation,” in Proc. IEEE/RSJ Intl. Conf. on Intell. Robots and Sys. IEEE, 2022, pp. 2778–2785. [21] X. Xu, S. Lu, J. Wu, H. Lu, Q. Zhu, Y. Liao, R. Xiong, and Y. Wang, “Ring++: Roto-translation-invariant gram for global localization on a sparse scan map,” IEEE Trans. Robot. , 2023. [22] L. Luo, S. Zheng, Y. Li, Y. Fan, B. Yu, S.-Y. Cao, J. Li, and H.-L. Shen, “Bevplace: Learning lidar-based place recognition using bird’s eye view images,” in Proc. IEEE Intl. Conf. on Comput. Vision , 2023, pp. 8700–8709. [23] L. Luo, S.-Y. Cao, X. Li, J. Xu, R. Ai, Z. Yu, and X. Chen, “Bevplace++: Fast, robust, and lightweight lidar global local-ization for unmanned ground vehicles,” IEEE Trans. Robot. ,2025. [24] H. Kim, J. Choi, T. Sim, G. Kim, and Y. Cho, “Narrowing your fov with solid: Spatially organized and lightweight global descriptor for fov-constrained lidar place recognition,” IEEE Robot. and Automat. Lett. , 2024. [25] W. Yang, M.-H. Jeon, and A. Kim, “Noise removal of fmcw scanning radar for single sensor performance improvement in autonomous driving,” The Journal of Korea Robotics Society ,vol. 18, no. 3, pp. 271–280, 2023. [26] Y. S. Park, Y.-S. Shin, and A. Kim, “Pharao: Direct radar odometry using phase correlation,” in Proc. IEEE Intl. Conf. on Robot. and Automat. IEEE, 2020, pp. 2617–2623.

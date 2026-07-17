@@ -1,0 +1,442 @@
+Title: AeroMap3D: Anchoring Monocular UAV 6-DoF Localization to Visual-Geometric-Semantic Map Priors
+
+URL Source: https://arxiv.org/pdf/2607.14009v1
+
+Published Time: Thu, 16 Jul 2026 01:30:13 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# AeroMap3D: Anchoring Monocular UAV 6-DoF Localization to Visual-Geometric-Semantic Map Priors 
+
+Zhiyun Deng 1,2 , Luis Sentis 1,2 
+
+> 1
+
+The University of Texas at Austin 2AIVE AI Systems 
+
+Abstract —We present AeroMap3D, a monocular 6-DoF UAV localization system that anchors onboard imagery to visual, geometric, and semantic map priors for GNSS-denied navigation. AeroMap3D addresses two fundamental challenges in map-referenced aerial localization: the cross-view discrepancy between UAV imagery and satellite maps, and the structural inconsistency between bare-earth digital elevation models (DEMs) and urban scenes. First, we introduce a lightweight adapter that enables a dense matcher pretrained on internet-scale generic data to perform reliable UAV-to-map registration without finetuning. By estimating the scale ratio and yaw offset between the UAV image and map tile, the adapter removes the dominant geometric mis-alignment induced by altitude, camera field of view, and heading before dense correspondence estimation. Second, AeroMap3D lifts 2D UAV–map correspondences onto DEM terrain while using OpenStreetMap annotations to reject semantically unre-liable matches before RANSAC–PnP pose estimation, thereby reducing errors caused by unmodeled building heights and off-nadir structures. Delayed map-based pose measurements are further fused with relative-motion priors using a delayed-state EKF for continuous trajectory estimation. Without UAV-Terra3D retraining or tuning, AeroMap3D localizes all trajectories across eight Austin sites within 50 m and achieves 5.88 m mean 3D error over 55 km of flight. 
+
+I. I NTRODUCTION 
+
+GNSS-denied UAV navigation needs a persistent world-frame reference to keep long trajectories metrically anchored. Visual odometry provides relative motion but accumulates drift [1], and SLAM reduces drift mainly through loop closures in a locally built map [2]. Geo-referenced imagery and elevation data offer a complementary external anchor without requiring a return to previously observed places. The key obstacle is the map representation. Retrieval-based localization scales to large areas by matching UAV images to geo-tagged satellite tiles [3, 4, 5], but its accuracy is bounded by reference-database sampling. Metric 6-DoF pose estimation instead uses Perspective-n-Point (PnP) over 2D– 3D correspondences [6], requiring map geometry that supplies elevation or depth. Existing systems obtain this geometry from pose-sampled renderings, textured 3D reconstructions, or orthophoto–digital surface model (DSM) pairs [7, 8, 9, 10]. These representations can be accurate, but they often require site surveys, region-specific data acquisition, and substantial offline construction, limiting rapid deployment in previously unseen regions. A practical alternative is therefore to localize against widely available public maps. This paper asks whether accurate UAV localization can instead be built from public geospatial layers: geo-referenced 
+
+Fig. 1: Overview of AeroMap3D. Compared with prior 6-DoF UAV localization systems that rely on textured 3D maps, DSMs, or render databases, AeroMap3D uses widely available satellite imagery, bare-earth DEM, and OSM layers, enabling better generalization to unexplored areas. A scale/yaw adapter and OSM masking condition UAV–map correspondences be-fore DEM lifting and standard RANSAC–PnP. satellite imagery [11], bare-earth DEMs [12], and Open-StreetMap (OSM) [13]. This reference avoids site-specific 3D reconstruction but creates two coupled correspondence failures. First, UAV and north-up satellite views differ in scale and yaw because of altitude, field of view, and heading; these shifts remain difficult for modern matchers [14, 15, 16], and visual yaw estimation avoids reliance on magnetometers that may be biased [17, 18]. Second, a bare-earth DEM assigns terrain height to every map pixel. A correct image match on a roof or facade therefore becomes a wrong 2D–3D correspondence, and neighboring structure matches can share a coherent height bias that survives RANSAC [19] rather than appearing as independent outliers. We present AeroMap3D (Fig. 1), a monocular UAV local-ization framework that derives metric 6-DoF pose estimates from public visual, geometric, and semantic map priors. It targets low-altitude urban flight, where buildings occupy much of the camera view and their omission from bare-earth DEMs most affects pose estimation. Given a coarse map initialization, arXiv:2607.14009v1 [cs.RO] 15 Jul 2026 Dataset UAV Video Reference Map Focus # Traj. Camera Angle Flight Altitude Intrinsics Satellite Elevation Semantic 3D Coverage                                                             
+
+> ALTO 1[20] 2Top-Down Almost Const. –Satellite –––Image Retrieval UAV-VisLoc 1[21] 11 Top-Down Almost Const. –Satellite –––Image Retrieval AerialVL [22] 11 (70 km) Top-Down 120 m / 200 m –Satellite –––Image Retrieval UAVD4L [8] 5 (10 km) Various Various Yes Satellite 3D Model –2.5 km 2Metric Localization 2
+> OrthoLoC 1[10] 52 Top-Down Various Yes Satellite DSM 3–8.9 km 2Metric Localization 2
+> UAV-Terra3D 20 (55 km) Top-Down Various Yes Satellite DEM 3OSM 22.4 km 2Metric Localization 21These datasets provide isolated images or discontinuous trajectory samples rather than continuous UAV video sequences.
+> 2Metric localization estimates a precise, geo-referenced spatial coordinate (x, y, z) and orientation (roll, pitch, yaw) within a given map using real-world units.
+> 3Digital Elevation Models (DEMs) generally have broader availability than Digital Surface Models (DSMs). For example, the USGS 3D Elevation Program (3DEP) [12] provides high-resolution DEM products across the United States, whereas its standard IfSAR-derived DSM product is primarily available for Alaska.
+
+TABLE I: Comparison of representative UAV datasets. UAV-Terra3D provides 55 km of continuous real-world trajectories with co-registered visual-geometric-semantic map priors across 22.4 km 2, offering broader 3D coverage than prior datasets.         
+
+> Method Required Map Deployment Requirement
+> Chen et al. [7] Satellite image + topography Offline pose-sampled RGB–D and descriptor database PiLoT [9] High-fidelity geo-referenced 3D map A textured surface model must already exist OrthoTrack [23] Orthophoto + DSM A DSM must be available for the deployment region
+> AeroMap3D Satellite image + bare-earth DEM + OSM No textured 3D model, DSM, or pose-sampled database
+
+TABLE II: Map requirements for UAV 6-DoF localization. 
+
+Prior methods depend on region-specific pose-sampled ren-dering databases, textured 3D models, or DSMs. AeroMap3D instead constructs localization maps remotely using public satellite imagery, bare-earth DEMs, and OSM data, without a textured model or pose-sampled database. a lightweight Siamese adapter estimates UAV-to-map scale and yaw, rectifying the pair before a frozen dense matcher. AeroMap3D then rejects matches in OSM-annotated building regions, lifts the remaining UAV–map matches into terrain-supported 2D–3D correspondences, recovers camera pose with standard RANSAC–PnP [19, 6], and fuses map-anchored pose measurements with relative-motion priors in an EKF for continuous localization. Our main contributions are: 1) We formulate public satellite imagery, bare-earth DEMs, and OSM semantics as complementary priors for monocu-lar 6-DoF UAV localization. We reveal a systematic failure of conventional DEM lifting: visually correct correspon-dences on elevated structures produce geometrically biased constraints when assigned terrain elevation. Accounting for this visual–geometric inconsistency increases single-frame localization success from 88.24% to 95.69% over a geometry-only RANSAC–PnP baseline. 2) We introduce a lightweight scale–yaw adapter that extends the generalization capability of RoMav2 to UAV-to-map registration. Rather than retraining the dense matcher, the adapter isolates the dominant cross-view variation induced by altitude, camera field of view, and heading. Trained entirely from synthetic satellite-derived pairs without real UAV imagery, manual labels, or site-specific tuning, it raises the registration success rate from 62.4% to 99.2% with only 35 ms of additional edge-device latency. 3) We demonstrate AeroMap3D as a complete map-anchored localization system for drift-tolerant UAV navigation through 55 km of real-world flight over 22.4 km 2 of mapped area. We further release UAV-Terra3D, a public benchmark containing calibrated UAV imagery, reference trajectories, and spatially aligned satellite, DEM, and OSM layers for evaluating map-anchored UAV localization. II. R ELATED WORK 
+
+A. Map-Referenced Place Recognition via Image Retrieval 
+
+Image retrieval localizes a UAV by matching a query image to geo-tagged satellite or orthophoto map tiles. NetVLAD established learned global descriptors for place recognition [3], while recent methods use vision foundation models and spe-cialized aerial descriptors to improve robustness to viewpoint, scale, and appearance changes [24, 4, 25, 26, 27]. Chen et al. [7] recover 6-DoF pose by retrieving a pose-sampled RGB–D rendering and refining it through 2D–3D feature correspondences. However, this approach requires an offline rendering database for each anticipated flight region and was demonstrated only within candidate-pose areas of 400 ×400 m, limiting its spatial scalability. GeoVINS uses retrieval as a geographic correction in visual–inertial estimation [4], and large-scale retrieval pipelines have reached continent-level coverage [5]. These methods scale well, but their localization accuracy is ultimately tied to database sampling density. 
+
+B. Map-Referenced UAV 6-DoF Localization via PnP 
+
+Structure-based localization estimates camera pose from 2D–3D correspondences with PnP [6] and RANSAC [19]. Modern matchers such as SuperGlue [28], LoFTR [14], and RoMa [15, 16] improve the 2D matching stage under large appearance changes. To recover metric 6-DoF pose, these sys-tems must associate image pixels with 3D map points; they dif-fer primarily in how this geometry is supplied. UAVD4L pre-renders synthetic RGB–D views from a site-specific textured 3D reconstruction [8]. PiLoT instead registers live imagery against RGB–D views rendered online from a high-fidelity 3D map [9]. OrthoTrack lift orthophoto correspondences through co-registered DSMs for single-frame and continuous trajec-tory estimation, respectively [23]. In each case, successful lifting assumes that the reference height at a matched map pixel corresponds to the surface visible in the UAV image. AeroMap3D instead uses bare-earth DEMs available through large-scale public programs such as USGS 3DEP [12]. Be-cause this terrain model is invalid on buildings, AeroMap3D conditions correspondences with OSM footprints [13] before DEM lifting, as summarized in Table II. 
+
+C. UAV Visual Localization Datasets 
+
+Image retrieval-based datasets such as ALTO [20], UAV-VisLoc [21], and AerialVL [22] focus on drone–satellite place recognition and expose strong appearance, altitude, and orientation shifts. Metric localization benchmarks provide stronger geometry: UAVD4L uses a detailed 3D reference [8], while OrthoLoC use orthophoto–DSM references [10]. UAV-Terra3D complements them with continuous real UAV tra-jectories and co-registered satellite imagery, bare-earth DEM, and OSM layers, enabling evaluation of terrain-lifted 6-DoF localization with explicit semantic validity checks (Table I). III. P ROBLEM FORMULATION 
+
+We formulate map-anchored localization as metric pose recovery from a monocular UAV image and a public geospatial map 
+
+M = ( Isat , h DEM , B, ϕ ) , (1) where Isat is the satellite image, hDEM : R2 → R is the bare-earth elevation field, B is the OSM-derived building mask in the map image plane, and ϕ maps a map pixel to local East-North-Up (ENU) ground coordinates. At time t, the UAV body pose is Tt 
+
+> WB
+
+∈ SE(3) in the world frame {W}. With known gimbal extrinsics Tt
+
+> BC
+
+, the camera pose is 
+
+Tt 
+
+> WC
+
+= Tt 
+
+> WB
+
+· Tt
+
+> BC
+
+. (2) Equivalently, Tt 
+
+> CW
+
+= ( Tt
+
+> WC
+
+)−1 maps world points into the camera frame; we write its 3 × 4 projection block as [Rt | tt].
+
+Observation Model. For a lifted map point Xi ∈ R3 and calibrated intrinsics K, the ideal image measurement xi ∈ R2
+
+satisfies 
+
+λi
+
+xi
+
+1
+
+
+
+= K Rt | tt Xi
+
+1
+
+
+
+. (3) Thus the problem reduces to constructing reliable 2D–3D correspondences and solving for Tt
+
+> CW
+
+.
+
+Map Lifting and Structural Uncertainty. Let dense regis-tration return 2D–2D matches Ct 
+
+> 2D
+
+= {(xti, mti)}Nt 
+
+> i=1
+
+between the UAV image and the satellite map. Each map pixel is lifted through 
+
+(Ei, N i) = ϕ(mti),
+
+Xi
+
+.
+
+= ℓ(mti) = Ei Ni hDEM (Ei, N i)⊤ . (4) This lift is exact for terrain but biased for elevated structures. If the true surface height differs by ∆hi, then 
+
+Xtrue  
+
+> i
+
+= ℓ(mti) + 0 0 ∆hi
+
+⊤ , ∆hi̸ = 0 , (5) 
+
+Fig. 2: Synthetic training data for the scale–yaw adapter. 
+
+Training UAV–map pairs are generated by applying known transformations to satellite images, providing direct supervi-sion without real UAV images or manual labeling. and the resulting reprojection residual is no longer a random matching error but a structured geometric bias. 
+
+Robust Pose Objective. AeroMap3D first removes known structural regions in the map plane, 
+
+Ct 
+
+> sem
+
+= (xti, Xi) (xti, mti) ∈ C t
+
+> 2D
+
+, mti /∈ B . (6) Residual outliers from missing OSM annotations, dynamic objects, or feature mismatches are handled by geometric consensus. With 
+
+ri(T) = xti − Π
+
+
+
+K R | t Xi
+
+1
+
+ 
+
+, (7) where Π([ u, v, w ]⊤) = [u/w, v/w ]⊤ and T ∈ SE(3) is represented by (R, t). RANSAC–PnP selects an inlier index set I⋆t from Ct 
+
+> sem
+
+and refines the camera pose by 
+
+ˆTt 
+
+> CW
+
+= arg min 
+
+> T∈SE(3)
+
+X
+
+> i∈I ⋆t
+
+∥ri(T)∥22 . (8) The corresponding UAV body pose is 
+
+ˆTt 
+
+> WB
+
+=
+
+ ˆTt
+
+> CW
+
+−1  Tt
+
+> BC
+
+−1 , (9) which gives the metric map-based pose measurement used by the trajectory estimator. IV. M ETHODOLOGY 
+
+A. Cross-View Registration via Lightweight Adapter 
+
+Scale–Yaw Normalization. The registration frontend converts a difficult UAV–satellite pair into a geometry range where a pretrained matcher can operate reliably. Instead of replacing the matcher, we estimate only the dominant cross-view nui-sance parameters: the scale ratio induced by altitude and field of view, and the yaw offset induced by UAV heading. This yaw is a relative image-to-map rotation used for registration, not a replacement for the vehicle’s full attitude estimate. We implement the adapter as a lightweight Siamese CNN: the UAV image and satellite tile are passed through a shared MobileNetV3-Small encoder [29], global-average-pooled into Fig. 3: AeroMap3D localization pipeline. Starting from a coarse map initialization, obtained by retrieval in prior work or by an operator in our experiments, the system propagates with a relative-motion prior. A scale/yaw adapter enables dense UAV–map matching; OSM masking and DEM lifting form semantically reliable 2D–3D correspondences; RANSAC–PnP estimates the global camera pose; and a timestamp-aligned EKF fuses map updates with relative odometry. descriptors gt and gsat , fused as [gt, gsat , |gt −gsat |, gt ⊙gsat ],and regressed by a two-layer MLP. For UAV image It and a north-up satellite tile Isat , the adapter predicts 
+
+(ˆ st, ˆθt) = fθ (It, I sat ), (10) where the MLP outputs log-scale and a normalized yaw vector internally, which is converted to (ˆ st, ˆθt) for rectification. It is trained with 
+
+Lalign = |log ˆ st − log s⋆t | + β
+
+
+
+1 − cos( ˆθt − θ⋆t )
+
+
+
+, (11) where (s⋆t , θ ⋆t ) are synthetic supervision targets and β balances scale and yaw. Training pairs are generated without manual correspondence labels or UAV-Terra3D images: we sample plausible flight states, project their camera footprints onto satellite imagery, and render UAV-like views with known scale and yaw (Fig. 2). This supervision normalizes scale and yaw but does not sim-ulate seasonal appearance transfer or full projective distortion from large roll or pitch; these remain limitations of the frozen matcher and map reference. 
+
+Dense Matching After Rectification. The predicted (ˆ st, ˆθt)
+
+rectifies the map tile before matching. We then run Ro-Mav2 [16] as a swap-in dense matcher and map the matched satellite pixels back to the original map plane: 
+
+Ct 
+
+> 2D
+
+=   xti, mti
+
+ Nt 
+
+> i=1
+
+. (12) Here xti is a UAV image pixel and mti is its satellite-map pixel. This keeps the dense matcher modular while producing the 2D–2D correspondences that are subsequently lifted onto the DEM and filtered with semantic map priors. 
+
+B. Semantic Map Conditioning for DEM-PnP 
+
+Semantic Filtering Before 3D Lifting. The core contribution of this stage is semantic conditioning before pose estimation. A bare-earth DEM provides scalable terrain geometry, but it assigns terrain height to every map pixel; matches on roofs, facades, or other above-ground structures therefore inherit the height bias in Eq. (5). Because these errors are coherent rather than random, RANSAC alone can accept an incorrect dominant surface. AeroMap3D instead removes known non-ground matches before DEM lifting. OSM building footprints are rasterized into the binary mask B, and candidate matches on these semantically unreliable regions are rejected in the map plane: 
+
+Ct 
+
+> gnd
+
+= (xti, mti) ∈ C t 
+
+> 2D
+
+mti /∈ B . (13) Only the surviving map pixels are lifted with ℓ(·) from Eq. (4), yielding terrain-supported 2D–3D correspondences and pre-venting known structural regions from becoming confidently wrong 3D points. 
+
+Geometric Consensus for Residual Outliers. Semantic filter-ing removes the dominant map-induced bias but cannot cover missing OSM annotations, off-nadir building lean, transient objects, or dense-matcher failures. These residual errors are handled by standard OpenCV RANSAC–PnP [6], correspond-ing to Eq. (8); the novelty is the semantic conditioning that supplies PnP with terrain-consistent correspondences. The resulting metric pose is the global visual measurement passed to the delayed-update EKF in Sec. IV-C. This residual-consensus stage still assumes that terrain-consistent correspondences remain dominant; a large un-mapped structure can form a coherent but incorrect consensus and remains a map-validity failure mode. 
+
+C. Continuous Trajectory Estimation via Map-Anchored EKF 
+
+Pose-Error State and Motion Prior. The nominal EKF state is the map-frame body pose ˆTk ∈ SE(3) with right-multiplicative local error δξk ∈ R6, i.e., Tk = ˆTk Exp( δξ∧ 
+
+> k
+
+),and tangent-space covariance Pk. Between map updates, it propagates with the relative pose increment ˜∆Tk from Sec. V: 
+
+ˆTk|k−1 = ˆTk−1|k−1 ˜∆Tk,
+
+Pk|k−1 = FkPk−1|k−1F⊤ 
+
+> k
+
++ Qk. (14) Here Fk and Qk are the pose-composition Jacobian and motion-increment covariance. PnP provides Zk ∈ SE(3) from Eq. (9), with tangent-space covariance Rk.Visual poses are tagged at image acquisition. The reported offline experiments fuse them in timestamp order and do not evaluate wall-clock delay. For online use, a pose captured at 
+
+k but returned at j ≥ k updates the buffered state at k; stored motion increments then re-propagate the estimate to j.
+
+Mahalanobis Gating. For the delayed state, we compute the innovation and its consistency score 
+
+rk = Log 
+
+ ˆT−1
+
+> k|k−1
+
+Zk
+
+∨
+
+,
+
+Sk = HkPk|k−1H⊤ 
+
+> k
+
++ Rk,γk = r⊤ 
+
+> k
+
+S−1 
+
+> k
+
+rk.
+
+(15) where (·)∨ gives 6-vector tangent coordinates and Hk = I6.The visual pose is accepted only if 
+
+γk < τ χ2 , τχ2 = χ2 
+
+> d, 1−η
+
+, (16) where d is the measurement dimension and η is the gate proba-bility. Rejected measurements are discarded and the trajectory coasts on the relative-motion prior. Accepted measurements use the standard EKF update 
+
+Kk = Pk|k−1H⊤ 
+
+> k
+
+S−1 
+
+> k
+
+,δˆξk = Kkrk,
+
+ˆTk|k = ˆTk|k−1 Exp( δˆξ∧ 
+
+> k
+
+),
+
+Pk|k = ( I − KkHk)Pk|k−1(I − KkHk)⊤ + KkRkK⊤ 
+
+> k
+
+.
+
+(17) The corrected state is then re-propagated; Prop ℓ applies the stored increment ˜∆Tℓ:
+
+( ˆTℓ|ℓ−1, Pℓ|ℓ−1) = Prop ℓ
+
+ ˆTℓ−1|ℓ−1, Pℓ−1|ℓ−1
+
+
+
+,ℓ = k + 1 , . . . , j. 
+
+(18) V. D ATASET 
+
+UAV-Terra3D Benchmark. UAV-Terra3D is a benchmark for map-anchored UAV visual localization. It contains 30-Hz, mostly nadir-view UAV video, calibrated camera intrinsics, GNSS position reference trajectories, and aligned visual, geo-metric, and semantic map layers. We collected 20 trajectories at eight sites in Austin, Texas, using a DJI Air 2S equipped with a calibrated gimballed camera. The dataset covers 55 km and 134 minutes of flight over 22.4 km 2, with varied altitudes, headings, and environments. Most frames are nadir or near-nadir; the relatively few high-pitch frames do not support a statistically meaningful pitch-stratified registration analysis. The collection device does not provide independently validated full 6-DoF ground truth or gimbal-encoder calibration suitable for evaluating roll, pitch, and yaw error. 
+
+3D Terrain Models. Each site combines NAIP imagery [11], USGS DEM elevation [12], and OSM semantics [13] in a WGS84-referenced local ENU frame (Fig. 4). The 1-m 3DEP tiles are horizontally NAD83 and vertically NAVD88; we transform them to WGS84 and convert orthometric elevation 
+
+H to ellipsoidal height h = H + N using the metadata geoid separation N , matching the GNSS altitude convention. The imagery supports registration, the DEM supplies 3D terrain, and OSM identifies regions where bare-earth elevation is unreliable. 
+
+Motion-Prior Generation. UAV-Terra3D does not include a raw IMU stream. To compare trajectory methods under the same realistic, imperfect motion input, we derive a repro-ducible stochastic odometry prior from consecutive GNSS reference poses T⋆t−1, T⋆t ∈ SE(3) . We perturb each rela-tive motion by zero-mean noise whose scale increases with translation and rotation, thereby modeling the accumulation of odometry uncertainty without using GNSS as an absolute EKF update: 
+
+∆T⋆t =  T⋆t−1
+
+−1 T⋆t ,
+
+˜∆Tt = ∆ T⋆t Exp( ξt),
+
+ξt ∼ N (0, Σt).
+
+(19) Following the probabilistic odometry model [30], the transla-tion and rotation noise scales are 
+
+Σt = diag  σ2
+
+> p,t
+
+13, σ 2
+
+> R,t
+
+13
+
+ ,σp,t = α3∥∆p⋆t ∥ + α4∥ Log(∆ R⋆t )∥ + βp,σR,t = α1∥ Log(∆ R⋆t )∥ + α2∥∆p⋆t ∥ + βR.
+
+(20) Here ∆p⋆t and ∆R⋆t are the translational and rotational com-ponents of ∆T⋆t ; parameter values are given in Sec. VI. GNSS is used only to generate this fixed prior and to score accuracy, never as an absolute localization update. In addition to this reference-derived relative-motion prior, we generate a visual-only prior with frame-to-frame ORB visual odometry [1, 31]. VI. E XPERIMENTS 
+
+We conduct real-world experiments to answer four ques-tions: (Q1) Can an adapter trained only on synthetic UAV-VisLoc data collected in China transfer to real UAV imagery from the geographically distinct UAV-Terra3D dataset in the United States, without target-dataset retraining? (Q2) How much does the adapter improve UAV-to-map registration when paired with a frozen image matcher? (Q3) Does geometric– semantic correspondence filtering improve single-frame 6-DoF camera pose estimation over geometric-only PnP and image-retrieval baselines? (Q4) Can fusing map-based visual updates with motion priors reduce localization error and bound long-horizon trajectory drift? Fig. 4: UAV-Terra3D map priors. Eight Austin sites combine WGS84-aligned NAIP imagery [11] for registration (top; 1 m/pixel), OpenStreetMap [13] for semantic filtering (middle), and USGS DEMs [12] for 2D–3D lifting (bottom; 1 m/pixel). 
+
+Fig. 5: Cross-domain UAV-to-map registration and run-time. Left: Direct-matcher success (bars; I-shaped error bars indicate the minimum–maximum range across the dataset) versus adapter-enhanced success (line). Our adapter raises RoMav2 from 62 .4% to 99 .2% and Tiny-RoMa from 42 .1% to 
+
+92 .5% . Right: Jetson runtimes (bars, including 35 ms adapter overhead) and RTX 5090 runtimes (dashed line); RoMav2 exceeds the Jetson memory budget. 
+
+A. Experimental Setup 
+
+Protocol and Metrics. The adapter is trained only on syn-thetic UAV–map pairs rendered from UAV-VisLoc satellite imagery [21] (Fig. 2) and evaluated by cross-dataset transfer to UAV-Terra3D; no target data are used for training or tuning. All evaluations are offline and start from a user-provided initial 
+
+(x, y ) position. We evaluate every UAV-Terra3D trajectory and frame without site-, trajectory-, or frame-level cherry-picking. Visual poses retain their acquisition timestamps and are fused in timestamp order; Sec. IV-C describes delayed-state handling for online processing. For image registration, we report pseudo success rate (i.e., the fraction of frames with sufficient inliers and a valid fun-damental matrix or homography after geometric verification) and runtime (ms/frame). For trajectories, we report the success rate within 50 m and absolute 3D localization error. 
+
+Implementation Details. The scale–yaw adapter is a Siamese MobileNetV3-Small (Sec. IV-A) trained on ten rendered UAV-like views from each of 3,394 UAV-VisLoc scenes. It takes 
+
+224 ×224 UAV and satellite inputs. Our default frozen matcher, RoMav2 [16], uses 518 × 518 inputs, 1,024 keypoints, and ImageNet normalization. We estimate poses with OpenCV PnP and reprojection-error refinement, optimize world points in local ENU coordinates, and convert the result to WGS84. For the reference-derived motion prior in Eq. (20), we use 
+
+(α1, α 2, α 3, α 4) = (0 .05 , 0.01 rad m −1, 0.05 , 0.10 m rad −1),
+
+βp = 0 .05 m, and βR = 0 .5◦; the EKF uses a 95% χ2 gate for 6-DoF updates ( τχ2 = 12 .59 ). 
+
+Baselines. (1) UAV-to-map image registration. We com-pare SIFT+LightGlue [32], SuperPoint+LightGlue [33], LoFTR [14], and RoMa matchers [15, 16]. Each is evalu-ated directly and after adapter-based scale–yaw normalization, with matcher weights fixed. (2) Single-frame camera pose estimation. We compare DINOv2-based retrieval [24] and SelaVPR++ [25], using 150 ×150 m satellite tiles sampled at a 10 m stride as the candidate database. We also include planar 2D-map homography, sparse DEM-lifted PnP from four UAV-footprint corners, and a dense-PnP ablation without semantic rejection. (3) Multi-frame trajectory estimation. We compare Ref-Odom in Eq. (19), ORB visual odometry [1, 31], ORB-SLAM2 [2], and GeoVINS-style retrieval [4]. The first three have no satellite-map anchoring. Our GeoVINS-style baseline uses DINOv2 [34] for coarse retrieval updates and shares the same initialization, noisy motion prior, and EKF interface as AeroMap3D. 
+
+B. Q1 & Q2: Cross-Dataset Registration 
+
+Fig. 5 evaluates cross-dataset transfer from synthetic UAV-VisLoc training pairs to real UAV-Terra3D imagery without target-dataset training. Despite the scale- and orientation-robust features of SIFT and RoMa, both fall short under the large cross-view appearance, footprint-scale, and yaw mis-match: SIFT+LightGlue reaches 35 .1% geometric-verification pass rate and RoMav2 reaches 62 .4% . The adapter normalizes scale and yaw before correspondence extraction and improves Method Success (%) Mean 3D (m) 95th 3D (m)                                                    
+
+> Single-Frame Visual Localization
+> DINOv2-based [24] 16 .47 29 .48 47 .58
+> SelaVPR++ [25] 19 .35 29 .30 47 .65
+> 2D Map + Homography 362 .20 30 .80 44 .70
+> Sparse DEM-PnP (Footprint) 444 .70 23 .90 45 .40
+> Dense DEM-PnP (RANSAC) 588 .24 16 .17 32 .27
+> Ours (RANSAC–PnP + OSM) 95.69 14.11 28.20
+> Continuous Trajectory Estimation
+> Ref-Odom 6[30] 14 .90 24 .20 45 .14
+> ORB-Visual Odometry 7[1, 31] 45 .61 28 .24 47 .90
+> ORB-SLAM2 8[2] 41 .44 14 .71 37 .31
+> GeoVINS-style retrieval 9[4] 100.00 17 .17 34 .78
+> Ours (PnP+EKF) 100.00 5.88 11.25
+> 3Planar 2D-map homography; no elevation data.
+> 4Sparse PnP from four DEM-lifted UAV-footprint corners.
+> 5Dense DEM-lifted RANSAC–PnP with only the OSM filter disabled.
+> 6Reference-derived stochastic propagation without visual or map updates.
+> 7Monocular planar visual odometry with an ORB frontend.
+> 8Monocular ORB-SLAM2 with Ref-Odom propagation and no map anchoring.
+> 9DINOv2-based GeoVINS-style classify-then-retrieve updates fused with the same Ref-Odom prior and EKF interface as AeroMap3D.
+> Metrics: success denotes 3D error below 50 m; mean and 95th-percentile errors are computed over successful frames.
+
+TABLE III: Single-frame and continuous localization per-formance. Although AeroMap3D estimates full 6-DoF poses, UAV-Terra3D provides ground truth only for the 3-DoF po-sition component. Therefore, the evaluation is restricted to translational localization accuracy, while rotational accuracy is not reported. 
+
+Fig. 6: Long-horizon relative drift. RPE versus segment length; lines show medians, shaded regions show the 25–75% and 5–95% ranges, and faint traces show individual trajec-tories. AeroMap3D remains below 6 m RPE at 2 km, while reference odometry, ORB-VO, and ORB-SLAM2 accumulate substantial drift. every evaluated matcher. In particular, Adapter+RoMav2 reaches 99 .2% , a 36 .8-point gain, providing the geometrically consistent correspondences required for DEM-lifted PnP. On the RTX 5090, Tiny-RoMa is the fastest configuration (18 ms), whereas RoMav2 delivers the highest registration accuracy but requires 487 ms. For edge deployment, we recommend Adapter+Tiny-RoMa: it reaches 92 .5% success on a Jetson Orin Nano in 130 ms (35 ms adapter plus 95 ms matcher), while RoMav2 exceeds the device’s memory budget. 
+
+Fig. 7: Representative 2-km UAV-Terra3D trajectory. Top: 
+
+map-space trajectories. Bottom: altitude profiles. AeroMap3D closely follows the ground truth while map-unanchored odom-etry and SLAM drift; GeoVINS bounds drift but remains less accurate than metric PnP updates. The delayed-update EKF accommodates these asynchronous visual updates. 
+
+C. Q3: Single-Frame Camera Pose Estimation 
+
+The upper half of Table III shows that retrieval provides only coarse localization. SelaVPR++, whose training is tailored to visual place recognition, improves on the DINOv2-based method but still reaches only 19 .35% success and 29.30 m mean error. The planar baseline estimates a RANSAC ho-mography between the UAV image and the geo-referenced map, then decomposes it using camera intrinsics and the map scale to recover pose relative to the ground plane. It improves success to 62 .20% but retains 30.80 m error, demonstrating that the planar assumption is insufficient. Sparse DEM-lifted PnP reduces the mean error to 23.90 m but succeeds on only 
+
+44 .70% of frames because footprint corners frequently fall on elevated or unmapped structures. To isolate semantic conditioning, we disable only the OSM pre-filter while holding the matcher, DEM lifting, PnP solver, RANSAC thresholds, and evaluation set fixed. Dense DEM-PnP reaches 88 .24% success and 16.17 m mean error; adding OSM raises success to 95 .69% and reduces the mean and 95th-percentile errors to 14.11 m and 28.20 m. This controlled comparison measures the incremental benefit of semantic conditioning before standard geometric consensus. D. Q4: Continuous Trajectory Estimation 
+
+The lower half of Table III and Figs. 6–7 show that motion propagation alone or monocular visual odometry cannot pre-vent long-range drift: Ref-Odom reaches only 14 .90% success, and ORB-VO and ORB-SLAM2 remain unanchored to the map. GeoVINS-style retrieval achieves 100% success with 17.17 m mean error, whereas AeroMap3D preserves 100% 
+
+success with 5.88 m mean and 11.25 m 95th-percentile error. This 65 .8% lower mean error, together with bounded RPE in Fig. 6 and the representative trajectory in Fig. 7, shows the benefit of metric map updates. VII. C ONCLUSION 
+
+We presented AeroMap3D for map-anchored UAV local-ization from satellite imagery, bare-earth DEMs, and OSM building footprints. By normalizing scale–yaw mismatch and filtering semantically invalid DEM-lifted correspondences be-fore standard RANSAC–PnP, AeroMap3D raises RoMav2’s geometric-verification pass rate from 62 .4% to 99 .2% and single-frame localization success from 88 .24% to 95 .69% .With a reference-derived stochastic motion prior, the trajectory estimator achieves 5.88 m mean translation error over 55 km. 
+
+Limitations and Future Work. The evaluation is limited to eight Austin-area sites, coarse initialization, translation-only ground truth, and a GNSS-reference-derived motion prior. OSM gaps, dominant unmapped structures, strongly oblique views, and seasonal or temporal map changes remain failure modes. Future work will evaluate measured onboard odometry, multi-region flights, attitude and gimbal-extrinsic accuracy, pitch-stratified registration, global initialization, map-validity modeling, and uncertainty-aware visual updates. 
+
+Acknowledgment. This work has taken place in the Human Centered Robotics Laboratory (HCRL) at UT Austin. This work has been made possible thanks to the generous gifts from Leo Lion and the Sentis-Ben-Yakar family. REFERENCES 
+
+[1] David Nistér, Oleg Naroditsky, and James Bergen. Visual odometry. In Proceedings of the IEEE Computer Society Conference on Computer Vision and Pattern Recognition , volume 1, pages I–652–I–659, 2004. [2] Raul Mur-Artal and Juan D Tardós. Orb-slam2: An open-source slam system for monocular, stereo, and rgb-d cameras. IEEE transactions on robotics , 33(5):1255– 1262, 2017. [3] Relja Arandjelovic, Petr Gronat, Akihiko Torii, Tomas Pajdla, and Josef Sivic. Netvlad: Cnn architecture for weakly supervised place recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 5297– 5307, 2016. [4] Chunyu Li, Mengfan He, Chao Chen, Jiacheng Liu, Xu Lyu, Guoquan Huang, and Ziyang Meng. Geovins: Geographic-visual-inertial navigation system for large-scale drift-free aerial state estimation. IEEE Transactions on Robotics , 2025. [5] Philipp Lindenberger, Paul-Edouard Sarlin, Jan Hosang, Marc Pollefeys, Simon Lynen, and Eduard Trulls. Scaling image geo-localization to continent level. 
+
+Advances in Neural Information Processing Systems , 38:134057–134092, 2026. [6] OpenCV Forum. Understanding pnp - solvepnp. https://forum.opencv.org/t/ understanding-pnp-solvepnp/7193, 2022. [7] Shuxiao Chen, Xiangyu Wu, Mark W Mueller, and Koushil Sreenath. Real-time geo-localization using satellite imagery and topography for unmanned aerial vehicles. In 2021 IEEE/RSJ international conference on intelligent robots and systems (IROS) , pages 2275–2281. IEEE, 2021. [8] Rouwan Wu, Xiaoya Cheng, Juelin Zhu, Xuxiang Liu, Maojun Zhang, and Shen Yan. Uavd4l: A large-scale dataset for uav 6-dof localization. In 2024 International Conference on 3D Vision (3DV) , pages 1574–1583. IEEE, 2024. [9] Xiaoya Cheng, Long Wang, Yan Liu, Xinyi Liu, Hanlin Tan, Yu Liu, Maojun Zhang, and Shen Yan. Pilot: Neural pixel-to-3d registration for uav-based ego and target geo-localization. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 5379–5388, 2026. [10] Oussema Dhaouadi, Riccardo Marin, Johannes Meier, Jacques Kaiser, and Daniel Cremers. Ortholoc: Uav 6-dof localization and calibration using orthographic geodata. In Advances in Neural Information Processing Systems , 2025. [11] Farm Service Agency U.S. Department of Agriculture. National agriculture imagery program (naip). https://naip-usdaonline.hub.arcgis.com/, 2026. [12] U.S. Geological Survey. 3d elevation program (3dep). https://www.usgs.gov/ 3d-elevation-program, 2026. [13] OpenStreetMap contributors. Planet dump retrieved from https://planet.osm.org . https://www.openstreetmap.org, 2026. [14] Jiaming Sun, Zehong Shen, Yuang Wang, Hujun Bao, and Xiaowei Zhou. Loftr: Detector-free local feature matching with transformers. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 8922– 8931, 2021. [15] Johan Edstedt, Qiyu Sun, Georg Bökman, Mårten Wadenbäck, and Michael Felsberg. Roma: Robust dense feature matching. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 19790–19800, 2024. [16] Johan Edstedt, David Nordström, Yushan Zhang, Georg Bökman, Jonathan Aster-mark, Viktor Larsson, Anders Heyden, Fredrik Kahl, Mårten Wadenbäck, and Michael Felsberg. Roma v2: Harder better faster denser feature matching. arXiv preprint arXiv:2511.15706 , 2025. [17] Roberto Opromolla. Magnetometer calibration for small unmanned aerial vehicles using cooperative flight data. Sensors , 20(2):538, 2020. doi: 10.3390/s20020538. [18] Andrew Stewart and Demoz Gebre-Egziabher. Modelling and calibration of time-varying magnetometer biases in small unmanned aerial vehicles. In Proceedings of the 28th International Technical Meeting of the Satellite Division of the Institute of Navigation (ION GNSS+ 2015) , pages 777–783, Tampa, Florida, 2015. [19] Ondˇ rej Chum and Jiˇ rí Matas. Optimal randomized ransac. IEEE Transactions on Pattern Analysis and Machine Intelligence , 30(8):1472–1482, 2008. [20] Ivan Cisneros, Peng Yin, Ji Zhang, Howie Choset, and Sebastian Scherer. Alto: A large-scale dataset for uav visual place recognition and localization. arXiv preprint arXiv:2207.12317 , 2022. [21] Wenjia Xu, Yaxuan Yao, Jiaqi Cao, Zhiwei Wei, Chunbo Liu, Jiuniu Wang, and Mugen Peng. Uav-visloc: A large-scale dataset for uav visual localization. arXiv preprint arXiv:2405.11936 , 2024. [22] Mengfan He, Chao Chen, Jiacheng Liu, Chunyu Li, Xu Lyu, Guoquan Huang, and Ziyang Meng. Aerialvl: A dataset, baseline and algorithm framework for aerial-based visual localization with reference map. IEEE Robotics and Automation Letters , 9(10):8210–8217, 2024. [23] Oussema Dhaouadi, Zuria Bauer, Johannes Michael Meier, Olaf Wysocki, Marc Pollefeys, and Daniel Cremers. Orthotrack: Continuous 6-dof uav trajectory estimation anchored in public orthophotos. arXiv preprint arXiv:2606.25245 , 2026. [24] Jiaqiang Yang, Danyang Qin, Huapeng Tang, Sili Tao, Haoze Bie, and Lin Ma. Dinov2-based uav visual self-localization in low-altitude urban environments. IEEE Robotics and Automation Letters , 2025. [25] Feng Lu, Tong Jin, Xiangyuan Lan, Lijun Zhang, Yunpeng Liu, Yaowei Wang, and Chun Yuan. Selavpr++: Towards seamless adaptation of foundation models for efficient place recognition. IEEE Transactions on Pattern Analysis and Machine Intelligence , 2025. [26] Issar Tzachor, Boaz Lerner, Matan Levy, Michael Green, Tal Berkovitz Shalev, Gavriel Habib, Dvir Samuel, Noam Zailer, Or Shimshi, Nir Darshan, et al. Effovpr: Effective foundation model utilization for visual place recognition. In International Conference on Learning Representations , volume 2025, pages 42817–42839, 2025. [27] Sitao Zhang, Hongda Mao, Qingshuang Chen, and Yelin Kim. Efficient visual place recognition through multimodal semantic knowledge integration. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 5601–5610, 2025. [28] Paul-Edouard Sarlin, Daniel DeTone, Tomasz Malisiewicz, and Andrew Rabi-novich. Superglue: Learning feature matching with graph neural networks. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 4938–4947, 2020. [29] Andrew Howard, Mark Sandler, Grace Chu, Liang-Chieh Chen, Bo Chen, Mingxing Tan, Weijun Wang, Yukun Zhu, Ruoming Pang, Vijay Vasudevan, Quoc V. Le, and Hartwig Adam. Searching for mobilenetv3. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 1314–1324, 2019. [30] Sebastian Thrun, Wolfram Burgard, and Dieter Fox. Probabilistic Robotics . MIT Press, 2005. [31] Ethan Rublee, Vincent Rabaud, Kurt Konolige, and Gary Bradski. Orb: An efficient alternative to sift or surf. In 2011 International conference on computer vision ,pages 2564–2571. Ieee, 2011. [32] Philipp Lindenberger, Paul-Edouard Sarlin, and Marc Pollefeys. Lightglue: Local feature matching at light speed. In Proceedings of the IEEE/CVF international conference on computer vision , pages 17627–17638, 2023. [33] Daniel DeTone, Tomasz Malisiewicz, and Andrew Rabinovich. Superpoint: Self-supervised interest point detection and description. In Proceedings of the IEEE conference on computer vision and pattern recognition workshops , pages 224–236, 2018. [34] Maxime Oquab, Timothée Darcet, Théo Moutakanni, Huy Vo, Marc Szafraniec, Vasil Khalidov, Pierre Fernandez, Daniel Haziza, Francisco Massa, Alaaeldin El-Nouby, et al. Dinov2: Learning robust visual features without supervision. arXiv preprint arXiv:2304.07193 , 2023.
